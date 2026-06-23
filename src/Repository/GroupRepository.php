@@ -128,8 +128,7 @@ class GroupRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('g')
             ->join('g.programmeYear', 'py')
             ->join('py.programme', 'prog')
-            ->join('prog.professionalFamily', 'f')
-            ->where('f.academicYear = :year')
+            ->where('prog.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('g.name', 'ASC')
             ->getQuery()
@@ -157,10 +156,9 @@ class GroupRepository extends ServiceEntityRepository
                 FROM App\Entity\Group g
                 JOIN g.programmeYear py
                 JOIN py.programme prog
-                JOIN prog.professionalFamily f
                 LEFT JOIN g.students s
                 LEFT JOIN g.teachers t
-                WHERE f.academicYear = :year
+                WHERE prog.academicYear = :year
                 GROUP BY g.id
             ')
             ->setParameter('year', $year->getId(), 'uuid')
@@ -190,7 +188,7 @@ class GroupRepository extends ServiceEntityRepository
 
     /**
      * Returns groups for the centre's active year with programme and level data eagerly loaded,
-     * sorted by programme family → programme → level → group name.
+     * sorted by programme → level → group name.
      *
      * @return Group[]
      */
@@ -204,8 +202,7 @@ class GroupRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('g')
             ->join('g.programmeYear', 'py')->addSelect('py')
             ->join('py.programme', 'prog')->addSelect('prog')
-            ->join('prog.professionalFamily', 'f')
-            ->where('f.academicYear = :year')
+            ->where('prog.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('prog.name', 'ASC')
             ->addOrderBy('py.name', 'ASC')

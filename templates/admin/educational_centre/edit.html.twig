@@ -229,22 +229,22 @@
         </div>
     </div>
 
-    {# ── Familias profesionales ──────────────────────────────────────────────── #}
+    {# ── Oferta formativa ────────────────────────────────────────────────────── #}
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
         <div class="px-6 py-4 flex items-center justify-between gap-4">
             <div>
-                <h2 class="text-base font-semibold text-gray-900">{{ 'families.title'|trans({}, 'admin') }}</h2>
-                <p class="text-sm text-gray-500 mt-0.5">{{ 'families.centre_link_help'|trans({}, 'admin') }}</p>
+                <h2 class="text-base font-semibold text-gray-900">{{ 'offer.title'|trans({}, 'admin') }}</h2>
+                <p class="text-sm text-gray-500 mt-0.5">{{ 'offer.centre_link_help'|trans({}, 'admin') }}</p>
             </div>
             {% if centre.activeAcademicYear %}
-                <a href="{{ path('app_admin_families_index', {centreId: centre.id}) }}"
+                <a href="{{ path('app_admin_offer_index', {centreId: centre.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
                           hover:bg-forest-700 transition-colors shadow-xs shrink-0">
                     {{ ux_icon('heroicons:academic-cap', {class: 'h-4 w-4'}) }}
-                    {{ 'families.manage'|trans({}, 'admin') }}
+                    {{ 'offer.manage'|trans({}, 'admin') }}
                 </a>
             {% else %}
-                <span class="text-sm text-gray-400">{{ 'families.no_active_year'|trans({}, 'admin') }}</span>
+                <span class="text-sm text-gray-400">{{ 'offer.no_active_year'|trans({}, 'admin') }}</span>
             {% endif %}
         </div>
     </div>

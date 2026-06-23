@@ -25,22 +25,17 @@ Se genera con `php bin/console doctrine:fixtures:load` (o los scripts `demo.*` d
 | `rafael.exposito` | Rafael Expósito Moreno | También admin global |
 | `carmen.diaz` | Carmen Díaz Jiménez | |
 
-### Jefes de departamento (heads de etapa)
+### Claustro (30 docentes en total)
 
-| Usuario | Nombre | Etapa |
-|---|---|---|
-| `francisco.molina` | Francisco Molina Ruiz | Educación Secundaria Obligatoria |
-| `isabel.lozano` | Isabel Lozano Herrera | Bachillerato |
-
-### Resto del claustro (30 docentes en total)
-
-Todos con contraseña `ejemplo`. Los 28 docentes restantes son asignados automáticamente como tutores y co-docentes de los grupos.
+Todos con contraseña `ejemplo`. Los docentes son asignados automáticamente como tutores y co-docentes de los grupos.
 
 <details>
 <summary>Ver lista completa</summary>
 
 | Usuario | Nombre |
 |---|---|
+| `francisco.molina` | Francisco Molina Ruiz |
+| `isabel.lozano` | Isabel Lozano Herrera |
 | `maria.garcia` | María Dolores García Fernández |
 | `diego.romero` | Diego Romero Vega |
 | `manuel.perez` | Manuel Pérez Blanco |
@@ -72,25 +67,30 @@ Todos con contraseña `ejemplo`. Los 28 docentes restantes son asignados automá
 
 ### Estructura académica
 
-#### Etapa: Educación Secundaria Obligatoria
+#### Enseñanza: ESO
 
-| Enseñanza | Curso | Grupo A | Grupo B |
-|---|---|---|---|
-| ESO | 1º ESO | `1ºESO A` — 28 alumnos | `1ºESO B` — 27 alumnos |
-| ESO | 2º ESO | `2ºESO A` — 28 alumnos | `2ºESO B` — 27 alumnos |
-| ESO | 3º ESO | `3ºESO A` — 28 alumnos | `3ºESO B` — 27 alumnos |
-| ESO | 4º ESO | `4ºESO A` — 28 alumnos | `4ºESO B` — 27 alumnos |
-
-#### Etapa: Bachillerato
-
-| Enseñanza | Curso | Grupo |
+| Curso | Grupo A | Grupo B |
 |---|---|---|
-| Bachillerato de Ciencias | 1º Bach. Ciencias | `1ºBachCiencias` — 22 alumnos |
-| Bachillerato de Ciencias | 2º Bach. Ciencias | `2ºBachCiencias` — 22 alumnos |
-| Bachillerato de Humanidades y CCSS | 1º Bach. Humanidades | `1ºBachHumanidades` — 22 alumnos |
-| Bachillerato de Humanidades y CCSS | 2º Bach. Humanidades | `2ºBachHumanidades` — 22 alumnos |
+| 1º ESO | `1ºESO A` — 28 alumnos | `1ºESO B` — 27 alumnos |
+| 2º ESO | `2ºESO A` — 28 alumnos | `2ºESO B` — 27 alumnos |
+| 3º ESO | `3ºESO A` — 28 alumnos | `3ºESO B` — 27 alumnos |
+| 4º ESO | `4ºESO A` — 28 alumnos | `4ºESO B` — 27 alumnos |
 
-**Totales:** 12 grupos · 308 alumnos
+#### Enseñanza: Bachillerato
+
+| Curso | Grupo |
+|---|---|
+| 1º Bachillerato | `1ºBachillerato` — 22 alumnos |
+| 2º Bachillerato | `2ºBachillerato` — 22 alumnos |
+
+#### Enseñanza: CFGS Desarrollo de Aplicaciones Web
+
+| Curso | Grupo |
+|---|---|
+| 1º DAW | `1ºDAW` — 24 alumnos |
+| 2º DAW | `2ºDAW` — 24 alumnos |
+
+**Totales:** 12 grupos · 312 alumnos
 
 ---
 
@@ -105,21 +105,16 @@ Todos con contraseña `ejemplo`. Los 28 docentes restantes son asignados automá
 | `mariajose.alvarez` | María José Álvarez García | También admin global |
 | `pedro.fernandez` | Pedro Antonio Fernández Rubio | |
 
-### Jefes de departamento (heads de etapa)
-
-| Usuario | Nombre | Etapa |
-|---|---|---|
-| `rosario.soto` | Rosario Soto Merino | Educación Secundaria Obligatoria |
-| `antonia.guzman` | Antonia Guzmán Osuna | Bachillerato |
-
-### Resto del claustro (30 docentes en total)
+### Claustro (30 docentes en total)
 
 <details>
 <summary>Ver lista completa</summary>
 
 | Usuario | Nombre |
 |---|---|
+| `rosario.soto` | Rosario Soto Merino |
 | `dolores.reyes` | Dolores Reyes Álvarez |
+| `antonia.guzman` | Antonia Guzmán Osuna |
 | `ignacio.crespo` | Ignacio Crespo Leal |
 | `piedad.torres` | Piedad Torres Velázquez |
 | `vicente.roldan` | Vicente Roldán Camacho |
@@ -150,25 +145,23 @@ Todos con contraseña `ejemplo`. Los 28 docentes restantes son asignados automá
 
 ### Estructura académica
 
-#### Etapa: Educación Secundaria Obligatoria
+#### Enseñanza: ESO
 
-| Enseñanza | Curso | Grupo A | Grupo B |
-|---|---|---|---|
-| ESO | 1º ESO | `1ºESO A` — 26 alumnos | `1ºESO B` — 26 alumnos |
-| ESO | 2º ESO | `2ºESO A` — 26 alumnos | `2ºESO B` — 26 alumnos |
-| ESO | 3º ESO | `3ºESO A` — 26 alumnos | `3ºESO B` — 26 alumnos |
-| ESO | 4º ESO | `4ºESO A` — 26 alumnos | `4ºESO B` — 26 alumnos |
-
-#### Etapa: Bachillerato
-
-| Enseñanza | Curso | Grupo |
+| Curso | Grupo A | Grupo B |
 |---|---|---|
-| Bachillerato de Ciencias | 1º Bach. Ciencias | `1ºBachCiencias` — 20 alumnos |
-| Bachillerato de Ciencias | 2º Bach. Ciencias | `2ºBachCiencias` — 20 alumnos |
-| Bachillerato de Humanidades y CCSS | 1º Bach. Humanidades | `1ºBachHumanidades` — 20 alumnos |
-| Bachillerato de Humanidades y CCSS | 2º Bach. Humanidades | `2ºBachHumanidades` — 20 alumnos |
+| 1º ESO | `1ºESO A` — 26 alumnos | `1ºESO B` — 26 alumnos |
+| 2º ESO | `2ºESO A` — 26 alumnos | `2ºESO B` — 26 alumnos |
+| 3º ESO | `3ºESO A` — 26 alumnos | `3ºESO B` — 26 alumnos |
+| 4º ESO | `4ºESO A` — 26 alumnos | `4ºESO B` — 26 alumnos |
 
-**Totales:** 12 grupos · 288 alumnos
+#### Enseñanza: Bachillerato
+
+| Curso | Grupo |
+|---|---|
+| 1º Bachillerato | `1ºBachillerato` — 20 alumnos |
+| 2º Bachillerato | `2ºBachillerato` — 20 alumnos |
+
+**Totales:** 10 grupos · 248 alumnos
 
 ---
 
@@ -178,8 +171,10 @@ Todos con contraseña `ejemplo`. Los 28 docentes restantes son asignados automá
 |---|---|---|---|
 | Docentes | 30 | 30 | 61 (+ `admin`) |
 | Grupos ESO | 8 | 8 | 16 |
-| Grupos Bachillerato | 4 | 4 | 8 |
-| **Grupos total** | **12** | **12** | **24** |
+| Grupos Bachillerato | 2 | 2 | 4 |
+| Grupos CFGS | 2 | — | 2 |
+| **Grupos total** | **12** | **10** | **22** |
 | Alumnos ESO | 220 | 208 | 428 |
-| Alumnos Bachillerato | 88 | 80 | 168 |
-| **Alumnos total** | **308** | **288** | **596** |
+| Alumnos Bachillerato | 44 | 40 | 84 |
+| Alumnos CFGS | 48 | — | 48 |
+| **Alumnos total** | **312** | **248** | **560** |

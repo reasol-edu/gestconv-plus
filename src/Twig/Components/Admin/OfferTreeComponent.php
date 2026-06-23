@@ -6,12 +6,10 @@ namespace App\Twig\Components\Admin;
 
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Teacher;
 use App\Repository\GroupRepository;
-use App\Repository\ProfessionalFamilyRepository;
 use App\Repository\ProgrammeRepository;
 use App\Repository\ProgrammeYearRepository;
 use App\Repository\TeacherRepository;
@@ -30,18 +28,15 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
  * Column navigation (Miller columns) for the formative offer:
- * Families → Programmes → Levels → Groups, fully inline with no page reloads.
+ * Programmes → Levels → Groups, fully inline with no page reloads.
  */
 #[AsLiveComponent]
-class ProfessionalFamilyListComponent extends AbstractController
+class OfferTreeComponent extends AbstractController
 {
     use DefaultActionTrait;
 
     #[LiveProp]
     public EducationalCentre $centre;
-
-    #[LiveProp(writable: true)]
-    public string $familyId = '';
 
     #[LiveProp(writable: true)]
     public string $programmeId = '';
@@ -53,9 +48,6 @@ class ProfessionalFamilyListComponent extends AbstractController
     public string $groupId = '';
 
     /** Inline "add" inputs, one per column. */
-    #[LiveProp(writable: true)]
-    public string $addFamilyName = '';
-
     #[LiveProp(writable: true)]
     public string $addProgrammeName = '';
 
@@ -83,7 +75,6 @@ class ProfessionalFamilyListComponent extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly TranslatorInterface $translator,
-        private readonly ProfessionalFamilyRepository $families,
         private readonly ProgrammeRepository $programmes,
         private readonly ProgrammeYearRepository $levels,
         private readonly GroupRepository $groups,
@@ -104,29 +95,15 @@ class ProfessionalFamilyListComponent extends AbstractController
 
     // ── Column data ──────────────────────────────────────────────────────────
 
-    /** @return ProfessionalFamily[] */
-    public function getFamilyList(): array
+    /** @return Programme[] */
+    public function getProgrammeList(): array
     {
         $year = $this->tenantContext->getViewYear($this->centre);
         if ($year === null) {
             return [];
         }
 
-        return $this->families->findByAcademicYearFiltered($year);
-    }
-
-    /** @return array<string, int> */
-    public function getFamilyCounts(): array
-    {
-        return $this->programmes->countByFamily($this->getFamilyList());
-    }
-
-    /** @return Programme[] */
-    public function getProgrammeList(): array
-    {
-        $family = $this->getSelectedFamily();
-
-        return $family === null ? [] : $this->programmes->findByFamilyOrderedByName($family);
+        return $this->programmes->findByAcademicYearOrdered($year);
     }
 
     /** @return array<string, int> */
@@ -168,11 +145,7 @@ class ProfessionalFamilyListComponent extends AbstractController
         return $this->groups->findCountsByAcademicYear($year, $this->getGroupList());
     }
 
-    /**
-     * Teachers of the viewed year, used to populate the staff selects in the detail panel.
-     *
-     * @return Teacher[]
-     */
+    /** @return Teacher[] */
     public function getTeacherOptions(): array
     {
         $year = $this->tenantContext->getViewYear($this->centre);
@@ -182,24 +155,14 @@ class ProfessionalFamilyListComponent extends AbstractController
 
     // ── Selected entities ────────────────────────────────────────────────────
 
-    public function getSelectedFamily(): ?ProfessionalFamily
-    {
-        $year = $this->tenantContext->getViewYear($this->centre);
-        if ($year === null || $this->familyId === '') {
-            return null;
-        }
-
-        return $this->families->findByYearAndId($year, $this->familyId);
-    }
-
     public function getSelectedProgramme(): ?Programme
     {
-        $family = $this->getSelectedFamily();
-        if ($family === null || $this->programmeId === '') {
+        $year = $this->tenantContext->getViewYear($this->centre);
+        if ($year === null || $this->programmeId === '') {
             return null;
         }
 
-        return $this->programmes->findByFamilyAndId($family, $this->programmeId);
+        return $this->programmes->findByAcademicYearAndId($year, $this->programmeId);
     }
 
     public function getSelectedLevel(): ?ProgrammeYear
@@ -223,9 +186,7 @@ class ProfessionalFamilyListComponent extends AbstractController
     }
 
     /**
-     * The deepest selected item, used by the detail panel.
-     *
-     * @return array{type: string, entity: ProfessionalFamily|Programme|ProgrammeYear|Group}|null
+     * @return array{type: string, entity: Programme|ProgrammeYear|Group}|null
      */
     public function getSelected(): ?array
     {
@@ -238,22 +199,11 @@ class ProfessionalFamilyListComponent extends AbstractController
         if (($programme = $this->getSelectedProgramme()) !== null) {
             return ['type' => 'programme', 'entity' => $programme];
         }
-        if (($family = $this->getSelectedFamily()) !== null) {
-            return ['type' => 'family', 'entity' => $family];
-        }
 
         return null;
     }
 
     // ── Selection actions ────────────────────────────────────────────────────
-
-    #[LiveAction]
-    public function selectFamily(#[LiveArg] string $id): void
-    {
-        $this->familyId   = $id;
-        $this->programmeId = $this->levelId = $this->groupId = '';
-        $this->loadDetail();
-    }
 
     #[LiveAction]
     public function selectProgramme(#[LiveArg] string $id): void
@@ -281,7 +231,7 @@ class ProfessionalFamilyListComponent extends AbstractController
     #[LiveAction]
     public function clearSelection(): void
     {
-        $this->familyId = $this->programmeId = $this->levelId = $this->groupId = '';
+        $this->programmeId = $this->levelId = $this->groupId = '';
         $this->errors = [];
     }
 
@@ -298,47 +248,23 @@ class ProfessionalFamilyListComponent extends AbstractController
 
         $entity = $selected['entity'];
         $this->editName    = $entity->getName();
-        $this->editDetails = $entity instanceof ProfessionalFamily ? '' : ($entity->getDetails() ?? '');
+        $this->editDetails = $entity->getDetails() ?? '';
     }
 
     // ── Add actions ──────────────────────────────────────────────────────────
-
-    #[LiveAction]
-    public function addFamily(): void
-    {
-        $centre = $this->requireWritableCentre();
-        $year   = $centre->getActiveAcademicYear();
-        $name   = trim($this->addFamilyName);
-        if ($year === null || $name === '') {
-            return;
-        }
-
-        $family = (new ProfessionalFamily())
-            ->setName($name)
-            ->setAcademicYear($year)
-            ->setHead(null);
-
-        $this->em->persist($family);
-        $this->em->flush();
-
-        $this->addFamilyName = '';
-        $this->selectFamily($family->getId()->toRfc4122());
-    }
 
     #[LiveAction]
     public function addProgramme(): void
     {
         $centre = $this->requireWritableCentre();
         $year   = $centre->getActiveAcademicYear();
-        $family = $this->getSelectedFamily();
         $name   = trim($this->addProgrammeName);
-        if ($year === null || $family === null || $name === '') {
+        if ($year === null || $name === '') {
             return;
         }
 
         $programme = (new Programme())
             ->setName($name)
-            ->setProfessionalFamily($family)
             ->setAcademicYear($year);
 
         $this->em->persist($programme);
@@ -411,9 +337,7 @@ class ProfessionalFamilyListComponent extends AbstractController
         $entity  = $selected['entity'];
         $details = trim($this->editDetails);
         $entity->setName($name);
-        if (!$entity instanceof ProfessionalFamily) {
-            $entity->setDetails($details !== '' ? $details : null);
-        }
+        $entity->setDetails($details !== '' ? $details : null);
 
         $this->em->flush();
         $this->errors = [];
@@ -453,31 +377,15 @@ class ProfessionalFamilyListComponent extends AbstractController
             return;
         }
 
-        // Move the selection up one level.
         match ($type) {
-            'group'     => $this->groupId = '',
-            'level'     => $this->levelId = '',
-            'programme' => $this->programmeId = '',
-            default     => $this->familyId = '',
+            'group' => $this->groupId = '',
+            'level' => $this->levelId = '',
+            default => $this->programmeId = '',
         };
         $this->loadDetail();
     }
 
-    // ── Inline staff (head / tutors / teachers) ──────────────────────────────
-
-    #[LiveAction]
-    public function setFamilyHead(#[LiveArg] string $teacherId): void
-    {
-        $this->requireWritableCentre();
-        $family = $this->getSelectedFamily();
-        if ($family === null) {
-            return;
-        }
-
-        $family->setHead($teacherId === '' ? null : $this->resolveTeacher($teacherId));
-        $this->em->flush();
-        $this->addFlash('success', $this->t('family.flash.saved'));
-    }
+    // ── Inline staff (tutors / teachers) ─────────────────────────────────────
 
     /** @param string[] $ids */
     #[LiveAction]
@@ -527,8 +435,6 @@ class ProfessionalFamilyListComponent extends AbstractController
     }
 
     /**
-     * Reconcile a teacher collection against the desired set of ids.
-     *
      * @param Collection<int, Teacher> $current
      * @param string[]                 $ids
      * @param callable(Teacher): mixed $add

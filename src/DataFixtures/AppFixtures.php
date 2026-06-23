@@ -8,7 +8,6 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Student;
@@ -45,15 +44,16 @@ class AppFixtures extends Fixture
         $mTeachers = $this->makeMonterrubioTeachers($manager, $ejemploHash);
         $manager->flush();
 
-        [$aEsoPyears, $aBachPyears] = $this->buildAdaLovelace($manager, $aTeachers);
-        [$mEsoPyears, $mBachPyears] = $this->buildMonterrubio($manager, $mTeachers);
+        [$aEsoPyears, $aBachPyears, $aDawPyears] = $this->buildAdaLovelace($manager, $aTeachers);
+        [$mEsoPyears, $mBachPyears]              = $this->buildMonterrubio($manager, $mTeachers);
 
-        // IES Ada Lovelace: dos grupos por curso en ESO, uno por modalidad en Bach.
+        // IES Ada Lovelace: dos grupos por curso en ESO, uno en Bach. y uno en DAW.
         $this->buildGroups($manager, $aEsoPyears, $aTeachers, 'AA', 28, ' A');
         $this->buildGroups($manager, $aEsoPyears, $aTeachers, 'AB', 27, ' B');
         $this->buildGroups($manager, $aBachPyears, $aTeachers, 'AC', 22);
+        $this->buildGroups($manager, $aDawPyears,  $aTeachers, 'AD', 24);
 
-        // IES Monterrubio: tres grupos en los dos primeros cursos de ESO, dos en los otros.
+        // IES Monterrubio: dos grupos por curso en ESO, uno en Bach.
         $this->buildGroups($manager, $mEsoPyears, $mTeachers, 'MA', 26, ' A');
         $this->buildGroups($manager, $mEsoPyears, $mTeachers, 'MB', 26, ' B');
         $this->buildGroups($manager, $mBachPyears, $mTeachers, 'MC', 20);
@@ -84,7 +84,6 @@ class AppFixtures extends Fixture
 
             'DELETE FROM ' . $q('programme_year'),
             'DELETE FROM ' . $q('programme'),
-            'DELETE FROM ' . $q('professional_family'),
             'DELETE FROM ' . $q('teacher_academic_year'),
             'DELETE FROM ' . $q('educational_centre_admins'),
             'DELETE FROM ' . $q('academic_year'),
@@ -109,10 +108,9 @@ class AppFixtures extends Fixture
             // 0-1: equipo directivo (admins de centro)
             ['rafael.exposito',   'Rafael',       'Expósito Moreno'],
             ['carmen.diaz',       'Carmen',       'Díaz Jiménez'],
-            // 2-3: jefes de departamento (heads de familia)
+            // 2-6: coordinadores
             ['francisco.molina',  'Francisco',    'Molina Ruiz'],
             ['isabel.lozano',     'Isabel',       'Lozano Herrera'],
-            // 4-6: coordinadores de etapa/programa
             ['maria.garcia',      'María Dolores','García Fernández'],
             ['diego.romero',      'Diego',        'Romero Vega'],
             ['manuel.perez',      'Manuel',       'Pérez Blanco'],
@@ -208,10 +206,10 @@ class AppFixtures extends Fixture
     // ── Estructura académica ──────────────────────────────────────────────────
 
     /**
-     * Devuelve [esoPyears, bachPyears].
+     * Devuelve [esoPyears, bachPyears, dawPyears].
      *
      * @param array<string, Teacher> $teachers
-     * @return array{ProgrammeYear[], ProgrammeYear[]}
+     * @return array{ProgrammeYear[], ProgrammeYear[], ProgrammeYear[]}
      */
     private function buildAdaLovelace(ObjectManager $manager, array $teachers): array
     {
@@ -232,31 +230,27 @@ class AppFixtures extends Fixture
         }
 
         // ── ESO ───────────────────────────────────────────────────────────────
-        $eso = (new ProfessionalFamily())
-            ->setName('Educación Secundaria Obligatoria')
-            ->setAcademicYear($year)
-            ->setHead($teachers['francisco.molina']);
-        $manager->persist($eso);
-
-        $esoP = $this->makeProgramme($manager, 'ESO', $eso, $year);
+        $esoP = $this->makeProgramme($manager, 'ESO', $year);
         [$py1, $py2, $py3, $py4] = $this->makeEsoProgrammeYears($manager, $esoP);
 
         // ── Bachillerato ──────────────────────────────────────────────────────
-        $bach = (new ProfessionalFamily())
-            ->setName('Bachillerato')
-            ->setAcademicYear($year)
-            ->setHead($teachers['isabel.lozano']);
-        $manager->persist($bach);
+        $bach = $this->makeProgramme($manager, 'Bachillerato', $year);
+        $py1b = (new ProgrammeYear())->setName('1º Bachillerato')->setProgramme($bach);
+        $py2b = (new ProgrammeYear())->setName('2º Bachillerato')->setProgramme($bach);
+        $manager->persist($py1b);
+        $manager->persist($py2b);
 
-        $bachCi = $this->makeProgramme($manager, 'Bachillerato de Ciencias', $bach, $year);
-        [$py1ci, $py2ci] = $this->makeBachProgrammeYears($manager, $bachCi, 'Ciencias');
-
-        $bachHu = $this->makeProgramme($manager, 'Bachillerato de Humanidades y CCSS', $bach, $year);
-        [$py1hu, $py2hu] = $this->makeBachProgrammeYears($manager, $bachHu, 'Humanidades');
+        // ── CFGS Desarrollo de Aplicaciones Web ───────────────────────────────
+        $daw  = $this->makeProgramme($manager, 'CFGS Desarrollo de Aplicaciones Web', $year);
+        $py1d = (new ProgrammeYear())->setName('1º DAW')->setProgramme($daw);
+        $py2d = (new ProgrammeYear())->setName('2º DAW')->setProgramme($daw);
+        $manager->persist($py1d);
+        $manager->persist($py2d);
 
         return [
             [$py1, $py2, $py3, $py4],
-            [$py1ci, $py2ci, $py1hu, $py2hu],
+            [$py1b, $py2b],
+            [$py1d, $py2d],
         ];
     }
 
@@ -283,44 +277,25 @@ class AppFixtures extends Fixture
         }
 
         // ── ESO ───────────────────────────────────────────────────────────────
-        $eso = (new ProfessionalFamily())
-            ->setName('Educación Secundaria Obligatoria')
-            ->setAcademicYear($year)
-            ->setHead($teachers['rosario.soto']);
-        $manager->persist($eso);
-
-        $esoP = $this->makeProgramme($manager, 'ESO', $eso, $year);
+        $esoP = $this->makeProgramme($manager, 'ESO', $year);
         [$py1, $py2, $py3, $py4] = $this->makeEsoProgrammeYears($manager, $esoP);
 
         // ── Bachillerato ──────────────────────────────────────────────────────
-        $bach = (new ProfessionalFamily())
-            ->setName('Bachillerato')
-            ->setAcademicYear($year)
-            ->setHead($teachers['antonia.guzman']);
-        $manager->persist($bach);
-
-        $bachCi = $this->makeProgramme($manager, 'Bachillerato de Ciencias', $bach, $year);
-        [$py1ci, $py2ci] = $this->makeBachProgrammeYears($manager, $bachCi, 'Ciencias');
-
-        $bachHu = $this->makeProgramme($manager, 'Bachillerato de Humanidades y CCSS', $bach, $year);
-        [$py1hu, $py2hu] = $this->makeBachProgrammeYears($manager, $bachHu, 'Humanidades');
+        $bach = $this->makeProgramme($manager, 'Bachillerato', $year);
+        $py1b = (new ProgrammeYear())->setName('1º Bachillerato')->setProgramme($bach);
+        $py2b = (new ProgrammeYear())->setName('2º Bachillerato')->setProgramme($bach);
+        $manager->persist($py1b);
+        $manager->persist($py2b);
 
         return [
             [$py1, $py2, $py3, $py4],
-            [$py1ci, $py2ci, $py1hu, $py2hu],
+            [$py1b, $py2b],
         ];
     }
 
-    private function makeProgramme(
-        ObjectManager $manager,
-        string $name,
-        ProfessionalFamily $family,
-        AcademicYear $year,
-    ): Programme {
-        $p = (new Programme())
-            ->setName($name)
-            ->setProfessionalFamily($family)
-            ->setAcademicYear($year);
+    private function makeProgramme(ObjectManager $manager, string $name, AcademicYear $year): Programme
+    {
+        $p = (new Programme())->setName($name)->setAcademicYear($year);
         $manager->persist($p);
         return $p;
     }
@@ -336,16 +311,6 @@ class AppFixtures extends Fixture
         }
         /** @var array{ProgrammeYear, ProgrammeYear, ProgrammeYear, ProgrammeYear} $years */
         return $years;
-    }
-
-    /** @return array{ProgrammeYear, ProgrammeYear} */
-    private function makeBachProgrammeYears(ObjectManager $manager, Programme $programme, string $modalidad): array
-    {
-        $py1 = (new ProgrammeYear())->setName('1º Bach. ' . $modalidad)->setProgramme($programme);
-        $py2 = (new ProgrammeYear())->setName('2º Bach. ' . $modalidad)->setProgramme($programme);
-        $manager->persist($py1);
-        $manager->persist($py2);
-        return [$py1, $py2];
     }
 
     // ── Grupos y alumnado ─────────────────────────────────────────────────────

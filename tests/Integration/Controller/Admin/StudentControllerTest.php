@@ -8,7 +8,6 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Student;
@@ -416,8 +415,8 @@ class StudentControllerTest extends ControllerTestCase
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();
         $centre->setActiveAcademicYear($year);
-        [$family, $programme, $level, $group] = $this->makeGroupChain($year, 'DAW1A');
-        $this->persist($admin, $centre, $year, $family, $programme, $level, $group);
+        [$programme, $level, $group] = $this->makeGroupChain($year, 'DAW1A');
+        $this->persist($admin, $centre, $year, $programme, $level, $group);
         $this->flush();
         $this->loginAs($admin);
 
@@ -450,9 +449,9 @@ class StudentControllerTest extends ControllerTestCase
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();
         $centre->setActiveAcademicYear($year);
-        [$family, $programme, $level, $groupA] = $this->makeGroupChain($year, 'DAW1A');
+        [$programme, $level, $groupA] = $this->makeGroupChain($year, 'DAW1A');
         $groupB = (new Group())->setName('DAW1B')->setProgrammeYear($level);
-        $this->persist($admin, $centre, $year, $family, $programme, $level, $groupA, $groupB);
+        $this->persist($admin, $centre, $year, $programme, $level, $groupA, $groupB);
         $this->flush();
         $this->loginAs($admin);
 
@@ -564,14 +563,13 @@ class StudentControllerTest extends ControllerTestCase
         return (new Student(new PersonName('Test', 'Student')))->setStudentId($studentId);
     }
 
-    /** @return array{0: ProfessionalFamily, 1: Programme, 2: ProgrammeYear, 3: Group} */
+    /** @return array{0: Programme, 1: ProgrammeYear, 2: Group} */
     private function makeGroupChain(AcademicYear $year, string $groupName): array
     {
-        $family    = (new ProfessionalFamily())->setName('Informática')->setAcademicYear($year);
-        $programme = (new Programme())->setName('DAW')->setProfessionalFamily($family)->setAcademicYear($year);
+        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
         $level     = (new ProgrammeYear())->setName('Primer curso')->setProgramme($programme);
         $group     = (new Group())->setName($groupName)->setProgrammeYear($level);
 
-        return [$family, $programme, $level, $group];
+        return [$programme, $level, $group];
     }
 }

@@ -6,7 +6,6 @@ namespace App\Tests\Integration\Repository;
 
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Repository\ProgrammeYearRepository;
@@ -90,11 +89,10 @@ class ProgrammeYearRepositoryTest extends RepositoryTestCase
 
     private function makeChain(string $centreCode): Programme
     {
-        $centre  = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
-        $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $family  = (new ProfessionalFamily())->setName('Informatica')->setAcademicYear($year);
-        $prog    = (new Programme())->setName('DAM')->setAcademicYear($year)->setProfessionalFamily($family);
-        $this->persist($centre, $year, $family, $prog);
+        $centre = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
+        $year   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
+        $prog   = (new Programme())->setName('DAM')->setAcademicYear($year);
+        $this->persist($centre, $year, $prog);
         return $prog;
     }
 

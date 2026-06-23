@@ -101,33 +101,16 @@ final class Version20260101000000 extends AbstractMigration
         $this->addSql('ALTER TABLE teacher_academic_year ADD CONSTRAINT FK_tay_teacher FOREIGN KEY (teacher_id)       REFERENCES teacher(id) ON DELETE CASCADE');
 
         $this->addSql(<<<'SQL'
-            CREATE TABLE professional_family (
+            CREATE TABLE programme (
                 id               UUID         NOT NULL,
                 academic_year_id UUID         NOT NULL,
-                head_id          UUID         DEFAULT NULL,
                 name             VARCHAR(255) NOT NULL,
+                details          TEXT         DEFAULT NULL,
                 PRIMARY KEY(id)
             )
         SQL);
-        $this->addSql('CREATE INDEX IDX_pf_year ON professional_family (academic_year_id)');
-        $this->addSql('CREATE INDEX IDX_pf_head ON professional_family (head_id)');
-        $this->addSql('ALTER TABLE professional_family ADD CONSTRAINT FK_pf_year FOREIGN KEY (academic_year_id) REFERENCES academic_year(id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        $this->addSql('ALTER TABLE professional_family ADD CONSTRAINT FK_pf_head FOREIGN KEY (head_id)          REFERENCES teacher(id)');
-
-        $this->addSql(<<<'SQL'
-            CREATE TABLE programme (
-                id                     UUID         NOT NULL,
-                academic_year_id       UUID         NOT NULL,
-                professional_family_id UUID         NOT NULL,
-                name                   VARCHAR(255) NOT NULL,
-                details                TEXT         DEFAULT NULL,
-                PRIMARY KEY(id)
-            )
-        SQL);
-        $this->addSql('CREATE INDEX IDX_prog_year   ON programme (academic_year_id)');
-        $this->addSql('CREATE INDEX IDX_prog_family ON programme (professional_family_id)');
-        $this->addSql('ALTER TABLE programme ADD CONSTRAINT FK_prog_year   FOREIGN KEY (academic_year_id)       REFERENCES academic_year(id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        $this->addSql('ALTER TABLE programme ADD CONSTRAINT FK_prog_family FOREIGN KEY (professional_family_id) REFERENCES professional_family(id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('CREATE INDEX IDX_prog_year ON programme (academic_year_id)');
+        $this->addSql('ALTER TABLE programme ADD CONSTRAINT FK_prog_year FOREIGN KEY (academic_year_id) REFERENCES academic_year(id) NOT DEFERRABLE INITIALLY IMMEDIATE');
 
         $this->addSql(<<<'SQL'
             CREATE TABLE programme_year (
@@ -335,7 +318,6 @@ final class Version20260101000000 extends AbstractMigration
         $this->addSql('DROP TABLE "group"');
         $this->addSql('DROP TABLE programme_year');
         $this->addSql('DROP TABLE programme');
-        $this->addSql('DROP TABLE professional_family');
         $this->addSql('DROP TABLE teacher_academic_year');
         $this->addSql('DROP TABLE educational_centre_admins');
         $this->addSql('DROP TABLE academic_year');

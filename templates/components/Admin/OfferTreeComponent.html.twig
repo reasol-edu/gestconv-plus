@@ -71,40 +71,30 @@
     {% if centre.activeAcademicYear is null %}
         <div class="px-6 py-16 text-center">
             {{ ux_icon('heroicons:exclamation-circle', {class: 'mx-auto h-10 w-10 text-amber-300 mb-3'}) }}
-            <p class="text-sm text-gray-500">{{ 'families.no_active_year'|trans({}, 'admin') }}</p>
+            <p class="text-sm text-gray-500">{{ 'offer.no_active_year'|trans({}, 'admin') }}</p>
         </div>
     {% else %}
-        {% set can_write       = this.canWrite %}
-        {% set families        = this.familyList %}
-        {% set family_counts   = this.familyCounts %}
-        {% set programmes      = this.programmeList %}
+        {% set can_write        = this.canWrite %}
+        {% set programmes       = this.programmeList %}
         {% set programme_counts = this.programmeCounts %}
-        {% set levels          = this.levelList %}
-        {% set level_counts    = this.levelCounts %}
-        {% set groups          = this.groupList %}
-        {% set group_counts    = this.groupCounts %}
-        {% set sel             = this.selected %}
-        {% set sel_family      = this.selectedFamily %}
-        {% set sel_programme   = this.selectedProgramme %}
-        {% set sel_level       = this.selectedLevel %}
-        {% set sel_group       = this.selectedGroup %}
-        {% set teacher_options = this.teacherOptions %}
-        {% set mobile_col      = levelId ? 'groups' : (programmeId ? 'levels' : (familyId ? 'programmes' : 'families')) %}
+        {% set levels           = this.levelList %}
+        {% set level_counts     = this.levelCounts %}
+        {% set groups           = this.groupList %}
+        {% set group_counts     = this.groupCounts %}
+        {% set sel              = this.selected %}
+        {% set sel_programme    = this.selectedProgramme %}
+        {% set sel_level        = this.selectedLevel %}
+        {% set sel_group        = this.selectedGroup %}
+        {% set teacher_options  = this.teacherOptions %}
+        {% set mobile_col       = levelId ? 'groups' : (programmeId ? 'levels' : 'programmes') %}
 
         {# ── Migas de pan (solo móvil) ─────────────────────────────────────── #}
-        {% if familyId %}
+        {% if programmeId %}
             <div class="flex flex-wrap items-center gap-1 border-b border-gray-100 px-4 py-2 text-xs text-gray-500 lg:hidden">
                 <button type="button" data-action="live#action" data-live-action-param="clearSelection"
                         class="rounded px-1.5 py-0.5 hover:bg-gray-100 hover:text-forest-700">
-                    {{ 'offer.col.families'|trans({}, 'admin') }}
+                    {{ 'offer.col.programmes'|trans({}, 'admin') }}
                 </button>
-                {% if sel_family %}
-                    {{ ux_icon('heroicons:chevron-right', {class: 'h-3 w-3 text-gray-300'}) }}
-                    <button type="button" data-action="live#action" data-live-action-param="selectFamily" data-live-id-param="{{ sel_family.id }}"
-                            class="max-w-[10rem] truncate rounded px-1.5 py-0.5 hover:bg-gray-100 hover:text-forest-700 {{ not programmeId ? 'font-semibold text-forest-700' : '' }}">
-                        {{ sel_family.name }}
-                    </button>
-                {% endif %}
                 {% if sel_programme %}
                     {{ ux_icon('heroicons:chevron-right', {class: 'h-3 w-3 text-gray-300'}) }}
                     <button type="button" data-action="live#action" data-live-action-param="selectProgramme" data-live-id-param="{{ sel_programme.id }}"
@@ -124,22 +114,12 @@
 
         {# ── Columnas ──────────────────────────────────────────────────────── #}
         <div data-loading="addClass(opacity-50 pointer-events-none)" class="transition-opacity">
-            <div class="grid grid-cols-1 divide-y divide-gray-100 lg:grid-cols-[3fr_3fr_2fr_2fr] lg:divide-x lg:divide-y-0">
-                {{ ui.column(
-                    'offer.col.families'|trans({}, 'admin'), 'heroicons:academic-cap',
-                    families, family_counts, familyId, 'selectFamily',
-                    'tree.programme_one', 'tree.programme_other',
-                    can_write, true, null,
-                    'families.empty'|trans({}, 'admin'),
-                    'addFamily', 'addFamilyName', addFamilyName, 'family.field.name'|trans({}, 'admin'),
-                    mobile_col == 'families'
-                ) }}
-
+            <div class="grid grid-cols-1 divide-y divide-gray-100 lg:grid-cols-3 lg:divide-x lg:divide-y-0">
                 {{ ui.column(
                     'offer.col.programmes'|trans({}, 'admin'), 'heroicons:rectangle-stack',
                     programmes, programme_counts, programmeId, 'selectProgramme',
                     'tree.level_one', 'tree.level_other',
-                    can_write, sel_family is not null, 'offer.placeholder.programmes'|trans({}, 'admin'),
+                    can_write, true, null,
                     'programmes.empty'|trans({}, 'admin'),
                     'addProgramme', 'addProgrammeName', addProgrammeName, 'programmes.field.name_placeholder'|trans({}, 'admin'),
                     mobile_col == 'programmes'
@@ -227,9 +207,9 @@
             {# ── Panel de detalle ──────────────────────────────────────────── #}
             {% if sel %}
                 {% set type = sel.type %}
-                {% set title_keys   = {family: 'family.edit.title', programme: 'programme.edit.title', level: 'level.edit.title', group: 'group.edit.title'} %}
-                {% set name_keys    = {family: 'family.field.name', programme: 'programme.field.name', level: 'level.field.name', group: 'group.field.name'} %}
-                {% set confirm_keys = {family: 'families.delete_confirm', programme: 'programmes.delete_confirm', level: 'levels.delete_confirm', group: 'groups.delete_confirm'} %}
+                {% set title_keys   = {programme: 'programme.edit.title', level: 'level.edit.title', group: 'group.edit.title'} %}
+                {% set name_keys    = {programme: 'programme.field.name', level: 'level.field.name', group: 'group.field.name'} %}
+                {% set confirm_keys = {programme: 'programmes.delete_confirm', level: 'levels.delete_confirm', group: 'groups.delete_confirm'} %}
                 <div class="border-t border-gray-200 bg-gray-50/60 px-4 py-4 sm:px-6">
                     <div class="flex items-center gap-2 mb-3">
                         {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4 text-forest-500'}) }}
@@ -238,8 +218,8 @@
 
                     {% if can_write %}
                         <form data-action="submit->live#action:prevent" data-live-action-param="saveDetail"
-                              class="grid grid-cols-1 gap-3 {{ type != 'family' ? 'sm:grid-cols-3' : '' }}">
-                            <div class="{{ type != 'family' ? 'sm:col-span-1' : '' }}">
+                              class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            <div class="sm:col-span-1">
                                 <label class="mb-1 block text-xs font-medium text-gray-600">{{ name_keys[type]|trans({}, 'admin') }}</label>
                                 <input type="text"
                                        data-model="norender|editName"
@@ -269,20 +249,7 @@
                                 </div>
                             {% endif %}
 
-                            {# ── Personal: jefatura / coordinación / docentes ── #}
-                            {% if type == 'family' %}
-                                <div class="border-t border-gray-100 pt-4">
-                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'family.field.head'|trans({}, 'admin') }}</label>
-                                    <select id="staff-head" class="js-staff-select w-full"
-                                            data-staff-action="setFamilyHead" data-staff-arg="teacherId"
-                                            data-placeholder="{{ 'family.field.head_help'|trans({}, 'admin') }}">
-                                        <option value="">—</option>
-                                        {% for t in teacher_options %}
-                                            <option value="{{ t.id.toRfc4122 }}" {{ sel_family.head and sel_family.head.id.toRfc4122 == t.id.toRfc4122 ? 'selected' : '' }}>{{ t.name.lastName }}, {{ t.name.firstName }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            {% elseif type == 'group' %}
+                            {% if type == 'group' %}
                                 {% set teacher_ids = [] %}
                                 {% for te in sel_group.teachers %}{% set teacher_ids = teacher_ids|merge([te.id.toRfc4122]) %}{% endfor %}
                                 <div class="border-t border-gray-100 pt-4 sm:col-span-3">
@@ -330,7 +297,7 @@
                         </form>
                     {% else %}
                         <p class="text-sm text-gray-700">{{ editName }}</p>
-                        {% if type != 'family' and editDetails %}<p class="mt-1 text-xs text-gray-500">{{ editDetails }}</p>{% endif %}
+                        {% if editDetails %}<p class="mt-1 text-xs text-gray-500">{{ editDetails }}</p>{% endif %}
                     {% endif %}
                 </div>
             {% endif %}

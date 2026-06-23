@@ -8,7 +8,6 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Teacher;
@@ -204,33 +203,15 @@ class EducationalCentreRepositoryTest extends RepositoryTestCase
         self::assertCount(0, $results);
     }
 
-    public function testFindAccessibleByTeacherReturnsCentreWhenTeacherIsFamilyHead(): void
-    {
-        $centre  = $this->makeCentre('41000020');
-        $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $family  = (new ProfessionalFamily())->setName('Informatica')->setAcademicYear($year)->setHead(null);
-        $teacher = $this->makeTeacher('family.head');
-        $this->persist($centre, $year, $family, $teacher);
-
-        $family->setHead($teacher);
-        $this->flush();
-
-        $results = $this->repo->findAccessibleByTeacher($teacher);
-
-        self::assertCount(1, $results);
-        self::assertSame($centre->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
-    }
-
     public function testFindAccessibleByTeacherReturnsCentreWhenTeacherIsGroupTutor(): void
     {
         $centre  = $this->makeCentre('41000022');
         $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $family  = (new ProfessionalFamily())->setName('Informatica')->setAcademicYear($year);
-        $prog    = (new Programme())->setName('DAM')->setAcademicYear($year)->setProfessionalFamily($family);
+        $prog    = (new Programme())->setName('DAM')->setAcademicYear($year);
         $py      = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
         $teacher = $this->makeTeacher('tutor.one');
         $group   = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $this->persist($centre, $year, $family, $prog, $py, $teacher, $group);
+        $this->persist($centre, $year, $prog, $py, $teacher, $group);
 
         $group->addTutor($teacher);
         $this->flush();
@@ -259,12 +240,11 @@ class EducationalCentreRepositoryTest extends RepositoryTestCase
     {
         $centre  = $this->makeCentre('41000025');
         $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $family  = (new ProfessionalFamily())->setName('Informatica')->setAcademicYear($year);
-        $prog    = (new Programme())->setName('DAM')->setAcademicYear($year)->setProfessionalFamily($family);
+        $prog    = (new Programme())->setName('DAM')->setAcademicYear($year);
         $py      = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
         $teacher = $this->makeTeacher('teacher.group.two');
         $group   = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $this->persist($centre, $year, $family, $prog, $py, $teacher, $group);
+        $this->persist($centre, $year, $prog, $py, $teacher, $group);
         $group->addTeacher($teacher);
         $this->flush();
 

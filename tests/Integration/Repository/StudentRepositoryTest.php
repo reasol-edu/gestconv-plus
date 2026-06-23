@@ -8,7 +8,6 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Student;
@@ -194,26 +193,6 @@ class StudentRepositoryTest extends RepositoryTestCase
         self::assertSame(3, $this->repo->countByActiveYear($centre, $centreAdmin));
     }
 
-    public function testCountByActiveYearFamilyHeadSeesFamilyStudents(): void
-    {
-        [$centre, $year, $groupA, $groupB, , $familyA] = $this->makeTwoProgrammeChain('41001005');
-
-        $s1 = $this->makeStudent('ST001'); $s2 = $this->makeStudent('ST002');
-        $s3 = $this->makeStudent('ST003');
-        $this->persist($s1, $s2, $s3);
-        $s1->addGroup($groupA); $s2->addGroup($groupA); $s3->addGroup($groupB);
-        $this->flush();
-
-        $head = $this->makeTeacher('familyhead');
-        $year->addTeacher($head);
-        $familyA->setHead($head);
-        $this->persist($head);
-        $this->flush();
-
-        // familyA only has progA → groupA, so head sees 2 students
-        self::assertSame(2, $this->repo->countByActiveYear($centre, $head));
-    }
-
     public function testCountByActiveYearGroupTeacherSeesProgrammeStudents(): void
     {
         // Teacher in groupA2 (second group of progA) must see ALL students of progA,
@@ -262,19 +241,18 @@ class StudentRepositoryTest extends RepositoryTestCase
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
-     * Builds and persists Centre → Year → Family → Programme → ProgrammeYear → Group.
+     * Builds and persists Centre → Year → Programme → ProgrammeYear → Group.
      *
      * @return array{EducationalCentre, AcademicYear, Group}
      */
     private function makeGroupChain(string $centreCode): array
     {
-        $centre  = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
-        $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $family  = (new ProfessionalFamily())->setName('Informatica')->setAcademicYear($year);
-        $prog    = (new Programme())->setName('DAM')->setAcademicYear($year)->setProfessionalFamily($family);
-        $py      = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
-        $group   = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $this->persist($centre, $year, $family, $prog, $py, $group);
+        $centre = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
+        $year   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
+        $prog   = (new Programme())->setName('DAM')->setAcademicYear($year);
+        $py     = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
+        $group  = (new Group())->setName('DAM1A')->setProgrammeYear($py);
+        $this->persist($centre, $year, $prog, $py, $group);
         return [$centre, $year, $group];
     }
 
@@ -294,30 +272,26 @@ class StudentRepositoryTest extends RepositoryTestCase
     /**
      * Builds and persists:
      *   Centre → Year
-     *     FamilyA → ProgrammeA → ProgrammeYearA → GroupA
-     *     FamilyB → ProgrammeB → ProgrammeYearB → GroupB
+     *     ProgrammeA → ProgrammeYearA → GroupA
+     *     ProgrammeB → ProgrammeYearB → GroupB
      *
-     * Returns [centre, year, groupA, groupB, programmeA, familyA].
-     *
-     * @return array{EducationalCentre, AcademicYear, Group, Group, Programme, ProfessionalFamily}
+     * @return array{EducationalCentre, AcademicYear, Group, Group, Programme}
      */
     private function makeTwoProgrammeChain(string $centreCode): array
     {
-        $centre  = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
-        $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
+        $centre = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
+        $year   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
         $centre->setActiveAcademicYear($year);
 
-        $familyA = (new ProfessionalFamily())->setName('FamiliaA')->setAcademicYear($year);
-        $progA   = (new Programme())->setName('ProgA')->setAcademicYear($year)->setProfessionalFamily($familyA);
-        $pyA     = (new ProgrammeYear())->setName('1.º ProgA')->setProgramme($progA);
-        $groupA  = (new Group())->setName('GA')->setProgrammeYear($pyA);
+        $progA  = (new Programme())->setName('ProgA')->setAcademicYear($year);
+        $pyA    = (new ProgrammeYear())->setName('1.º ProgA')->setProgramme($progA);
+        $groupA = (new Group())->setName('GA')->setProgrammeYear($pyA);
 
-        $familyB = (new ProfessionalFamily())->setName('FamiliaB')->setAcademicYear($year);
-        $progB   = (new Programme())->setName('ProgB')->setAcademicYear($year)->setProfessionalFamily($familyB);
-        $pyB     = (new ProgrammeYear())->setName('1.º ProgB')->setProgramme($progB);
-        $groupB  = (new Group())->setName('GB')->setProgrammeYear($pyB);
+        $progB  = (new Programme())->setName('ProgB')->setAcademicYear($year);
+        $pyB    = (new ProgrammeYear())->setName('1.º ProgB')->setProgramme($progB);
+        $groupB = (new Group())->setName('GB')->setProgrammeYear($pyB);
 
-        $this->persist($centre, $year, $familyA, $progA, $pyA, $groupA, $familyB, $progB, $pyB, $groupB);
-        return [$centre, $year, $groupA, $groupB, $progA, $familyA];
+        $this->persist($centre, $year, $progA, $pyA, $groupA, $progB, $pyB, $groupB);
+        return [$centre, $year, $groupA, $groupB, $progA];
     }
 }

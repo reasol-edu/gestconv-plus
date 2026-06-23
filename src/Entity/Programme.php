@@ -25,10 +25,6 @@ class Programme
     #[ORM\JoinColumn(nullable: false)]
     private AcademicYear $academicYear;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ProfessionalFamily $professionalFamily;
-
     public function getId(): Uuid
     {
         return $this->id;
@@ -69,17 +65,4 @@ class Programme
 
         return $this;
     }
-
-    public function getProfessionalFamily(): ProfessionalFamily
-    {
-        return $this->professionalFamily;
-    }
-
-    public function setProfessionalFamily(ProfessionalFamily $professionalFamily): static
-    {
-        $this->professionalFamily = $professionalFamily;
-
-        return $this;
-    }
-
 }

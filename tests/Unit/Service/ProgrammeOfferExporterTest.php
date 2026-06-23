@@ -7,37 +7,32 @@ namespace App\Tests\Unit\Service;
 use App\Entity\AcademicYear;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Teacher;
 use App\Repository\GroupRepository;
-use App\Repository\ProfessionalFamilyRepository;
 use App\Repository\ProgrammeRepository;
 use App\Repository\ProgrammeYearRepository;
-use App\Service\OfertaFormativaExporter;
+use App\Service\ProgrammeOfferExporter;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Uuid;
 
-class OfertaFormativaExporterTest extends TestCase
+class ProgrammeOfferExporterTest extends TestCase
 {
-    private ProfessionalFamilyRepository&Stub $familyRepo;
     private ProgrammeRepository&Stub $programmeRepo;
     private ProgrammeYearRepository&Stub $levelRepo;
     private GroupRepository&Stub $groupRepo;
-    private OfertaFormativaExporter $exporter;
+    private ProgrammeOfferExporter $exporter;
     private AcademicYear $year;
 
     protected function setUp(): void
     {
-        $this->familyRepo    = $this->createStub(ProfessionalFamilyRepository::class);
         $this->programmeRepo = $this->createStub(ProgrammeRepository::class);
         $this->levelRepo     = $this->createStub(ProgrammeYearRepository::class);
         $this->groupRepo     = $this->createStub(GroupRepository::class);
 
-        $this->exporter = new OfertaFormativaExporter(
-            $this->familyRepo,
+        $this->exporter = new ProgrammeOfferExporter(
             $this->programmeRepo,
             $this->levelRepo,
             $this->groupRepo,
@@ -50,7 +45,7 @@ class OfertaFormativaExporterTest extends TestCase
 
     public function testExportContainsAcademicYearName(): void
     {
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([]);
+        $this->programmeRepo->method('findByAcademicYearOrdered')->willReturn([]);
 
         $data = $this->exporter->export($this->year);
 
@@ -59,7 +54,7 @@ class OfertaFormativaExporterTest extends TestCase
 
     public function testExportContainsExportedAtTimestamp(): void
     {
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([]);
+        $this->programmeRepo->method('findByAcademicYearOrdered')->willReturn([]);
 
         $data = $this->exporter->export($this->year);
 
@@ -67,143 +62,100 @@ class OfertaFormativaExporterTest extends TestCase
         self::assertNotEmpty($data['exported_at']);
     }
 
-    public function testExportReturnsEmptyFamiliesWhenNoneExist(): void
+    public function testExportReturnsEmptyProgrammesWhenNoneExist(): void
     {
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([]);
+        $this->programmeRepo->method('findByAcademicYearOrdered')->willReturn([]);
 
         $data = $this->exporter->export($this->year);
 
-        self::assertSame([], $data['families']);
-    }
-
-    public function testExportIncludesFamilyNameAndNullHead(): void
-    {
-        $family = $this->makeFamily('Informática', null);
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([$family]);
-        $this->programmeRepo->method('findByFamilyOrderedByName')->willReturn([]);
-
-        $data = $this->exporter->export($this->year);
-
-        self::assertCount(1, $data['families']);
-        self::assertSame('Informática', $data['families'][0]['name']);
-        self::assertNull($data['families'][0]['head']);
-    }
-
-    public function testExportIncludesFamilyHeadUsername(): void
-    {
-        $head   = $this->makeTeacher('jefa.dpto');
-        $family = $this->makeFamily('Informática', $head);
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([$family]);
-        $this->programmeRepo->method('findByFamilyOrderedByName')->willReturn([]);
-
-        $data = $this->exporter->export($this->year);
-
-        self::assertSame('jefa.dpto', $data['families'][0]['head']);
+        self::assertSame([], $data['programmes']);
     }
 
     public function testExportIncludesProgrammeWithDetails(): void
     {
-        $family    = $this->makeFamily('Informática', null);
-        $programme = $this->makeProgramme('DAW', 'Desarrollo de aplicaciones web', $family);
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([$family]);
-        $this->programmeRepo->method('findByFamilyOrderedByName')->willReturn([$programme]);
+        $programme = $this->makeProgramme('DAW', 'Desarrollo de aplicaciones web');
+        $this->programmeRepo->method('findByAcademicYearOrdered')->willReturn([$programme]);
         $this->levelRepo->method('findByProgrammeOrderedByName')->willReturn([]);
 
         $data = $this->exporter->export($this->year);
 
-        $prog = $data['families'][0]['programmes'][0];
+        $prog = $data['programmes'][0];
         self::assertSame('DAW', $prog['name']);
         self::assertSame('Desarrollo de aplicaciones web', $prog['details']);
     }
 
     public function testExportIncludesLevelAndGroup(): void
     {
-        $family    = $this->makeFamily('Informática', null);
-        $programme = $this->makeProgramme('DAW', null, $family);
+        $programme = $this->makeProgramme('DAW', null);
         $level     = $this->makeLevel('1º DAW', null, $programme);
         $group     = $this->makeGroup('DAW1A', null, $level, [], []);
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([$family]);
-        $this->programmeRepo->method('findByFamilyOrderedByName')->willReturn([$programme]);
+        $this->programmeRepo->method('findByAcademicYearOrdered')->willReturn([$programme]);
         $this->levelRepo->method('findByProgrammeOrderedByName')->willReturn([$level]);
         $this->groupRepo->method('findByLevelOrderedByName')->willReturn([$group]);
 
         $data = $this->exporter->export($this->year);
 
-        $lvl = $data['families'][0]['programmes'][0]['levels'][0];
+        $lvl = $data['programmes'][0]['levels'][0];
         self::assertSame('1º DAW', $lvl['name']);
         self::assertSame('DAW1A', $lvl['groups'][0]['name']);
     }
 
     public function testExportIncludesGroupTeacherAndTutorUsernames(): void
     {
-        $t1     = $this->makeTeacher('teacher.one');
-        $t2     = $this->makeTeacher('tutor.one');
-        $family = $this->makeFamily('Informática', null);
-        $prog   = $this->makeProgramme('DAW', null, $family);
-        $level  = $this->makeLevel('1º DAW', null, $prog);
-        $group  = $this->makeGroup('DAW1A', null, $level, [$t1], [$t2]);
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([$family]);
-        $this->programmeRepo->method('findByFamilyOrderedByName')->willReturn([$prog]);
+        $t1    = $this->makeTeacher('teacher.one');
+        $t2    = $this->makeTeacher('tutor.one');
+        $prog  = $this->makeProgramme('DAW', null);
+        $level = $this->makeLevel('1º DAW', null, $prog);
+        $group = $this->makeGroup('DAW1A', null, $level, [$t1], [$t2]);
+        $this->programmeRepo->method('findByAcademicYearOrdered')->willReturn([$prog]);
         $this->levelRepo->method('findByProgrammeOrderedByName')->willReturn([$level]);
         $this->groupRepo->method('findByLevelOrderedByName')->willReturn([$group]);
 
         $data = $this->exporter->export($this->year);
 
-        $grp = $data['families'][0]['programmes'][0]['levels'][0]['groups'][0];
+        $grp = $data['programmes'][0]['levels'][0]['groups'][0];
         self::assertSame(['teacher.one'], $grp['teachers']);
         self::assertSame(['tutor.one'], $grp['tutors']);
     }
 
     public function testExportSortsGroupTeachersAndTutors(): void
     {
-        $family = $this->makeFamily('Informática', null);
-        $prog   = $this->makeProgramme('DAW', null, $family);
-        $level  = $this->makeLevel('1º DAW', null, $prog);
-        $group  = $this->makeGroup('DAW1A', null, $level,
+        $prog  = $this->makeProgramme('DAW', null);
+        $level = $this->makeLevel('1º DAW', null, $prog);
+        $group = $this->makeGroup('DAW1A', null, $level,
             [$this->makeTeacher('z.teacher'), $this->makeTeacher('a.teacher')],
             [$this->makeTeacher('z.tutor'), $this->makeTeacher('a.tutor')],
         );
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([$family]);
-        $this->programmeRepo->method('findByFamilyOrderedByName')->willReturn([$prog]);
+        $this->programmeRepo->method('findByAcademicYearOrdered')->willReturn([$prog]);
         $this->levelRepo->method('findByProgrammeOrderedByName')->willReturn([$level]);
         $this->groupRepo->method('findByLevelOrderedByName')->willReturn([$group]);
 
         $data = $this->exporter->export($this->year);
 
-        $grp = $data['families'][0]['programmes'][0]['levels'][0]['groups'][0];
+        $grp = $data['programmes'][0]['levels'][0]['groups'][0];
         self::assertSame(['a.teacher', 'z.teacher'], $grp['teachers']);
         self::assertSame(['a.tutor', 'z.tutor'], $grp['tutors']);
     }
 
     public function testExportGroupNullDetails(): void
     {
-        $family = $this->makeFamily('Informática', null);
-        $prog   = $this->makeProgramme('DAW', null, $family);
-        $level  = $this->makeLevel('1º DAW', null, $prog);
-        $group  = $this->makeGroup('DAW1A', null, $level, [], []);
-        $this->familyRepo->method('findByAcademicYearFiltered')->willReturn([$family]);
-        $this->programmeRepo->method('findByFamilyOrderedByName')->willReturn([$prog]);
+        $prog  = $this->makeProgramme('DAW', null);
+        $level = $this->makeLevel('1º DAW', null, $prog);
+        $group = $this->makeGroup('DAW1A', null, $level, [], []);
+        $this->programmeRepo->method('findByAcademicYearOrdered')->willReturn([$prog]);
         $this->levelRepo->method('findByProgrammeOrderedByName')->willReturn([$level]);
         $this->groupRepo->method('findByLevelOrderedByName')->willReturn([$group]);
 
         $data = $this->exporter->export($this->year);
 
-        self::assertNull($data['families'][0]['programmes'][0]['levels'][0]['groups'][0]['details']);
+        self::assertNull($data['programmes'][0]['levels'][0]['groups'][0]['details']);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function makeFamily(string $name, ?Teacher $head): ProfessionalFamily
+    private function makeProgramme(string $name, ?string $details): Programme
     {
-        $family = (new ProfessionalFamily())->setName($name)->setAcademicYear($this->year)->setHead($head);
-        $this->setId($family);
-
-        return $family;
-    }
-
-    private function makeProgramme(string $name, ?string $details, ProfessionalFamily $family): Programme
-    {
-        $prog = (new Programme())->setName($name)->setDetails($details)->setProfessionalFamily($family)->setAcademicYear($this->year);
+        $prog = (new Programme())->setName($name)->setDetails($details)->setAcademicYear($this->year);
         $this->setId($prog);
 
         return $prog;

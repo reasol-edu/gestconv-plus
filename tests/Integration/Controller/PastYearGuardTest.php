@@ -102,39 +102,39 @@ class PastYearGuardTest extends ControllerTestCase
         self::assertSelectorNotExists('a[href*="/importar"]');
     }
 
-    // ── ProfessionalFamilyController ──────────────────────────────────────────
+    // ── ProgrammeOfferController ──────────────────────────────────────────────
 
-    #[DataProvider('provideFamilyWriteRoutes')]
-    public function testFamilyWriteReturns403WhenViewingPastYear(string $method, string $pathSuffix): void
+    #[DataProvider('provideOfferWriteRoutes')]
+    public function testOfferWriteReturns403WhenViewingPastYear(string $method, string $pathSuffix): void
     {
         [$admin, $centre, , $pastYear] = $this->makeCentreWithTwoYears();
         $this->loginAs($admin, $centre);
         $this->viewPastYear($pastYear);
 
-        $this->client->request($method, '/admin/centros/' . $centre->getId()->toRfc4122() . '/familias' . $pathSuffix);
+        $this->client->request($method, '/admin/centros/' . $centre->getId()->toRfc4122() . '/offer' . $pathSuffix);
 
         self::assertResponseStatusCodeSame(403);
     }
 
     /** @return iterable<string, array{string, string}> */
-    public static function provideFamilyWriteRoutes(): iterable
+    public static function provideOfferWriteRoutes(): iterable
     {
-        yield 'import GET' => ['GET', '/importar'];
+        yield 'import GET' => ['GET', '/import'];
     }
 
-    public function testFamilyIndexHidesWriteButtonsAndKeepsExportWhenViewingPastYear(): void
+    public function testOfferIndexHidesWriteButtonsAndKeepsExportWhenViewingPastYear(): void
     {
         [$admin, $centre, , $pastYear] = $this->makeCentreWithTwoYears();
         $this->loginAs($admin, $centre);
         $this->viewPastYear($pastYear);
 
-        $crawler = $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/familias');
+        $crawler = $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/offer');
 
         self::assertResponseIsSuccessful();
         // Write button (import) hidden
-        self::assertSelectorNotExists('a[href*="/importar"]');
+        self::assertSelectorNotExists('a[href*="/import"]');
         // Export (read-only) remains visible
-        self::assertSelectorExists('a[href*="/exportar"]');
+        self::assertSelectorExists('a[href*="/export"]');
     }
 
     // ── DashboardController ───────────────────────────────────────────────────
@@ -186,12 +186,12 @@ class PastYearGuardTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
-    public function testFamilyWriteSucceedsWhenViewingActiveYear(): void
+    public function testOfferWriteSucceedsWhenViewingActiveYear(): void
     {
         [$admin, $centre] = $this->makeCentreWithTwoYears();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/familias/importar');
+        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/offer/import');
 
         self::assertResponseIsSuccessful();
     }

@@ -8,7 +8,6 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Student;
@@ -67,10 +66,9 @@ class SearchControllerTest extends ControllerTestCase
     {
         $centre = (new EducationalCentre())->setCode($code)->setName('IES ' . $code)->setCity('Sevilla');
         $year   = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $fam    = (new ProfessionalFamily())->setName('Informática')->setAcademicYear($year);
-        $prog   = (new Programme())->setName('DAW')->setAcademicYear($year)->setProfessionalFamily($fam);
+        $prog   = (new Programme())->setName('DAW')->setAcademicYear($year);
         $admin  = (new Teacher(new PersonName('Admin', 'Centro')))->setUsername($username);
-        $this->persist($centre, $year, $fam, $prog, $admin);
+        $this->persist($centre, $year, $prog, $admin);
         $centre->setActiveAcademicYear($year);
         $centre->addAdmin($admin);
         $this->flush();

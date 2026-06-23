@@ -8,7 +8,6 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Teacher;
@@ -401,9 +400,8 @@ class TeacherRepositoryTest extends RepositoryTestCase
     {
         $centre = $this->makeCentre($centreCode);
         $year   = $this->makeYear($centre, '2024-2025');
-        $family = (new ProfessionalFamily())->setName('Informatica')->setAcademicYear($year);
-        $prog   = (new Programme())->setName('DAM')->setAcademicYear($year)->setProfessionalFamily($family);
-        $this->persist($centre, $year, $family, $prog);
+        $prog   = (new Programme())->setName('DAM')->setAcademicYear($year);
+        $this->persist($centre, $year, $prog);
         return $prog;
     }
 }

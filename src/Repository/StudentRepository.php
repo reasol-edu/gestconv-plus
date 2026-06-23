@@ -50,8 +50,7 @@ class StudentRepository extends ServiceEntityRepository
             ->join('s.groups', 'g')
             ->join('g.programmeYear', 'py')
             ->join('py.programme', 'prog')
-            ->join('prog.professionalFamily', 'f')
-            ->join('f.academicYear', 'ay')
+            ->join('prog.academicYear', 'ay')
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid');
 
@@ -103,8 +102,7 @@ class StudentRepository extends ServiceEntityRepository
             ->join('s.groups', 'g')
             ->join('g.programmeYear', 'py')
             ->join('py.programme', 'prog')
-            ->join('prog.professionalFamily', 'f')
-            ->join('f.academicYear', 'ay')
+            ->join('prog.academicYear', 'ay')
             ->leftJoin('s.groups', 'sg')->addSelect('sg')
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid')
@@ -163,14 +161,12 @@ class StudentRepository extends ServiceEntityRepository
             ->join('s.groups', 'g')
             ->join('g.programmeYear', 'py')
             ->join('py.programme', 'prog')
-            ->join('prog.professionalFamily', 'f')
-            ->where('f.academicYear = :year')
+            ->where('prog.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid');
 
         if ($viewer !== null && !$viewer->isAdmin()) {
             $qb->andWhere($qb->expr()->orX(
                 'EXISTS(SELECT 1 FROM ' . AcademicYear::class . ' vay JOIN vay.educationalCentre vvec JOIN vvec.admins vadm WHERE vay.id = :year AND vadm.id = :viewer)',
-                'f.head = :viewer',
                 'EXISTS(SELECT 1 FROM ' . Group::class . ' vg JOIN vg.programmeYear vgpy WHERE vgpy.programme = prog AND (:viewer MEMBER OF vg.tutors OR :viewer MEMBER OF vg.teachers))',
             ))->setParameter('viewer', $viewer->getId(), 'uuid');
         }

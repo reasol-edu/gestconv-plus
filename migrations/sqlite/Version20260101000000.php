@@ -97,33 +97,16 @@ final class Version20260101000000 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_tay_teacher ON teacher_academic_year (teacher_id)');
 
         $this->addSql(<<<'SQL'
-            CREATE TABLE professional_family (
+            CREATE TABLE programme (
                 id               CHAR(36)     NOT NULL,
                 academic_year_id CHAR(36)     NOT NULL,
-                head_id          CHAR(36)     DEFAULT NULL,
                 name             VARCHAR(255) NOT NULL,
+                details          CLOB         DEFAULT NULL,
                 PRIMARY KEY(id),
-                CONSTRAINT FK_pf_year FOREIGN KEY (academic_year_id) REFERENCES academic_year(id),
-                CONSTRAINT FK_pf_head FOREIGN KEY (head_id)          REFERENCES teacher(id)
+                CONSTRAINT FK_prog_year FOREIGN KEY (academic_year_id) REFERENCES academic_year(id)
             )
         SQL);
-        $this->addSql('CREATE INDEX IDX_pf_year ON professional_family (academic_year_id)');
-        $this->addSql('CREATE INDEX IDX_pf_head ON professional_family (head_id)');
-
-        $this->addSql(<<<'SQL'
-            CREATE TABLE programme (
-                id                     CHAR(36)     NOT NULL,
-                academic_year_id       CHAR(36)     NOT NULL,
-                professional_family_id CHAR(36)     NOT NULL,
-                name                   VARCHAR(255) NOT NULL,
-                details                CLOB         DEFAULT NULL,
-                PRIMARY KEY(id),
-                CONSTRAINT FK_prog_year   FOREIGN KEY (academic_year_id)       REFERENCES academic_year(id),
-                CONSTRAINT FK_prog_family FOREIGN KEY (professional_family_id) REFERENCES professional_family(id)
-            )
-        SQL);
-        $this->addSql('CREATE INDEX IDX_prog_year   ON programme (academic_year_id)');
-        $this->addSql('CREATE INDEX IDX_prog_family ON programme (professional_family_id)');
+        $this->addSql('CREATE INDEX IDX_prog_year ON programme (academic_year_id)');
 
         $this->addSql(<<<'SQL'
             CREATE TABLE programme_year (
@@ -309,7 +292,6 @@ final class Version20260101000000 extends AbstractMigration
         $this->addSql('DROP TABLE IF EXISTS "group"');
         $this->addSql('DROP TABLE IF EXISTS programme_year');
         $this->addSql('DROP TABLE IF EXISTS programme');
-        $this->addSql('DROP TABLE IF EXISTS professional_family');
         $this->addSql('DROP TABLE IF EXISTS teacher_academic_year');
         $this->addSql('DROP TABLE IF EXISTS educational_centre_admins');
         $this->addSql('DROP TABLE IF EXISTS academic_year');

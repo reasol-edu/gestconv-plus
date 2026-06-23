@@ -4,7 +4,6 @@ namespace App\Repository;
 
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
-use App\Entity\ProfessionalFamily;
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
@@ -146,19 +145,6 @@ class EducationalCentreRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult() as $group) {
             $ec = $group->getProgrammeYear()->getProgramme()->getAcademicYear()->getEducationalCentre();
-            $merged[$ec->getId()->toRfc4122()] = $ec;
-        }
-
-        // Centres where teacher is head of a professional family
-        foreach ($this->getEntityManager()->createQueryBuilder()
-            ->select('pf')
-            ->from(ProfessionalFamily::class, 'pf')
-            ->join('pf.academicYear', 'ay')
-            ->where('pf.head = :tid')
-            ->setParameter('tid', $tid, 'uuid')
-            ->getQuery()
-            ->getResult() as $family) {
-            $ec = $family->getAcademicYear()->getEducationalCentre();
             $merged[$ec->getId()->toRfc4122()] = $ec;
         }
 
