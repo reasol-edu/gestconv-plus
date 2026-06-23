@@ -1,0 +1,34 @@
+
+###> nexo-fp ###
+# Datos persistentes (DB, caché, logs). Se crea en tiempo de ejecución.
+/data/
+# Artefactos de documentación: los genera CI y se publican en el GitHub Release.
+/docs/manual/_build.html
+/docs/manual-site/
+/docs/manual/nexo-fp-manual.pdf
+/docs/slides/nexo-fp.pdf
+# Fichero temporal con los marcadores de versión/fecha ya sustituidos (make slides).
+/docs/slides/_build.md
+# Capturas originales (con barra lateral) antes del recorte para las diapositivas.
+/docs/slides/img/_orig/
+###< nexo-fp ###
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> symfony/asset-mapper ###
+/public/assets/
+/assets/vendor/
+###< symfony/asset-mapper ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

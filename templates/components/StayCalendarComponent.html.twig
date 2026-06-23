@@ -1,0 +1,74 @@
+<div {{ attributes.defaults({class: 'rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden'}) }}>
+
+    {# ── Navigation ───────────────────────────────────────────────────────── #}
+    <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+        <button data-action="live#action" data-live-action-param="previousMonth"
+                class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 transition-colors"
+                aria-label="{{ 'prev_month'|trans({}, 'calendar') }}">
+            {{ ux_icon('heroicons:chevron-left', {class: 'h-4 w-4'}) }}
+        </button>
+        <h2 class="flex-1 text-center text-sm font-semibold text-gray-800">
+            {{ this.monthLabel }}
+        </h2>
+        <button data-action="live#action" data-live-action-param="nextMonth"
+                class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 transition-colors"
+                aria-label="{{ 'next_month'|trans({}, 'calendar') }}">
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
+        </button>
+        <button data-action="live#action" data-live-action-param="goToday"
+                class="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+            {{ 'today'|trans({}, 'calendar') }}
+        </button>
+    </div>
+
+    {# ── Day-of-week headers ───────────────────────────────────────────────── #}
+    <div class="grid grid-cols-7 border-b border-gray-100 bg-gray-50">
+        {% for key in ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'] %}
+            <div class="py-2 text-center text-xs font-medium text-gray-500">
+                {{ key|trans({}, 'calendar') }}
+            </div>
+        {% endfor %}
+    </div>
+
+    {# ── Weeks ────────────────────────────────────────────────────────────── #}
+    <div data-loading="addClass(opacity-50 pointer-events-none animate-pulse)" class="transition-opacity">
+    {% if this.weeks is empty %}
+        <div class="py-12 text-center text-sm text-gray-400">
+            {{ 'no_active_year'|trans({}, 'calendar') }}
+        </div>
+    {% else %}
+        {% for week in this.weeks %}
+            <div class="border-b border-gray-100 last:border-b-0 min-h-24 transition-colors relative
+                        {{ loop.index is even ? 'bg-gray-50' : 'bg-white' }}
+                        hover:bg-forest-50">
+
+                {# Full-height column separator lines #}
+                <div class="absolute inset-0 grid grid-cols-7 divide-x divide-gray-100 pointer-events-none z-0"
+                     aria-hidden="true">
+                    {% for i in 1..7 %}<div></div>{% endfor %}
+                </div>
+
+                {# Day numbers — top of each week row #}
+                <div class="relative z-10 grid grid-cols-7">
+                    {% for day in week.days %}
+                        <div class="py-1 px-1.5 text-right text-xs
+                                    {{ this.isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-300' }}">
+                            {% if this.isToday(day) %}
+                                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-forest-600 text-white text-xs font-bold">
+                                    {{ day.format('j') }}
+                                </span>
+                            {% else %}
+                                {{ day.format('j') }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="relative z-10 min-h-2"></div>
+
+            </div>
+        {% endfor %}
+    {% endif %}
+    </div>
+
+</div>

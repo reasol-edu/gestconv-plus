@@ -1,0 +1,158 @@
+<div {{ attributes }}>
+
+    {% set rows = this.rows %}
+
+    {% if rows is empty %}
+        <div class="flex items-center justify-center gap-2 py-10 px-6 text-center">
+            {{ ux_icon('heroicons:check-circle', {class: 'h-5 w-5 text-emerald-500'}) }}
+            <p class="text-sm text-gray-500">{{ 'settings.no_settings_for_scope'|trans({}, 'settings') }}</p>
+        </div>
+    {% else %}
+        <ul class="divide-y divide-gray-100">
+        {% for row in rows %}
+            {% set def        = row.definition %}
+            {% set key        = def.key %}
+            {% set keySlug    = key|replace({'.': '_', '-': '_'}) %}
+            {% set stored     = row.storedValue %}
+            {% set effective  = row.effectiveValue %}
+            {% set isSaved      = lastSaved == key %}
+            {% set isError      = lastError == key %}
+            {% set isLocked     = row.isLocked %}
+            {% set parentLock   = row.parentLock %}
+            {# Cuando hay candado padre, el control muestra el valor heredado de arriba #}
+            {% set displayValue = parentLock is not null ? effective : stored %}
+
+            <li class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:gap-6
+                        {{ parentLock is not null ? 'opacity-60' : '' }}">
+
+                {# ── Label + description ── #}
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900">
+                        {{ ('settings.key.' ~ keySlug ~ '.label')|trans({}, 'settings') }}
+                    </p>
+                    {% set descKey = 'settings.key.' ~ keySlug ~ '.description' %}
+                    {% set descVal = descKey|trans({}, 'settings') %}
+                    {% if descVal != descKey %}
+                        <p class="text-xs text-gray-500 mt-0.5">{{ descVal }}</p>
+                    {% endif %}
+
+                    {# ── Parent-lock notice ── #}
+                    {% if parentLock is not null %}
+                        <p class="flex items-center gap-1 text-xs text-amber-600 mt-1">
+                            {{ ux_icon('heroicons:lock-closed', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                            {{ parentLock == 'global'
+                                ? 'settings.locked_by_global'|trans({}, 'settings')
+                                : 'settings.locked_by_centre'|trans({}, 'settings') }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                {# ── Control ── #}
+                <div class="flex items-center gap-3 shrink-0">
+
+                    {% if def.type.value == 'boolean' %}
+                        <select
+                            class="rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-3 pr-8 text-sm text-gray-900
+                                   focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20
+                                   transition-colors cursor-pointer
+                                   disabled:cursor-not-allowed disabled:opacity-50"
+                            {{ parentLock is not null ? 'disabled' : '' }}
+                            data-controller="setting-save"
+                            data-action="change->setting-save#save"
+                            data-setting-key="{{ key }}">
+                            <option value="__default__" {{ displayValue is null ? 'selected' : '' }} {{ isLocked ? 'disabled' : '' }}>
+                                {{ 'settings.default_label'|trans({}, 'settings') }}
+                                ({{ effective == 'true' ? 'settings.on'|trans({}, 'settings') : 'settings.off'|trans({}, 'settings') }})
+                            </option>
+                            <option value="true"  {{ displayValue == 'true'  ? 'selected' : '' }}>
+                                {{ 'settings.on'|trans({}, 'settings') }}
+                            </option>
+                            <option value="false" {{ displayValue == 'false' ? 'selected' : '' }}>
+                                {{ 'settings.off'|trans({}, 'settings') }}
+                            </option>
+                        </select>
+
+                    {% elseif def.type.value == 'integer' %}
+                        {% if def.minValue is not null and def.maxValue is not null %}
+                            {% set intPlaceholder = effective ~ ' (' ~ def.minValue ~ '–' ~ def.maxValue ~ ')' %}
+                        {% else %}
+                            {% set intPlaceholder = effective %}
+                        {% endif %}
+
+                        <input
+                            type="number"
+                            {% if def.minValue is not null %}min="{{ def.minValue }}"{% endif %}
+                            {% if def.maxValue is not null %}max="{{ def.maxValue }}"{% endif %}
+                            value="{{ displayValue ?? '' }}"
+                            placeholder="{{ intPlaceholder }}"
+                            {{ parentLock is not null ? 'disabled' : '' }}
+                            class="w-28 rounded-lg border py-1.5 px-3 text-sm text-gray-900
+                                   placeholder-gray-400 focus:outline-none focus:ring-3 transition-colors
+                                   disabled:cursor-not-allowed disabled:opacity-50
+                                   {{ isError
+                                       ? 'border-red-400 bg-red-50 focus:border-red-400 focus:ring-red-500/20'
+                                       : 'border-gray-200 bg-gray-50 focus:border-forest-500 focus:ring-forest-500/20' }}"
+                            data-controller="setting-save"
+                            data-action="change->setting-save#save"
+                            data-setting-key="{{ key }}">
+
+                    {% else %}
+                        <input
+                            type="text"
+                            {% if def.minValue is not null %}minlength="{{ def.minValue }}"{% endif %}
+                            {% if def.maxValue is not null %}maxlength="{{ def.maxValue }}"{% endif %}
+                            value="{{ displayValue ?? '' }}"
+                            placeholder="{{ 'settings.default_label'|trans({}, 'settings') }}: {{ effective }}"
+                            {{ parentLock is not null ? 'disabled' : '' }}
+                            class="w-48 rounded-lg border py-1.5 px-3 text-sm text-gray-900
+                                   placeholder-gray-400 focus:outline-none focus:ring-3 transition-colors
+                                   disabled:cursor-not-allowed disabled:opacity-50
+                                   {{ isError
+                                       ? 'border-red-400 bg-red-50 focus:border-red-400 focus:ring-red-500/20'
+                                       : 'border-gray-200 bg-gray-50 focus:border-forest-500 focus:ring-forest-500/20' }}"
+                            data-controller="setting-save"
+                            data-action="change->setting-save#save"
+                            data-setting-key="{{ key }}">
+                    {% endif %}
+
+                    {# ── Lock toggle (global and centre scopes) ── #}
+                    {% if parentLock is null and scope != 'teacher' %}
+                        {% set lockDisabled = stored is null %}
+                        <button type="button"
+                                class="transition-colors {{ isLocked ? 'text-amber-500 hover:text-amber-600' : (lockDisabled ? 'text-gray-200 cursor-not-allowed' : 'text-gray-300 hover:text-amber-400') }}"
+                                {{ lockDisabled ? 'disabled' : '' }}
+                                data-action="click->live#action:prevent"
+                                data-live-action-param="toggleLock"
+                                data-live-key-param="{{ key }}"
+                                title="{{ isLocked ? 'settings.unlock.title'|trans({}, 'settings') : (lockDisabled ? 'settings.lock.no_value_title'|trans({}, 'settings') : 'settings.lock.title'|trans({}, 'settings')) }}">
+                            {{ ux_icon(isLocked ? 'heroicons:lock-closed' : 'heroicons:lock-open', {class: 'h-4 w-4'}) }}
+                        </button>
+                    {% endif %}
+
+                    {# ── Saved feedback ── #}
+                    {% if isSaved %}
+                        <span class="flex items-center gap-1 text-xs font-medium text-emerald-600">
+                            {{ ux_icon('heroicons:check', {class: 'h-3.5 w-3.5'}) }}
+                            {{ 'settings.saved'|trans({}, 'settings') }}
+                        </span>
+                    {% endif %}
+
+                    {# ── Error feedback ── #}
+                    {% if isError %}
+                        <span class="flex items-center gap-1 text-xs font-medium text-red-600">
+                            {{ ux_icon('heroicons:exclamation-circle', {class: 'h-3.5 w-3.5'}) }}
+                            {% if def.type.value == 'integer' and def.minValue is not null and def.maxValue is not null %}
+                                {{ 'settings.error.integer_range'|trans({'%min%': def.minValue, '%max%': def.maxValue}, 'settings') }}
+                            {% else %}
+                                {{ 'settings.error.invalid_value'|trans({}, 'settings') }}
+                            {% endif %}
+                        </span>
+                    {% endif %}
+
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+</div>

@@ -1,0 +1,68 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'page_title'|trans({}, 'dashboard') }}{% endblock %}
+
+{% block content %}
+{% set active_centre  = active_centre() %}
+{% set active_year    = active_centre ? active_centre.activeAcademicYear : null %}
+{% set vy             = view_year() %}
+{% set viewing_past   = is_viewing_past_year() %}
+
+<div class="px-6 py-8 max-w-7xl mx-auto space-y-8">
+
+    {# ── Encabezado ─────────────────────────────────────────────────────────── #}
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {{ 'greeting'|trans({'%name%': app.user.name.firstName}, 'dashboard') }}
+        </h1>
+        {% if vy %}
+            <p class="mt-1 text-sm {{ viewing_past ? 'text-amber-600 font-medium' : 'text-gray-500' }}">
+                {{ 'summary_for'|trans({'%year%': vy.name}, 'dashboard') }}
+            </p>
+        {% elseif active_year is null %}
+            <p class="mt-1 text-sm text-amber-600">
+                {{ 'no_academic_year'|trans({}, 'dashboard') }}
+            </p>
+        {% endif %}
+    </div>
+
+    {% if active_year is null %}
+    <div class="rounded-2xl border border-amber-200 bg-amber-50 px-6 py-8 text-center">
+        {{ ux_icon('heroicons:exclamation-triangle', {class: 'mx-auto h-8 w-8 text-amber-400 mb-2'}) }}
+        <p class="text-sm font-medium text-amber-800">{{ 'no_academic_year'|trans({}, 'dashboard') }}</p>
+    </div>
+    {% else %}
+
+    {# ── Accesos rápidos ───────────────────────────────────────────────────── #}
+    {% set can_students_section = is_granted('educational_centre.section', active_centre) %}
+    {% if not viewing_past and can_students_section %}
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ path('app_admin_students_import', {centreId: active_centre.id}) }}"
+               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-xs hover:border-forest-300 hover:text-forest-700 transition-colors">
+                {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-3.5 w-3.5'}) }}
+                {{ 'action_import_students'|trans({}, 'dashboard') }}
+            </a>
+        </div>
+    {% endif %}
+
+    {# ── Tarjeta de alumnos ────────────────────────────────────────────────── #}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {% set students_url = can_students_section ? path('app_admin_students_index', {centreId: active_centre.id}) : null %}
+        {% if students_url %}<a href="{{ students_url }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">{% else %}<div class="col-span-1 rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">{% endif %}
+            <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {{ 'students'|trans({}, 'dashboard') }}
+                </p>
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-forest-50 text-forest-600">
+                    {{ ux_icon('heroicons:academic-cap', {class: 'h-4.5 w-4.5'}) }}
+                </span>
+            </div>
+            <p class="mt-3 text-3xl font-bold text-gray-900 tabular-nums">{{ studentCount }}</p>
+            <p class="mt-1 text-xs text-gray-500">{{ 'students_enrolled'|trans({}, 'dashboard') }}</p>
+        {% if students_url %}</a>{% else %}</div>{% endif %}
+    </div>
+
+    {% endif %}
+
+</div>
+{% endblock %}

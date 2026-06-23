@@ -1,0 +1,68 @@
+<?php
+namespace App\Entity;
+
+use App\Repository\ProfessionalFamilyRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+
+#[ORM\Entity(repositoryClass: ProfessionalFamilyRepository::class)]
+class ProfessionalFamily
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
+    #[ORM\Column(type: 'uuid')]
+    private Uuid $id;
+
+    #[ORM\Column(length: 255)]
+    private string $name;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private AcademicYear $academicYear;
+
+    #[ORM\ManyToOne]
+    private ?Teacher $head = null;
+
+
+    public function getId(): Uuid
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getAcademicYear(): AcademicYear
+    {
+        return $this->academicYear;
+    }
+
+    public function setAcademicYear(AcademicYear $academicYear): static
+    {
+        $this->academicYear = $academicYear;
+
+        return $this;
+    }
+
+    public function getHead(): ?Teacher
+    {
+        return $this->head;
+    }
+
+    public function setHead(?Teacher $head): static
+    {
+        $this->head = $head;
+
+        return $this;
+    }
+}

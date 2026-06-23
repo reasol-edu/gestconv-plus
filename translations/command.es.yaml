@@ -1,0 +1,26 @@
+create_admin.description: 'Crea una cuenta de docente con privilegios de administrador global'
+create_admin.argument.username: 'Nombre de usuario'
+create_admin.argument.password: 'Contraseña'
+create_admin.error.existing_user: 'Ya existe un docente con el nombre de usuario "%username%".'
+create_admin.success: 'Administrador "%username%" creado correctamente.'
+
+create_centre.description: 'Crea un nuevo centro educativo'
+create_centre.argument.code: 'Código de centro (ej: 23700281)'
+create_centre.argument.name: 'Nombre del centro'
+create_centre.argument.city: 'Localidad'
+create_centre.ask.code: 'Código de centro'
+create_centre.ask.name: 'Nombre del centro'
+create_centre.ask.city: 'Localidad'
+create_centre.error.existing_code: 'Ya existe un centro con el código "%code%".'
+create_centre.success: 'Centro educativo "%name%" (%code%) creado con el curso académico "%year%".'
+
+send_reminders.description: 'Envía el recordatorio de puestos registrados sin firmar en estancias próximas a comenzar'
+send_reminders.option.days: 'Días de antelación (sobre-escribe el ajuste por centro)'
+send_reminders.error.days_invalid: 'El número de días debe ser un entero mayor o igual que 1.'
+send_reminders.success: '{0} Ningún recordatorio que enviar.|{1} Recordatorio enviado a 1 destinatario/a.|]1,Inf[ Recordatorios enviados a %count% destinatarios/as.'
+
+setup.description: 'Inicializa la aplicación con datos por defecto si la base de datos está vacía.'
+setup.skipped: 'La base de datos ya contiene datos. Se omite la inicialización.'
+setup.success: 'Aplicación inicializada: usuario "admin" y centro "IES Test" (23999999, Linares) creados.'
+
+field.required: 'Este campo es obligatorio.'
