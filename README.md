@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/static/logo.svg" alt="Nexo FP" width="120">
+  <img src="public/static/logo.svg" alt="GestConv+" width="120">
 </p>
 
-<h1 align="center">Nexo FP</h1>
+<h1 align="center">GestConv+</h1>
 
 <p align="center">
   Plataforma web para gestionar la planificación y asignación de las estancias del alumnado en empresas de la FFEOE
@@ -10,7 +10,7 @@
 
 <p align="center">
   <strong>v2.5.0</strong> &nbsp;·&nbsp;
-  <a href="https://reasol-edu.github.io/nexo-fp/">Documentación</a> &nbsp;·&nbsp;
+  <a href="https://reasol-edu.github.io/gestconv-plus/">Documentación</a> &nbsp;·&nbsp;
   <a href="CHANGELOG.md">Cambios</a> &nbsp;·&nbsp;
   <a href="CONTRIBUTING.md">Contribuir</a> &nbsp;·&nbsp;
   <a href="http://www.gnu.org/licenses/agpl.html">AGPL-3.0</a>
@@ -25,12 +25,12 @@
 ---
 
 <p align="center">
-  <img src="docs/manual/img/inicio.png" alt="Panel de inicio de Nexo FP con las métricas del curso y las estancias activas" width="800">
+  <img src="docs/manual/img/inicio.png" alt="Panel de inicio de GestConv+ con las métricas del curso y las estancias activas" width="800">
 </p>
 
 ---
 
-Nexo FP es una aplicación web desarrollada con [Symfony] que permite planificar y preparar la
+GestConv+ es una aplicación web desarrollada con [Symfony] que permite planificar y preparar la
 **Fase de Formación en Empresa u Organismo Equiparado**. Centraliza la
 información de estudiantes, empresas, puestos formativos y tutores, y permite llevar el seguimiento
 del proceso de asignación desde que se crea un puesto hasta que se registra en Séneca.
@@ -48,7 +48,7 @@ completamente separados. Cada docente selecciona el centro activo al iniciar ses
 datos de ese centro. Los administradores globales pueden gestionar todos los centros desde la
 sección **Administración**.
 
-> Nexo FP forma parte del proyecto de innovación educativa REASOL (PIN-219/23 y PIN-354/24) financiado
+> GestConv+ forma parte del proyecto de innovación educativa REASOL (PIN-219/23 y PIN-354/24) financiado
 > por la Consejería de Desarrollo Educativo y Formación Profesional de la Junta de Andalucía.
 
 Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para la guía de contribución y [CHANGELOG.md](CHANGELOG.md)
@@ -58,9 +58,9 @@ para el historial de cambios.
 
 ## ¿Solo quieres probarlo?
 
-¿No eres una persona técnica y solo quieres ver cómo funciona Nexo FP en tu propio ordenador? No
+¿No eres una persona técnica y solo quieres ver cómo funciona GestConv+ en tu propio ordenador? No
 necesitas instalar nada ni saber de informática. Entra en la
-**[página de descargas](https://github.com/reasol-edu/nexo-fp/releases)**, descarga el archivo de tu
+**[página de descargas](https://github.com/reasol-edu/gestconv-plus/releases)**, descarga el archivo de tu
 sistema (Windows, Mac o Linux), descomprímelo y haz doble clic en el script de demostración
 (`demo.bat` en Windows, `demo.command` en Mac, `demo.sh` en Linux). En unos segundos tendrás la
 aplicación funcionando con datos de ejemplo: abre tu navegador en **<http://localhost:8080>** y entra
@@ -72,29 +72,29 @@ del manual.
 
 ## Documentación
 
-La documentación detallada vive en el **[manual de Nexo FP](docs/manual/)** (`docs/manual/`), que es la
+La documentación detallada vive en el **[manual de GestConv+](docs/manual/)** (`docs/manual/`), que es la
 fuente de referencia principal. Cubre instalación, roles y permisos, el flujo de trabajo completo, la referencia
 de cada pantalla, notificaciones, ajustes, comandos de consola y despliegue.
 
 La versión web navegable de la última versión estable está publicada en
-**<https://reasol-edu.github.io/nexo-fp/>**.
+**<https://reasol-edu.github.io/gestconv-plus/>**.
 
 El manual se redacta en Markdown y se genera en dos formatos con el mismo contenido:
 
-- **PDF**: `make docs-pdf` → `docs/manual/nexo-fp-manual.pdf`.
+- **PDF**: `make docs-pdf` → `docs/manual/gestconv-plus-manual.pdf`.
 - **Web navegable** (con buscador): `make docs-web` / `make docs-serve`.
 
 Las versiones publicadas del manual (PDF), la presentación (PDF) y la web navegable (ZIP) se generan
 automáticamente en cada release y están disponibles, con el número de versión en el nombre
-(`nexo-fp-manual-vX.Y.Z.pdf`, `nexo-fp-presentacion-vX.Y.Z.pdf`, `nexo-fp-manual-web-vX.Y.Z.zip`), entre
-los activos del [GitHub Release](https://github.com/reasol-edu/nexo-fp/releases). Los comandos `make`
+(`gestconv-plus-manual-vX.Y.Z.pdf`, `gestconv-plus-presentacion-vX.Y.Z.pdf`, `gestconv-plus-manual-web-vX.Y.Z.zip`), entre
+los activos del [GitHub Release](https://github.com/reasol-edu/gestconv-plus/releases). Los comandos `make`
 anteriores sirven para previsualización local.
 
 Capítulos:
 
 | Capítulo | Contenido |
 |----------|-----------|
-| [Introducción](docs/manual/index.md) | Qué es Nexo FP y cómo usar el manual |
+| [Introducción](docs/manual/index.md) | Qué es GestConv+ y cómo usar el manual |
 | [Instalación y requisitos](docs/manual/01-instalacion-y-requisitos.md) | Modos de despliegue y requisitos |
 | [Primeros pasos](docs/manual/02-primeros-pasos.md) | Preparar el curso académico |
 | [Roles y permisos](docs/manual/03-roles-y-permisos.md) | Perfiles y tabla de permisos |
@@ -188,7 +188,7 @@ php vendor/bin/phpstan analyse
 
 ### Generar la presentación
 
-El proyecto incluye una presentación de introducción a Nexo FP en
+El proyecto incluye una presentación de introducción a GestConv+ en
 [`docs/slides/`](docs/slides/), escrita en [Marp]. Para exportarla a PDF:
 
 ```bash
@@ -196,16 +196,16 @@ make slides
 ```
 
 El comando requiere **Node.js** (usa `npx @marp-team/marp-cli`, sin instalación global) y genera
-`docs/slides/nexo-fp.pdf`. Cambiando la extensión de salida puedes obtener otros formatos
+`docs/slides/gestconv-plus.pdf`. Cambiando la extensión de salida puedes obtener otros formatos
 (`.pptx`, `.html`). Consulta [`docs/slides/README.md`](docs/slides/README.md) para más detalles.
 
 ### Generar el manual
 
-El [manual de Nexo FP](docs/manual/) se redacta en Markdown (`docs/manual/`) y se compila a PDF y a una
+El [manual de GestConv+](docs/manual/) se redacta en Markdown (`docs/manual/`) y se compila a PDF y a una
 web navegable:
 
 ```bash
-make docs-pdf    # PDF -> docs/manual/nexo-fp-manual.pdf
+make docs-pdf    # PDF -> docs/manual/gestconv-plus-manual.pdf
 make docs-web    # web -> docs/manual-site/
 make docs-serve  # previsualización en http://127.0.0.1:8000
 make docs        # PDF + web

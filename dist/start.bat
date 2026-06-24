@@ -1,5 +1,5 @@
 @echo off
-:: Nexo FP — script de arranque (Windows)
+:: GestConv+ — script de arranque (Windows)
 :: Uso: start.bat [puerto]          (por defecto: 8080)
 setlocal enabledelayedexpansion
 
@@ -21,7 +21,7 @@ set SERVER_ADDR=:%PORT%
 
 :: SQLite necesita barras hacia delante en la URL
 set "DATA_FWD=%DATA:\=/%"
-set DATABASE_URL=sqlite:///%DATA_FWD%/nexo-fp.db
+set DATABASE_URL=sqlite:///%DATA_FWD%/gestconv-plus.db
 
 set MIGRATIONS_PATH=migrations/sqlite
 set DEFAULT_URI=http://localhost:%PORT%
@@ -99,12 +99,12 @@ if /i "%LOAD_FIXTURES%"=="true" (
 :: -- Worker de Messenger (envío de emails en segundo plano) -------------------
 :: FrankenPHP es monoproceso; lanzamos el consumidor en segundo plano. Para una
 :: gestión más robusta del ciclo de vida del worker, usa start.ps1 en Windows.
-start "nexo-fp-worker" /b /d "%APP%" "%FP%" php-cli bin\console messenger:consume async scheduler_default --memory-limit=128M --quiet
+start "gestconv-plus-worker" /b /d "%APP%" "%FP%" php-cli bin\console messenger:consume async scheduler_default --memory-limit=128M --quiet
 
 :: -- Arrancar servidor --------------------------------------------------------
 cd /d "%ROOT%"
 echo.
-echo   Nexo FP disponible en -^> http://localhost:%PORT%
+echo   GestConv+ disponible en -^> http://localhost:%PORT%
 echo   Pulsa Ctrl+C para detener.
 echo.
 "%FP%" run --config Caddyfile

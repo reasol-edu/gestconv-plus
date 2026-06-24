@@ -128,6 +128,6 @@ export default class extends Controller {
     }
 
     storageKey() {
-        return `nexofp:${this.keyValue}:${this.centreIdValue}`;
+        return `gestconvplus:${this.keyValue}:${this.centreIdValue}`;
     }
 }

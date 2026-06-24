@@ -142,7 +142,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/docentes-curso/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $tmpFile = tempnam(sys_get_temp_dir(), 'nexo_test_');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, "\"Empleado/a\",\"Usuario IdEA\"\n\"Garcia, Juan\",\"juan.garcia\"\n");
         $file = new UploadedFile($tmpFile, 'import.csv', 'text/csv', null, true);
 
@@ -219,7 +219,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/docentes-curso/importar-asignaciones');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $tmpFile = tempnam(sys_get_temp_dir(), 'nexo_test_');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, "\"Unidad\",\"Profesor/a\"\n\"DAW1A\",\"Garcia, Juan\"\n");
         $file = new UploadedFile($tmpFile, 'assignments.csv', 'text/csv', null, true);
 

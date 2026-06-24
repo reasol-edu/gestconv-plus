@@ -1,14 +1,14 @@
-site_name: Manual de usuario de Nexo FP
+site_name: Manual de usuario de GestConv+
 site_description: Gestión de la planificación y asignación de las estancias del alumnado en empresas de la FFEOE
-site_url: https://reasol-edu.github.io/nexo-fp/
+site_url: https://reasol-edu.github.io/gestconv-plus/
 # Versión y fecha del release en el pie de la web. Fuente única: config/services.yaml.
 # El target "docs-web" del Makefile exporta MANUAL_COPYRIGHT con app.version y
 # app.pub_date; al construir directamente con mkdocs (sin la variable) se usa el valor por defecto.
-copyright: !ENV [MANUAL_COPYRIGHT, "Manual de usuario de Nexo FP"]
+copyright: !ENV [MANUAL_COPYRIGHT, "Manual de usuario de GestConv+"]
 docs_dir: .
 site_dir: ../manual-site
 use_directory_urls: false
-repo_url: https://github.com/reasol-edu/nexo-fp
+repo_url: https://github.com/reasol-edu/gestconv-plus
 
 exclude_docs: |
   README.md

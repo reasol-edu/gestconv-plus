@@ -1,10 +1,10 @@
 ---
 marp: true
-title: Nexo FP — Presentación
-author: Nexo FP
+title: GestConv+ — Presentación
+author: GestConv+
 lang: es
 paginate: true
-header: 'Nexo FP'
+header: 'GestConv+'
 footer: 'v{{VERSION}} ({{PUB_DATE}}) · Gestión de la FFEOE'
 style: |
   :root {
@@ -39,7 +39,7 @@ style: |
 
 <!-- _class: lead -->
 
-# Nexo FP
+# GestConv+
 
 ## Preparación de la Fase de Formación en Empresa u Organismo Equiparado (FFEOE)
 
@@ -49,7 +49,7 @@ style: |
 
 ---
 
-## ¿Qué es Nexo FP?
+## ¿Qué es GestConv+?
 
 ---
 

@@ -61,7 +61,7 @@ final class ForbidGenericDoctrineMethodsRule implements Rule
                     $methodName,
                 )
             )
-            ->identifier('nexofp.doctrineGenericMethod')
+            ->identifier('gestconvplus.doctrineGenericMethod')
             ->build(),
         ];
     }

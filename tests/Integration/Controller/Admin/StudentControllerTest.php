@@ -256,7 +256,7 @@ class StudentControllerTest extends ControllerTestCase
             '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
             '"","2024-001","Martinez","Lopez","Ana","DAW1A"',
         ]);
-        $tmpFile = tempnam(sys_get_temp_dir(), 'nexo_test_');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
@@ -287,7 +287,7 @@ class StudentControllerTest extends ControllerTestCase
             '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
             '"","2024-001","Martinez","Lopez","Ana","DAW1A"',
         ]);
-        $tmpFile = tempnam(sys_get_temp_dir(), 'nexo_test_');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
@@ -335,7 +335,7 @@ class StudentControllerTest extends ControllerTestCase
             '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
             '"","2024-999","Perez","","Luis","DAW1A"',
         ]);
-        $tmpFile = tempnam(sys_get_temp_dir(), 'nexo_test_');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
@@ -429,7 +429,7 @@ class StudentControllerTest extends ControllerTestCase
             '"","2024-001","Martinez","Lopez","Ana","DAW1A"',
             '"","2024-002","Sanchez","","Pedro","DAW1A"',
         ]);
-        $tmpFile = tempnam(sys_get_temp_dir(), 'nexo_test_');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
@@ -465,7 +465,7 @@ class StudentControllerTest extends ControllerTestCase
             '"","2024-A01","Garcia","","Ana","DAW1A"',
             '"","2024-B01","Lopez","","Pedro","DAW1B"',
         ]);
-        $tmpFile = tempnam(sys_get_temp_dir(), 'nexo_test_');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 

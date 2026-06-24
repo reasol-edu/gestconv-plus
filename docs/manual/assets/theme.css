@@ -1,7 +1,7 @@
 /*
  * Tema compartido del manual.
  * Tokens derivados del bloque <style> de la presentación Marp
- * (docs/slides/nexo-fp.md) para mantener una identidad visual común.
+ * (docs/slides/gestconv-plus.md) para mantener una identidad visual común.
  * Lo consumen tanto el PDF (Pandoc + Paged.js) como la web (MkDocs Material,
  * vía extra_css).
  */

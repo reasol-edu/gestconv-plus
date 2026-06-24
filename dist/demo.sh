@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Nexo FP - arranque con datos de demostración (Linux / macOS)
+# GestConv+ - arranque con datos de demostración (Linux / macOS)
 # Carga los datos de demostración (fixtures) y arranca la aplicación.
 # Uso: ./demo.sh [puerto]          (por defecto: 8080)
 set -euo pipefail

@@ -138,7 +138,7 @@ jobs:
 
       - name: Ensamblar paquete
         env:
-          PKG: nexo-fp-${{ steps.ver.outputs.version }}-${{ matrix.platform }}
+          PKG: gestconv-plus-${{ steps.ver.outputs.version }}-${{ matrix.platform }}
         run: |
           mkdir -p "${PKG}/data"
           cp -r _app "${PKG}/app"
@@ -183,8 +183,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: nexo-fp-${{ matrix.platform }}
-          path: nexo-fp-*.${{ matrix.archive }}
+          name: gestconv-plus-${{ matrix.platform }}
+          path: gestconv-plus-*.${{ matrix.archive }}
 
 # ── Job 3: generar la documentación (manual, presentación y web) ─────────────
   docs:
@@ -251,13 +251,13 @@ jobs:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
           mkdir -p _docs-dist
-          cp docs/manual/nexo-fp-manual.pdf "_docs-dist/nexo-fp-manual-${VERSION}.pdf"
-          cp docs/slides/nexo-fp.pdf        "_docs-dist/nexo-fp-presentacion-${VERSION}.pdf"
-          (cd docs/manual-site && zip -r "../../_docs-dist/nexo-fp-manual-web-${VERSION}.zip" .)
+          cp docs/manual/gestconv-plus-manual.pdf "_docs-dist/gestconv-plus-manual-${VERSION}.pdf"
+          cp docs/slides/gestconv-plus.pdf        "_docs-dist/gestconv-plus-presentacion-${VERSION}.pdf"
+          (cd docs/manual-site && zip -r "../../_docs-dist/gestconv-plus-manual-web-${VERSION}.zip" .)
 
       - uses: actions/upload-artifact@v4
         with:
-          name: nexo-fp-docs
+          name: gestconv-plus-docs
           path: _docs-dist/*
 
       - name: Subir artefacto de Pages (solo última versión estable)
@@ -278,18 +278,18 @@ jobs:
       - name: Descargar todos los artefactos
         uses: actions/download-artifact@v4
         with:
-          pattern: nexo-fp-*
+          pattern: gestconv-plus-*
           merge-multiple: true
 
       - name: Publicar GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            nexo-fp-*.tar.gz
-            nexo-fp-*.zip
-            nexo-fp-manual-*.pdf
-            nexo-fp-presentacion-*.pdf
-            nexo-fp-manual-web-*.zip
+            gestconv-plus-*.tar.gz
+            gestconv-plus-*.zip
+            gestconv-plus-manual-*.pdf
+            gestconv-plus-presentacion-*.pdf
+            gestconv-plus-manual-web-*.zip
           generate_release_notes: true
 
 # ── Job 5: publicar la web en GitHub Pages (solo última versión estable) ─────

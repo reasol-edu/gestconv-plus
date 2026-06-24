@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Nexo FP - script de arranque (Linux / macOS)
+# GestConv+ - script de arranque (Linux / macOS)
 # Uso: ./start.sh [puerto]          (por defecto: 8080)
 set -euo pipefail
 
@@ -21,7 +21,7 @@ export APP_ENV=prod
 export APP_DEBUG=0
 export DOCUMENT_ROOT="${APP}/public"
 export SERVER_ADDR=":${PORT}"
-export DATABASE_URL="sqlite:///${DATA}/nexo-fp.db"
+export DATABASE_URL="sqlite:///${DATA}/gestconv-plus.db"
 export MIGRATIONS_PATH=migrations/sqlite
 export DEFAULT_URI="http://localhost:${PORT}"
 export APP_LOG="${APP_LOG:-false}"
@@ -116,7 +116,7 @@ trap cleanup EXIT INT TERM
 # -- Arrancar servidor ----------------------------------------------------------
 cd "${ROOT}"
 echo ""
-echo "  Nexo FP disponible en → http://localhost:${PORT}"
+echo "  GestConv+ disponible en → http://localhost:${PORT}"
 echo "  Pulsa Ctrl+C para detener."
 echo ""
 "${FP}" run --config Caddyfile

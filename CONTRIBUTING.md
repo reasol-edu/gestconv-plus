@@ -1,10 +1,10 @@
-# Cómo contribuir a Nexo FP
+# Cómo contribuir a GestConv+
 
-El repositorio oficial se encuentra en [github.com/reasol-edu/nexo-fp](https://github.com/reasol-edu/nexo-fp).
+El repositorio oficial se encuentra en [github.com/reasol-edu/gestconv-plus](https://github.com/reasol-edu/gestconv-plus).
 
 ## Reportar un problema o proponer una mejora
 
-Usa el [gestor de incidencias de GitHub](https://github.com/reasol-edu/nexo-fp/issues). Antes de abrir una, comprueba que no exista ya una similar.
+Usa el [gestor de incidencias de GitHub](https://github.com/reasol-edu/gestconv-plus/issues). Antes de abrir una, comprueba que no exista ya una similar.
 
 Al reportar un error, incluye los pasos para reproducirlo, el comportamiento esperado y el observado, y la versión de la aplicación.
 

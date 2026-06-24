@@ -1,5 +1,5 @@
 #Requires -Version 5.1
-# Nexo FP - script de arranque (Windows PowerShell)
+# GestConv+ - script de arranque (Windows PowerShell)
 # Uso: .\start.ps1 [-Port 8080]
 param(
     [int]$Port = $(if ($env:PORT) { [int]$env:PORT } else { 8080 })
@@ -21,7 +21,7 @@ $env:SERVER_ADDR   = ":$Port"
 
 # SQLite necesita barras hacia delante en la URL
 $dataFwd = $Data -replace "\\", "/"
-$env:DATABASE_URL  = "sqlite:///$dataFwd/nexo-fp.db"
+$env:DATABASE_URL  = "sqlite:///$dataFwd/gestconv-plus.db"
 
 $env:MIGRATIONS_PATH = "migrations/sqlite"
 $env:DEFAULT_URI = "http://localhost:$Port"
@@ -117,7 +117,7 @@ $Worker = Start-Process -FilePath $FP `
 # -- Arrancar servidor -----------------------------------------------------------
 Set-Location $Root
 Write-Host ""
-Write-Host "  Nexo FP disponible en -> http://localhost:$Port"
+Write-Host "  GestConv+ disponible en -> http://localhost:$Port"
 Write-Host "  Pulsa Ctrl+C para detener."
 Write-Host ""
 try {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# install-ubuntu.sh — Instalación automatizada de Nexo FP en Ubuntu Server
+# install-ubuntu.sh — Instalación automatizada de GestConv+ en Ubuntu Server
 #
 # Compatible: Ubuntu Server 26.04 LTS (y versiones posteriores de Ubuntu LTS)
 # Arquitecturas: x86_64, aarch64
@@ -9,21 +9,21 @@
 #   sudo bash install-ubuntu.sh
 #
 # Uso (descarga directa):
-#   curl -fsSL https://raw.githubusercontent.com/reasol-edu/nexo-fp/main/dist/install-ubuntu.sh \
+#   curl -fsSL https://raw.githubusercontent.com/reasol-edu/gestconv-plus/main/dist/install-ubuntu.sh \
 #     | sudo bash
 #
 # Qué instala este script:
 #   1. PostgreSQL (paquete oficial de Ubuntu) + base de datos y usuario
 #   2. Cortafuegos UFW con los puertos mínimos abiertos (SSH, HTTP, HTTPS)
-#   3. Usuario del sistema «nexofp» y directorio /opt/nexo-fp
-#   4. Binario de Nexo FP (última versión publicada en GitHub Releases)
+#   3. Usuario del sistema «gestconvplus» y directorio /opt/gestconv-plus
+#   4. Binario de GestConv+ (última versión publicada en GitHub Releases)
 #   5. Scripts de arranque del servidor y del worker de mensajería
-#   6. Servicios systemd nexo-fp y nexo-fp-worker (arranque automático)
+#   6. Servicios systemd gestconv-plus y gestconv-plus-worker (arranque automático)
 #
 # Requisitos previos:
 #   - Ubuntu Server 26.04 LTS (o posterior) con acceso a Internet
 #   - Ejecutar como root o con: sudo bash install-ubuntu.sh
-#   - Un nombre de dominio (p. ej. nexo.tucentro.es) apuntando a este servidor,
+#   - Un nombre de dominio (p. ej. gestconv.tucentro.es) apuntando a este servidor,
 #     necesario para que FrankenPHP/Caddy obtenga el certificado TLS automático
 # =============================================================================
 set -euo pipefail
@@ -61,10 +61,10 @@ esac
 # ── banner ────────────────────────────────────────────────────────────────────
 echo -e "
 ${BOLD}╔══════════════════════════════════════════════════════╗
-║        Nexo FP — Instalación en Ubuntu Server        ║
+║        GestConv+ — Instalación en Ubuntu Server        ║
 ╚══════════════════════════════════════════════════════╝${NC}
 
-Este script instalará Nexo FP con:
+Este script instalará GestConv+ con:
   •  FrankenPHP como servidor web (HTTPS automático vía Let's Encrypt)
   •  PostgreSQL como base de datos
   •  Hub Mercure embebido (sincronización en tiempo real)
@@ -75,7 +75,7 @@ Este script instalará Nexo FP con:
 step "Configuración"
 
 while true; do
-    read -rp "   Nombre de dominio (p.ej. nexo.tucentro.es): " DOMAIN
+    read -rp "   Nombre de dominio (p.ej. gestconv.tucentro.es): " DOMAIN
     [[ -n "$DOMAIN" && "$DOMAIN" != *" "* ]] && break
     warn "El dominio no puede estar vacío ni contener espacios."
 done
@@ -92,7 +92,7 @@ MAIL_FROM="${MAIL_FROM:-no-responder@${DOMAIN}}"
 
 echo -e "
    ${BOLD}Dominio:${NC}   ${DOMAIN}
-   ${BOLD}Base BD:${NC}   nexo  (usuario: nexo)
+   ${BOLD}Base BD:${NC}   gestconv  (usuario: gestconv)
    ${BOLD}Correo:${NC}    ${MAIL_FROM}
 "
 read -rp "   ¿Empezar la instalación? [S/n] " CONFIRM
@@ -108,18 +108,18 @@ step "    Crear base de datos y usuario"
 sudo -u postgres psql -v ON_ERROR_STOP=1 << SQL
 DO \$\$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'nexo') THEN
-    CREATE USER nexo WITH PASSWORD '${DB_PASS}';
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'gestconv') THEN
+    CREATE USER gestconv WITH PASSWORD '${DB_PASS}';
   ELSE
-    ALTER USER nexo WITH PASSWORD '${DB_PASS}';
+    ALTER USER gestconv WITH PASSWORD '${DB_PASS}';
   END IF;
 END
 \$\$;
-SELECT 'CREATE DATABASE' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'nexo')\gexec
-GRANT ALL PRIVILEGES ON DATABASE nexo TO nexo;
-ALTER DATABASE nexo OWNER TO nexo;
+SELECT 'CREATE DATABASE' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'gestconv')\gexec
+GRANT ALL PRIVILEGES ON DATABASE gestconv TO gestconv;
+ALTER DATABASE gestconv OWNER TO gestconv;
 SQL
-ok "Base de datos 'nexo' y usuario 'nexo' listos"
+ok "Base de datos 'gestconv' y usuario 'gestconv' listos"
 
 # ── 2. Cortafuegos ────────────────────────────────────────────────────────────
 step "2/7 · Configurar cortafuegos (UFW)"
@@ -131,56 +131,56 @@ ufw --force enable > /dev/null
 ok "UFW activo: SSH, HTTP y HTTPS abiertos"
 
 # ── 3. Usuario del sistema ────────────────────────────────────────────────────
-step "3/7 · Crear usuario del sistema 'nexofp'"
-if ! id nexofp &> /dev/null; then
-    useradd -r -d /opt/nexo-fp -s /usr/sbin/nologin nexofp
-    ok "Usuario 'nexofp' creado"
+step "3/7 · Crear usuario del sistema 'gestconvplus'"
+if ! id gestconvplus &> /dev/null; then
+    useradd -r -d /opt/gestconv-plus -s /usr/sbin/nologin gestconvplus
+    ok "Usuario 'gestconvplus' creado"
 else
-    ok "Usuario 'nexofp' ya existía"
+    ok "Usuario 'gestconvplus' ya existía"
 fi
-mkdir -p /opt/nexo-fp
-chown nexofp:nexofp /opt/nexo-fp
+mkdir -p /opt/gestconv-plus
+chown gestconvplus:gestconvplus /opt/gestconv-plus
 
-# ── 4. Binario de Nexo FP ─────────────────────────────────────────────────────
-step "4/7 · Descargar el binario de Nexo FP (última versión)"
-VERSION=$(curl -fsSL https://api.github.com/repos/reasol-edu/nexo-fp/releases/latest \
+# ── 4. Binario de GestConv+ ─────────────────────────────────────────────────────
+step "4/7 · Descargar el binario de GestConv+ (última versión)"
+VERSION=$(curl -fsSL https://api.github.com/repos/reasol-edu/gestconv-plus/releases/latest \
     | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
 [[ -n "$VERSION" ]] || die "No se pudo obtener la versión más reciente desde GitHub."
-TARBALL_URL="https://github.com/reasol-edu/nexo-fp/releases/download/v${VERSION}/nexo-fp-${VERSION}-${ASSET_ARCH}.tar.gz"
-echo "   Descargando nexo-fp v${VERSION} (${ASSET_ARCH})..."
-curl -fsSL "$TARBALL_URL" | sudo -u nexofp tar xzf - -C /opt/nexo-fp --strip-components=1
-ok "Nexo FP v${VERSION} extraído en /opt/nexo-fp"
+TARBALL_URL="https://github.com/reasol-edu/gestconv-plus/releases/download/v${VERSION}/gestconv-plus-${VERSION}-${ASSET_ARCH}.tar.gz"
+echo "   Descargando gestconv-plus v${VERSION} (${ASSET_ARCH})..."
+curl -fsSL "$TARBALL_URL" | sudo -u gestconvplus tar xzf - -C /opt/gestconv-plus --strip-components=1
+ok "GestConv+ v${VERSION} extraído en /opt/gestconv-plus"
 
 # ── 5. Configuración ─────────────────────────────────────────────────────────
 step "5/7 · Crear fichero de configuración (.env.local)"
-if [[ -f /opt/nexo-fp/.env.local ]]; then
+if [[ -f /opt/gestconv-plus/.env.local ]]; then
     warn ".env.local ya existe; se conserva. Revisa que DATABASE_URL y SERVER_ADDR sean correctos."
 else
-sudo -u nexofp tee /opt/nexo-fp/.env.local > /dev/null << ENVFILE
-# Nexo FP — configuración de producción en Ubuntu Server
+sudo -u gestconvplus tee /opt/gestconv-plus/.env.local > /dev/null << ENVFILE
+# GestConv+ — configuración de producción en Ubuntu Server
 # Generado automáticamente el $(date '+%Y-%m-%d %H:%M:%S')
 # Edita este fichero para cambiar dominio, correo, etc.
-# Después: sudo systemctl restart nexo-fp nexo-fp-worker
+# Después: sudo systemctl restart gestconv-plus gestconv-plus-worker
 
 SERVER_ADDR=${DOMAIN}
 DEFAULT_URI=https://${DOMAIN}
-DATABASE_URL=postgresql://nexo:${DB_PASS}@localhost:5432/nexo?serverVersion=16&charset=utf8
+DATABASE_URL=postgresql://gestconv:${DB_PASS}@localhost:5432/gestconv?serverVersion=16&charset=utf8
 MIGRATIONS_PATH=migrations/postgresql
 MAILER_DSN=null://null
 MAILER_FROM=${MAIL_FROM}
 APP_EXTERNAL_ENABLED=true
 ENVFILE
-chmod 600 /opt/nexo-fp/.env.local
+chmod 600 /opt/gestconv-plus/.env.local
 ok ".env.local creado con permisos 600"
 fi
 
 # ── 6. Scripts de arranque ────────────────────────────────────────────────────
 step "6/7 · Crear scripts de arranque"
 
-# — nexo-start.sh (servidor web) ——————————————————————————————————————————————
-sudo -u nexofp tee /opt/nexo-fp/nexo-start.sh > /dev/null << 'STARTSCRIPT'
+# — gestconv-start.sh (servidor web) ——————————————————————————————————————————————
+sudo -u gestconvplus tee /opt/gestconv-plus/gestconv-start.sh > /dev/null << 'STARTSCRIPT'
 #!/usr/bin/env bash
-# nexo-start.sh — arranca FrankenPHP leyendo la configuración de .env.local
+# gestconv-start.sh — arranca FrankenPHP leyendo la configuración de .env.local
 # No modifiques directamente las variables hardcodeadas de start.sh original;
 # usa .env.local para toda la configuración de este servidor.
 set -euo pipefail
@@ -265,10 +265,10 @@ cd "${ROOT}"
 exec "${FP}" run --config Caddyfile
 STARTSCRIPT
 
-# — nexo-worker.sh (worker de Messenger) ——————————————————————————————————————
-sudo -u nexofp tee /opt/nexo-fp/nexo-worker.sh > /dev/null << 'WORKERSCRIPT'
+# — gestconv-worker.sh (worker de Messenger) ——————————————————————————————————————
+sudo -u gestconvplus tee /opt/gestconv-plus/gestconv-worker.sh > /dev/null << 'WORKERSCRIPT'
 #!/usr/bin/env bash
-# nexo-worker.sh — consumidor de mensajes (emails y recordatorios programados)
+# gestconv-worker.sh — consumidor de mensajes (emails y recordatorios programados)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -296,7 +296,7 @@ export MESSENGER_TRANSPORT_DSN="${MESSENGER_TRANSPORT_DSN:-doctrine://default?au
 export MERCURE_URL="${MERCURE_URL:-${DEFAULT_URI}/.well-known/mercure}"
 export MERCURE_PUBLIC_URL="${MERCURE_PUBLIC_URL:-/.well-known/mercure}"
 
-# Esperar a que nexo-start.sh haya generado los secretos (primer arranque)
+# Esperar a que gestconv-start.sh haya generado los secretos (primer arranque)
 until [[ -f "${DATA}/.secret" && -f "${DATA}/.mercure_secret" ]]; do
     sleep 1
 done
@@ -329,26 +329,26 @@ exec "${FP}" php-cli bin/console messenger:consume async scheduler_default \
     --time-limit=3600 --memory-limit=128M --quiet
 WORKERSCRIPT
 
-chmod +x /opt/nexo-fp/nexo-start.sh /opt/nexo-fp/nexo-worker.sh
-ok "nexo-start.sh y nexo-worker.sh creados"
+chmod +x /opt/gestconv-plus/gestconv-start.sh /opt/gestconv-plus/gestconv-worker.sh
+ok "gestconv-start.sh y gestconv-worker.sh creados"
 
 # ── 7. Servicios systemd ──────────────────────────────────────────────────────
 step "7/7 · Instalar y arrancar los servicios systemd"
 
-tee /etc/systemd/system/nexo-fp.service > /dev/null << 'UNIT'
+tee /etc/systemd/system/gestconv-plus.service > /dev/null << 'UNIT'
 [Unit]
-Description=Nexo FP (FrankenPHP)
-Documentation=https://reasol-edu.github.io/nexo-fp/
+Description=GestConv+ (FrankenPHP)
+Documentation=https://reasol-edu.github.io/gestconv-plus/
 After=network-online.target postgresql.service
 Wants=network-online.target
 Requires=postgresql.service
 
 [Service]
 Type=simple
-User=nexofp
-Group=nexofp
-WorkingDirectory=/opt/nexo-fp
-ExecStart=/opt/nexo-fp/nexo-start.sh
+User=gestconvplus
+Group=gestconvplus
+WorkingDirectory=/opt/gestconv-plus
+ExecStart=/opt/gestconv-plus/gestconv-start.sh
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=30
@@ -361,18 +361,18 @@ CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 WantedBy=multi-user.target
 UNIT
 
-tee /etc/systemd/system/nexo-fp-worker.service > /dev/null << 'UNIT'
+tee /etc/systemd/system/gestconv-plus-worker.service > /dev/null << 'UNIT'
 [Unit]
-Description=Nexo FP Worker (Messenger + Scheduler)
-After=nexo-fp.service
-Requires=nexo-fp.service
+Description=GestConv+ Worker (Messenger + Scheduler)
+After=gestconv-plus.service
+Requires=gestconv-plus.service
 
 [Service]
 Type=simple
-User=nexofp
-Group=nexofp
-WorkingDirectory=/opt/nexo-fp
-ExecStart=/opt/nexo-fp/nexo-worker.sh
+User=gestconvplus
+Group=gestconvplus
+WorkingDirectory=/opt/gestconv-plus
+ExecStart=/opt/gestconv-plus/gestconv-worker.sh
 Restart=always
 RestartSec=10
 TimeoutStopSec=60
@@ -382,7 +382,7 @@ WantedBy=multi-user.target
 UNIT
 
 systemctl daemon-reload
-systemctl enable --now nexo-fp nexo-fp-worker
+systemctl enable --now gestconv-plus gestconv-plus-worker
 ok "Servicios activos y habilitados para el arranque automático"
 
 # ── resultado ─────────────────────────────────────────────────────────────────
@@ -399,8 +399,8 @@ ${GREEN}${BOLD}╔════════════════════�
      Puede tardar 30-60 segundos hasta que HTTPS esté disponible.${NC}
 
   Comandos útiles:
-    Ver estado:   sudo systemctl status nexo-fp nexo-fp-worker
-    Ver logs:     sudo journalctl -u nexo-fp -f
-    Reiniciar:    sudo systemctl restart nexo-fp nexo-fp-worker
-    Configurar:   sudo nano /opt/nexo-fp/.env.local
+    Ver estado:   sudo systemctl status gestconv-plus gestConv-plus-worker
+    Ver logs:     sudo journalctl -u gestConv-plus -f
+    Reiniciar:    sudo systemctl restart gestConv-plus gestConv-plus-worker
+    Configurar:   sudo nano /opt/gestConv-plus/.env.local
 "

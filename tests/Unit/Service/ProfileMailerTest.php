@@ -82,7 +82,7 @@ class ProfileMailerTest extends TestCase
             ->method('send')
             ->with(self::callback(function (TemplatedEmail $email): bool {
                 self::assertSame('no-responder@test.local', $email->getFrom()[0]->getAddress());
-                self::assertSame('Nexo FP', $email->getFrom()[0]->getName());
+                self::assertSame('GestConv+', $email->getFrom()[0]->getName());
 
                 return true;
             }));
@@ -191,7 +191,7 @@ class ProfileMailerTest extends TestCase
             $translator,
             $logger ?? new NullLogger(),
             'no-responder@test.local',
-            'Nexo FP',
+            'GestConv+',
         );
     }
 
