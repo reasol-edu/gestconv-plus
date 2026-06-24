@@ -117,17 +117,17 @@ summary:focus-visible {
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-    --color-forest-50:  #f2f9f4;
-    --color-forest-100: #c0d7bb;
-    --color-forest-200: #a8ccbc;
-    --color-forest-300: #85bda6;
-    --color-forest-400: #5fa07f;
-    --color-forest-500: #3e885b;
-    --color-forest-600: #357750;
-    --color-forest-700: #2c6343;
-    --color-forest-800: #245035;
-    --color-forest-900: #1d3d28;
-    --color-forest-950: #2f4b26;
+    --color-forest-50:  #f0f0ff;
+    --color-forest-100: #d1d2f9;
+    --color-forest-200: #c9cad9;
+    --color-forest-300: #a3bcf9;
+    --color-forest-400: #8da9e2;
+    --color-forest-500: #7796cb;
+    --color-forest-600: #677dae;
+    --color-forest-700: #576490;
+    --color-forest-800: #3e4a6e;
+    --color-forest-900: #2b3350;
+    --color-forest-950: #1c2238;
 }
 
 /* TomSelect (Symfony UX Autocomplete): adapta el look al tema forest.
