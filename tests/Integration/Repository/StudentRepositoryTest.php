@@ -111,6 +111,46 @@ class StudentRepositoryTest extends RepositoryTestCase
         self::assertSame('ST001', $results[0]->getStudentId());
     }
 
+    public function testCreateByCentreFilteredQueryFiltersByFirstNameCaseInsensitive(): void
+    {
+        [$centre, $year, $group] = $this->makeGroupChain('41000009');
+        $centre->setActiveAcademicYear($year);
+        $this->flush();
+
+        $s1 = $this->makeStudent('ST001', 'ANA',   'GARCIA');
+        $s2 = $this->makeStudent('ST002', 'PEDRO', 'LOPEZ');
+        $this->persist($s1, $s2);
+
+        $s1->addGroup($group);
+        $s2->addGroup($group);
+        $this->flush();
+
+        $results = $this->repo->createByCentreFilteredQuery($centre, 'ana')->getResult();
+
+        self::assertCount(1, $results);
+        self::assertSame('ST001', $results[0]->getStudentId());
+    }
+
+    public function testSearchByCentreByFirstNameCaseInsensitive(): void
+    {
+        [$centre, $year, $group] = $this->makeGroupChain('41000010');
+        $centre->setActiveAcademicYear($year);
+        $this->flush();
+
+        $s1 = $this->makeStudent('ST001', 'ANA',   'GARCIA');
+        $s2 = $this->makeStudent('ST002', 'PEDRO', 'LOPEZ');
+        $this->persist($s1, $s2);
+
+        $s1->addGroup($group);
+        $s2->addGroup($group);
+        $this->flush();
+
+        $results = $this->repo->searchByCentre($centre, 'ana');
+
+        self::assertCount(1, $results);
+        self::assertSame('ST001', $results[0]->getStudentId());
+    }
+
     public function testCreateByCentreFilteredQueryFiltersByGroupId(): void
     {
         [$centre, $year, $groupA] = $this->makeGroupChain('41000003');

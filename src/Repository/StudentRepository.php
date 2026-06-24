@@ -73,9 +73,9 @@ class StudentRepository extends ServiceEntityRepository
         if ($search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    's.studentId LIKE :search',
-                    's.name.firstName LIKE :search',
-                    's.name.lastName LIKE :search',
+                    'LOWER(s.studentId) LIKE LOWER(:search)',
+                    'LOWER(s.name.firstName) LIKE LOWER(:search)',
+                    'LOWER(s.name.lastName) LIKE LOWER(:search)',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
@@ -117,9 +117,9 @@ class StudentRepository extends ServiceEntityRepository
         if ($search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    's.studentId LIKE :search',
-                    's.name.firstName LIKE :search',
-                    's.name.lastName LIKE :search',
+                    'LOWER(s.studentId) LIKE LOWER(:search)',
+                    'LOWER(s.name.firstName) LIKE LOWER(:search)',
+                    'LOWER(s.name.lastName) LIKE LOWER(:search)',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
@@ -176,15 +176,47 @@ class StudentRepository extends ServiceEntityRepository
 
     /**
      * Quick search by name / NIE for the global search palette.
+     * Admins see all students; non-admin teachers see only students from their groups.
      *
      * @return list<Student>
      */
-    public function searchByCentre(EducationalCentre $centre, string $q, int $limit = 5): array
+    public function searchByCentre(EducationalCentre $centre, string $q, int $limit = 5, ?Teacher $viewer = null): array
     {
+        $year = $centre->getActiveAcademicYear();
+        if ($year === null) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('s')
+            ->distinct()
+            ->join('s.groups', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay = :activeYear')
+            ->setParameter('activeYear', $year->getId(), 'uuid')
+            ->orderBy('s.name.lastName', 'ASC')
+            ->addOrderBy('s.name.firstName', 'ASC');
+
+        $qb->andWhere(
+            $qb->expr()->orX(
+                'LOWER(s.studentId) LIKE LOWER(:search)',
+                'LOWER(s.name.firstName) LIKE LOWER(:search)',
+                'LOWER(s.name.lastName) LIKE LOWER(:search)',
+            )
+        )->setParameter('search', '%' . $q . '%');
+
+        if ($viewer !== null && !$viewer->isAdmin() && !$centre->getAdmins()->contains($viewer)) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    'EXISTS (SELECT 1 FROM ' . Group::class . ' vg JOIN vg.teachers vgt WHERE vg.id = g.id AND vgt.id = :viewerId)',
+                    'EXISTS (SELECT 1 FROM ' . Group::class . ' vg2 JOIN vg2.tutors vgtu WHERE vg2.id = g.id AND vgtu.id = :viewerId)',
+                )
+            )->setParameter('viewerId', $viewer->getId(), 'uuid');
+        }
+
         /** @var list<Student> $result */
-        $result = $this->createByCentreFilteredQuery($centre, $q)
-            ->setMaxResults($limit)
-            ->getResult();
+        $result = $qb->setMaxResults($limit)->getQuery()->getResult();
 
         return $result;
     }

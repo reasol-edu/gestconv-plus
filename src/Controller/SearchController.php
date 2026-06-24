@@ -44,20 +44,22 @@ class SearchController extends AbstractController
         }
 
         $groups = [];
+        $user   = $this->getUser();
+        $viewer = $user instanceof Teacher ? $user : null;
+
+        $students = $this->studentRepository->searchByCentre($centre, $q, 5, $viewer);
+        if ($students !== []) {
+            $groups['students'] = array_map(fn ($s) => [
+                'label'    => $s->getName()->getLastName() . ', ' . $s->getName()->getFirstName(),
+                'sublabel' => $s->getStudentId(),
+                'url'      => $this->generateUrl('app_admin_students_edit', [
+                    'centreId' => $centre->getId()->toRfc4122(),
+                    'id'       => $s->getId()->toRfc4122(),
+                ]),
+            ], $students);
+        }
 
         if ($this->isGranted('educational_centre.section', $centre)) {
-            $students = $this->studentRepository->searchByCentre($centre, $q);
-            if ($students !== []) {
-                $groups['students'] = array_map(fn ($s) => [
-                    'label'    => $s->getName()->getLastName() . ', ' . $s->getName()->getFirstName(),
-                    'sublabel' => $s->getStudentId(),
-                    'url'      => $this->generateUrl('app_admin_students_edit', [
-                        'centreId' => $centre->getId()->toRfc4122(),
-                        'id'       => $s->getId()->toRfc4122(),
-                    ]),
-                ], $students);
-            }
-
             $year = $this->tenantContext->getViewYear($centre);
             if ($year !== null) {
                 $teachers = $this->teacherRepository->searchByAcademicYear($year, $q);

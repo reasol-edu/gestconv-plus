@@ -57,6 +57,91 @@ class SearchControllerTest extends ControllerTestCase
         self::assertStringContainsString('Buscable', $data['groups']['students'][0]['label']);
     }
 
+    public function testSearchReturnsStudentForGlobalAdmin(): void
+    {
+        [$centre, , $prog] = $this->makeChain('41000077', 'search.cadmin.77');
+
+        $progYear = (new ProgrammeYear())->setName('1º DAW')->setProgramme($prog);
+        $group    = (new Group())->setProgrammeYear($progYear)->setName('1DAW-A');
+        $student  = new Student(new PersonName('Martina', 'GlobalAdmin'));
+        $student->setStudentId('NIE-77A');
+        $group->addStudent($student);
+        $this->persist($progYear, $group, $student);
+
+        $globalAdmin = (new Teacher(new PersonName('Global', 'Admin')))->setUsername('global.admin.77');
+        $globalAdmin->setPassword('x');
+        $globalAdmin->setAdmin(true);
+        $this->persist($globalAdmin);
+
+        $this->loginAs($globalAdmin, $centre);
+
+        $this->client->request('GET', '/buscar?q=GlobalAdmin');
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+        self::assertArrayHasKey('students', $data['groups']);
+        self::assertStringContainsString('GlobalAdmin', $data['groups']['students'][0]['label']);
+    }
+
+    public function testSearchReturnsStudentInOwnGroupForNonAdminTeacher(): void
+    {
+        [$centre, , $prog] = $this->makeChain('41000078', 'search.admin.78');
+
+        $progYear = (new ProgrammeYear())->setName('1º DAW')->setProgramme($prog);
+        $group    = (new Group())->setProgrammeYear($progYear)->setName('1DAW-A');
+        $student  = new Student(new PersonName('Laura', 'Visible'));
+        $student->setStudentId('NIE-78A');
+        $group->addStudent($student);
+
+        $teacher = (new Teacher(new PersonName('Profe', 'Normal')))->setUsername('search.teacher.78');
+        $teacher->setPassword('x');
+        $group->addTeacher($teacher);
+
+        $this->persist($progYear, $group, $student, $teacher);
+
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/buscar?q=Visible');
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+        self::assertArrayHasKey('students', $data['groups']);
+        self::assertStringContainsString('Visible', $data['groups']['students'][0]['label']);
+    }
+
+    public function testSearchDoesNotReturnStudentFromOtherGroupForNonAdminTeacher(): void
+    {
+        [$centre, , $prog] = $this->makeChain('41000079', 'search.admin.79');
+
+        $progYear  = (new ProgrammeYear())->setName('1º DAW')->setProgramme($prog);
+        $ownGroup  = (new Group())->setProgrammeYear($progYear)->setName('1DAW-A');
+        $otherGroup = (new Group())->setProgrammeYear($progYear)->setName('1DAW-B');
+
+        $ownStudent   = new Student(new PersonName('Ana', 'MiGrupo'));
+        $ownStudent->setStudentId('NIE-79A');
+        $ownGroup->addStudent($ownStudent);
+
+        $otherStudent = new Student(new PersonName('Luis', 'OtroGrupo'));
+        $otherStudent->setStudentId('NIE-79B');
+        $otherGroup->addStudent($otherStudent);
+
+        $teacher = (new Teacher(new PersonName('Profe', 'Normal')))->setUsername('search.teacher.79');
+        $teacher->setPassword('x');
+        $ownGroup->addTeacher($teacher);
+
+        $this->persist($progYear, $ownGroup, $otherGroup, $ownStudent, $otherStudent, $teacher);
+
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/buscar?q=Grupo');
+
+        self::assertResponseIsSuccessful();
+        $data    = json_decode((string) $this->client->getResponse()->getContent(), true);
+        $labels  = array_column($data['groups']['students'] ?? [], 'label');
+        self::assertCount(1, $labels);
+        self::assertStringContainsString('MiGrupo', $labels[0]);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
