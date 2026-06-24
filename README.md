@@ -5,11 +5,11 @@
 <h1 align="center">GestConv+</h1>
 
 <p align="center">
-  Plataforma web para gestionar la planificación y asignación de las estancias del alumnado en empresas de la FFEOE
+  Plataforma web para gestionar las conductas contrarias a la convivencia en centros de ESO, Bachillerato y Formación Profesional
 </p>
 
 <p align="center">
-  <strong>v2.5.0</strong> &nbsp;·&nbsp;
+  <strong>v1.0.0</strong> &nbsp;·&nbsp;
   <a href="https://reasol-edu.github.io/gestconv-plus/">Documentación</a> &nbsp;·&nbsp;
   <a href="CHANGELOG.md">Cambios</a> &nbsp;·&nbsp;
   <a href="CONTRIBUTING.md">Contribuir</a> &nbsp;·&nbsp;
@@ -25,31 +25,23 @@
 ---
 
 <p align="center">
-  <img src="docs/manual/img/inicio.png" alt="Panel de inicio de GestConv+ con las métricas del curso y las estancias activas" width="800">
+  <img src="docs/manual/img/inicio.png" alt="Panel de inicio de GestConv+ con las métricas del curso actual" width="800">
 </p>
 
 ---
 
-GestConv+ es una aplicación web desarrollada con [Symfony] que permite planificar y preparar la
-**Fase de Formación en Empresa u Organismo Equiparado**. Centraliza la
-información de estudiantes, empresas, puestos formativos y tutores, y permite llevar el seguimiento
-del proceso de asignación desde que se crea un puesto hasta que se registra en Séneca.
+GestConv+ es una aplicación web desarrollada con [Symfony] para la **gestión de conductas contrarias
+a la convivencia** en centros de Educación Secundaria Obligatoria, Bachillerato y Formación Profesional. Centraliza la
+tramitación de partes de incidencia, el registro de sanciones y el seguimiento del historial de
+convivencia de cada estudiante.
 
-La aplicación se ha diseñado para ser intuitiva y fácil de usar, con un enfoque en la eficiencia
-y la reducción de errores administrativos. Permite generar informes detallados en PDF y facilita la
-comunicación entre el centro educativo y las empresas.
+La aplicación permite registrar y gestionar de forma ágil los partes emitidos por el profesorado,
+aplicar las correcciones previstas en el Reglamento de Organización y Funcionamiento (ROF) y generar
+documentación oficial en PDF para notificar a las familias y al equipo directivo.
 
-Está pensada para el **trabajo en equipo**: varias personas pueden gestionar los puestos de una misma
-estancia a la vez y la pantalla se **actualiza en tiempo real** (sincronización en vivo con Mercure),
-resaltando lo que cambia y avisando de los conflictos de edición en lugar de sobrescribir.
-
-Es **multi-centro**: un mismo servidor puede alojar varios centros educativos con datos
-completamente separados. Cada docente selecciona el centro activo al iniciar sesión y solo ve los
-datos de ese centro. Los administradores globales pueden gestionar todos los centros desde la
-sección **Administración**.
-
-> GestConv+ forma parte del proyecto de innovación educativa REASOL (PIN-219/23 y PIN-354/24) financiado
-> por la Consejería de Desarrollo Educativo y Formación Profesional de la Junta de Andalucía.
+Es **multi-centro**: un mismo servidor puede alojar varios centros educativos con datos completamente
+separados. Cada docente accede únicamente a los datos del centro que tiene asignado, y los
+administradores globales pueden gestionar todos los centros desde la sección **Administración**.
 
 Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para la guía de contribución y [CHANGELOG.md](CHANGELOG.md)
 para el historial de cambios.
@@ -64,9 +56,7 @@ necesitas instalar nada ni saber de informática. Entra en la
 sistema (Windows, Mac o Linux), descomprímelo y haz doble clic en el script de demostración
 (`demo.bat` en Windows, `demo.command` en Mac, `demo.sh` en Linux). En unos segundos tendrás la
 aplicación funcionando con datos de ejemplo: abre tu navegador en **<http://localhost:8080>** y entra
-con el usuario `admin` y la contraseña `admin`. Tienes el paso a paso ilustrado en
-[Prueba rápida en tu ordenador](docs/manual/09-despliegue.md#prueba-rápida-en-tu-ordenador-sin-conocimientos-técnicos)
-del manual.
+con el usuario `admin` y la contraseña `admin`.
 
 ---
 
@@ -94,26 +84,26 @@ Capítulos:
 
 | Capítulo | Contenido |
 |----------|-----------|
-| [Introducción](docs/manual/index.md) | Qué es GestConv+ y cómo usar el manual |
-| [Instalación y requisitos](docs/manual/01-instalacion-y-requisitos.md) | Modos de despliegue y requisitos |
-| [Primeros pasos](docs/manual/02-primeros-pasos.md) | Preparar el curso académico |
-| [Roles y permisos](docs/manual/03-roles-y-permisos.md) | Perfiles y tabla de permisos |
-| [Flujo de trabajo](docs/manual/04-flujo-de-trabajo.md) | El recorrido completo de un curso |
-| [Secciones de la aplicación](docs/manual/05-secciones-de-la-aplicacion.md) | Referencia de cada pantalla |
-| [Notificaciones por email](docs/manual/06-notificaciones-y-email.md) | Avisos automáticos y SMTP |
-| [Ajustes](docs/manual/07-ajustes.md) | Configuración jerárquica |
-| [Comandos de consola](docs/manual/08-comandos-de-consola.md) | Administración por terminal |
-| [Despliegue](docs/manual/09-despliegue.md) | Docker y binario nativo |
-| [Operación y mantenimiento](docs/manual/10-operacion-y-mantenimiento.md) | Backups, colas, recordatorios |
-| [Resolución de problemas](docs/manual/11-resolucion-de-problemas.md) | Soluciones a las dudas más habituales |
-| [Glosario](docs/manual/12-glosario.md) | Términos del manual y de la aplicación |
+| Introducción | Qué es GestConv+ y cómo usar el manual |
+| Instalación y requisitos | Modos de despliegue y requisitos |
+| Primeros pasos | Configurar el centro y el curso académico |
+| Roles y permisos | Perfiles y tabla de permisos |
+| Flujo de trabajo | Del parte a la aplicación de la sanción |
+| Secciones de la aplicación | Referencia de cada pantalla |
+| Notificaciones por email | Avisos automáticos y SMTP |
+| Ajustes | Configuración jerárquica |
+| Comandos de consola | Administración por terminal |
+| Despliegue | Docker y binario nativo |
+| Operación y mantenimiento | Backups, colas, recordatorios |
+| Resolución de problemas | Soluciones a las dudas más habituales |
+| Glosario | Términos del manual y de la aplicación |
 
 ---
 
 ## Inicio rápido
 
 ```bash
-cp .env.example .env.local            # edita APP_SECRET, DB_PASSWORD y MERCURE_JWT_SECRET
+cp .env.example .env.local            # edita APP_SECRET y DB_PASSWORD
 export COMPOSE_ENV_FILES=.env.local   # Compose usará .env.local (no el .env versionado)
 docker compose up -d
 ```
@@ -144,7 +134,7 @@ Requisitos: PHP 8.4+, Composer y Docker Compose (solo para la base de datos).
 cp .env.example .env.local            # ajusta si es necesario
 export COMPOSE_ENV_FILES=.env.local   # Compose usará .env.local
 
-# 2. Levanta PostgreSQL y el hub Mercure con el overlay de desarrollo
+# 2. Levanta PostgreSQL con el overlay de desarrollo
 docker compose -f compose.yaml -f compose.dev.yaml up -d
 
 # 3. Instala dependencias e inicializa la base de datos
@@ -159,12 +149,10 @@ symfony server:start          # o: php -S localhost:8000 -t public/
 Accede a **https://localhost:8000** (o **http://localhost:8000** con `php -S`) con `admin` / `admin`.
 
 > **Atajo:** una vez instaladas las dependencias y la base de datos (pasos 1-3), `make dev`
-> levanta los contenedores de desarrollo (PostgreSQL + hub Mercure) y arranca `symfony serve`
+> levanta los contenedores de desarrollo (PostgreSQL) y arranca `symfony serve`
 > de una vez. `make dev-stop` detiene los contenedores. Requiere `.env.local` y la Symfony CLI.
 
-> El overlay `compose.dev.yaml` (que se combina con `-f`) expone PostgreSQL en el puerto 5432 y un hub Mercure (imagen `dunglas/mercure`), y deja los servicios `app` y `worker` tras el perfil `production`, de modo que el comando anterior solo arranca la base de datos y el hub. En producción se usa únicamente `compose.yaml` (`docker compose up -d`), que sí levanta la aplicación con el hub embebido en FrankenPHP.
-
-> **Sincronización en vivo en desarrollo:** `symfony server:start` detecta el contenedor del hub e inyecta solo las variables `MERCURE_URL` y `MERCURE_PUBLIC_URL`, así que la actualización en vivo de la pantalla de estancia funciona sin configurar nada más. El hub de desarrollo se abre con suscripción anónima y CORS al origen del servidor local (es solo para dev: el canal nunca transporta datos, solo un aviso de cambio). Con `php -S` no hay hub ni inyección, así que no hay tiempo real (la app sigue funcionando con normalidad). Si arrancas `symfony server:start` en un puerto distinto del 8000, ajusta `cors_origins` en `compose.dev.yaml`.
+> El overlay `compose.dev.yaml` (que se combina con `-f`) expone PostgreSQL en el puerto 5432 y deja los servicios `app` y `worker` tras el perfil `production`, de modo que el comando anterior solo arranca la base de datos. En producción se usa únicamente `compose.yaml` (`docker compose up -d`), que sí levanta la aplicación con FrankenPHP.
 
 ### Cargar datos de demostración
 
