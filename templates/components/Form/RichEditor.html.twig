@@ -1,0 +1,14 @@
+{% props id, name, label, value = '', placeholder = '', help = null %}
+<div>
+    <label class="block text-sm font-medium text-gray-700 mb-1.5">{{ label }}</label>
+    {% if help is not null %}
+        <p class="text-xs text-gray-400 mb-2">{{ help }}</p>
+    {% endif %}
+    <div data-controller="rich-editor"
+         {% if placeholder %}data-rich-editor-placeholder-value="{{ placeholder }}"{% endif %}>
+        <div id="{{ id }}" data-rich-editor-target="editor"></div>
+        <textarea name="{{ name }}"
+                  data-rich-editor-target="input"
+                  class="hidden">{{ value }}</textarea>
+    </div>
+</div>

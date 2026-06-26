@@ -47,7 +47,7 @@ class StudentController extends AbstractController
         $centre = $this->requireCentreWithActiveYear($centreId);
         $this->denyIfViewingPastYear($centre);
         $errors = [];
-        $values = ['firstName' => '', 'lastName' => '', 'studentId' => '', 'details' => ''];
+        $values = $this->emptyValues();
         $selectedGroupIds = [];
 
         if ($request->isMethod('POST')) {
@@ -55,12 +55,7 @@ class StudentController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $values = [
-                'firstName' => trim($request->request->getString('firstName')),
-                'lastName'  => trim($request->request->getString('lastName')),
-                'studentId' => trim($request->request->getString('studentId')),
-                'details'   => trim($request->request->getString('details')),
-            ];
+            $values = $this->valuesFromRequest($request);
             $selectedGroupIds = $request->request->all('groups');
 
             if ($values['firstName'] === '') {
@@ -77,8 +72,8 @@ class StudentController extends AbstractController
 
             if (empty($errors)) {
                 $student = new Student(new PersonName($values['firstName'], $values['lastName']));
-                $student->setStudentId($values['studentId'])
-                        ->setDetails($values['details'] !== '' ? $values['details'] : null);
+                $student->setStudentId($values['studentId']);
+                $this->applyValues($student, $values);
 
                 $centreGroupsById = $this->indexGroupsById($centre);
                 foreach ($selectedGroupIds as $groupId) {
@@ -116,10 +111,18 @@ class StudentController extends AbstractController
 
         $errors = [];
         $values = [
-            'firstName' => $student->getName()->getFirstName(),
-            'lastName'  => $student->getName()->getLastName(),
-            'studentId' => $student->getStudentId(),
-            'details'   => $student->getDetails() ?? '',
+            'firstName'          => $student->getName()->getFirstName(),
+            'lastName'           => $student->getName()->getLastName(),
+            'studentId'          => $student->getStudentId(),
+            'details'            => $student->getDetails() ?? '',
+            'tutorName1'         => $student->getTutorName1() ?? '',
+            'tutorName2'         => $student->getTutorName2() ?? '',
+            'contactPhone1'      => $student->getContactPhone1() ?? '',
+            'contactPhone1Notes' => $student->getContactPhone1Notes() ?? '',
+            'contactPhone2'      => $student->getContactPhone2() ?? '',
+            'contactPhone2Notes' => $student->getContactPhone2Notes() ?? '',
+            'contactPhone3'      => $student->getContactPhone3() ?? '',
+            'contactPhone3Notes' => $student->getContactPhone3Notes() ?? '',
         ];
 
         $selectedGroupIds = [];
@@ -134,12 +137,7 @@ class StudentController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $values = [
-                'firstName' => trim($request->request->getString('firstName')),
-                'lastName'  => trim($request->request->getString('lastName')),
-                'studentId' => trim($request->request->getString('studentId')),
-                'details'   => trim($request->request->getString('details')),
-            ];
+            $values = $this->valuesFromRequest($request);
             $selectedGroupIds = $request->request->all('groups');
 
             if ($values['firstName'] === '') {
@@ -159,8 +157,8 @@ class StudentController extends AbstractController
 
             if (empty($errors)) {
                 $student->setName(new PersonName($values['firstName'], $values['lastName']))
-                        ->setStudentId($values['studentId'])
-                        ->setDetails($values['details'] !== '' ? $values['details'] : null);
+                        ->setStudentId($values['studentId']);
+                $this->applyValues($student, $values);
 
                 foreach ($student->getGroups()->toArray() as $group) {
                     if (isset($centreGroupsById[$group->getId()->toRfc4122()])) {
@@ -517,5 +515,52 @@ class StudentController extends AbstractController
     private function t(string $key): string
     {
         return $this->translator->trans($key, [], 'admin');
+    }
+
+    /** @return array<string, string> */
+    private function emptyValues(): array
+    {
+        return [
+            'firstName' => '', 'lastName' => '', 'studentId' => '', 'details' => '',
+            'tutorName1' => '', 'tutorName2' => '',
+            'contactPhone1' => '', 'contactPhone1Notes' => '',
+            'contactPhone2' => '', 'contactPhone2Notes' => '',
+            'contactPhone3' => '', 'contactPhone3Notes' => '',
+        ];
+    }
+
+    /** @return array<string, string> */
+    private function valuesFromRequest(Request $request): array
+    {
+        $s = static fn(string $k) => trim($request->request->getString($k));
+        return [
+            'firstName'          => $s('firstName'),
+            'lastName'           => $s('lastName'),
+            'studentId'          => $s('studentId'),
+            'details'            => $s('details'),
+            'tutorName1'         => $s('tutorName1'),
+            'tutorName2'         => $s('tutorName2'),
+            'contactPhone1'      => $s('contactPhone1'),
+            'contactPhone1Notes' => $s('contactPhone1Notes'),
+            'contactPhone2'      => $s('contactPhone2'),
+            'contactPhone2Notes' => $s('contactPhone2Notes'),
+            'contactPhone3'      => $s('contactPhone3'),
+            'contactPhone3Notes' => $s('contactPhone3Notes'),
+        ];
+    }
+
+    /** @param array<string, string> $values */
+    private function applyValues(Student $student, array $values): void
+    {
+        $n = static fn(string $v): ?string => $v !== '' ? $v : null;
+        $student->setDetails($n($values['details']))
+                ->setTutorName1($n($values['tutorName1']))
+                ->setTutorName2($n($values['tutorName2']))
+                ->setContactPhone1($n($values['contactPhone1']))
+                ->setContactPhone1Notes($n($values['contactPhone1Notes']))
+                ->setContactPhone2($n($values['contactPhone2']))
+                ->setContactPhone2Notes($n($values['contactPhone2Notes']))
+                ->setContactPhone3($n($values['contactPhone3']))
+                ->setContactPhone3Notes($n($values['contactPhone3Notes']));
     }
 }

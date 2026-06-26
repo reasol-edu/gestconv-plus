@@ -22,8 +22,32 @@ class Student
     #[ORM\Column(length: 50)]
     private string $studentId;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $details = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $tutorName1 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $tutorName2 = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $contactPhone1 = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $contactPhone1Notes = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $contactPhone2 = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $contactPhone2Notes = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $contactPhone3 = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $contactPhone3Notes = null;
 
     /** @var Collection<int, Group> */
     #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'students', fetch: 'EXTRA_LAZY')]
@@ -76,6 +100,30 @@ class Student
 
         return $this;
     }
+
+    public function getTutorName1(): ?string { return $this->tutorName1; }
+    public function setTutorName1(?string $v): static { $this->tutorName1 = $v; return $this; }
+
+    public function getTutorName2(): ?string { return $this->tutorName2; }
+    public function setTutorName2(?string $v): static { $this->tutorName2 = $v; return $this; }
+
+    public function getContactPhone1(): ?string { return $this->contactPhone1; }
+    public function setContactPhone1(?string $v): static { $this->contactPhone1 = $v; return $this; }
+
+    public function getContactPhone1Notes(): ?string { return $this->contactPhone1Notes; }
+    public function setContactPhone1Notes(?string $v): static { $this->contactPhone1Notes = $v; return $this; }
+
+    public function getContactPhone2(): ?string { return $this->contactPhone2; }
+    public function setContactPhone2(?string $v): static { $this->contactPhone2 = $v; return $this; }
+
+    public function getContactPhone2Notes(): ?string { return $this->contactPhone2Notes; }
+    public function setContactPhone2Notes(?string $v): static { $this->contactPhone2Notes = $v; return $this; }
+
+    public function getContactPhone3(): ?string { return $this->contactPhone3; }
+    public function setContactPhone3(?string $v): static { $this->contactPhone3 = $v; return $this; }
+
+    public function getContactPhone3Notes(): ?string { return $this->contactPhone3Notes; }
+    public function setContactPhone3Notes(?string $v): static { $this->contactPhone3Notes = $v; return $this; }
 
     /**
      * @return Collection<int, Group>
