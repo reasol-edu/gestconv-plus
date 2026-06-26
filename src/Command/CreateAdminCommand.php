@@ -41,9 +41,20 @@ class CreateAdminCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $username = $input->getArgument('username');
-        $password = $input->getArgument('password')
-            ?? $io->askHidden($this->translator->trans('create_admin.argument.password', domain: 'command'));
+        $usernameArg = $input->getArgument('username');
+        if (!is_string($usernameArg) || $usernameArg === '') {
+            $io->error('Invalid username argument.');
+
+            return Command::FAILURE;
+        }
+        $username = $usernameArg;
+
+        $passwordArg = $input->getArgument('password');
+        $password    = is_string($passwordArg) ? $passwordArg : null;
+        if ($password === null) {
+            $asked    = $io->askHidden($this->translator->trans('create_admin.argument.password', domain: 'command'));
+            $password = is_string($asked) ? $asked : '';
+        }
 
         if ($this->teachers->findByUsername($username) !== null) {
             $io->error($this->translator->trans(

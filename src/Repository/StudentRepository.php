@@ -45,6 +45,9 @@ class StudentRepository extends ServiceEntityRepository
         ?AcademicYear $year = null,
     ): Query {
         $year ??= $centre->getActiveAcademicYear();
+        if ($year === null) {
+            return $this->findNoneQuery();
+        }
         $qb = $this->createQueryBuilder('s')
             ->distinct()
             ->join('s.groups', 'g')
@@ -97,6 +100,9 @@ class StudentRepository extends ServiceEntityRepository
         ?AcademicYear $year = null,
     ): array {
         $year ??= $centre->getActiveAcademicYear();
+        if ($year === null) {
+            return [];
+        }
         $qb = $this->createQueryBuilder('s')
             ->distinct()
             ->join('s.groups', 'g')
@@ -137,11 +143,13 @@ class StudentRepository extends ServiceEntityRepository
 
     public function findById(string $id): ?Student
     {
-        return $this->createQueryBuilder('s')
+        $result = $this->createQueryBuilder('s')
             ->where('s.id = :id')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Student ? $result : null;
     }
 
     public function findByStudentId(string $studentId): ?Student

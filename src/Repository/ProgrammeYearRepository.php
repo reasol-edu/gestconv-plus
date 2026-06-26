@@ -31,6 +31,7 @@ class ProgrammeYearRepository extends ServiceEntityRepository
             return [];
         }
 
+        /** @var list<array<string, int|string>> $rows */
         $rows = $this->createQueryBuilder('py')
             ->select('IDENTITY(py.programme) AS pid', 'COUNT(py.id) AS cnt')
             ->where('py.programme IN (:programmes)')
@@ -68,12 +69,14 @@ class ProgrammeYearRepository extends ServiceEntityRepository
 
     public function findByProgrammeAndId(Programme $programme, string $id): ?ProgrammeYear
     {
-        return $this->createQueryBuilder('py')
+        $result = $this->createQueryBuilder('py')
             ->where('py.programme = :programme')
             ->andWhere('py.id = :id')
             ->setParameter('programme', $programme->getId(), 'uuid')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof ProgrammeYear ? $result : null;
     }
 }

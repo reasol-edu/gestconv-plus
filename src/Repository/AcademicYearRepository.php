@@ -19,11 +19,13 @@ class AcademicYearRepository extends ServiceEntityRepository
 
     public function findById(string $id): ?AcademicYear
     {
-        return $this->createQueryBuilder('ay')
+        $result = $this->createQueryBuilder('ay')
             ->where('ay.id = :id')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof AcademicYear ? $result : null;
     }
 
     /** @return AcademicYear[] */
@@ -39,12 +41,14 @@ class AcademicYearRepository extends ServiceEntityRepository
 
     public function findByCentreAndId(EducationalCentre $centre, string $yearId): ?AcademicYear
     {
-        return $this->createQueryBuilder('ay')
+        $result = $this->createQueryBuilder('ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay.id = :id')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('id', $yearId, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof AcademicYear ? $result : null;
     }
 }

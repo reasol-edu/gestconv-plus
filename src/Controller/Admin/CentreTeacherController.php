@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Security\Voter\EducationalCentreVoter;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin/centros/{centreId}/docentes-curso')]
@@ -63,7 +64,7 @@ class CentreTeacherController extends AbstractController
         }
 
         $year = $centre->getActiveAcademicYear();
-        if (!$year->getTeachers()->contains($teacher)) {
+        if ($year !== null && !$year->getTeachers()->contains($teacher)) {
             $year->addTeacher($teacher);
             $this->em->flush();
             $this->addFlash('success', $this->t('centre_teachers.flash.added'));
@@ -87,7 +88,7 @@ class CentreTeacherController extends AbstractController
         }
 
         $file = $request->files->get('csv');
-        if ($file === null || !$file->isValid()) {
+        if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('centre_teachers.import.error.no_file'));
 
             return $this->render('admin/centre_teacher/import.html.twig', ['centre' => $centre]);
@@ -100,6 +101,11 @@ class CentreTeacherController extends AbstractController
         }
 
         $stream = fopen('php://temp', 'rb+');
+        if ($stream === false) {
+            $this->addFlash('error', $this->t('centre_teachers.import.error.no_file'));
+
+            return $this->render('admin/centre_teacher/import.html.twig', ['centre' => $centre]);
+        }
         fwrite($stream, $content);
         rewind($stream);
 
@@ -112,7 +118,7 @@ class CentreTeacherController extends AbstractController
         }
 
         /** @var array<string, int> $headerMap */
-        $headerMap = array_flip(array_map('trim', $headers));
+        $headerMap = array_flip(array_map(static fn (?string $h): string => trim($h ?? ''), $headers));
 
         $required = ['Empleado/a', 'Usuario IdEA'];
         foreach ($required as $col) {
@@ -128,6 +134,12 @@ class CentreTeacherController extends AbstractController
         $created = 0;
         $added   = 0;
         $skipped = 0;
+
+        if ($year === null) {
+            fclose($stream);
+
+            return $this->redirectToRoute('app_admin_centre_teachers_import', ['centreId' => $centre->getId()]);
+        }
 
         while (($row = fgetcsv($stream, escape: '')) !== false) {
             if (count(array_filter($row, static fn ($v) => trim((string) $v) !== '')) === 0) {
@@ -187,7 +199,7 @@ class CentreTeacherController extends AbstractController
         }
 
         $file = $request->files->get('csv');
-        if ($file === null || !$file->isValid()) {
+        if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.no_file'));
 
             return $this->render('admin/centre_teacher/import_assignments.html.twig', ['centre' => $centre]);
@@ -200,6 +212,11 @@ class CentreTeacherController extends AbstractController
         }
 
         $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.no_file'));
+
+            return $this->render('admin/centre_teacher/import_assignments.html.twig', ['centre' => $centre]);
+        }
         fwrite($stream, $content);
         rewind($stream);
 
@@ -212,7 +229,7 @@ class CentreTeacherController extends AbstractController
         }
 
         /** @var array<string, int> $headerMap */
-        $headerMap = array_flip(array_map('trim', $headers));
+        $headerMap = array_flip(array_map(static fn (?string $h): string => trim($h ?? ''), $headers));
 
         $required = ['Unidad', 'Profesor/a'];
         foreach ($required as $col) {
@@ -349,7 +366,7 @@ class CentreTeacherController extends AbstractController
                 }
 
                 $this->em->persist($teacher);
-                $centre->getActiveAcademicYear()->addTeacher($teacher);
+                $centre->getActiveAcademicYear()?->addTeacher($teacher);
                 $this->em->flush();
 
                 $this->addFlash('success', $this->t('centre_teachers.flash.registered_and_added'));
@@ -373,7 +390,8 @@ class CentreTeacherController extends AbstractController
         $this->denyIfViewingPastYear($centre);
         $teacher = $this->teachers->findById($teacherId);
 
-        if ($teacher === null || !$centre->getActiveAcademicYear()->getTeachers()->contains($teacher)) {
+        $activeYear = $centre->getActiveAcademicYear();
+        if ($teacher === null || $activeYear === null || !$activeYear->getTeachers()->contains($teacher)) {
             throw $this->createNotFoundException();
         }
 
@@ -391,7 +409,7 @@ class CentreTeacherController extends AbstractController
             }
 
             $submittedIds = $request->request->all('group_ids');
-            $submittedIds = array_filter(array_map('strval', $submittedIds));
+            $submittedIds = array_filter(array_map(static fn (mixed $v): string => is_string($v) ? $v : '', $submittedIds));
 
             foreach ($allGroups as $group) {
                 $id       = $group->getId()->toRfc4122();

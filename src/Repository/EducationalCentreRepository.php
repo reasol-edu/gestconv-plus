@@ -26,22 +26,26 @@ class EducationalCentreRepository extends ServiceEntityRepository
 
     public function findById(string $id): ?EducationalCentre
     {
-        return $this->createQueryBuilder('ec')
+        $result = $this->createQueryBuilder('ec')
             ->where('ec.id = :id')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof EducationalCentre ? $result : null;
     }
 
     public function findByIdWithActiveYear(string $id): ?EducationalCentre
     {
-        return $this->createQueryBuilder('ec')
+        $result = $this->createQueryBuilder('ec')
             ->leftJoin('ec.activeAcademicYear', 'ay')
             ->addSelect('ay')
             ->where('ec.id = :id')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof EducationalCentre ? $result : null;
     }
 
     public function countAll(): int

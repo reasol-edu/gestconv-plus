@@ -53,7 +53,7 @@ class EducationalCentreListComponent extends AbstractController
         return new Paginator(
             $this->centres->createAllWithActiveYearFilteredQuery(trim($this->search), $this->sort, $this->sortDir),
             max(1, $this->page),
-            (int) $this->appSettings->get('page.size'),
+            $this->appSettings->getInt('page.size'),
         );
     }
 

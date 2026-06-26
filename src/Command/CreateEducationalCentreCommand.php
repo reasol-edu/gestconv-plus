@@ -41,12 +41,26 @@ class CreateEducationalCentreCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $t  = fn(string $key, array $params = []) => $this->translator->trans($key, $params, 'command');
 
-        $code = $input->getArgument('code')
-            ?? $io->ask($t('create_centre.ask.code'), validator: $this->notBlank());
-        $name = $input->getArgument('name')
-            ?? $io->ask($t('create_centre.ask.name'), validator: $this->notBlank());
-        $city = $input->getArgument('city')
-            ?? $io->ask($t('create_centre.ask.city'), validator: $this->notBlank());
+        $codeArg = $input->getArgument('code');
+        $code    = is_string($codeArg) ? $codeArg : null;
+        if ($code === null) {
+            $asked = $io->ask($t('create_centre.ask.code'), validator: $this->notBlank());
+            $code  = is_string($asked) ? $asked : '';
+        }
+
+        $nameArg = $input->getArgument('name');
+        $name    = is_string($nameArg) ? $nameArg : null;
+        if ($name === null) {
+            $asked = $io->ask($t('create_centre.ask.name'), validator: $this->notBlank());
+            $name  = is_string($asked) ? $asked : '';
+        }
+
+        $cityArg = $input->getArgument('city');
+        $city    = is_string($cityArg) ? $cityArg : null;
+        if ($city === null) {
+            $asked = $io->ask($t('create_centre.ask.city'), validator: $this->notBlank());
+            $city  = is_string($asked) ? $asked : '';
+        }
 
         if ($this->centres->findByCode($code) !== null) {
             $io->error($t('create_centre.error.existing_code', ['%code%' => $code]));

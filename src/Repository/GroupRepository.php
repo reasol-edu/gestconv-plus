@@ -50,6 +50,7 @@ class GroupRepository extends ServiceEntityRepository
             return [];
         }
 
+        /** @var list<array<string, int|string>> $rows */
         $rows = $this->createQueryBuilder('g')
             ->select('IDENTITY(g.programmeYear) AS lid', 'COUNT(g.id) AS cnt')
             ->where('g.programmeYear IN (:levels)')
@@ -87,13 +88,15 @@ class GroupRepository extends ServiceEntityRepository
 
     public function findByLevelAndId(ProgrammeYear $level, string $id): ?Group
     {
-        return $this->createQueryBuilder('g')
+        $result = $this->createQueryBuilder('g')
             ->where('g.programmeYear = :level')
             ->andWhere('g.id = :id')
             ->setParameter('level', $level->getId(), 'uuid')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Group ? $result : null;
     }
 
     /**
@@ -148,6 +151,7 @@ class GroupRepository extends ServiceEntityRepository
             return [];
         }
 
+        /** @var list<array<string, int|string>> $rows */
         $rows = $this->getEntityManager()
             ->createQuery('
                 SELECT g.id AS gid,
@@ -172,7 +176,7 @@ class GroupRepository extends ServiceEntityRepository
             $uuidNorm[$rfc]                        = $rfc;
             $uuidNorm[$group->getId()->toBinary()]  = $rfc;
         }
-        $normalize = static fn (mixed $raw): string =>
+        $normalize = static fn (int|string $raw): string =>
             $uuidNorm[(string) $raw] ?? (string) $raw;
 
         $map = [];

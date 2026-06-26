@@ -61,12 +61,14 @@ class ProgrammeRepository extends ServiceEntityRepository
 
     public function findByAcademicYearAndId(AcademicYear $year, string $id): ?Programme
     {
-        return $this->createQueryBuilder('p')
+        $result = $this->createQueryBuilder('p')
             ->where('p.academicYear = :year')
             ->andWhere('p.id = :id')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Programme ? $result : null;
     }
 }

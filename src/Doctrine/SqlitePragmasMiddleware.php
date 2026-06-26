@@ -23,12 +23,12 @@ final class SqlitePragmasMiddleware implements Middleware
     public function wrap(Driver $driver): Driver
     {
         return new class($driver) extends AbstractDriverMiddleware {
-            /** @param array<string, mixed> $params */
             public function connect(array $params): DriverConnection
             {
                 $connection = parent::connect($params);
 
-                if (str_contains((string) ($params['driver'] ?? ''), 'sqlite')) {
+                $driver = $params['driver'] ?? '';
+                if (str_contains($driver, 'sqlite')) {
                     $connection->exec('PRAGMA journal_mode = WAL');
                     $connection->exec('PRAGMA busy_timeout = 5000');
                     $connection->exec('PRAGMA synchronous = NORMAL');

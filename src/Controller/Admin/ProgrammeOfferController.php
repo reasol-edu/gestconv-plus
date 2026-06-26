@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Security\Voter\EducationalCentreVoter;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin/centros/{centreId}/offer')]
@@ -33,9 +34,13 @@ class ProgrammeOfferController extends AbstractController
     public function export(string $centreId): JsonResponse
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
+        $year   = $centre->getActiveAcademicYear();
+        if ($year === null) {
+            throw $this->createNotFoundException();
+        }
 
-        $data     = $this->exporter->export($centre->getActiveAcademicYear());
-        $filename = 'offer-' . $centre->getCode() . '-' . $centre->getActiveAcademicYear()->getName() . '.json';
+        $data     = $this->exporter->export($year);
+        $filename = 'offer-' . $centre->getCode() . '-' . $year->getName() . '.json';
         $json     = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         return new JsonResponse($json, Response::HTTP_OK, [
@@ -57,17 +62,22 @@ class ProgrammeOfferController extends AbstractController
         }
 
         $file = $request->files->get('json');
-        if ($file === null || !$file->isValid()) {
+        if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('offer.import.error.no_file'));
             return $this->render('admin/offer/import.html.twig', ['centre' => $centre]);
         }
 
         $content = (string) file_get_contents($file->getPathname());
-        $data    = json_decode($content, true);
+        $decoded = json_decode($content, true);
 
-        if (!is_array($data)) {
+        if (!is_array($decoded)) {
             $this->addFlash('error', $this->t('offer.import.error.invalid_json'));
             return $this->render('admin/offer/import.html.twig', ['centre' => $centre]);
+        }
+
+        $importYear = $centre->getActiveAcademicYear();
+        if ($importYear === null) {
+            throw $this->createNotFoundException();
         }
 
         $options = new ImportOptions(
@@ -75,7 +85,8 @@ class ProgrammeOfferController extends AbstractController
             importTeachers: $request->request->has('import_teachers'),
         );
 
-        $stats = $this->importer->import($data, $centre->getActiveAcademicYear(), $options);
+        /** @var array<string, mixed> $decoded */
+        $stats = $this->importer->import($decoded, $importYear, $options);
 
         $summary = $this->translator->trans('offer.import.flash.summary', [
             '%programmes%' => $stats['programmes'],

@@ -40,6 +40,13 @@ final class AppSettings implements AppSettingsInterface
         return $this->resolved[$key] ?? null;
     }
 
+    public function getInt(string $key): int
+    {
+        $value = $this->get($key);
+
+        return is_int($value) ? $value : 0;
+    }
+
     public function getForTeacher(string $key, Teacher $teacher): mixed
     {
         $this->ensureBaseLoaded();
@@ -112,7 +119,7 @@ final class AppSettings implements AppSettingsInterface
         $centreMap  = $this->loadCentreMap();
         $teacherMap = $this->loadTeacherMap();
 
-        foreach ($this->allDefinitions as $key => $definition) {
+        foreach ($this->allDefinitions ?? [] as $key => $definition) {
             $raw = match (true) {
                 isset($this->globalMap[$key]) && $this->globalMap[$key]->isLocked()
                     => $this->globalMap[$key]->getValue(),

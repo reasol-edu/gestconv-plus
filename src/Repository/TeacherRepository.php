@@ -23,11 +23,13 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
 
     public function findById(string $id): ?Teacher
     {
-        return $this->createQueryBuilder('t')
+        $result = $this->createQueryBuilder('t')
             ->where('t.id = :id')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Teacher ? $result : null;
     }
 
     /** @return Teacher[] */
@@ -38,7 +40,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
 
     public function findByAcademicYearAndId(AcademicYear $year, string $id): ?Teacher
     {
-        return $this->createQueryBuilder('t')
+        $result = $this->createQueryBuilder('t')
             ->join('t.academicYears', 'ay')
             ->where('t.id = :id')
             ->andWhere('ay.id = :year')
@@ -46,6 +48,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->setParameter('year', $year->getId(), 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Teacher ? $result : null;
     }
 
     /**
@@ -173,7 +177,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
 
     public function findByFullName(string $firstName, string $lastName): ?Teacher
     {
-        return $this->createQueryBuilder('t')
+        $result = $this->createQueryBuilder('t')
             ->where('LOWER(t.name.firstName) = LOWER(:firstName)')
             ->andWhere('LOWER(t.name.lastName) = LOWER(:lastName)')
             ->setParameter('firstName', $firstName)
@@ -181,6 +185,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Teacher ? $result : null;
     }
 
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void

@@ -43,7 +43,11 @@ class ProgrammeOfferImporter
         }
 
         foreach ((array) ($data['programmes'] ?? []) as $progData) {
-            $progName = trim((string) ($progData['name'] ?? ''));
+            if (!is_array($progData)) {
+                continue;
+            }
+            $nameRaw  = $progData['name'] ?? null;
+            $progName = is_string($nameRaw) ? trim($nameRaw) : '';
             if ($progName === '') {
                 continue;
             }
@@ -58,8 +62,9 @@ class ProgrammeOfferImporter
                 $stats['programmes']++;
             }
 
-            $details = $progData['details'] ?? null;
-            $programme->setDetails($details !== null && $details !== '' ? (string) $details : null);
+            $detailsRaw = $progData['details'] ?? null;
+            $details    = is_string($detailsRaw) ? $detailsRaw : null;
+            $programme->setDetails($details !== null && $details !== '' ? $details : null);
 
             $existingLevels = [];
             foreach ($this->levels->findByProgrammeOrderedByName($programme) as $l) {
@@ -67,7 +72,11 @@ class ProgrammeOfferImporter
             }
 
             foreach ((array) ($progData['levels'] ?? []) as $levelData) {
-                $levelName = trim((string) ($levelData['name'] ?? ''));
+                if (!is_array($levelData)) {
+                    continue;
+                }
+                $levelNameRaw = $levelData['name'] ?? null;
+                $levelName    = is_string($levelNameRaw) ? trim($levelNameRaw) : '';
                 if ($levelName === '') {
                     continue;
                 }
@@ -82,8 +91,9 @@ class ProgrammeOfferImporter
                     $stats['levels']++;
                 }
 
-                $levelDetails = $levelData['details'] ?? null;
-                $level->setDetails($levelDetails !== null && $levelDetails !== '' ? (string) $levelDetails : null);
+                $levelDetailsRaw = $levelData['details'] ?? null;
+                $levelDetails    = is_string($levelDetailsRaw) ? $levelDetailsRaw : null;
+                $level->setDetails($levelDetails !== null && $levelDetails !== '' ? $levelDetails : null);
 
                 $existingGroups = [];
                 foreach ($this->groups->findByLevelOrderedByName($level) as $g) {
@@ -91,7 +101,11 @@ class ProgrammeOfferImporter
                 }
 
                 foreach ((array) ($levelData['groups'] ?? []) as $groupData) {
-                    $groupName = trim((string) ($groupData['name'] ?? ''));
+                    if (!is_array($groupData)) {
+                        continue;
+                    }
+                    $groupNameRaw = $groupData['name'] ?? null;
+                    $groupName    = is_string($groupNameRaw) ? trim($groupNameRaw) : '';
                     if ($groupName === '') {
                         continue;
                     }
@@ -106,14 +120,16 @@ class ProgrammeOfferImporter
                         $stats['groups']++;
                     }
 
-                    $groupDetails = $groupData['details'] ?? null;
-                    $group->setDetails($groupDetails !== null && $groupDetails !== '' ? (string) $groupDetails : null);
+                    $groupDetailsRaw = $groupData['details'] ?? null;
+                    $groupDetails    = is_string($groupDetailsRaw) ? $groupDetailsRaw : null;
+                    $group->setDetails($groupDetails !== null && $groupDetails !== '' ? $groupDetails : null);
 
                     if ($options->importTeachers) {
                         foreach ($group->getTeachers()->toArray() as $t) {
                             $group->removeTeacher($t);
                         }
-                        foreach ($this->uniqueUsernames((array) ($groupData['teachers'] ?? [])) as $username) {
+                        $rawTeachers = $groupData['teachers'] ?? [];
+                        foreach ($this->uniqueUsernames(is_array($rawTeachers) ? $rawTeachers : []) as $username) {
                             $teacher = $this->teachers->findByUsername($username);
                             if ($teacher === null) {
                                 $stats['missing_teachers'][] = $username;
@@ -127,7 +143,8 @@ class ProgrammeOfferImporter
                         foreach ($group->getTutors()->toArray() as $t) {
                             $group->removeTutor($t);
                         }
-                        foreach ($this->uniqueUsernames((array) ($groupData['tutors'] ?? [])) as $username) {
+                        $rawTutors = $groupData['tutors'] ?? [];
+                        foreach ($this->uniqueUsernames(is_array($rawTutors) ? $rawTutors : []) as $username) {
                             $teacher = $this->teachers->findByUsername($username);
                             if ($teacher === null) {
                                 $stats['missing_teachers'][] = $username;
@@ -159,7 +176,7 @@ class ProgrammeOfferImporter
         $seen   = [];
         $result = [];
         foreach ($raw as $u) {
-            $username = trim((string) $u);
+            $username = is_string($u) ? trim($u) : '';
             if ($username !== '' && !isset($seen[$username])) {
                 $seen[$username] = true;
                 $result[]        = $username;

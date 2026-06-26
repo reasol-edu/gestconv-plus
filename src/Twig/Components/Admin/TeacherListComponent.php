@@ -47,7 +47,7 @@ class TeacherListComponent extends AbstractController
         return new Paginator(
             $this->teachers->createFilteredOrderedByNameQuery(trim($this->search)),
             max(1, $this->page),
-            (int) $this->appSettings->get('page.size'),
+            $this->appSettings->getInt('page.size'),
         );
     }
 

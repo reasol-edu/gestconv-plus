@@ -89,7 +89,9 @@ class SenecaAuthenticatorService
         $xpath = new \DOMXPath($dom);
         $nav = $xpath->query('//correcto');
 
-        return $nav !== false && $nav->length === 1 && $nav->item(0)?->textContent === 'SI';
+        $item = $nav !== false ? $nav->item(0) : null;
+
+        return $nav !== false && $nav->length === 1 && $item instanceof \DOMNode && $item->textContent === 'SI';
     }
 
     /**
@@ -99,6 +101,10 @@ class SenecaAuthenticatorService
      */
     private function postToUrl(array $fields, string $postUrl, string $refererUrl, bool $forceSecurity): string
     {
+        if ($postUrl === '' || $refererUrl === '') {
+            return '';
+        }
+
         $fieldsString = '';
         foreach ($fields as $key => $value) {
             $fieldsString .= $key.'='.rawurlencode((string) $value).'&';
@@ -129,6 +135,10 @@ class SenecaAuthenticatorService
 
     private function setCurlDefaultOptions(string $url, bool $forceSecurity, \CurlHandle $curl): void
     {
+        if ($url === '') {
+            return;
+        }
+
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $forceSecurity);
         curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($curl, CURLOPT_TIMEOUT, 10);

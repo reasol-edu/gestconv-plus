@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Security\Voter\EducationalCentreVoter;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -77,6 +78,9 @@ class StudentController extends AbstractController
 
                 $centreGroupsById = $this->indexGroupsById($centre);
                 foreach ($selectedGroupIds as $groupId) {
+                    if (!is_string($groupId)) {
+                        continue;
+                    }
                     if (isset($centreGroupsById[$groupId])) {
                         $student->addGroup($centreGroupsById[$groupId]);
                     }
@@ -166,6 +170,9 @@ class StudentController extends AbstractController
                     }
                 }
                 foreach ($selectedGroupIds as $groupId) {
+                    if (!is_string($groupId)) {
+                        continue;
+                    }
                     if (isset($centreGroupsById[$groupId])) {
                         $student->addGroup($centreGroupsById[$groupId]);
                     }
@@ -223,7 +230,13 @@ class StudentController extends AbstractController
             @unlink($path);
             $request->getSession()->remove('student_import_id');
 
-            $allowedGroupIds = $request->request->all('groups');
+            $rawGroupIds     = $request->request->all('groups');
+            $allowedGroupIds = [];
+            foreach ($rawGroupIds as $gid) {
+                if (is_string($gid) && $gid !== '') {
+                    $allowedGroupIds[] = $gid;
+                }
+            }
             $groupsByName    = $this->buildGroupsByName($centre);
             $result          = $this->processCsvImport($content, $groupsByName, dryRun: false, allowedGroupIds: $allowedGroupIds);
             $this->em->flush();
@@ -238,7 +251,7 @@ class StudentController extends AbstractController
         }
 
         $file = $request->files->get('csv');
-        if ($file === null || !$file->isValid()) {
+        if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('students.import.error.no_file'));
             return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
         }
@@ -250,7 +263,11 @@ class StudentController extends AbstractController
         }
 
         // Validate headers before dry-run
-        $stream  = fopen('php://temp', 'r+');
+        $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            $this->addFlash('error', $this->t('students.import.error.no_file'));
+            return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
+        }
         fwrite($stream, $content);
         rewind($stream);
         $headers = fgetcsv($stream, escape: '');
@@ -261,7 +278,7 @@ class StudentController extends AbstractController
             return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
         }
 
-        $headerMap = array_flip(array_map('trim', $headers));
+        $headerMap = array_flip(array_map(static fn (?string $h): string => trim($h ?? ''), $headers));
         $required  = ['Estado Matrícula', 'Nº Id. Escolar', 'Primer apellido', 'Segundo apellido', 'Nombre', 'Unidad'];
         foreach ($required as $col) {
             if (!isset($headerMap[$col])) {
@@ -311,11 +328,16 @@ class StudentController extends AbstractController
     private function processCsvImport(string $content, array $groupsByName, bool $dryRun, ?array $allowedGroupIds = null): array
     {
         $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'unknownGroups' => [], 'groupStats' => []];
+        }
         fwrite($stream, $content);
         rewind($stream);
 
         $headers   = fgetcsv($stream, escape: '');
-        $headerMap = array_flip(array_map('trim', (array) $headers));
+        $headerMap = $headers !== false
+            ? array_flip(array_map(static fn (?string $h): string => trim($h ?? ''), $headers))
+            : [];
 
         $created       = 0;
         $updated       = 0;

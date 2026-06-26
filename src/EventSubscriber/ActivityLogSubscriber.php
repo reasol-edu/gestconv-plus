@@ -47,7 +47,7 @@ final class ActivityLogSubscriber
 
         try {
             $request = $event->getRequest();
-            $route   = (string) ($request->attributes->get('_route') ?? '');
+            $route   = $request->attributes->getString('_route');
 
             foreach (self::EXCLUDED_ROUTE_PREFIXES as $prefix) {
                 if (str_starts_with($route, $prefix)) {
