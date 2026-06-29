@@ -25,9 +25,9 @@
         <form method="post" enctype="multipart/form-data" class="px-6 py-6 space-y-6">
             <input type="hidden" name="_token" value="{{ csrf_token('import_centre_teachers') }}">
 
-            <div class="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3.5 text-sm text-blue-700 space-y-1">
-                <p class="font-medium">{{ 'centre_teachers.import.help.title'|trans({}, 'admin') }}</p>
-                <ul class="list-disc list-inside space-y-0.5 text-blue-600 text-xs mt-1">
+            <div class="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3.5 text-blue-700">
+                <p class="text-sm font-medium">{{ 'centre_teachers.import.help.title'|trans({}, 'admin') }}</p>
+                <ul class="mt-2 list-disc list-outside pl-4 space-y-2 text-xs text-blue-600 marker:text-blue-400">
                     <li>{{ 'centre_teachers.import.help.source'|trans({}, 'admin') }}</li>
                     <li>{{ 'centre_teachers.import.help.encoding'|trans({}, 'admin') }}</li>
                     <li>{{ 'centre_teachers.import.help.skipped'|trans({}, 'admin') }}</li>
