@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Repository\EducationalCentreRepository;
+use App\Service\IncidentBehaviorSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -21,6 +22,7 @@ class CreateEducationalCentreCommand extends Command
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
         private readonly TranslatorInterface $translator,
+        private readonly IncidentBehaviorSeeder $behaviorSeeder,
     ) {
         parent::__construct();
     }
@@ -84,6 +86,7 @@ class CreateEducationalCentreCommand extends Command
 
         $this->em->persist($centre);
         $this->em->persist($academicYear);
+        $this->behaviorSeeder->seedForCentre($centre);
         $this->em->flush();
 
         $io->success($t('create_centre.success', ['%name%' => $name, '%code%' => $code, '%year%' => $yearName]));

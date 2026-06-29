@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Teacher;
+use App\Repository\IncidentReportRepository;
 use App\Repository\StudentRepository;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +15,7 @@ class DashboardController extends AbstractController
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly StudentRepository $studentRepository,
+        private readonly IncidentReportRepository $incidentRepository,
     ) {}
 
     #[Route('/', name: 'app_dashboard')]
@@ -28,7 +30,8 @@ class DashboardController extends AbstractController
 
         if ($year === null) {
             return $this->render('dashboard/index.html.twig', [
-                'studentCount' => 0,
+                'studentCount'  => 0,
+                'incidentCount' => 0,
             ]);
         }
 
@@ -36,7 +39,8 @@ class DashboardController extends AbstractController
         $viewer = $user instanceof Teacher ? $user : null;
 
         return $this->render('dashboard/index.html.twig', [
-            'studentCount' => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
+            'studentCount'  => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
+            'incidentCount' => $viewer !== null ? $this->incidentRepository->countRecentByCentre($centre, $viewer) : 0,
         ]);
     }
 }

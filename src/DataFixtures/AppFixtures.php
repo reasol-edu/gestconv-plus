@@ -12,6 +12,7 @@ use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Service\IncidentBehaviorSeeder;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ObjectManager;
@@ -22,6 +23,7 @@ class AppFixtures extends Fixture
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly Connection $connection,
+        private readonly IncidentBehaviorSeeder $behaviorSeeder,
     ) {}
 
     public function load(ObjectManager $manager): void
@@ -76,6 +78,9 @@ class AppFixtures extends Fixture
         $conn->executeStatement('UPDATE educational_centre SET active_academic_year_id = NULL');
 
         $stmts = [
+            'DELETE FROM ' . $q('incident_report_behavior'),
+            'DELETE FROM ' . $q('incident_report'),
+            'DELETE FROM ' . $q('incident_behavior'),
             'DELETE FROM ' . $q('student_groups'),
             'DELETE FROM ' . $q('student'),
             'DELETE FROM ' . $q('group_tutor'),
@@ -223,6 +228,7 @@ class AppFixtures extends Fixture
         $manager->persist($centre);
         $manager->persist($year);
 
+        $this->behaviorSeeder->seedForCentre($centre);
         $centre->addAdmin($teachers['rafael.exposito']);
         $centre->addAdmin($teachers['carmen.diaz']);
         foreach ($teachers as $t) {
@@ -270,6 +276,7 @@ class AppFixtures extends Fixture
         $manager->persist($centre);
         $manager->persist($year);
 
+        $this->behaviorSeeder->seedForCentre($centre);
         $centre->addAdmin($teachers['mariajose.alvarez']);
         $centre->addAdmin($teachers['pedro.fernandez']);
         foreach ($teachers as $t) {

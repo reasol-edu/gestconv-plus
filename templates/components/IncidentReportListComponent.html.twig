@@ -1,0 +1,155 @@
+{% import 'components/_pagination_live.html.twig' as pager %}
+<div {{ attributes }}>
+    {% if centre.activeAcademicYear is null %}
+        <div class="px-6 py-16 text-center">
+            {{ ux_icon('heroicons:exclamation-circle', {class: 'mx-auto h-10 w-10 text-amber-300 mb-3'}) }}
+            <p class="text-sm text-gray-500">{{ 'incident.no_active_year'|trans({}, 'admin') }}</p>
+        </div>
+    {% else %}
+        {% set pagination = this.pagination %}
+
+        {# Barra de filtros #}
+        <div class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
+            <div class="relative flex-1 min-w-48">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    {{ ux_icon('heroicons:magnifying-glass', {class: 'h-4 w-4 text-gray-400'}) }}
+                </div>
+                <input type="search"
+                       data-model="norender|search"
+                       data-action="input->live#action"
+                       data-live-action-param="resetPage"
+                       placeholder="{{ 'students.search'|trans({}, 'admin') }}"
+                       value="{{ search }}"
+                       class="block w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm
+                              text-gray-900 placeholder-gray-400 focus:border-forest-500 focus:outline-none
+                              focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+
+            <select data-model="norender|serious"
+                    data-action="change->live#action"
+                    data-live-action-param="resetPage"
+                    class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
+                           focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0">
+                <option value="">{{ 'incident.filter.all'|trans({}, 'admin') }}</option>
+                <option value="1" {{ serious == '1' ? 'selected' : '' }}>{{ 'incident.filter.serious'|trans({}, 'admin') }}</option>
+                <option value="0" {{ serious == '0' ? 'selected' : '' }}>{{ 'behavior.badge.contrary'|trans({}, 'admin') }}</option>
+            </select>
+
+            <select data-model="norender|expelled"
+                    data-action="change->live#action"
+                    data-live-action-param="resetPage"
+                    class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
+                           focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0">
+                <option value="">{{ 'incident.filter.all'|trans({}, 'admin') }}</option>
+                <option value="1" {{ expelled == '1' ? 'selected' : '' }}>{{ 'incident.filter.expelled'|trans({}, 'admin') }}</option>
+            </select>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <input type="date"
+                       data-model="norender|dateFrom"
+                       data-action="change->live#action"
+                       data-live-action-param="resetPage"
+                       value="{{ dateFrom }}"
+                       placeholder="{{ 'incident.filter.date_from'|trans({}, 'admin') }}"
+                       class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                              focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                <span class="text-gray-400 text-xs">–</span>
+                <input type="date"
+                       data-model="norender|dateTo"
+                       data-action="change->live#action"
+                       data-live-action-param="resetPage"
+                       value="{{ dateTo }}"
+                       placeholder="{{ 'incident.filter.date_to'|trans({}, 'admin') }}"
+                       class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                              focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+
+            <button data-action="live#action" data-live-action-param="toggleOwnOnly"
+                    class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                           {{ ownOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
+                {{ ux_icon('heroicons:user', {class: 'h-3.5 w-3.5'}) }}
+                {{ 'incident.filter.own_only'|trans({}, 'admin') }}
+            </button>
+
+            <svg data-loading class="hidden h-4 w-4 text-forest-500 animate-spin shrink-0 ml-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 22 6.477 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+            </svg>
+        </div>
+
+        <div data-loading="addClass(opacity-50 pointer-events-none animate-pulse)" class="transition-opacity">
+        {% if pagination.totalItems == 0 %}
+            <div class="px-6 py-16 text-center">
+                {{ ux_icon('heroicons:document-text', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+                <p class="text-sm text-gray-500">
+                    {{ (this.hasActiveFilters ? 'incident.search_empty' : 'incident.empty')|trans({}, 'admin') }}
+                </p>
+            </div>
+        {% else %}
+            <div class="overflow-x-auto">
+                <table class="table-cards w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-100 bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.student'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.group'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.teacher'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.behaviors'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.actions'|trans({}, 'admin') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for report in pagination.items %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td data-label="{{ 'incident.col.occurred_at'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('d/m/Y H:i') }}</td>
+                                <td data-label="{{ 'incident.col.student'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 font-medium text-gray-900">
+                                    {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+                                </td>
+                                <td data-label="{{ 'incident.col.group'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 text-gray-600">{{ report.group.name }}</td>
+                                <td data-label="{{ 'incident.col.teacher'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 text-gray-600">{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</td>
+                                <td data-label="{{ 'incident.col.behaviors'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4">
+                                    <div class="flex flex-wrap gap-1 sm:justify-start justify-end">
+                                        {% set hasSerious = report.behaviors|filter(b => b.serious)|length > 0 %}
+                                        {% if hasSerious %}
+                                            <span class="inline-flex items-center rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-xs font-medium">
+                                                {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3 w-3 mr-0.5'}) }}
+                                                {{ 'incident.badge.serious'|trans({}, 'admin') }}
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-600 px-2 py-0.5 text-xs font-medium">
+                                                {{ report.behaviors|length }} conducta(s)
+                                            </span>
+                                        {% endif %}
+                                        {% if report.expelledFromClass %}
+                                            <span class="inline-flex items-center rounded-full bg-orange-100 text-orange-700 px-2 py-0.5 text-xs font-medium">
+                                                {{ 'incident.badge.expelled'|trans({}, 'admin') }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ path('app_incidents_show', {id: report.id}) }}"
+                                           class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium
+                                                  text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                            {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
+                                            Ver
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {{ pager.nav(pagination) }}
+        {% endif %}
+        </div>
+    {% endif %}
+</div>

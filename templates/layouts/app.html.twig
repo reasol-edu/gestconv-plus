@@ -95,6 +95,18 @@
 
             <div class="my-3 h-px bg-white/8"></div>
 
+            {# Partes de convivencia — todos los docentes #}
+            {% if active_centre %}
+                {% set incidents_active = current_route starts with 'app_incidents' %}
+                <a href="{{ path('app_incidents_index') }}"
+                    {{ incidents_active ? 'aria-current="page"' : '' }}
+                   class="{{ incidents_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'incident_reports'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
             {# Calendario #}
             {{ _self.nav_item(
                 'calendar'|trans({}, 'navigation'),

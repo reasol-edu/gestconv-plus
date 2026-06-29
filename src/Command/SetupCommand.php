@@ -7,6 +7,7 @@ use App\Entity\EducationalCentre;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Repository\TeacherRepository;
+use App\Service\IncidentBehaviorSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -24,6 +25,7 @@ class SetupCommand extends Command
         private readonly TeacherRepository $teachers,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly TranslatorInterface $translator,
+        private readonly IncidentBehaviorSeeder $behaviorSeeder,
     ) {
         parent::__construct();
     }
@@ -66,6 +68,7 @@ class SetupCommand extends Command
         $this->em->persist($centre);
         $this->em->persist($academicYear);
         $this->em->persist($teacher);
+        $this->behaviorSeeder->seedForCentre($centre);
         $this->em->flush();
 
         $io->success($t('setup.success'));

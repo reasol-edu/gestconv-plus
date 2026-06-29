@@ -1,0 +1,117 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'incident.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+                <a href="{{ path('app_incidents_index') }}" class="hover:text-forest-600 transition-colors">{{ 'incident.title'|trans({}, 'admin') }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                {{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}
+            </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            {% if is_granted('incident_report.edit', report) %}
+                <a href="{{ path('app_incidents_edit', {id: report.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
+                    Editar
+                </a>
+            {% endif %}
+            {% if is_granted('incident_report.delete', report) %}
+                <form method="post" action="{{ path('app_incidents_delete', {id: report.id}) }}"
+                      class="js-confirm-form"
+                      data-confirm="{{ 'incident.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_incident_' ~ report.id) }}">
+                    <button type="submit" class="js-confirm-trigger inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600
+                                                 hover:bg-red-50 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}
+                        Eliminar
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="rounded-xl px-4 py-3 text-sm font-medium
+                        {{ label == 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs divide-y divide-gray-100">
+
+        {# Metadata #}
+        <div class="px-6 py-4 grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.col.teacher'|trans({}, 'admin') }}</p>
+                <p class="text-gray-900">{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</p>
+                <p class="text-gray-900">{{ report.occurredAt|date('d/m/Y H:i') }}</p>
+            </div>
+        </div>
+
+        {# Behaviors #}
+        <div class="px-6 py-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'incident.col.behaviors'|trans({}, 'admin') }}</p>
+            <div class="flex flex-wrap gap-2">
+                {% for beh in report.behaviors %}
+                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                 {{ beh.serious ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700' }}">
+                        {% if beh.serious %}{{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3 w-3 mr-1'}) }}{% endif %}
+                        {{ beh.name }}
+                    </span>
+                {% else %}
+                    <span class="text-xs text-gray-400">—</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Description #}
+        <div class="px-6 py-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'incident.field.description'|trans({}, 'admin') }}</p>
+            <div class="prose prose-sm max-w-none text-gray-700">{{ report.description|raw }}</div>
+        </div>
+
+        {# Expulsion #}
+        {% if report.expelledFromClass %}
+            <div class="px-6 py-4 space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center rounded-full bg-orange-100 text-orange-700 px-2.5 py-0.5 text-xs font-medium">
+                        {{ ux_icon('heroicons:no-symbol', {class: 'h-3 w-3 mr-1'}) }}
+                        {{ 'incident.badge.expelled'|trans({}, 'admin') }}
+                    </span>
+                </div>
+                {% if report.assignedTasks %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.field.assigned_tasks'|trans({}, 'admin') }}</p>
+                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ report.assignedTasks }}</p>
+                    </div>
+                {% endif %}
+                {% if report.tasksCompleted is not null %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.field.tasks_completed'|trans({}, 'admin') }}</p>
+                        <p class="text-sm text-gray-700">{{ ('incident.tasks_completed.' ~ report.tasksCompleted.value)|trans({}, 'admin') }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

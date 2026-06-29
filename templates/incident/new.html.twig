@@ -1,0 +1,240 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'incident.new'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block stylesheets %}{{ parent() }}
+<style>
+.ts-wrapper { font-size: 0.875rem; }
+.ts-control {
+    border-radius: 0.75rem !important;
+    border-color: #e5e7eb !important;
+    background-color: #f9fafb !important;
+    padding: 0.5rem 0.875rem !important;
+    box-shadow: none !important;
+    gap: 0.25rem;
+}
+.ts-control:focus-within {
+    border-color: #16a34a !important;
+    background-color: #fff !important;
+    box-shadow: 0 0 0 3px rgb(22 163 74 / 0.15) !important;
+}
+.ts-control .item {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.5rem;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.8125rem;
+}
+.ts-dropdown { border-radius: 0.75rem; border-color: #e5e7eb; box-shadow: 0 4px 12px rgb(0 0 0 / 0.08); overflow: hidden; }
+.ts-dropdown .option { padding: 0.5rem 0.875rem; font-size: 0.875rem; }
+.ts-dropdown .active { background: #f0fdf4; color: #166534; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            <a href="{{ path('app_incidents_index') }}" class="hover:text-forest-600 transition-colors">{{ 'incident.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'incident.new'|trans({}, 'admin') }}</h1>
+    </div>
+
+    {% if errors is not empty %}
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 space-y-1">
+            {% for error in errors %}
+                <p class="text-sm text-red-700">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{{ path('app_incidents_new') }}" class="space-y-8">
+        <input type="hidden" name="_token" value="{{ csrf_token('new_incident') }}">
+
+        {# ── Alumnado implicado ─────────────────────────────────────────── #}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+                {{ 'incident.section.student'|trans({}, 'admin') }}
+            </h2>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'incident.field.students'|trans({}, 'admin') }}
+                </label>
+                <select id="students-select" name="students[]" multiple
+                        placeholder="{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}"
+                        class="w-full">
+                </select>
+                <p class="mt-1 text-xs text-gray-400">{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}</p>
+            </div>
+        </div>
+
+        {# ── Datos del incidente ────────────────────────────────────────── #}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-5">
+            <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+                {{ 'incident.section.incident'|trans({}, 'admin') }}
+            </h2>
+
+            <div>
+                <label for="occurred_at" class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'incident.field.occurred_at'|trans({}, 'admin') }}
+                </label>
+                <input type="datetime-local" id="occurred_at" name="occurred_at"
+                       value="{{ formData.occurredAt ?? '' ? formData.occurredAt : 'now'|date('Y-m-d\\TH:i') }}"
+                       class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                              focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+
+            <div>
+                <p class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ 'incident.field.behaviors'|trans({}, 'admin') }}
+                </p>
+                <p class="text-xs text-gray-400 mb-3">{{ 'incident.field.behaviors_help'|trans({}, 'admin') }}</p>
+
+                {% set contrarias = activeBehaviors|filter(b => not b.serious) %}
+                {% set graves     = activeBehaviors|filter(b => b.serious) %}
+
+                {% if contrarias is not empty %}
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">{{ 'behavior.badge.contrary'|trans({}, 'admin') }}</p>
+                    <div class="space-y-2 mb-4">
+                        {% for beh in contrarias %}
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" name="behaviors[]" value="{{ beh.id.toRfc4122 }}"
+                                       {{ beh.id.toRfc4122 in (formData.behaviorIds ?? []) ? 'checked' : '' }}
+                                       class="mt-0.5 h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                                <span class="text-sm text-gray-700 group-hover:text-gray-900">{{ beh.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if graves is not empty %}
+                    <p class="text-xs font-semibold uppercase tracking-wide text-red-500 mb-2">{{ 'behavior.badge.serious'|trans({}, 'admin') }}</p>
+                    <div class="space-y-2">
+                        {% for beh in graves %}
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" name="behaviors[]" value="{{ beh.id.toRfc4122 }}"
+                                       {{ beh.id.toRfc4122 in (formData.behaviorIds ?? []) ? 'checked' : '' }}
+                                       class="mt-0.5 h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                <span class="text-sm text-gray-700 group-hover:text-gray-900">{{ beh.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div>
+                <twig:Form:RichEditor
+                    id="description"
+                    name="description"
+                    label="{{ 'incident.field.description'|trans({}, 'admin') }}"
+                    value="{{ formData.description ?? '' }}"
+                />
+            </div>
+        </div>
+
+        {# ── Expulsión del aula ─────────────────────────────────────────── #}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4"
+             data-controller="incident-expulsion">
+            <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+                {{ 'incident.section.expulsion'|trans({}, 'admin') }}
+            </h2>
+
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="expelled_from_class" name="expelled_from_class" value="1"
+                       {{ formData.expelled ?? false ? 'checked' : '' }}
+                       data-incident-expulsion-target="checkbox"
+                       data-action="change->incident-expulsion#toggle"
+                       class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                <span class="text-sm font-medium text-gray-700">{{ 'incident.field.expelled_from_class'|trans({}, 'admin') }}</span>
+            </label>
+
+            <div data-incident-expulsion-target="details" class="hidden space-y-4 pt-2">
+                <div>
+                    <label for="assigned_tasks" class="block text-sm font-medium text-gray-700 mb-1.5">
+                        {{ 'incident.field.assigned_tasks'|trans({}, 'admin') }}
+                    </label>
+                    <textarea id="assigned_tasks" name="assigned_tasks" rows="3"
+                              class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                                     focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">{{ formData.assignedTasks ?? '' }}</textarea>
+                </div>
+
+                <div>
+                    <p class="block text-sm font-medium text-gray-700 mb-2">{{ 'incident.field.tasks_completed'|trans({}, 'admin') }}</p>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="tasks_completed" value="unknown"
+                                   {{ (formData.tasksCompleted ?? 'unknown') == 'unknown' ? 'checked' : '' }}
+                                   class="h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                            <span class="text-sm text-gray-700">{{ 'incident.tasks_completed.unknown'|trans({}, 'admin') }}</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="tasks_completed" value="yes"
+                                   {{ (formData.tasksCompleted ?? '') == 'yes' ? 'checked' : '' }}
+                                   class="h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                            <span class="text-sm text-gray-700">{{ 'incident.tasks_completed.yes'|trans({}, 'admin') }}</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="tasks_completed" value="no"
+                                   {{ (formData.tasksCompleted ?? '') == 'no' ? 'checked' : '' }}
+                                   class="h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                            <span class="text-sm text-gray-700">{{ 'incident.tasks_completed.no'|trans({}, 'admin') }}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ── Botones ────────────────────────────────────────────────────── #}
+        <div class="flex items-center justify-end gap-3">
+            <a href="{{ path('app_incidents_index') }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors">
+                {{ 'incident.cancel'|trans({}, 'admin') }}
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                {{ 'incident.save'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script type="module">
+import TomSelect from 'tom-select';
+
+const preloaded = {{ preloadedStudents|json_encode|raw }};
+
+const select = new TomSelect('#students-select', {
+    plugins: ['remove_button'],
+    valueField: 'value',
+    labelField: 'label',
+    searchField: ['label', 'secondary'],
+    options: preloaded,
+    items: preloaded.map(i => i.value),
+    load: function(query, callback) {
+        if (query.length < 2) return callback();
+        fetch('{{ path('app_incidents_search_students') }}?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(callback)
+            .catch(() => callback());
+    },
+    render: {
+        option: function(data) {
+            return `<div><span class="font-medium">${data.label}</span> <span class="text-xs text-gray-400 ml-1">${data.secondary || ''}</span></div>`;
+        },
+        item: function(data) {
+            return `<span>${data.label} <span class="opacity-60 text-xs">${data.secondary || ''}</span></span>`;
+        },
+    },
+    shouldLoad: (q) => q.length >= 2,
+});
+</script>
+{% endblock %}
