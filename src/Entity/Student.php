@@ -28,8 +28,14 @@ class Student
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $tutorName1 = null;
 
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $tutorEmail1 = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $tutorName2 = null;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $tutorEmail2 = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $contactPhone1 = null;
@@ -104,8 +110,14 @@ class Student
     public function getTutorName1(): ?string { return $this->tutorName1; }
     public function setTutorName1(?string $v): static { $this->tutorName1 = $v; return $this; }
 
+    public function getTutorEmail1(): ?string { return $this->tutorEmail1; }
+    public function setTutorEmail1(?string $v): static { $this->tutorEmail1 = $v; return $this; }
+
     public function getTutorName2(): ?string { return $this->tutorName2; }
     public function setTutorName2(?string $v): static { $this->tutorName2 = $v; return $this; }
+
+    public function getTutorEmail2(): ?string { return $this->tutorEmail2; }
+    public function setTutorEmail2(?string $v): static { $this->tutorEmail2 = $v; return $this; }
 
     public function getContactPhone1(): ?string { return $this->contactPhone1; }
     public function setContactPhone1(?string $v): static { $this->contactPhone1 = $v; return $this; }

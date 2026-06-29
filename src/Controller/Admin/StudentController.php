@@ -120,7 +120,9 @@ class StudentController extends AbstractController
             'studentId'          => $student->getStudentId(),
             'details'            => $student->getDetails() ?? '',
             'tutorName1'         => $student->getTutorName1() ?? '',
+            'tutorEmail1'        => $student->getTutorEmail1() ?? '',
             'tutorName2'         => $student->getTutorName2() ?? '',
+            'tutorEmail2'        => $student->getTutorEmail2() ?? '',
             'contactPhone1'      => $student->getContactPhone1() ?? '',
             'contactPhone1Notes' => $student->getContactPhone1Notes() ?? '',
             'contactPhone2'      => $student->getContactPhone2() ?? '',
@@ -394,6 +396,38 @@ class StudentController extends AbstractController
                     $updated++;
                     $student = $existing;
                 }
+
+                $col = fn (string $name): string =>
+                    isset($headerMap[$name]) ? trim((string) ($row[$headerMap[$name]] ?? '')) : '';
+                $n = static fn (string $v): ?string => $v !== '' ? $v : null;
+
+                // Tutor 1
+                $t1first = $col('Nombre Primer tutor');
+                $t1last  = trim($col('Primer apellido Primer tutor') . ' ' . $col('Segundo apellido Primer tutor'));
+                if ($t1first !== '' || $t1last !== '') {
+                    $student->setTutorName1($n(trim(implode(', ', array_filter([$t1last, $t1first])))));
+                }
+                $student->setTutorEmail1($n($col('Correo Electrónico Primer tutor')));
+
+                // Tutor 2
+                $t2first = $col('Nombre Segundo tutor');
+                $t2last  = trim($col('Primer apellido Segundo tutor') . ' ' . $col('Segundo apellido Segundo tutor'));
+                if ($t2first !== '' || $t2last !== '') {
+                    $student->setTutorName2($n(trim(implode(', ', array_filter([$t2last, $t2first])))));
+                }
+                $student->setTutorEmail2($n($col('Correo Electrónico Segundo tutor')));
+
+                // Teléfonos: tutor 1, tutor 2, alumno
+                $student->setContactPhone1($n($col('Teléfono Primer tutor')));
+                $student->setContactPhone2($n($col('Teléfono Segundo tutor')));
+                $student->setContactPhone3($n($col('Teléfono')));
+
+                // Observaciones
+                $obs = $col('Observaciones de la matrícula');
+                if ($obs !== '') {
+                    $student->setDetails($obs);
+                }
+
                 if ($group !== null && !$student->getGroups()->contains($group)) {
                     $student->addGroup($group);
                 }
@@ -544,7 +578,8 @@ class StudentController extends AbstractController
     {
         return [
             'firstName' => '', 'lastName' => '', 'studentId' => '', 'details' => '',
-            'tutorName1' => '', 'tutorName2' => '',
+            'tutorName1' => '', 'tutorEmail1' => '',
+            'tutorName2' => '', 'tutorEmail2' => '',
             'contactPhone1' => '', 'contactPhone1Notes' => '',
             'contactPhone2' => '', 'contactPhone2Notes' => '',
             'contactPhone3' => '', 'contactPhone3Notes' => '',
@@ -561,7 +596,9 @@ class StudentController extends AbstractController
             'studentId'          => $s('studentId'),
             'details'            => $s('details'),
             'tutorName1'         => $s('tutorName1'),
+            'tutorEmail1'        => $s('tutorEmail1'),
             'tutorName2'         => $s('tutorName2'),
+            'tutorEmail2'        => $s('tutorEmail2'),
             'contactPhone1'      => $s('contactPhone1'),
             'contactPhone1Notes' => $s('contactPhone1Notes'),
             'contactPhone2'      => $s('contactPhone2'),
@@ -577,7 +614,9 @@ class StudentController extends AbstractController
         $n = static fn(string $v): ?string => $v !== '' ? $v : null;
         $student->setDetails($n($values['details']))
                 ->setTutorName1($n($values['tutorName1']))
+                ->setTutorEmail1($n($values['tutorEmail1']))
                 ->setTutorName2($n($values['tutorName2']))
+                ->setTutorEmail2($n($values['tutorEmail2']))
                 ->setContactPhone1($n($values['contactPhone1']))
                 ->setContactPhone1Notes($n($values['contactPhone1Notes']))
                 ->setContactPhone2($n($values['contactPhone2']))

@@ -24,7 +24,7 @@
                 <h2 class="text-base font-semibold text-gray-900">{{ 'student.new.title'|trans({}, 'admin') }}</h2>
             </div>
             <div class="px-6 py-6 space-y-5">
-                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
                     <twig:Form:Field
                         id="firstName" name="firstName" type="text"
                         label="{{ 'student.field.first_name'|trans({}, 'admin') }}"
@@ -32,12 +32,14 @@
                         :error="errors.firstName ?? null"
                         required="true" />
 
-                    <twig:Form:Field
-                        id="lastName" name="lastName" type="text"
-                        label="{{ 'student.field.last_name'|trans({}, 'admin') }}"
-                        value="{{ values.lastName }}"
-                        :error="errors.lastName ?? null"
-                        required="true" />
+                    <div class="sm:col-span-2">
+                        <twig:Form:Field
+                            id="lastName" name="lastName" type="text"
+                            label="{{ 'student.field.last_name'|trans({}, 'admin') }}"
+                            value="{{ values.lastName }}"
+                            :error="errors.lastName ?? null"
+                            required="true" />
+                    </div>
                 </div>
 
                 <twig:Form:Field
@@ -76,15 +78,27 @@
                 <h2 class="text-base font-semibold text-gray-900">{{ 'student.section.tutors'|trans({}, 'admin') }}</h2>
             </div>
             <div class="px-6 py-6 space-y-5">
-                <twig:Form:Field
-                    id="tutorName1" name="tutorName1" type="text"
-                    label="{{ 'student.field.tutor_name_1'|trans({}, 'admin') }}"
-                    value="{{ values.tutorName1 }}" />
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <twig:Form:Field
+                        id="tutorName1" name="tutorName1" type="text"
+                        label="{{ 'student.field.tutor_name_1'|trans({}, 'admin') }}"
+                        value="{{ values.tutorName1 }}" />
+                    <twig:Form:Field
+                        id="tutorEmail1" name="tutorEmail1" type="email"
+                        label="{{ 'student.field.tutor_email_1'|trans({}, 'admin') }}"
+                        value="{{ values.tutorEmail1 }}" />
+                </div>
 
-                <twig:Form:Field
-                    id="tutorName2" name="tutorName2" type="text"
-                    label="{{ 'student.field.tutor_name_2'|trans({}, 'admin') }}"
-                    value="{{ values.tutorName2 }}" />
+                <div class="grid grid-cols-1 gap-5 pt-5 border-t border-gray-100 sm:grid-cols-2">
+                    <twig:Form:Field
+                        id="tutorName2" name="tutorName2" type="text"
+                        label="{{ 'student.field.tutor_name_2'|trans({}, 'admin') }}"
+                        value="{{ values.tutorName2 }}" />
+                    <twig:Form:Field
+                        id="tutorEmail2" name="tutorEmail2" type="email"
+                        label="{{ 'student.field.tutor_email_2'|trans({}, 'admin') }}"
+                        value="{{ values.tutorEmail2 }}" />
+                </div>
             </div>
         </div>
 
