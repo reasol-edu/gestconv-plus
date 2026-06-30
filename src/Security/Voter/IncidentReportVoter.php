@@ -15,13 +15,14 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class IncidentReportVoter extends Voter
 {
-    public const VIEW   = 'incident_report.view';
-    public const EDIT   = 'incident_report.edit';
-    public const DELETE = 'incident_report.delete';
+    public const VIEW      = 'incident_report.view';
+    public const EDIT      = 'incident_report.edit';
+    public const DELETE    = 'incident_report.delete';
+    public const PRESCRIBE = 'incident_report.prescribe';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::PRESCRIBE], true)
             && $subject instanceof IncidentReport;
     }
 
@@ -53,11 +54,12 @@ final class IncidentReportVoter extends Voter
 
         // Non-admin, non-centre-admin
         return match ($attribute) {
-            self::VIEW   => $subject->getRegisteredBy() === $user
-                            || $subject->getGroup()->getTutors()->contains($user),
-            self::EDIT   => $subject->getRegisteredBy() === $user,
-            self::DELETE => false,
-            default      => false,
+            self::VIEW      => $subject->getRegisteredBy() === $user
+                               || $subject->getGroup()->getTutors()->contains($user),
+            self::EDIT      => $subject->getRegisteredBy() === $user,
+            self::DELETE,
+            self::PRESCRIBE => false,
+            default         => false,
         };
     }
 }

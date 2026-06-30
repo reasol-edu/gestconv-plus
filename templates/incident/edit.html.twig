@@ -133,6 +133,25 @@
             </div>
         </div>
 
+        {# ── Prescripción (solo administradores) ───────────────────────── #}
+        {% if is_granted('incident_report.prescribe', report) %}
+        <div class="rounded-2xl border border-amber-200 bg-amber-50/50 shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-amber-900 border-b border-amber-100 pb-3">
+                {{ 'incident.section.prescription'|trans({}, 'admin') }}
+            </h2>
+            <p class="text-xs text-amber-700">{{ 'incident.field.prescribed_at_help'|trans({}, 'admin') }}</p>
+            <div>
+                <label for="prescribed_at" class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'incident.field.prescribed_at'|trans({}, 'admin') }}
+                </label>
+                <input type="date" id="prescribed_at" name="prescribed_at"
+                       value="{{ report.prescribedAt ? report.prescribedAt|date('Y-m-d') : '' }}"
+                       class="block rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900
+                              focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+        </div>
+        {% endif %}
+
         {# ── Botones ────────────────────────────────────────────────────── #}
         <div class="flex items-center justify-end gap-3">
             <a href="{{ path('app_incidents_show', {id: report.id}) }}"

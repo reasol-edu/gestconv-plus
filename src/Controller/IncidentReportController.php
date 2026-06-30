@@ -303,6 +303,9 @@ class IncidentReportController extends AbstractController
             $expelled          = $request->request->getBoolean('expelled_from_class');
             $assignedTasks     = trim($request->request->getString('assigned_tasks')) ?: null;
             $tasksCompletedRaw = $request->request->getString('tasks_completed');
+            $prescribedAtRaw   = $this->isGranted(IncidentReportVoter::PRESCRIBE, $report)
+                ? trim($request->request->getString('prescribed_at'))
+                : null;
 
             if (empty($behaviorIds)) {
                 $errors[] = $this->t('incident.error.no_behaviors');
@@ -347,6 +350,13 @@ class IncidentReportController extends AbstractController
                     if ($b !== null && $b->getEducationalCentre() === $centre) {
                         $report->addBehavior($b);
                     }
+                }
+
+                if ($prescribedAtRaw !== null) {
+                    $prescribedAt = $prescribedAtRaw === ''
+                        ? null
+                        : (\DateTimeImmutable::createFromFormat('Y-m-d', $prescribedAtRaw) ?: null);
+                    $report->setPrescribedAt($prescribedAt);
                 }
 
                 $this->em->flush();

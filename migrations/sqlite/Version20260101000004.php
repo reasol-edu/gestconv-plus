@@ -64,6 +64,7 @@ final class Version20260101000004 extends AbstractMigration
                 expelled_from_class INTEGER  NOT NULL DEFAULT 0,
                 assigned_tasks      CLOB     DEFAULT NULL,
                 tasks_completed     VARCHAR(10) DEFAULT NULL,
+                prescribed_at       DATE        DEFAULT NULL,
                 PRIMARY KEY (id),
                 CONSTRAINT fk_ir_academic_year FOREIGN KEY (academic_year_id) REFERENCES academic_year (id),
                 CONSTRAINT fk_ir_student       FOREIGN KEY (student_id)       REFERENCES student (id),

@@ -87,6 +87,17 @@
             <div class="prose prose-sm max-w-none text-gray-700">{{ report.description|raw }}</div>
         </div>
 
+        {# Prescripción #}
+        {% if report.prescribed %}
+            <div class="px-6 py-4 flex items-center gap-3">
+                <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-medium">
+                    {{ ux_icon('heroicons:shield-check', {class: 'h-3 w-3 mr-1'}) }}
+                    {{ 'incident.badge.prescribed'|trans({}, 'admin') }}
+                </span>
+                <span class="text-sm text-gray-500">{{ report.prescribedAt|date('d/m/Y') }}</span>
+            </div>
+        {% endif %}
+
         {# Expulsion #}
         {% if report.expelledFromClass %}
             <div class="px-6 py-4 space-y-3">

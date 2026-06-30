@@ -552,6 +552,10 @@ incident.empty: 'No hay partes de convivencia registrados.'
 incident.search_empty: 'No se encontraron partes con ese criterio.'
 incident.badge.serious: 'Grave'
 incident.badge.expelled: 'Expulsado'
+incident.badge.prescribed: 'No sancionable'
+incident.section.prescription: 'Prescripción'
+incident.field.prescribed_at: 'Fecha de prescripción'
+incident.field.prescribed_at_help: 'Si se establece una fecha de prescripción, el parte se considerará no sancionable. Dejar en blanco para eliminar la prescripción.'
 incident.delete_confirm: '¿Eliminar este parte? Esta acción no se puede deshacer.'
 
 # Conductas contrarias a la convivencia

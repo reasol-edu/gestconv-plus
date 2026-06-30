@@ -60,6 +60,9 @@ class IncidentReport
     #[ORM\Column(type: 'string', length: 10, nullable: true, enumType: TasksCompletionStatus::class)]
     private ?TasksCompletionStatus $tasksCompleted = null;
 
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $prescribedAt = null;
+
     public function __construct()
     {
         $this->behaviors = new ArrayCollection();
@@ -212,5 +215,22 @@ class IncidentReport
         $this->tasksCompleted = $tasksCompleted;
 
         return $this;
+    }
+
+    public function getPrescribedAt(): ?\DateTimeImmutable
+    {
+        return $this->prescribedAt;
+    }
+
+    public function setPrescribedAt(?\DateTimeImmutable $prescribedAt): static
+    {
+        $this->prescribedAt = $prescribedAt;
+
+        return $this;
+    }
+
+    public function isPrescribed(): bool
+    {
+        return $this->prescribedAt !== null;
     }
 }

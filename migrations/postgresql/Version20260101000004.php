@@ -64,6 +64,7 @@ final class Version20260101000004 extends AbstractMigration
                 expelled_from_class BOOLEAN      NOT NULL DEFAULT FALSE,
                 assigned_tasks      TEXT         DEFAULT NULL,
                 tasks_completed     VARCHAR(10)  DEFAULT NULL,
+                prescribed_at       DATE         DEFAULT NULL,
                 PRIMARY KEY (id)
             )
         SQL);

@@ -64,6 +64,7 @@ final class Version20260101000004 extends AbstractMigration
                 expelled_from_class TINYINT(1)        NOT NULL DEFAULT 0,
                 assigned_tasks      LONGTEXT          DEFAULT NULL,
                 tasks_completed     VARCHAR(10)       DEFAULT NULL,
+                prescribed_at       DATE              DEFAULT NULL,
                 PRIMARY KEY (id),
                 UNIQUE KEY uq_ir_year_number          (academic_year_id, number),
                 INDEX idx_incident_report_academic_year (academic_year_id),
