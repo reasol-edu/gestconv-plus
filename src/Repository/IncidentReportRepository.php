@@ -135,6 +135,7 @@ class IncidentReportRepository extends ServiceEntityRepository
                     'LOWER(s.name.lastName) LIKE LOWER(:search)',
                     'LOWER(t.name.firstName) LIKE LOWER(:search)',
                     'LOWER(t.name.lastName) LIKE LOWER(:search)',
+                    'LOWER(g.name) LIKE LOWER(:search)',
                     'LOWER(beh.name) LIKE LOWER(:search)',
                     'LOWER(r.description) LIKE LOWER(:search)',
                 )
@@ -187,6 +188,42 @@ class IncidentReportRepository extends ServiceEntityRepository
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Returns the distinct groups that have at least one incident report visible to the viewer,
+     * ordered by group name. Used to populate the group filter dropdown.
+     *
+     * @return Group[]
+     */
+    public function findGroupsWithReports(EducationalCentre $centre, Teacher $viewer): array
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->select('g')
+            ->distinct()
+            ->from(Group::class, 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->join(IncidentReport::class, 'r', 'WITH', 'r.group = g')
+            ->where('ay.educationalCentre = :centre')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->orderBy('g.name', 'ASC');
+
+        $isCentreAdmin = $centre->getAdmins()->contains($viewer);
+        if (!$viewer->isAdmin() && !$isCentreAdmin) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    'r.registeredBy = :viewer',
+                    ':viewer MEMBER OF g.tutors',
+                )
+            )->setParameter('viewer', $viewer->getId(), 'uuid');
+        }
+
+        /** @var Group[] $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $result;
     }
 
     /**

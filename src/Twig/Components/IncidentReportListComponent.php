@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Twig\Components;
 
 use App\Entity\EducationalCentre;
+use App\Entity\Group;
 use App\Entity\IncidentReport;
 use App\Entity\Teacher;
 use App\Pagination\Paginator;
@@ -62,6 +63,17 @@ class IncidentReportListComponent extends AbstractController
             throw $this->createAccessDeniedException();
         }
         $this->centre = $centre;
+    }
+
+    /** @return Group[] */
+    public function getGroups(): array
+    {
+        $user = $this->getUser();
+        if (!$user instanceof Teacher) {
+            return [];
+        }
+
+        return $this->reports->findGroupsWithReports($this->centre, $user);
     }
 
     /** @return Paginator<IncidentReport> */

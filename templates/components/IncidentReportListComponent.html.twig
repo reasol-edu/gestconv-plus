@@ -7,9 +7,12 @@
         </div>
     {% else %}
         {% set pagination = this.pagination %}
+        {% set groups = this.groups %}
 
         {# Barra de filtros #}
         <div class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
+
+            {# Búsqueda libre #}
             <div class="relative flex-1 min-w-48">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                     {{ ux_icon('heroicons:magnifying-glass', {class: 'h-4 w-4 text-gray-400'}) }}
@@ -25,6 +28,25 @@
                               focus:ring-3 focus:ring-forest-500/20 transition-colors">
             </div>
 
+            {# Filtro por grupo (autocompletar) #}
+            {% if groups is not empty %}
+                <select data-controller="@symfony/ux-autocomplete"
+                        data-model="norender|groupId"
+                        data-action="change->live#action"
+                        data-live-action-param="resetPage"
+                        class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
+                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0 min-w-[8rem]">
+                    <option value="">{{ 'incident.filter.all'|trans({}, 'admin') }}</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id.toRfc4122 }}"
+                                {{ groupId == group.id.toRfc4122 ? 'selected' : '' }}>
+                            {{ group.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            {# Filtro por gravedad #}
             <select data-model="norender|serious"
                     data-action="change->live#action"
                     data-live-action-param="resetPage"
@@ -35,15 +57,7 @@
                 <option value="0" {{ serious == '0' ? 'selected' : '' }}>{{ 'behavior.badge.contrary'|trans({}, 'admin') }}</option>
             </select>
 
-            <select data-model="norender|expelled"
-                    data-action="change->live#action"
-                    data-live-action-param="resetPage"
-                    class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
-                           focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0">
-                <option value="">{{ 'incident.filter.all'|trans({}, 'admin') }}</option>
-                <option value="1" {{ expelled == '1' ? 'selected' : '' }}>{{ 'incident.filter.expelled'|trans({}, 'admin') }}</option>
-            </select>
-
+            {# Filtro por fechas #}
             <div class="flex items-center gap-2 shrink-0">
                 <input type="date"
                        data-model="norender|dateFrom"
@@ -64,6 +78,7 @@
                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
             </div>
 
+            {# Solo mis partes #}
             <button data-action="live#action" data-live-action-param="toggleOwnOnly"
                     class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
                            {{ ownOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
@@ -96,6 +111,7 @@
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.group'|trans({}, 'admin') }}</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.teacher'|trans({}, 'admin') }}</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.behaviors'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.description'|trans({}, 'admin') }}</th>
                             <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.actions'|trans({}, 'admin') }}</th>
                         </tr>
                     </thead>
@@ -132,6 +148,12 @@
                                                 {{ 'incident.badge.expelled'|trans({}, 'admin') }}
                                             </span>
                                         {% endif %}
+                                    </div>
+                                </td>
+                                <td data-label="{{ 'incident.col.description'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4">
+                                    <div class="w-[220px] truncate text-xs text-gray-500">
+                                        {{ report.description|striptags }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
