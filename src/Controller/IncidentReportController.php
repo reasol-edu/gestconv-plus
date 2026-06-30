@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/mi-centro/partes')]
+#[Route('/partes')]
 class IncidentReportController extends AbstractController
 {
     public function __construct(

@@ -17,7 +17,7 @@ class CentreSelectionController extends AbstractController
         private readonly TenantContext $tenantContext,
     ) {}
 
-    #[Route('/centro', name: 'app_select_centre')]
+    #[Route('/seleccion/centro', name: 'app_select_centre')]
     public function index(): Response
     {
         $user = $this->getUser();

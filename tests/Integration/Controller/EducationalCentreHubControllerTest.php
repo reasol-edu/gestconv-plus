@@ -18,7 +18,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/mi-centro');
+        $this->client->request('GET', '/centro');
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/centro', (string) $this->client->getResponse()->headers->get('Location'));
@@ -34,7 +34,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/mi-centro');
+        $this->client->request('GET', '/centro');
 
         self::assertResponseIsSuccessful();
     }
@@ -50,7 +50,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro');
+        $this->client->request('GET', '/centro');
 
         self::assertResponseIsSuccessful();
     }
@@ -65,7 +65,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro');
+        $this->client->request('GET', '/centro');
 
         self::assertResponseStatusCodeSame(403);
     }

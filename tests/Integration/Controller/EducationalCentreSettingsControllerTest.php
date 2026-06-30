@@ -14,7 +14,7 @@ class EducationalCentreSettingsControllerTest extends ControllerTestCase
 {
     public function testSettingsRedirectsAnonymousUser(): void
     {
-        $this->client->request('GET', '/mi-centro/ajustes');
+        $this->client->request('GET', '/centro/ajustes');
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/login', (string) $this->client->getResponse()->headers->get('Location'));
@@ -30,7 +30,7 @@ class EducationalCentreSettingsControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/mi-centro/ajustes');
+        $this->client->request('GET', '/centro/ajustes');
 
         self::assertResponseIsSuccessful();
     }
@@ -46,7 +46,7 @@ class EducationalCentreSettingsControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro/ajustes');
+        $this->client->request('GET', '/centro/ajustes');
 
         self::assertResponseIsSuccessful();
     }
@@ -61,7 +61,7 @@ class EducationalCentreSettingsControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro/ajustes');
+        $this->client->request('GET', '/centro/ajustes');
 
         self::assertResponseStatusCodeSame(403);
     }

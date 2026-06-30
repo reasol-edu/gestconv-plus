@@ -26,7 +26,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre] = $this->makeScenario();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro/partes');
+        $this->client->request('GET', '/partes');
 
         self::assertResponseIsSuccessful();
     }
@@ -37,7 +37,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/mi-centro/partes');
+        $this->client->request('GET', '/partes');
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/centro', (string) $this->client->getResponse()->headers->get('Location'));
@@ -45,7 +45,7 @@ class IncidentReportControllerTest extends ControllerTestCase
 
     public function testIndexRedirectsUnauthenticated(): void
     {
-        $this->client->request('GET', '/mi-centro/partes');
+        $this->client->request('GET', '/partes');
 
         self::assertResponseRedirects();
         self::assertStringContainsString('login', (string) $this->client->getResponse()->headers->get('Location'));
@@ -58,7 +58,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre] = $this->makeScenario();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro/partes/nuevo');
+        $this->client->request('GET', '/partes/nuevo');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -70,12 +70,12 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
         $this->loginAs($teacher, $centre);
 
-        $crawler = $this->client->request('GET', '/mi-centro/partes/nuevo');
+        $crawler = $this->client->request('GET', '/partes/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $studentPair = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
 
-        $this->client->request('POST', '/mi-centro/partes/nuevo', [
+        $this->client->request('POST', '/partes/nuevo', [
             '_token'             => $token,
             'students'           => [$studentPair],
             'behaviors'          => [$behavior->getId()->toRfc4122()],
@@ -84,7 +84,7 @@ class IncidentReportControllerTest extends ControllerTestCase
             'expelled_from_class' => '0',
         ]);
 
-        self::assertResponseRedirects('/mi-centro/partes');
+        self::assertResponseRedirects('/partes');
 
         $this->em->clear();
         $reports = $this->em->getRepository(IncidentReport::class)->findAll();
@@ -99,13 +99,13 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->persist($student2);
         $this->loginAs($teacher, $centre);
 
-        $crawler = $this->client->request('GET', '/mi-centro/partes/nuevo');
+        $crawler = $this->client->request('GET', '/partes/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $pair1 = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
         $pair2 = $student2->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
 
-        $this->client->request('POST', '/mi-centro/partes/nuevo', [
+        $this->client->request('POST', '/partes/nuevo', [
             '_token'      => $token,
             'students'    => [$pair1, $pair2],
             'behaviors'   => [$behavior->getId()->toRfc4122()],
@@ -113,7 +113,7 @@ class IncidentReportControllerTest extends ControllerTestCase
             'description' => '<p>Incidente múltiple.</p>',
         ]);
 
-        self::assertResponseRedirects('/mi-centro/partes');
+        self::assertResponseRedirects('/partes');
 
         $this->em->clear();
         self::assertCount(2, $this->em->getRepository(IncidentReport::class)->findAll());
@@ -124,10 +124,10 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre, , , $behavior] = $this->makeScenario();
         $this->loginAs($teacher, $centre);
 
-        $crawler = $this->client->request('GET', '/mi-centro/partes/nuevo');
+        $crawler = $this->client->request('GET', '/partes/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/mi-centro/partes/nuevo', [
+        $this->client->request('POST', '/partes/nuevo', [
             '_token'      => $token,
             'students'    => [],
             'behaviors'   => [$behavior->getId()->toRfc4122()],
@@ -143,12 +143,12 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre, $group, $student] = $this->makeScenario();
         $this->loginAs($teacher, $centre);
 
-        $crawler = $this->client->request('GET', '/mi-centro/partes/nuevo');
+        $crawler = $this->client->request('GET', '/partes/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $pair = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
 
-        $this->client->request('POST', '/mi-centro/partes/nuevo', [
+        $this->client->request('POST', '/partes/nuevo', [
             '_token'      => $token,
             'students'    => [$pair],
             'behaviors'   => [],
@@ -164,7 +164,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre] = $this->makeScenario();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('POST', '/mi-centro/partes/nuevo', [
+        $this->client->request('POST', '/partes/nuevo', [
             '_token'      => 'invalid-token',
             'description' => '<p>Test.</p>',
         ]);
@@ -180,7 +180,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $report = $this->makeReport($student, $group, $teacher, $behavior);
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro/partes/' . $report->getId()->toRfc4122());
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
     }
@@ -193,7 +193,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->persist($other);
         $this->loginAs($other, $centre);
 
-        $this->client->request('GET', '/mi-centro/partes/' . $report->getId()->toRfc4122());
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -208,7 +208,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($cadmin, $centre);
 
-        $this->client->request('GET', '/mi-centro/partes/' . $report->getId()->toRfc4122());
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
     }
@@ -218,7 +218,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre] = $this->makeScenario();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro/partes/00000000-0000-0000-0000-000000000000');
+        $this->client->request('GET', '/partes/00000000-0000-0000-0000-000000000000');
 
         self::assertResponseStatusCodeSame(404);
     }
@@ -231,7 +231,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $report = $this->makeReport($student, $group, $teacher, $behavior);
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/mi-centro/partes/' . $report->getId()->toRfc4122() . '/editar');
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/editar');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -245,7 +245,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->persist($other);
         $this->loginAs($other, $centre);
 
-        $this->client->request('GET', '/mi-centro/partes/' . $report->getId()->toRfc4122() . '/editar');
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/editar');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -257,17 +257,17 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->loginAs($teacher, $centre);
 
         $reportId = $report->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/mi-centro/partes/' . $reportId . '/editar');
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId . '/editar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/mi-centro/partes/' . $reportId . '/editar', [
+        $this->client->request('POST', '/partes/' . $reportId . '/editar', [
             '_token'      => $token,
             'behaviors'   => [$behavior->getId()->toRfc4122()],
             'occurred_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description' => '<p>Descripción actualizada.</p>',
         ]);
 
-        self::assertResponseRedirects('/mi-centro/partes/' . $reportId);
+        self::assertResponseRedirects('/partes/' . $reportId);
 
         $this->em->clear();
         $updated = $this->em->find(IncidentReport::class, $report->getId());
@@ -284,9 +284,9 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->loginAs($teacher, $centre);
 
         $reportId = $report->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/mi-centro/partes/' . $reportId);
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId);
         // The delete form is only shown to admins; use a raw POST to confirm denial
-        $this->client->request('POST', '/mi-centro/partes/' . $reportId . '/eliminar', [
+        $this->client->request('POST', '/partes/' . $reportId . '/eliminar', [
             '_token' => 'any-token',
         ]);
 
@@ -304,14 +304,14 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->loginAs($cadmin, $centre);
 
         $reportId = $report->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/mi-centro/partes/' . $reportId);
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId);
         $token    = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/mi-centro/partes/' . $reportId . '/eliminar', [
+        $this->client->request('POST', '/partes/' . $reportId . '/eliminar', [
             '_token' => $token,
         ]);
 
-        self::assertResponseRedirects('/mi-centro/partes');
+        self::assertResponseRedirects('/partes');
 
         $this->em->clear();
         self::assertNull($this->em->find(IncidentReport::class, $report->getId()));

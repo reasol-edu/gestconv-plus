@@ -148,7 +148,7 @@ class SettingsLockTest extends ControllerTestCase
         $this->seedGlobalValue('email.notifications', 'false', locked: true);
 
         $this->loginAs($admin, $centre);
-        $this->client->request('GET', '/mi-centro/ajustes');
+        $this->client->request('GET', '/centro/ajustes');
 
         $html = $this->client->getResponse()->getContent();
         self::assertStringContainsString('disabled', $html);
@@ -194,7 +194,7 @@ class SettingsLockTest extends ControllerTestCase
         $this->seedCentreValue('email.notifications', 'true', $centre); // centre has its own differing value
 
         $this->loginAs($admin, $centre);
-        $this->client->request('GET', '/mi-centro/ajustes');
+        $this->client->request('GET', '/centro/ajustes');
 
         $html = $this->client->getResponse()->getContent();
         self::assertStringContainsString('value="false" selected', $html);

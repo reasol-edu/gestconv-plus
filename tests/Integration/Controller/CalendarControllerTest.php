@@ -30,7 +30,7 @@ class CalendarControllerTest extends ControllerTestCase
 
         $this->client->request('GET', '/calendario');
 
-        self::assertResponseRedirects('/centro');
+        self::assertResponseRedirects('/seleccion/centro');
     }
 
     public function testRendersCalendarWithSelectedCentre(): void

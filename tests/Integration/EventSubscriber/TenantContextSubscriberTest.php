@@ -36,7 +36,7 @@ class TenantContextSubscriberTest extends ControllerTestCase
 
         $this->client->request('GET', '/');
 
-        self::assertResponseRedirects('/centro');
+        self::assertResponseRedirects('/seleccion/centro');
     }
 
     public function testExcludedRouteSkipsCentreEnforcement(): void

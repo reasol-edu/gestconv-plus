@@ -15,7 +15,7 @@ class CentreSelectionControllerTest extends ControllerTestCase
 
     public function testCentreListRedirectsAnonymousUser(): void
     {
-        $this->client->request('GET', '/centro');
+        $this->client->request('GET', '/seleccion/centro');
 
         self::assertResponseRedirects();
     }
@@ -26,7 +26,7 @@ class CentreSelectionControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centro');
+        $this->client->request('GET', '/seleccion/centro');
 
         self::assertResponseIsSuccessful();
     }
@@ -44,7 +44,7 @@ class CentreSelectionControllerTest extends ControllerTestCase
         $this->loginAs($teacher);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centro');
+        $crawler  = $this->client->request('GET', '/seleccion/centro');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $this->client->request('POST', '/centro/' . $centreId, ['_token' => $token]);
@@ -87,7 +87,7 @@ class CentreSelectionControllerTest extends ControllerTestCase
         $centreAId = $centreA->getId()->toRfc4122();
         $centreBId = $centreB->getId()->toRfc4122();
 
-        $crawler = $this->client->request('GET', '/centro');
+        $crawler = $this->client->request('GET', '/seleccion/centro');
         // The token on the page is for 'select_centre_{centreAId}'
         $token = $crawler->filter('[name="_token"]')->first()->attr('value');
 

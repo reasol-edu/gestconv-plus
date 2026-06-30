@@ -16,7 +16,7 @@ class EducationalCentreHubController extends AbstractController
         private readonly TenantContext $tenantContext,
     ) {}
 
-    #[Route('/mi-centro', name: 'app_educational_centre_index')]
+    #[Route('/centro', name: 'app_educational_centre_index')]
     public function index(): Response
     {
         $centre = $this->tenantContext->getSelectedCentre();
@@ -31,7 +31,7 @@ class EducationalCentreHubController extends AbstractController
         ]);
     }
 
-    #[Route('/mi-centro/ajustes', name: 'app_educational_centre_settings')]
+    #[Route('/centro/ajustes', name: 'app_educational_centre_settings')]
     public function settings(): Response
     {
         $centre = $this->tenantContext->getSelectedCentre();
