@@ -93,10 +93,10 @@ class IncidentReportController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $activeBehaviors   = $this->behaviors->findByCentreActive($centre);
-        $errors            = [];
-        $formData          = [];
-        $preloadedStudents = [];
+        $behaviorsByCategory = $this->groupBehaviorsByCategory($this->behaviors->findByCentreActive($centre));
+        $errors              = [];
+        $formData            = [];
+        $preloadedStudents   = [];
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_incident', $request->request->getString('_token'))) {
@@ -152,6 +152,9 @@ class IncidentReportController extends AbstractController
                     $tasksCompleted = TasksCompletionStatus::tryFrom($tasksCompletedRaw);
                 }
 
+                /** @var array<string, int> $nextNumbers next number per academic-year ID */
+                $nextNumbers = [];
+
                 foreach ($studentPairs as $pair) {
                     if (!is_string($pair)) {
                         continue;
@@ -170,8 +173,19 @@ class IncidentReportController extends AbstractController
                         continue;
                     }
 
+                    $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+                    $yearKey      = $academicYear->getId()->toRfc4122();
+
+                    if (!array_key_exists($yearKey, $nextNumbers)) {
+                        $nextNumbers[$yearKey] = $this->reports->nextNumberForYear($academicYear);
+                    } else {
+                        $nextNumbers[$yearKey]++;
+                    }
+
                     $report = new IncidentReport();
-                    $report->setStudent($student)
+                    $report->setAcademicYear($academicYear)
+                           ->setNumber($nextNumbers[$yearKey])
+                           ->setStudent($student)
                            ->setGroup($group)
                            ->setRegisteredBy($user)
                            ->setOccurredAt($occurredAt)
@@ -230,12 +244,12 @@ class IncidentReportController extends AbstractController
         $availableGroups = $this->groups->findByActiveYearOfCentreOrderedByName($centre);
 
         return $this->render('incident/new.html.twig', [
-            'centre'            => $centre,
-            'activeBehaviors'   => $activeBehaviors,
-            'availableGroups'   => $availableGroups,
-            'errors'            => $errors,
-            'formData'          => $formData,
-            'preloadedStudents' => $preloadedStudents,
+            'centre'              => $centre,
+            'behaviorsByCategory' => $behaviorsByCategory,
+            'availableGroups'     => $availableGroups,
+            'errors'              => $errors,
+            'formData'            => $formData,
+            'preloadedStudents'   => $preloadedStudents,
         ]);
     }
 
@@ -275,8 +289,8 @@ class IncidentReportController extends AbstractController
 
         $this->denyAccessUnlessGranted(IncidentReportVoter::EDIT, $report);
 
-        $activeBehaviors = $this->behaviors->findByCentreActive($centre);
-        $errors          = [];
+        $behaviorsByCategory = $this->groupBehaviorsByCategory($this->behaviors->findByCentreActive($centre));
+        $errors              = [];
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('edit_incident_' . $id, $request->request->getString('_token'))) {
@@ -344,10 +358,10 @@ class IncidentReportController extends AbstractController
         }
 
         return $this->render('incident/edit.html.twig', [
-            'centre'          => $centre,
-            'report'          => $report,
-            'activeBehaviors' => $activeBehaviors,
-            'errors'          => $errors,
+            'centre'              => $centre,
+            'report'              => $report,
+            'behaviorsByCategory' => $behaviorsByCategory,
+            'errors'              => $errors,
         ]);
     }
 
@@ -371,6 +385,27 @@ class IncidentReportController extends AbstractController
         $this->addFlash('success', $this->t('incident.flash.deleted'));
 
         return $this->redirectToRoute('app_incidents_index');
+    }
+
+    /**
+     * Groups a flat list of behaviors (ordered by category.position, behavior.position)
+     * into an array of ['category' => ..., 'behaviors' => [...]] entries.
+     *
+     * @param list<\App\Entity\IncidentBehavior> $behaviors
+     * @return list<array{category: \App\Entity\IncidentBehaviorCategory, behaviors: list<\App\Entity\IncidentBehavior>}>
+     */
+    private function groupBehaviorsByCategory(array $behaviors): array
+    {
+        $groups = [];
+        foreach ($behaviors as $beh) {
+            $catId = $beh->getCategory()->getId()->toRfc4122();
+            if (!isset($groups[$catId])) {
+                $groups[$catId] = ['category' => $beh->getCategory(), 'behaviors' => []];
+            }
+            $groups[$catId]['behaviors'][] = $beh;
+        }
+
+        return array_values($groups);
     }
 
     private function t(string $key): string

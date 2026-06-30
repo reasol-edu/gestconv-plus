@@ -90,6 +90,7 @@
                 <table class="table-cards w-full text-sm">
                     <thead>
                         <tr class="border-b border-gray-100 bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">#</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.student'|trans({}, 'admin') }}</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.group'|trans({}, 'admin') }}</th>
@@ -101,6 +102,7 @@
                     <tbody class="divide-y divide-gray-100">
                         {% for report in pagination.items %}
                             <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-xs font-mono text-gray-400 whitespace-nowrap">#{{ report.number }}</td>
                                 <td data-label="{{ 'incident.col.occurred_at'|trans({}, 'admin')|e('html_attr') }}"
                                     class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('d/m/Y H:i') }}</td>
                                 <td data-label="{{ 'incident.col.student'|trans({}, 'admin')|e('html_attr') }}"

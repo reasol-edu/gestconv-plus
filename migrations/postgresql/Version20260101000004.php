@@ -12,7 +12,7 @@ final class Version20260101000004 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Añade tablas de partes de convivencia (PostgreSQL)';
+        return 'Añade tablas de partes de convivencia con categorías de conducta (PostgreSQL)';
     }
 
     public function up(Schema $schema): void
@@ -23,41 +23,61 @@ final class Version20260101000004 extends AbstractMigration
         );
 
         $this->addSql(<<<'SQL'
+            CREATE TABLE incident_behavior_category (
+                id                    UUID         NOT NULL,
+                educational_centre_id UUID         NOT NULL,
+                name                  VARCHAR(200) NOT NULL,
+                serious               BOOLEAN      NOT NULL DEFAULT FALSE,
+                position              INT          NOT NULL DEFAULT 0,
+                PRIMARY KEY (id)
+            )
+        SQL);
+        $this->addSql('CREATE INDEX idx_incident_behavior_category_centre ON incident_behavior_category (educational_centre_id)');
+        $this->addSql('ALTER TABLE incident_behavior_category ADD CONSTRAINT fk_ibc_centre FOREIGN KEY (educational_centre_id) REFERENCES educational_centre (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
+
+        $this->addSql(<<<'SQL'
             CREATE TABLE incident_behavior (
                 id                    UUID         NOT NULL,
                 educational_centre_id UUID         NOT NULL,
+                category_id           UUID         NOT NULL,
                 name                  VARCHAR(500) NOT NULL,
                 position              INT          NOT NULL DEFAULT 0,
-                serious               BOOLEAN      NOT NULL DEFAULT FALSE,
                 active                BOOLEAN      NOT NULL DEFAULT TRUE,
                 PRIMARY KEY (id)
             )
         SQL);
-        $this->addSql('CREATE INDEX idx_incident_behavior_centre ON incident_behavior (educational_centre_id)');
-        $this->addSql('ALTER TABLE incident_behavior ADD CONSTRAINT fk_incident_behavior_centre FOREIGN KEY (educational_centre_id) REFERENCES educational_centre (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('CREATE INDEX idx_incident_behavior_centre   ON incident_behavior (educational_centre_id)');
+        $this->addSql('CREATE INDEX idx_incident_behavior_category ON incident_behavior (category_id)');
+        $this->addSql('ALTER TABLE incident_behavior ADD CONSTRAINT fk_incident_behavior_centre   FOREIGN KEY (educational_centre_id) REFERENCES educational_centre (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE incident_behavior ADD CONSTRAINT fk_incident_behavior_category FOREIGN KEY (category_id)           REFERENCES incident_behavior_category (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
 
         $this->addSql(<<<'SQL'
             CREATE TABLE incident_report (
-                id                  UUID      NOT NULL,
-                student_id          UUID      NOT NULL,
-                group_id            UUID      NOT NULL,
-                registered_by_id    UUID      NOT NULL,
+                id                  UUID         NOT NULL,
+                academic_year_id    UUID         NOT NULL,
+                student_id          UUID         NOT NULL,
+                group_id            UUID         NOT NULL,
+                registered_by_id    UUID         NOT NULL,
+                number              SMALLINT     NOT NULL,
                 occurred_at         TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
-                description         TEXT      NOT NULL,
-                expelled_from_class BOOLEAN   NOT NULL DEFAULT FALSE,
-                assigned_tasks      TEXT      DEFAULT NULL,
-                tasks_completed     VARCHAR(10) DEFAULT NULL,
+                description         TEXT         NOT NULL,
+                expelled_from_class BOOLEAN      NOT NULL DEFAULT FALSE,
+                assigned_tasks      TEXT         DEFAULT NULL,
+                tasks_completed     VARCHAR(10)  DEFAULT NULL,
                 PRIMARY KEY (id)
             )
         SQL);
         $this->addSql("COMMENT ON COLUMN incident_report.occurred_at IS '(DC2Type:datetime_immutable)'");
-        $this->addSql('CREATE INDEX idx_incident_report_student  ON incident_report (student_id)');
-        $this->addSql('CREATE INDEX idx_incident_report_group    ON incident_report (group_id)');
-        $this->addSql('CREATE INDEX idx_incident_report_teacher  ON incident_report (registered_by_id)');
-        $this->addSql('CREATE INDEX idx_incident_report_occurred ON incident_report (occurred_at)');
-        $this->addSql('ALTER TABLE incident_report ADD CONSTRAINT fk_ir_student FOREIGN KEY (student_id)       REFERENCES student (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        $this->addSql('ALTER TABLE incident_report ADD CONSTRAINT fk_ir_group   FOREIGN KEY (group_id)         REFERENCES "group" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        $this->addSql('ALTER TABLE incident_report ADD CONSTRAINT fk_ir_teacher FOREIGN KEY (registered_by_id) REFERENCES teacher (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('CREATE UNIQUE INDEX uq_ir_year_number            ON incident_report (academic_year_id, number)');
+        $this->addSql('CREATE INDEX idx_incident_report_academic_year   ON incident_report (academic_year_id)');
+        $this->addSql('CREATE INDEX idx_incident_report_student         ON incident_report (student_id)');
+        $this->addSql('CREATE INDEX idx_incident_report_group           ON incident_report (group_id)');
+        $this->addSql('CREATE INDEX idx_incident_report_teacher         ON incident_report (registered_by_id)');
+        $this->addSql('CREATE INDEX idx_incident_report_occurred        ON incident_report (occurred_at)');
+        $this->addSql('ALTER TABLE incident_report ADD CONSTRAINT fk_ir_academic_year FOREIGN KEY (academic_year_id) REFERENCES academic_year (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE incident_report ADD CONSTRAINT fk_ir_student       FOREIGN KEY (student_id)       REFERENCES student (id)        NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE incident_report ADD CONSTRAINT fk_ir_group         FOREIGN KEY (group_id)         REFERENCES "group" (id)        NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE incident_report ADD CONSTRAINT fk_ir_teacher       FOREIGN KEY (registered_by_id) REFERENCES teacher (id)        NOT DEFERRABLE INITIALLY IMMEDIATE');
 
         $this->addSql(<<<'SQL'
             CREATE TABLE incident_report_behavior (
@@ -80,5 +100,6 @@ final class Version20260101000004 extends AbstractMigration
         $this->addSql('DROP TABLE incident_report_behavior');
         $this->addSql('DROP TABLE incident_report');
         $this->addSql('DROP TABLE incident_behavior');
+        $this->addSql('DROP TABLE incident_behavior_category');
     }
 }

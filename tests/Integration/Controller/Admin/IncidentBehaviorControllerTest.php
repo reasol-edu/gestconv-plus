@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Controller\Admin;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\IncidentBehavior;
+use App\Entity\IncidentBehaviorCategory;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -41,17 +42,17 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
     public function testCreatePostAddsBehaviorAndRedirects(): void
     {
-        [$cadmin, $centre] = $this->makeScenario();
+        [$cadmin, $centre, $category] = $this->makeScenarioWithCategory();
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
         $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas');
-        $token    = $crawler->filter('form [name="_token"]')->first()->attr('value');
+        $token    = $crawler->filter('form[action$="conductas/nueva"] [name="_token"]')->first()->attr('value');
 
         $this->client->request('POST', '/admin/centros/' . $centreId . '/conductas/nueva', [
-            '_token'  => $token,
-            'name'    => 'Conducta de prueba',
-            'serious' => '0',
+            '_token'      => $token,
+            'name'        => 'Conducta de prueba',
+            'category_id' => $category->getId()->toRfc4122(),
         ]);
 
         self::assertResponseRedirects('/admin/centros/' . $centreId . '/conductas');
@@ -64,32 +65,32 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
     public function testCreateWithInvalidCsrfIsDenied(): void
     {
-        [$cadmin, $centre] = $this->makeScenario();
+        [$cadmin, $centre, $category] = $this->makeScenarioWithCategory();
         $this->loginAs($cadmin);
 
         $this->client->request('POST', '/admin/centros/' . $centre->getId()->toRfc4122() . '/conductas/nueva', [
-            '_token' => 'invalid-token',
-            'name'   => 'Conducta inválida',
+            '_token'      => 'invalid-token',
+            'name'        => 'Conducta inválida',
+            'category_id' => $category->getId()->toRfc4122(),
         ]);
 
         self::assertResponseStatusCodeSame(403);
     }
 
-    public function testCreateWithEmptyNameRendersErrorInPage(): void
+    public function testCreateWithEmptyNameDoesNotPersist(): void
     {
-        [$cadmin, $centre] = $this->makeScenario();
+        [$cadmin, $centre] = $this->makeScenarioWithCategory();
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
         $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas');
-        $token    = $crawler->filter('form [name="_token"]')->first()->attr('value');
+        $token    = $crawler->filter('form[action$="conductas/nueva"] [name="_token"]')->first()->attr('value');
 
         $this->client->request('POST', '/admin/centros/' . $centreId . '/conductas/nueva', [
             '_token' => $token,
             'name'   => '',
         ]);
 
-        // Flash error → redirect → renders index with no new behavior
         $this->em->clear();
         $behaviors = $this->em->getRepository(IncidentBehavior::class)->findBy(['educationalCentre' => $centre->getId()]);
         self::assertCount(0, $behaviors);
@@ -99,7 +100,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
     public function testEditGetRendersForm(): void
     {
-        [$cadmin, $centre, $behavior] = $this->makeScenarioWithBehavior();
+        [$cadmin, $centre, , $behavior] = $this->makeScenarioWithBehavior();
         $this->loginAs($cadmin);
 
         $this->client->request(
@@ -113,18 +114,19 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
     public function testEditPostSavesChanges(): void
     {
-        [$cadmin, $centre, $behavior] = $this->makeScenarioWithBehavior();
+        [$cadmin, $centre, $category, $behavior] = $this->makeScenarioWithBehavior();
         $this->loginAs($cadmin);
 
-        $centreId  = $centre->getId()->toRfc4122();
+        $centreId   = $centre->getId()->toRfc4122();
         $behaviorId = $behavior->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas/' . $behaviorId . '/editar');
-        $token     = $crawler->filter('[name="_token"]')->first()->attr('value');
+        $crawler    = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas/' . $behaviorId . '/editar');
+        $token      = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $this->client->request('POST', '/admin/centros/' . $centreId . '/conductas/' . $behaviorId . '/editar', [
-            '_token'  => $token,
-            'name'    => 'Nombre actualizado',
-            'serious' => '1',
+            '_token'      => $token,
+            'name'        => 'Nombre actualizado',
+            'category_id' => $category->getId()->toRfc4122(),
+            'active'      => '1',
         ]);
 
         self::assertResponseRedirects('/admin/centros/' . $centreId . '/conductas');
@@ -133,20 +135,19 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $updated = $this->em->find(IncidentBehavior::class, $behavior->getId());
         self::assertNotNull($updated);
         self::assertSame('Nombre actualizado', $updated->getName());
-        self::assertTrue($updated->isSerious());
     }
 
     // ── delete ────────────────────────────────────────────────────────────────
 
     public function testDeleteRemovesBehaviorAndRedirects(): void
     {
-        [$cadmin, $centre, $behavior] = $this->makeScenarioWithBehavior();
+        [$cadmin, $centre, , $behavior] = $this->makeScenarioWithBehavior();
         $this->loginAs($cadmin);
 
         $centreId   = $centre->getId()->toRfc4122();
         $behaviorId = $behavior->getId()->toRfc4122();
         $crawler    = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas');
-        $token      = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->first()->attr('value');
+        $token      = $crawler->filter('form[action$="' . $behaviorId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
         $this->client->request('POST', '/admin/centros/' . $centreId . '/conductas/' . $behaviorId . '/eliminar', [
             '_token' => $token,
@@ -162,7 +163,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
     public function testToggleActiveFlipsFlag(): void
     {
-        [$cadmin, $centre, $behavior] = $this->makeScenarioWithBehavior();
+        [$cadmin, $centre, , $behavior] = $this->makeScenarioWithBehavior();
         self::assertTrue($behavior->isActive());
         $this->loginAs($cadmin);
 
@@ -188,19 +189,18 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         self::assertFalse($updated->isActive());
     }
 
-    // ── moveUp / moveDown ─────────────────────────────────────────────────────
+    // ── moveUp ────────────────────────────────────────────────────────────────
 
     public function testMoveUpSwapsPositionWithPrevious(): void
     {
-        [$cadmin, $centre] = $this->makeScenario();
-        $b1 = $this->makeBehavior($centre, 'Primera', 0);
-        $b2 = $this->makeBehavior($centre, 'Segunda', 1);
+        [$cadmin, $centre, $category] = $this->makeScenarioWithCategory();
+        $b1 = $this->makeBehavior($centre, $category, 'Primera', 0);
+        $b2 = $this->makeBehavior($centre, $category, 'Segunda', 1);
         $this->persist($b1, $b2);
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
         $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas');
-        // The move-up button is on the second behavior (b2)
         $tokens   = $crawler->filter('form[action$="/subir"] [name="_token"]');
         $token    = $tokens->count() > 0 ? $tokens->first()->attr('value') : '';
 
@@ -234,23 +234,47 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         return [$cadmin, $centre];
     }
 
-    /** @return array{0: Teacher, 1: EducationalCentre, 2: IncidentBehavior} */
-    private function makeScenarioWithBehavior(): array
+    /** @return array{0: Teacher, 1: EducationalCentre, 2: IncidentBehaviorCategory} */
+    private function makeScenarioWithCategory(): array
     {
         [$cadmin, $centre] = $this->makeScenario();
-        $behavior          = $this->makeBehavior($centre, 'Conducta inicial', 0);
-        $this->persist($behavior);
+        $category          = $this->makeCategory($centre, 'Contrarias', false, 0);
+        $this->persist($category);
 
-        return [$cadmin, $centre, $behavior];
+        return [$cadmin, $centre, $category];
     }
 
-    private function makeBehavior(EducationalCentre $centre, string $name, int $position, bool $active = true): IncidentBehavior
+    /** @return array{0: Teacher, 1: EducationalCentre, 2: IncidentBehaviorCategory, 3: IncidentBehavior} */
+    private function makeScenarioWithBehavior(): array
     {
-        return (new IncidentBehavior())
+        [$cadmin, $centre, $category] = $this->makeScenarioWithCategory();
+        $behavior                     = $this->makeBehavior($centre, $category, 'Conducta inicial', 0);
+        $this->persist($behavior);
+
+        return [$cadmin, $centre, $category, $behavior];
+    }
+
+    private function makeCategory(EducationalCentre $centre, string $name, bool $serious, int $position): IncidentBehaviorCategory
+    {
+        return (new IncidentBehaviorCategory())
             ->setEducationalCentre($centre)
             ->setName($name)
+            ->setSerious($serious)
+            ->setPosition($position);
+    }
+
+    private function makeBehavior(
+        EducationalCentre $centre,
+        IncidentBehaviorCategory $category,
+        string $name,
+        int $position,
+        bool $active = true,
+    ): IncidentBehavior {
+        return (new IncidentBehavior())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName($name)
             ->setPosition($position)
-            ->setSerious(false)
             ->setActive($active);
     }
 

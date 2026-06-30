@@ -18,6 +18,7 @@ use App\Tests\Integration\ControllerTestCase;
 
 class IncidentReportControllerTest extends ControllerTestCase
 {
+    private int $nextReportNumber = 0;
     // ── index ─────────────────────────────────────────────────────────────────
 
     public function testIndexIsAccessibleToAnyTeacher(): void
@@ -330,15 +331,20 @@ class IncidentReportControllerTest extends ControllerTestCase
         $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
         $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-' . uniqid('', false));
+        $category  = (new \App\Entity\IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)
+            ->setName('Contrarias')
+            ->setSerious(false)
+            ->setPosition(0);
         $behavior  = (new IncidentBehavior())
             ->setEducationalCentre($centre)
+            ->setCategory($category)
             ->setName('Perturbación del normal desarrollo de las actividades')
             ->setPosition(0)
-            ->setSerious(false)
             ->setActive(true);
 
         $centre->setActiveAcademicYear($year);
-        $this->persist($teacher, $centre, $year, $programme, $level, $group, $student, $behavior);
+        $this->persist($teacher, $centre, $year, $programme, $level, $group, $student, $category, $behavior);
 
         return [$teacher, $centre, $group, $student, $behavior];
     }
@@ -354,7 +360,11 @@ class IncidentReportControllerTest extends ControllerTestCase
         Teacher $creator,
         IncidentBehavior $behavior,
     ): IncidentReport {
+        $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+
         $report = (new IncidentReport())
+            ->setAcademicYear($academicYear)
+            ->setNumber(++$this->nextReportNumber)
             ->setStudent($student)
             ->setGroup($group)
             ->setRegisteredBy($creator)

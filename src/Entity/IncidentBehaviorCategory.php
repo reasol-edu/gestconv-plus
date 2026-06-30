@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\IncidentBehaviorRepository;
+use App\Repository\IncidentBehaviorCategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity(repositoryClass: IncidentBehaviorRepository::class)]
-class IncidentBehavior
+#[ORM\Entity(repositoryClass: IncidentBehaviorCategoryRepository::class)]
+class IncidentBehaviorCategory
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
@@ -21,18 +21,14 @@ class IncidentBehavior
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private EducationalCentre $educationalCentre;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private IncidentBehaviorCategory $category;
-
-    #[ORM\Column(length: 500)]
+    #[ORM\Column(length: 200)]
     private string $name;
 
     #[ORM\Column]
-    private int $position = 0;
+    private bool $serious = false;
 
     #[ORM\Column]
-    private bool $active = true;
+    private int $position = 0;
 
     public function getId(): Uuid
     {
@@ -51,18 +47,6 @@ class IncidentBehavior
         return $this;
     }
 
-    public function getCategory(): IncidentBehaviorCategory
-    {
-        return $this->category;
-    }
-
-    public function setCategory(IncidentBehaviorCategory $category): static
-    {
-        $this->category = $category;
-
-        return $this;
-    }
-
     public function getName(): string
     {
         return $this->name;
@@ -75,6 +59,18 @@ class IncidentBehavior
         return $this;
     }
 
+    public function isSerious(): bool
+    {
+        return $this->serious;
+    }
+
+    public function setSerious(bool $serious): static
+    {
+        $this->serious = $serious;
+
+        return $this;
+    }
+
     public function getPosition(): int
     {
         return $this->position;
@@ -83,24 +79,6 @@ class IncidentBehavior
     public function setPosition(int $position): static
     {
         $this->position = $position;
-
-        return $this;
-    }
-
-    /** Proxy to category — behaviour inherits seriousness from its category. */
-    public function isSerious(): bool
-    {
-        return $this->category->isSerious();
-    }
-
-    public function isActive(): bool
-    {
-        return $this->active;
-    }
-
-    public function setActive(bool $active): static
-    {
-        $this->active = $active;
 
         return $this;
     }

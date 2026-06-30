@@ -20,6 +20,7 @@ use App\Tests\Integration\RepositoryTestCase;
 class IncidentReportRepositoryTest extends RepositoryTestCase
 {
     private IncidentReportRepository $repo;
+    private int $nextReportNumber = 0;
 
     protected function setUp(): void
     {
@@ -238,21 +239,26 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
         $group     = (new Group())->setName('1ºA' . $suffix)->setProgrammeYear($level);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE' . $suffix . uniqid('', false));
+        $category  = (new \App\Entity\IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)
+            ->setName('Contrarias')
+            ->setSerious(false)
+            ->setPosition(0);
         $behavior  = (new IncidentBehavior())
             ->setEducationalCentre($centre)
+            ->setCategory($category)
             ->setName('Perturbación')
             ->setPosition(0)
-            ->setSerious(false)
             ->setActive(true);
 
         $centre->setActiveAcademicYear($year);
-        $this->persist($centre, $year, $programme, $level, $group, $student, $behavior);
+        $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior);
 
         return compact('centre', 'year', 'group', 'student', 'behavior');
     }
 
     /**
-     * @param array{centre: EducationalCentre, group: Group, student: Student, behavior: IncidentBehavior} $world
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
      */
     private function makeReport(
         array $world,
@@ -267,17 +273,24 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
 
         $behavior = $world['behavior'];
         if ($serious) {
+            $seriousCat = (new \App\Entity\IncidentBehaviorCategory())
+                ->setEducationalCentre($world['centre'])
+                ->setName('Graves')
+                ->setSerious(true)
+                ->setPosition(1);
             $seriousBeh = (new IncidentBehavior())
                 ->setEducationalCentre($world['centre'])
+                ->setCategory($seriousCat)
                 ->setName('Agresión')
-                ->setPosition(1)
-                ->setSerious(true)
+                ->setPosition(0)
                 ->setActive(true);
-            $this->persist($seriousBeh);
+            $this->persist($seriousCat, $seriousBeh);
             $behavior = $seriousBeh;
         }
 
         $report = (new IncidentReport())
+            ->setAcademicYear($world['year'])
+            ->setNumber(++$this->nextReportNumber)
             ->setStudent($world['student'])
             ->setGroup($world['group'])
             ->setRegisteredBy($creator)

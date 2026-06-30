@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
@@ -58,6 +59,7 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->join('r.student', 's')
             ->join('r.registeredBy', 't')
             ->leftJoin('r.behaviors', 'beh')
+            ->leftJoin('beh.category', 'bc')
             ->where('ay.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid');
 
@@ -113,7 +115,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         // serious
         $serious = $filters['serious'] ?? null;
         if (is_bool($serious)) {
-            $qb->andWhere('beh.serious = :serious')
+            $qb->andWhere('bc.serious = :serious')
                ->setParameter('serious', $serious);
         }
 
@@ -239,6 +241,18 @@ class IncidentReportRepository extends ServiceEntityRepository
         }
 
         return array_slice($pairs, 0, $limit);
+    }
+
+    public function nextNumberForYear(AcademicYear $year): int
+    {
+        $max = $this->createQueryBuilder('r')
+            ->select('MAX(r.number)')
+            ->where('r.academicYear = :year')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) ($max ?? 0) + 1;
     }
 
     public function findById(string $id): ?IncidentReport

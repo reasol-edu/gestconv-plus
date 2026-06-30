@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\AcademicYear;
 use App\Repository\IncidentReportRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -19,6 +20,13 @@ class IncidentReport
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
     #[ORM\Column(type: 'uuid')]
     private Uuid $id;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private AcademicYear $academicYear;
+
+    #[ORM\Column(type: Types::SMALLINT, options: ['unsigned' => true])]
+    private int $number;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -60,6 +68,30 @@ class IncidentReport
     public function getId(): Uuid
     {
         return $this->id;
+    }
+
+    public function getAcademicYear(): AcademicYear
+    {
+        return $this->academicYear;
+    }
+
+    public function setAcademicYear(AcademicYear $academicYear): static
+    {
+        $this->academicYear = $academicYear;
+
+        return $this;
+    }
+
+    public function getNumber(): int
+    {
+        return $this->number;
+    }
+
+    public function setNumber(int $number): static
+    {
+        $this->number = $number;
+
+        return $this;
     }
 
     public function getStudent(): Student

@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\IncidentBehavior;
 use App\Repository\EducationalCentreRepository;
+use App\Repository\IncidentBehaviorCategoryRepository;
 use App\Repository\IncidentBehaviorRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,6 +24,7 @@ class IncidentBehaviorController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
+        private readonly IncidentBehaviorCategoryRepository $categories,
         private readonly IncidentBehaviorRepository $behaviors,
         private readonly TranslatorInterface $translator,
     ) {}
@@ -36,9 +38,16 @@ class IncidentBehaviorController extends AbstractController
         }
         $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
 
+        $categories          = $this->categories->findByCentreOrdered($centre);
+        $behaviorsByCategory = [];
+        foreach ($categories as $cat) {
+            $behaviorsByCategory[$cat->getId()->toRfc4122()] = $this->behaviors->findByCategoryOrdered($cat);
+        }
+
         return $this->render('admin/incident_behavior/index.html.twig', [
-            'centre'    => $centre,
-            'behaviors' => $this->behaviors->findByCentreOrdered($centre),
+            'centre'             => $centre,
+            'categories'         => $categories,
+            'behaviorsByCategory' => $behaviorsByCategory,
         ]);
     }
 
@@ -55,22 +64,23 @@ class IncidentBehaviorController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $name    = trim($request->request->getString('name'));
-        $serious = $request->request->getBoolean('serious');
+        $name       = trim($request->request->getString('name'));
+        $categoryId = $request->request->getString('category_id');
+        $category   = $this->categories->findById($categoryId);
 
-        if ($name === '') {
-            $this->addFlash('error', $this->t('behavior.field.name') . ' ' . $this->t('field.required'));
+        if ($name === '' || $category === null || $category->getEducationalCentre() !== $centre) {
+            $this->addFlash('error', $this->t('behavior.flash.invalid'));
 
             return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
         }
 
-        $position = $this->behaviors->countByCentre($centre);
+        $position = $this->behaviors->countByCategory($category);
 
         $behavior = (new IncidentBehavior())
             ->setEducationalCentre($centre)
+            ->setCategory($category)
             ->setName($name)
             ->setPosition($position)
-            ->setSerious($serious)
             ->setActive(true);
 
         $this->em->persist($behavior);
@@ -100,12 +110,13 @@ class IncidentBehaviorController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $name    = trim($request->request->getString('name'));
-            $serious = $request->request->getBoolean('serious');
-            $active  = $request->request->getBoolean('active');
+            $name       = trim($request->request->getString('name'));
+            $categoryId = $request->request->getString('category_id');
+            $active     = $request->request->getBoolean('active');
+            $category   = $this->categories->findById($categoryId);
 
-            if ($name !== '') {
-                $behavior->setName($name)->setSerious($serious)->setActive($active);
+            if ($name !== '' && $category !== null && $category->getEducationalCentre() === $centre) {
+                $behavior->setName($name)->setCategory($category)->setActive($active);
                 $this->em->flush();
                 $this->addFlash('success', $this->t('behavior.flash.updated'));
             }
@@ -113,9 +124,12 @@ class IncidentBehaviorController extends AbstractController
             return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
         }
 
+        $categories = $this->categories->findByCentreOrdered($centre);
+
         return $this->render('admin/incident_behavior/edit.html.twig', [
-            'centre'   => $centre,
-            'behavior' => $behavior,
+            'centre'     => $centre,
+            'behavior'   => $behavior,
+            'categories' => $categories,
         ]);
     }
 
@@ -137,12 +151,11 @@ class IncidentBehaviorController extends AbstractController
             throw $this->createNotFoundException();
         }
 
+        $category = $behavior->getCategory();
         $this->em->remove($behavior);
         $this->em->flush();
 
-        // Reorder remaining behaviors
-        $remaining = $this->behaviors->findByCentreOrdered($centre);
-        foreach ($remaining as $pos => $b) {
+        foreach ($this->behaviors->findByCategoryOrdered($category) as $pos => $b) {
             $b->setPosition($pos);
         }
         $this->em->flush();
@@ -165,10 +178,15 @@ class IncidentBehaviorController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $all = $this->behaviors->findByCentreOrdered($centre);
-        foreach ($all as $i => $b) {
+        $behavior = $this->behaviors->findById($id);
+        if ($behavior === null || $behavior->getEducationalCentre() !== $centre) {
+            throw $this->createNotFoundException();
+        }
+
+        $siblings = $this->behaviors->findByCategoryOrdered($behavior->getCategory());
+        foreach ($siblings as $i => $b) {
             if ($b->getId()->toRfc4122() === $id && $i > 0) {
-                $prev = $all[$i - 1];
+                $prev = $siblings[$i - 1];
                 $posB = $b->getPosition();
                 $b->setPosition($prev->getPosition());
                 $prev->setPosition($posB);
@@ -195,11 +213,16 @@ class IncidentBehaviorController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $all   = $this->behaviors->findByCentreOrdered($centre);
-        $count = count($all);
-        foreach ($all as $i => $b) {
+        $behavior = $this->behaviors->findById($id);
+        if ($behavior === null || $behavior->getEducationalCentre() !== $centre) {
+            throw $this->createNotFoundException();
+        }
+
+        $siblings = $this->behaviors->findByCategoryOrdered($behavior->getCategory());
+        $count    = count($siblings);
+        foreach ($siblings as $i => $b) {
             if ($b->getId()->toRfc4122() === $id && $i < $count - 1) {
-                $next = $all[$i + 1];
+                $next = $siblings[$i + 1];
                 $posB = $b->getPosition();
                 $b->setPosition($next->getPosition());
                 $next->setPosition($posB);
@@ -232,32 +255,6 @@ class IncidentBehaviorController extends AbstractController
         }
 
         $behavior->setActive(!$behavior->isActive());
-        $this->em->flush();
-
-        $this->addFlash('success', $this->t('behavior.flash.toggled'));
-
-        return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
-    }
-
-    #[Route('/{id}/tipo', name: 'app_admin_incident_behaviors_toggle_serious', methods: ['POST'])]
-    public function toggleSerious(string $centreId, string $id, Request $request): Response
-    {
-        $centre = $this->centres->findByIdWithActiveYear($centreId);
-        if ($centre === null) {
-            throw $this->createNotFoundException();
-        }
-        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
-
-        if (!$this->isCsrfTokenValid('toggle_serious_' . $id, $request->request->getString('_token'))) {
-            throw $this->createAccessDeniedException();
-        }
-
-        $behavior = $this->behaviors->findById($id);
-        if ($behavior === null || $behavior->getEducationalCentre() !== $centre) {
-            throw $this->createNotFoundException();
-        }
-
-        $behavior->setSerious(!$behavior->isSerious());
         $this->em->flush();
 
         $this->addFlash('success', $this->t('behavior.flash.toggled'));

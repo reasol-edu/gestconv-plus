@@ -22,6 +22,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 class IncidentReportVoterTest extends RepositoryTestCase
 {
     private IncidentReportVoter $voter;
+    private int $nextReportNumber = 0;
 
     protected function setUp(): void
     {
@@ -270,16 +271,23 @@ class IncidentReportVoterTest extends RepositoryTestCase
         $group     = (new Group())->setName('1ºA' . $suffix)->setProgrammeYear($level);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . $suffix . uniqid('', false));
         $creator   = $this->makeTeacher('creator.' . $suffix . uniqid('', false));
+        $category  = (new \App\Entity\IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)
+            ->setName('Contrarias')
+            ->setSerious(false)
+            ->setPosition(0);
         $behavior  = (new IncidentBehavior())
             ->setEducationalCentre($centre)
+            ->setCategory($category)
             ->setName('Perturbación')
             ->setPosition(0)
-            ->setSerious(false)
             ->setActive(true);
 
-        $this->persist($centre, $year, $programme, $level, $group, $student, $creator, $behavior);
+        $this->persist($centre, $year, $programme, $level, $group, $student, $creator, $category, $behavior);
 
         $report = (new IncidentReport())
+            ->setAcademicYear($year)
+            ->setNumber(++$this->nextReportNumber)
             ->setStudent($student)
             ->setGroup($group)
             ->setRegisteredBy($creator)

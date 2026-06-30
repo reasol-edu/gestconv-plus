@@ -14,21 +14,48 @@
     gap: 0.25rem;
 }
 .ts-control:focus-within {
-    border-color: #16a34a !important;
+    border-color: var(--color-forest-500) !important;
     background-color: #fff !important;
-    box-shadow: 0 0 0 3px rgb(22 163 74 / 0.15) !important;
+    box-shadow: 0 0 0 3px rgb(119 150 203 / 0.18) !important;
 }
-.ts-control .item {
-    background: #dcfce7;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-    border-radius: 0.5rem;
-    padding: 0.125rem 0.375rem;
+:root .ts-wrapper.multi .ts-control .item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    background-color: var(--color-forest-50) !important;
+    background-image: none !important;
+    color: var(--color-forest-800) !important;
+    border: 1px solid var(--color-forest-200) !important;
+    border-radius: 9999px !important;
+    padding: 0.25rem 0.3125rem 0.25rem 0.625rem !important;
     font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.25;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05) !important;
+    text-shadow: none !important;
 }
+:root .ts-wrapper.multi .ts-control .item .remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: var(--color-forest-100) !important;
+    background-image: none !important;
+    color: var(--color-forest-600);
+    font-size: 0.75rem;
+    line-height: 1;
+    opacity: 0.85;
+    border: none !important;
+    text-decoration: none !important;
+    transition: opacity 0.15s, background-color 0.15s;
+}
+:root .ts-wrapper.multi .ts-control .item .remove:hover { opacity: 1; background: var(--color-forest-200) !important; }
 .ts-dropdown { border-radius: 0.75rem; border-color: #e5e7eb; box-shadow: 0 4px 12px rgb(0 0 0 / 0.08); overflow: hidden; }
 .ts-dropdown .option { padding: 0.5rem 0.875rem; font-size: 0.875rem; }
-.ts-dropdown .active { background: #f0fdf4; color: #166534; }
+.ts-dropdown .active { background: var(--color-forest-50); color: var(--color-forest-800); }
 </style>
 {% endblock %}
 
@@ -94,36 +121,21 @@
                 </p>
                 <p class="text-xs text-gray-400 mb-3">{{ 'incident.field.behaviors_help'|trans({}, 'admin') }}</p>
 
-                {% set contrarias = activeBehaviors|filter(b => not b.serious) %}
-                {% set graves     = activeBehaviors|filter(b => b.serious) %}
-
-                {% if contrarias is not empty %}
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">{{ 'behavior.badge.contrary'|trans({}, 'admin') }}</p>
-                    <div class="space-y-2 mb-4">
-                        {% for beh in contrarias %}
+                {% for group in behaviorsByCategory %}
+                    <p class="text-xs font-semibold uppercase tracking-wide mb-2 {{ group.category.serious ? 'text-red-500' : 'text-gray-500' }}">
+                        {{ group.category.name }}
+                    </p>
+                    <div class="space-y-2 {{ not loop.last ? 'mb-4' : '' }}">
+                        {% for beh in group.behaviors %}
                             <label class="flex items-start gap-3 cursor-pointer group">
                                 <input type="checkbox" name="behaviors[]" value="{{ beh.id.toRfc4122 }}"
                                        {{ beh.id.toRfc4122 in (formData.behaviorIds ?? []) ? 'checked' : '' }}
-                                       class="mt-0.5 h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                                       class="mt-0.5 h-4 w-4 rounded border-gray-300 {{ group.category.serious ? 'text-red-600 focus:ring-red-500' : 'text-forest-600 focus:ring-forest-500' }}">
                                 <span class="text-sm text-gray-700 group-hover:text-gray-900">{{ beh.name }}</span>
                             </label>
                         {% endfor %}
                     </div>
-                {% endif %}
-
-                {% if graves is not empty %}
-                    <p class="text-xs font-semibold uppercase tracking-wide text-red-500 mb-2">{{ 'behavior.badge.serious'|trans({}, 'admin') }}</p>
-                    <div class="space-y-2">
-                        {% for beh in graves %}
-                            <label class="flex items-start gap-3 cursor-pointer group">
-                                <input type="checkbox" name="behaviors[]" value="{{ beh.id.toRfc4122 }}"
-                                       {{ beh.id.toRfc4122 in (formData.behaviorIds ?? []) ? 'checked' : '' }}
-                                       class="mt-0.5 h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">{{ beh.name }}</span>
-                            </label>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+                {% endfor %}
             </div>
 
             <div>
@@ -231,7 +243,9 @@ const select = new TomSelect('#students-select', {
             return `<div><span class="font-medium">${data.label}</span> <span class="text-xs text-gray-400 ml-1">${data.secondary || ''}</span></div>`;
         },
         item: function(data) {
-            return `<span>${data.label} <span class="opacity-60 text-xs">${data.secondary || ''}</span></span>`;
+            const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" style="width:.875rem;height:.875rem;opacity:.55;flex-shrink:0"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z"/></svg>`;
+            const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${data.secondary}</span>` : '';
+            return `<span style="display:inline-flex;align-items:center;gap:.25rem">${icon}${data.label}${secondary}</span>`;
         },
     },
     shouldLoad: (q) => q.length >= 2,

@@ -35,8 +35,13 @@ La sección **Partes** está accesible desde el menú lateral para cualquier doc
 
 ### Registrar un nuevo parte
 
+![Formulario de nuevo parte](img/partes/nuevo-parte-vacio.png)
+
 1. Pulsa **Nuevo parte** en la esquina superior derecha de la sección o desde el acceso rápido del inicio.
 2. **Alumnado implicado** — escribe en el campo de búsqueda el nombre o NIE del estudiante. El desplegable muestra el nombre del alumno con el grupo como información secundaria. Si en el incidente participaron varios estudiantes (incluso de grupos distintos), selecciónalos todos: se creará un parte independiente para cada uno con los mismos datos.
+
+   ![Selector de alumnado con una pill seleccionada](img/partes/nuevo-parte-selector-alumnado.png)
+
 3. **Fecha y hora del suceso** — por defecto se rellena con el momento actual; modifícala si el parte se registra con posterioridad al incidente.
 4. **Conductas** — marca al menos una conducta de las definidas para el centro. Las conductas están agrupadas en *Contrarias a la convivencia* y *Conductas graves*. Solo aparecen las conductas activas.
 5. **Descripción de lo acontecido** — campo de texto enriquecido obligatorio. Describe los hechos con detalle.
@@ -49,7 +54,9 @@ La sección **Partes** está accesible desde el menú lateral para cualquier doc
 
 ### Listado y filtros
 
-El listado muestra los partes accesibles según el perfil del docente, ordenados del más reciente al más antiguo, con paginación. Los filtros disponibles son:
+![Listado de partes de convivencia](img/partes/partes-listado.png)
+
+El listado muestra los partes accesibles según el perfil del docente, ordenados del más reciente al más antiguo, con paginación. La primera columna (`#`) indica el número de parte dentro del curso académico activo. Los filtros disponibles son:
 
 | Filtro | Descripción |
 |---|---|
@@ -65,13 +72,21 @@ En pantallas pequeñas, cada fila del listado se muestra como una tarjeta con la
 
 Pulsa **Ver** en cualquier fila del listado para abrir el detalle completo del parte.
 
-Desde el detalle puedes **editar** el parte si eres el docente que lo registró o un administrador. Los campos editables son los mismos que en la creación, salvo el alumnado implicado y el grupo (que son inmutables una vez registrado).
+Desde el detalle puedes **editar** el parte si eres el docente que lo registró o un administrador. El número de parte (`#1`, `#2`…) aparece junto al título y es de solo lectura: identifica el parte dentro del curso académico y no cambia al editar.
+
+![Formulario de edición con número de parte](img/partes/parte-editar.png)
+
+Los campos editables son los mismos que en la creación, salvo el alumnado implicado y el grupo (que son inmutables una vez registrado).
 
 Un administrador puede **eliminar** el parte definitivamente desde el detalle. Esta acción es irreversible.
 
 ### Conductas contrarias a la convivencia
 
-Los administradores de centro configuran las conductas disponibles en **Centro educativo → Conductas contrarias**. Para cada conducta pueden:
+Los administradores de centro configuran las conductas disponibles en **Centro educativo → Conductas contrarias**.
+
+![Administración de conductas contrarias](img/partes/admin-conductas.png)
+
+Para cada conducta pueden:
 
 - Activarla o desactivarla (solo las activas se pueden seleccionar al registrar un parte).
 - Marcarla como *grave* o *contraria*.
