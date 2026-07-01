@@ -107,7 +107,7 @@ class SanctionMeasureControllerTest extends ControllerTestCase
 
     public function testImportPostWithReplaceExistingRemovesPreviousCategory(): void
     {
-        [$cadmin, $centre, $oldCategory] = $this->makeScenarioWithMeasure();
+        [$cadmin, $centre, $oldCategory, $oldMeasure] = $this->makeScenarioWithMeasure();
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
@@ -131,6 +131,7 @@ class SanctionMeasureControllerTest extends ControllerTestCase
 
         $this->em->clear();
         self::assertNull($this->em->find(SanctionMeasureCategory::class, $oldCategory->getId()));
+        self::assertNull($this->em->find(SanctionMeasure::class, $oldMeasure->getId()), 'La medida antigua debe eliminarse en cascada junto con su categoría.');
         $categories = $this->em->getRepository(SanctionMeasureCategory::class)->findBy(['educationalCentre' => $centre->getId()]);
         self::assertCount(1, $categories);
         self::assertSame('Categoría nueva', $categories[0]->getName());

@@ -131,7 +131,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
     public function testImportPostWithReplaceExistingRemovesPreviousCategory(): void
     {
-        [$cadmin, $centre, $oldCategory] = $this->makeScenarioWithBehavior();
+        [$cadmin, $centre, $oldCategory, $oldBehavior] = $this->makeScenarioWithBehavior();
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
@@ -155,6 +155,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
         $this->em->clear();
         self::assertNull($this->em->find(IncidentBehaviorCategory::class, $oldCategory->getId()));
+        self::assertNull($this->em->find(IncidentBehavior::class, $oldBehavior->getId()), 'La conducta antigua debe eliminarse en cascada junto con su categoría.');
         $categories = $this->em->getRepository(IncidentBehaviorCategory::class)->findBy(['educationalCentre' => $centre->getId()]);
         self::assertCount(1, $categories);
         self::assertSame('Faltas nuevas', $categories[0]->getName());
