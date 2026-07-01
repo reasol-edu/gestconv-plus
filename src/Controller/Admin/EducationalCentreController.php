@@ -10,6 +10,7 @@ use App\Repository\AcademicYearRepository;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\TeacherRepository;
 use App\Service\IncidentBehaviorSeeder;
+use App\Service\SanctionMeasureSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -30,6 +31,7 @@ class EducationalCentreController extends AbstractController
         private readonly TeacherRepository $teachers,
         private readonly TranslatorInterface $translator,
         private readonly IncidentBehaviorSeeder $behaviorSeeder,
+        private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
     ) {}
 
     #[Route('', name: 'app_admin_centres_index')]
@@ -76,6 +78,7 @@ class EducationalCentreController extends AbstractController
                 $this->em->persist($centre);
                 $this->em->persist($academicYear);
                 $this->behaviorSeeder->seedForCentre($centre);
+                $this->sanctionMeasureSeeder->seedForCentre($centre);
                 $this->em->flush();
 
                 $this->addFlash('success', $this->t('centre.flash.created'));

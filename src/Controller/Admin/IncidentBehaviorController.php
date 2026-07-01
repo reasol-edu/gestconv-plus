@@ -9,8 +9,12 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\IncidentBehaviorCategoryRepository;
 use App\Repository\IncidentBehaviorRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\IncidentBehaviorExporter;
+use App\Service\IncidentBehaviorImporter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,6 +30,8 @@ class IncidentBehaviorController extends AbstractController
         private readonly EducationalCentreRepository $centres,
         private readonly IncidentBehaviorCategoryRepository $categories,
         private readonly IncidentBehaviorRepository $behaviors,
+        private readonly IncidentBehaviorExporter $exporter,
+        private readonly IncidentBehaviorImporter $importer,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -49,6 +55,68 @@ class IncidentBehaviorController extends AbstractController
             'categories'         => $categories,
             'behaviorsByCategory' => $behaviorsByCategory,
         ]);
+    }
+
+    #[Route('/export', name: 'app_admin_incident_behaviors_export', methods: ['GET'])]
+    public function export(string $centreId): JsonResponse
+    {
+        $centre = $this->centres->findByIdWithActiveYear($centreId);
+        if ($centre === null) {
+            throw $this->createNotFoundException();
+        }
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
+
+        $data     = $this->exporter->export($centre);
+        $filename = 'conductas-' . $centre->getCode() . '.json';
+        $json     = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return new JsonResponse($json, Response::HTTP_OK, [
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ], true);
+    }
+
+    #[Route('/import', name: 'app_admin_incident_behaviors_import')]
+    public function import(string $centreId, Request $request): Response
+    {
+        $centre = $this->centres->findByIdWithActiveYear($centreId);
+        if ($centre === null) {
+            throw $this->createNotFoundException();
+        }
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
+
+        if (!$request->isMethod('POST')) {
+            return $this->render('admin/incident_behavior/import.html.twig', ['centre' => $centre]);
+        }
+
+        if (!$this->isCsrfTokenValid('import_behaviors', $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $file = $request->files->get('json');
+        if (!$file instanceof UploadedFile || !$file->isValid()) {
+            $this->addFlash('error', $this->t('behavior.import.error.no_file'));
+
+            return $this->render('admin/incident_behavior/import.html.twig', ['centre' => $centre]);
+        }
+
+        $content = (string) file_get_contents($file->getPathname());
+        $decoded = json_decode($content, true);
+
+        if (!is_array($decoded)) {
+            $this->addFlash('error', $this->t('behavior.import.error.invalid_json'));
+
+            return $this->render('admin/incident_behavior/import.html.twig', ['centre' => $centre]);
+        }
+
+        /** @var array<string, mixed> $decoded */
+        $stats = $this->importer->import($decoded, $centre, $request->request->has('replace_existing'));
+
+        $this->addFlash('success', $this->translator->trans('behavior.import.flash.summary', [
+            '%categories%' => $stats['categories'],
+            '%behaviors%'  => $stats['behaviors'],
+        ], 'admin'));
+
+        return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
     }
 
     #[Route('/nueva', name: 'app_admin_incident_behaviors_create', methods: ['POST'])]

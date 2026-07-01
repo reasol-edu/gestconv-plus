@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\EducationalCentre;
-use App\Entity\IncidentBehavior;
-use App\Entity\IncidentBehaviorCategory;
+use App\Entity\SanctionMeasure;
+use App\Entity\SanctionMeasureCategory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Yaml\Yaml;
 
-final class IncidentBehaviorSeeder
+final class SanctionMeasureSeeder
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -21,7 +21,7 @@ final class IncidentBehaviorSeeder
 
     public function seedForCentre(EducationalCentre $centre): void
     {
-        $config = Yaml::parseFile($this->projectDir . '/config/incident_behaviors.yaml');
+        $config = Yaml::parseFile($this->projectDir . '/config/sanction_measures.yaml');
         if (!is_array($config)) {
             return;
         }
@@ -41,28 +41,35 @@ final class IncidentBehaviorSeeder
                 continue;
             }
 
-            $category = (new IncidentBehaviorCategory())
+            $category = (new SanctionMeasureCategory())
                 ->setEducationalCentre($centre)
                 ->setName($catName)
-                ->setSerious((bool) ($catData['serious'] ?? false))
                 ->setPosition($catPosition);
 
             $this->em->persist($category);
 
-            $rawBehaviors = is_array($catData['behaviors'] ?? null) ? $catData['behaviors'] : [];
-            foreach ($rawBehaviors as $behaviorPosition => $behaviorName) {
-                if (!is_string($behaviorName) || !is_int($behaviorPosition)) {
+            $rawMeasures = is_array($catData['measures'] ?? null) ? $catData['measures'] : [];
+            foreach ($rawMeasures as $measurePosition => $measureData) {
+                if (!is_array($measureData) || !is_int($measurePosition)) {
                     continue;
                 }
 
-                $behavior = (new IncidentBehavior())
+                $measureName  = is_string($measureData['name'] ?? null) ? $measureData['name'] : '';
+                $hasDateRange = (bool) ($measureData['has_date_range'] ?? false);
+
+                if ($measureName === '') {
+                    continue;
+                }
+
+                $measure = (new SanctionMeasure())
                     ->setEducationalCentre($centre)
                     ->setCategory($category)
-                    ->setName($behaviorName)
-                    ->setPosition($behaviorPosition)
+                    ->setName($measureName)
+                    ->setHasDateRange($hasDateRange)
+                    ->setPosition($measurePosition)
                     ->setActive(true);
 
-                $this->em->persist($behavior);
+                $this->em->persist($measure);
             }
         }
     }

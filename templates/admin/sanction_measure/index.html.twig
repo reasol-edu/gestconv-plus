@@ -1,6 +1,6 @@
 {% extends 'layouts/app.html.twig' %}
 
-{% block title %}{{ 'behavior.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+{% block title %}{{ 'sanction_measure.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="px-6 py-8 max-w-5xl mx-auto space-y-6">
@@ -8,31 +8,31 @@
     <div class="flex items-start justify-between gap-4 flex-wrap">
         <div>
             <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
-                <a href="{{ path('app_admin_centres_index') }}" class="hover:text-forest-600 transition-colors">{{ 'Centros educativos' }}</a>
+                <a href="{{ path('app_admin_centres_index') }}" class="hover:text-forest-600 transition-colors">Centros educativos</a>
                 {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
                 <a href="{{ path('app_admin_centres_edit', {id: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ centre.name }}</a>
                 {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
             </div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ 'behavior.title'|trans({}, 'admin') }}</h1>
+            <h1 class="text-2xl font-bold text-gray-900">{{ 'sanction_measure.title'|trans({}, 'admin') }}</h1>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-            <a href="{{ path('app_admin_incident_behaviors_import', {centreId: centre.id}) }}"
+            <a href="{{ path('app_admin_sanction_measures_import', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
                       hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
                 {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
-                {{ 'behavior.import.button'|trans({}, 'admin') }}
+                {{ 'sanction_measure.import.button'|trans({}, 'admin') }}
             </a>
-            <a href="{{ path('app_admin_incident_behaviors_export', {centreId: centre.id}) }}"
+            <a href="{{ path('app_admin_sanction_measures_export', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
                       hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
                 {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-4 w-4'}) }}
-                {{ 'behavior.export.button'|trans({}, 'admin') }}
+                {{ 'sanction_measure.export.button'|trans({}, 'admin') }}
             </a>
-            <a href="{{ path('app_admin_incident_behavior_categories_create', {centreId: centre.id}) }}"
+            <a href="{{ path('app_admin_sanction_measure_categories_create', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
                       hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
                 {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
-                {{ 'category.new'|trans({}, 'admin') }}
+                {{ 'sanction_category.new'|trans({}, 'admin') }}
             </a>
         </div>
     </div>
@@ -48,29 +48,27 @@
 
     {% if categories is empty %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-16 text-center">
-            {{ ux_icon('heroicons:no-symbol', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
-            <p class="text-sm text-gray-500 mb-4">No hay categorías configuradas.</p>
-            <a href="{{ path('app_admin_incident_behavior_categories_create', {centreId: centre.id}) }}"
+            {{ ux_icon('heroicons:scale', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+            <p class="text-sm text-gray-500 mb-4">{{ 'sanction_measure.empty_categories'|trans({}, 'admin') }}</p>
+            <a href="{{ path('app_admin_sanction_measure_categories_create', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors">
                 {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
-                {{ 'category.new'|trans({}, 'admin') }}
+                {{ 'sanction_category.new'|trans({}, 'admin') }}
             </a>
         </div>
     {% else %}
         {% for cat in categories %}
             {% set catId = cat.id.toRfc4122 %}
-            {% set catBehaviors = behaviorsByCategory[catId] ?? [] %}
+            {% set catMeasures = measuresByCategory[catId] ?? [] %}
 
             <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
 
-                {# ── Cabecera de categoría ──────────────────────────────────── #}
                 <div class="flex items-center justify-between gap-3 px-5 py-3.5 bg-gray-50 border-b border-gray-200">
                     <div class="flex items-center gap-3 min-w-0">
-                        {# Move category up/down #}
                         <div class="flex flex-col gap-0.5 shrink-0">
                             {% if not loop.first %}
-                                <form method="post" action="{{ path('app_admin_incident_behavior_categories_move_up', {centreId: centre.id, id: cat.id}) }}">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('move_category_' ~ cat.id) }}">
+                                <form method="post" action="{{ path('app_admin_sanction_measure_categories_move_up', {centreId: centre.id, id: cat.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('move_sanction_category_' ~ cat.id) }}">
                                     <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors" title="Subir categoría">
                                         {{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}
                                     </button>
@@ -79,33 +77,28 @@
                                 <span class="p-0.5 text-transparent">{{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}</span>
                             {% endif %}
                             {% if not loop.last %}
-                                <form method="post" action="{{ path('app_admin_incident_behavior_categories_move_down', {centreId: centre.id, id: cat.id}) }}">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('move_category_' ~ cat.id) }}">
+                                <form method="post" action="{{ path('app_admin_sanction_measure_categories_move_down', {centreId: centre.id, id: cat.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('move_sanction_category_' ~ cat.id) }}">
                                     <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors" title="Bajar categoría">
                                         {{ ux_icon('heroicons:chevron-down', {class: 'h-3.5 w-3.5'}) }}
                                     </button>
                                 </form>
                             {% endif %}
                         </div>
-
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium shrink-0
-                                     {{ cat.serious ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600' }}">
-                            {{ cat.serious ? 'category.badge.serious'|trans({}, 'admin') : 'category.badge.contrary'|trans({}, 'admin') }}
-                        </span>
                         <h2 class="text-sm font-semibold text-gray-800 truncate">{{ cat.name }}</h2>
                     </div>
 
                     <div class="flex items-center gap-2 shrink-0">
-                        <a href="{{ path('app_admin_incident_behavior_categories_edit', {centreId: centre.id, id: cat.id}) }}"
+                        <a href="{{ path('app_admin_sanction_measure_categories_edit', {centreId: centre.id, id: cat.id}) }}"
                            class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
                                   hover:bg-white hover:border-gray-300 transition-colors">
                             {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
-                            {{ 'category.edit'|trans({}, 'admin') }}
+                            {{ 'sanction_category.edit'|trans({}, 'admin') }}
                         </a>
-                        <form method="post" action="{{ path('app_admin_incident_behavior_categories_delete', {centreId: centre.id, id: cat.id}) }}"
+                        <form method="post" action="{{ path('app_admin_sanction_measure_categories_delete', {centreId: centre.id, id: cat.id}) }}"
                               class="js-confirm-form"
-                              data-confirm="{{ 'category.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_category_' ~ cat.id) }}">
+                              data-confirm="{{ 'sanction_category.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_sanction_category_' ~ cat.id) }}">
                             <button type="submit"
                                     class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium
                                            text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors">
@@ -115,22 +108,21 @@
                     </div>
                 </div>
 
-                {# ── Conductas de esta categoría ────────────────────────────── #}
-                {% if catBehaviors is empty %}
+                {% if catMeasures is empty %}
                     <div class="px-6 py-8 text-center">
-                        <p class="text-sm text-gray-400">{{ 'behavior.empty'|trans({}, 'admin') }}</p>
+                        <p class="text-sm text-gray-400">{{ 'sanction_measure.empty'|trans({}, 'admin') }}</p>
                     </div>
                 {% else %}
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <tbody class="divide-y divide-gray-100">
-                                {% for i, beh in catBehaviors %}
-                                    <tr class="hover:bg-gray-50 transition-colors {{ not beh.active ? 'opacity-50' : '' }}">
+                                {% for i, measure in catMeasures %}
+                                    <tr class="hover:bg-gray-50 transition-colors {{ not measure.active ? 'opacity-50' : '' }}">
                                         <td class="px-4 py-3 w-10">
                                             <div class="flex flex-col gap-0.5">
                                                 {% if i > 0 %}
-                                                    <form method="post" action="{{ path('app_admin_incident_behaviors_move_up', {centreId: centre.id, id: beh.id}) }}">
-                                                        <input type="hidden" name="_token" value="{{ csrf_token('move_behavior_' ~ beh.id) }}">
+                                                    <form method="post" action="{{ path('app_admin_sanction_measures_move_up', {centreId: centre.id, id: measure.id}) }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('move_sanction_measure_' ~ measure.id) }}">
                                                         <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Subir">
                                                             {{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}
                                                         </button>
@@ -138,9 +130,9 @@
                                                 {% else %}
                                                     <span class="p-0.5 text-transparent">{{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}</span>
                                                 {% endif %}
-                                                {% if i < catBehaviors|length - 1 %}
-                                                    <form method="post" action="{{ path('app_admin_incident_behaviors_move_down', {centreId: centre.id, id: beh.id}) }}">
-                                                        <input type="hidden" name="_token" value="{{ csrf_token('move_behavior_' ~ beh.id) }}">
+                                                {% if i < catMeasures|length - 1 %}
+                                                    <form method="post" action="{{ path('app_admin_sanction_measures_move_down', {centreId: centre.id, id: measure.id}) }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('move_sanction_measure_' ~ measure.id) }}">
                                                         <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Bajar">
                                                             {{ ux_icon('heroicons:chevron-down', {class: 'h-3.5 w-3.5'}) }}
                                                         </button>
@@ -148,29 +140,37 @@
                                                 {% endif %}
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-gray-800 flex-1">{{ beh.name }}</td>
+                                        <td class="px-4 py-3 text-gray-800 flex-1">
+                                            {{ measure.name }}
+                                            {% if measure.hasDateRange %}
+                                                <span class="ml-2 inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs font-medium">
+                                                    {{ ux_icon('heroicons:calendar-days', {class: 'h-3 w-3 mr-1'}) }}
+                                                    {{ 'sanction.badge.has_date_range'|trans({}, 'admin') }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
                                         <td class="px-4 py-3 w-28">
-                                            <form method="post" action="{{ path('app_admin_incident_behaviors_toggle_active', {centreId: centre.id, id: beh.id}) }}">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_behavior_' ~ beh.id) }}">
+                                            <form method="post" action="{{ path('app_admin_sanction_measures_toggle_active', {centreId: centre.id, id: measure.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_sanction_measure_' ~ measure.id) }}">
                                                 <button type="submit"
                                                         class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-colors
-                                                               {{ beh.active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
-                                                    {{ beh.active ? 'behavior.badge.active'|trans({}, 'admin') : 'behavior.badge.inactive'|trans({}, 'admin') }}
+                                                               {{ measure.active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                                                    {{ measure.active ? 'behavior.badge.active'|trans({}, 'admin') : 'behavior.badge.inactive'|trans({}, 'admin') }}
                                                 </button>
                                             </form>
                                         </td>
                                         <td class="px-4 py-3 w-32">
                                             <div class="flex items-center justify-end gap-2">
-                                                <a href="{{ path('app_admin_incident_behaviors_edit', {centreId: centre.id, id: beh.id}) }}"
+                                                <a href="{{ path('app_admin_sanction_measures_edit', {centreId: centre.id, id: measure.id}) }}"
                                                    class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
                                                           hover:bg-gray-50 hover:border-gray-300 transition-colors">
                                                     {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
                                                     Editar
                                                 </a>
-                                                <form method="post" action="{{ path('app_admin_incident_behaviors_delete', {centreId: centre.id, id: beh.id}) }}"
+                                                <form method="post" action="{{ path('app_admin_sanction_measures_delete', {centreId: centre.id, id: measure.id}) }}"
                                                       class="js-confirm-form"
-                                                      data-confirm="{{ 'behavior.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_behavior_' ~ beh.id) }}">
+                                                      data-confirm="{{ 'sanction_measure.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_sanction_measure_' ~ measure.id) }}">
                                                     <button type="submit"
                                                             class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium
                                                                    text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors">
@@ -186,24 +186,30 @@
                     </div>
                 {% endif %}
 
-                {# ── Formulario para nueva conducta en esta categoría ───────── #}
                 <div class="border-t border-gray-100 px-5 py-4 bg-gray-50/60">
-                    <form method="post" action="{{ path('app_admin_incident_behaviors_create', {centreId: centre.id}) }}"
+                    <form method="post" action="{{ path('app_admin_sanction_measures_create', {centreId: centre.id}) }}"
                           class="flex flex-wrap items-end gap-3">
-                        <input type="hidden" name="_token" value="{{ csrf_token('new_behavior_' ~ centre.id) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('new_sanction_measure_' ~ centre.id) }}">
                         <input type="hidden" name="category_id" value="{{ cat.id }}">
                         <div class="flex-1 min-w-48">
-                            <label class="block text-xs font-medium text-gray-600 mb-1">{{ 'behavior.field.name'|trans({}, 'admin') }}</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">{{ 'sanction_measure.field.name'|trans({}, 'admin') }}</label>
                             <input type="text" name="name" required maxlength="500"
                                    class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900
                                           focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                        </div>
+                        <div class="flex items-center gap-2 pb-2">
+                            <input type="checkbox" name="has_date_range" value="1" id="hdr_{{ cat.id }}"
+                                   class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                            <label for="hdr_{{ cat.id }}" class="text-xs text-gray-600 cursor-pointer whitespace-nowrap">
+                                {{ 'sanction_measure.field.has_date_range'|trans({}, 'admin') }}
+                            </label>
                         </div>
                         <div class="shrink-0">
                             <button type="submit"
                                     class="inline-flex items-center gap-1.5 rounded-xl bg-forest-600 px-3.5 py-2 text-sm font-semibold text-white
                                            hover:bg-forest-700 transition-colors shadow-xs">
                                 {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
-                                {{ 'behavior.new'|trans({}, 'admin') }}
+                                {{ 'sanction_measure.new'|trans({}, 'admin') }}
                             </button>
                         </div>
                     </form>

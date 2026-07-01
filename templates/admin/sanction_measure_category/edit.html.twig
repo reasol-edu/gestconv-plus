@@ -1,0 +1,52 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ (category ? 'sanction_category.edit_title' : 'sanction_category.new_title')|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+            <a href="{{ path('app_admin_sanction_measures_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">
+                {{ 'sanction_measure.title'|trans({}, 'admin') }}
+            </a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {{ (category ? 'sanction_category.edit_title' : 'sanction_category.new_title')|trans({}, 'admin') }}
+        </h1>
+    </div>
+
+    <form method="post"
+          action="{{ category
+              ? path('app_admin_sanction_measure_categories_edit', {centreId: centre.id, id: category.id})
+              : path('app_admin_sanction_measure_categories_create', {centreId: centre.id}) }}"
+          class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-5">
+        <input type="hidden" name="_token"
+               value="{{ csrf_token(category ? 'edit_sanction_category_' ~ category.id : 'new_sanction_category_' ~ centre.id) }}">
+
+        <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'sanction_category.field.name'|trans({}, 'admin') }}</label>
+            <input type="text" id="name" name="name" required maxlength="200"
+                   value="{{ category ? category.name : '' }}"
+                   class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                          focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+            <a href="{{ path('app_admin_sanction_measures_index', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors">
+                Cancelar
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                Guardar
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

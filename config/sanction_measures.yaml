@@ -1,0 +1,39 @@
+categories:
+  - name: 'Correcciones para conductas contrarias a las normas de convivencia'
+    measures:
+      - name: 'Amonestación oral'
+        has_date_range: false
+      - name: 'Apercibimiento por escrito'
+        has_date_range: false
+      - name: 'Comparecencia ante el Jefe/a de Estudios o Director/a'
+        has_date_range: false
+      - name: 'Realización de tareas educativas dentro o fuera del horario lectivo'
+        has_date_range: false
+      - name: 'Suspensión del derecho de asistencia a determinadas clases (1 a 3 días lectivos)'
+        has_date_range: true
+
+  - name: 'Correcciones para conductas gravemente perjudiciales para la convivencia'
+    measures:
+      - name: 'Realización de tareas educativas fuera del horario lectivo para reparar el daño causado'
+        has_date_range: false
+      - name: 'Suspensión del derecho de asistencia a determinadas clases o a todas ellas (4 a 30 días)'
+        has_date_range: true
+      - name: 'Suspensión del derecho de asistencia al centro educativo (hasta 30 días lectivos)'
+        has_date_range: true
+      - name: 'Cambio de grupo con carácter permanente'
+        has_date_range: false
+      - name: 'Cambio de centro docente'
+        has_date_range: false
+
+  - name: 'Otras medidas educativas complementarias'
+    measures:
+      - name: 'Mediación'
+        has_date_range: false
+      - name: 'Acuerdo reeducativo'
+        has_date_range: false
+      - name: 'Plan de mejora de la convivencia escolar'
+        has_date_range: false
+      - name: 'Apertura de expediente disciplinario'
+        has_date_range: false
+      - name: 'Comparecencia ante la Comisión de Convivencia'
+        has_date_range: false

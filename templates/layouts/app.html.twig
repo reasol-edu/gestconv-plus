@@ -107,6 +107,18 @@
                 </a>
             {% endif %}
 
+            {# Sanciones — todos los docentes con centro activo #}
+            {% if active_centre %}
+                {% set sanctions_active = current_route starts with 'app_sanctions' %}
+                <a href="{{ path('app_sanctions_index') }}"
+                    {{ sanctions_active ? 'aria-current="page"' : '' }}
+                   class="{{ sanctions_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:scale', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'sanctions'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
             {# Calendario #}
             {{ _self.nav_item(
                 'calendar'|trans({}, 'navigation'),
@@ -139,6 +151,8 @@
                 {% set admin_active = current_route == 'app_admin'
                     or current_route starts with 'app_admin_teachers'
                     or current_route starts with 'app_admin_centres'
+                    or current_route starts with 'app_admin_sanction'
+                    or current_route starts with 'app_admin_incident'
                     or current_route == 'app_admin_settings' %}
                 <a href="{{ path('app_admin') }}"
                    class="{{ admin_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}

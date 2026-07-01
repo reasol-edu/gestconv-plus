@@ -1,0 +1,229 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+use App\Repository\SanctionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+
+#[ORM\Entity(repositoryClass: SanctionRepository::class)]
+class Sanction
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
+    #[ORM\Column(type: 'uuid')]
+    private Uuid $id;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private AcademicYear $academicYear;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private Student $student;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private Group $group;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private Teacher $registeredBy;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
+
+    /** @var Collection<int, IncidentReport> */
+    #[ORM\OneToMany(targetEntity: IncidentReport::class, mappedBy: 'sanction')]
+    private Collection $reports;
+
+    /** @var Collection<int, SanctionMeasure> */
+    #[ORM\ManyToMany(targetEntity: SanctionMeasure::class)]
+    #[ORM\JoinTable(name: 'sanction_sanction_measure')]
+    private Collection $measures;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private string $details;
+
+    #[ORM\Column]
+    private bool $noMeasureApplied = false;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $noMeasureReason = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $effectiveFrom = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $effectiveTo = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->reports   = new ArrayCollection();
+        $this->measures  = new ArrayCollection();
+    }
+
+    public function getId(): Uuid
+    {
+        return $this->id;
+    }
+
+    public function getAcademicYear(): AcademicYear
+    {
+        return $this->academicYear;
+    }
+
+    public function setAcademicYear(AcademicYear $academicYear): static
+    {
+        $this->academicYear = $academicYear;
+
+        return $this;
+    }
+
+    public function getStudent(): Student
+    {
+        return $this->student;
+    }
+
+    public function setStudent(Student $student): static
+    {
+        $this->student = $student;
+
+        return $this;
+    }
+
+    public function getGroup(): Group
+    {
+        return $this->group;
+    }
+
+    public function setGroup(Group $group): static
+    {
+        $this->group = $group;
+
+        return $this;
+    }
+
+    public function getRegisteredBy(): Teacher
+    {
+        return $this->registeredBy;
+    }
+
+    public function setRegisteredBy(Teacher $registeredBy): static
+    {
+        $this->registeredBy = $registeredBy;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    /** @return Collection<int, IncidentReport> */
+    public function getReports(): Collection
+    {
+        return $this->reports;
+    }
+
+    /** @return Collection<int, SanctionMeasure> */
+    public function getMeasures(): Collection
+    {
+        return $this->measures;
+    }
+
+    public function addMeasure(SanctionMeasure $measure): static
+    {
+        if (!$this->measures->contains($measure)) {
+            $this->measures->add($measure);
+        }
+
+        return $this;
+    }
+
+    public function removeMeasure(SanctionMeasure $measure): static
+    {
+        $this->measures->removeElement($measure);
+
+        return $this;
+    }
+
+    public function getDetails(): string
+    {
+        return $this->details;
+    }
+
+    public function setDetails(string $details): static
+    {
+        $this->details = $details;
+
+        return $this;
+    }
+
+    public function isNoMeasureApplied(): bool
+    {
+        return $this->noMeasureApplied;
+    }
+
+    public function setNoMeasureApplied(bool $noMeasureApplied): static
+    {
+        $this->noMeasureApplied = $noMeasureApplied;
+
+        return $this;
+    }
+
+    public function getNoMeasureReason(): ?string
+    {
+        return $this->noMeasureReason;
+    }
+
+    public function setNoMeasureReason(?string $noMeasureReason): static
+    {
+        $this->noMeasureReason = $noMeasureReason;
+
+        return $this;
+    }
+
+    public function getEffectiveFrom(): ?\DateTimeImmutable
+    {
+        return $this->effectiveFrom;
+    }
+
+    public function setEffectiveFrom(?\DateTimeImmutable $effectiveFrom): static
+    {
+        $this->effectiveFrom = $effectiveFrom;
+
+        return $this;
+    }
+
+    public function getEffectiveTo(): ?\DateTimeImmutable
+    {
+        return $this->effectiveTo;
+    }
+
+    public function setEffectiveTo(?\DateTimeImmutable $effectiveTo): static
+    {
+        $this->effectiveTo = $effectiveTo;
+
+        return $this;
+    }
+
+    public function requiresDates(): bool
+    {
+        foreach ($this->measures as $measure) {
+            if ($measure->hasDateRange()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}

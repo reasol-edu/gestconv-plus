@@ -13,6 +13,7 @@ use App\Entity\ProgrammeYear;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Service\IncidentBehaviorSeeder;
+use App\Service\SanctionMeasureSeeder;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ObjectManager;
@@ -24,6 +25,7 @@ class AppFixtures extends Fixture
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly Connection $connection,
         private readonly IncidentBehaviorSeeder $behaviorSeeder,
+        private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
     ) {}
 
     public function load(ObjectManager $manager): void
@@ -80,6 +82,8 @@ class AppFixtures extends Fixture
         $stmts = [
             'DELETE FROM ' . $q('incident_report_behavior'),
             'DELETE FROM ' . $q('incident_report'),
+            'DELETE FROM ' . $q('sanction_sanction_measure'),
+            'DELETE FROM ' . $q('sanction'),
             'DELETE FROM ' . $q('incident_behavior'),
             'DELETE FROM ' . $q('student_groups'),
             'DELETE FROM ' . $q('student'),
@@ -95,6 +99,8 @@ class AppFixtures extends Fixture
             'DELETE FROM ' . $q('teacher_setting_value'),
             'DELETE FROM ' . $q('centre_setting_value'),
             'DELETE FROM ' . $q('global_setting_value'),
+            'DELETE FROM ' . $q('sanction_measure'),
+            'DELETE FROM ' . $q('sanction_measure_category'),
             'DELETE FROM ' . $q('educational_centre'),
             'DELETE FROM ' . $q('teacher'),
         ];
@@ -229,6 +235,7 @@ class AppFixtures extends Fixture
         $manager->persist($year);
 
         $this->behaviorSeeder->seedForCentre($centre);
+        $this->sanctionMeasureSeeder->seedForCentre($centre);
         $centre->addAdmin($teachers['rafael.exposito']);
         $centre->addAdmin($teachers['carmen.diaz']);
         foreach ($teachers as $t) {
@@ -277,6 +284,7 @@ class AppFixtures extends Fixture
         $manager->persist($year);
 
         $this->behaviorSeeder->seedForCentre($centre);
+        $this->sanctionMeasureSeeder->seedForCentre($centre);
         $centre->addAdmin($teachers['mariajose.alvarez']);
         $centre->addAdmin($teachers['pedro.fernandez']);
         foreach ($teachers as $t) {

@@ -1,0 +1,516 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Integration\Repository;
+
+use App\Entity\AcademicYear;
+use App\Entity\EducationalCentre;
+use App\Entity\Group;
+use App\Entity\IncidentBehavior;
+use App\Entity\IncidentBehaviorCategory;
+use App\Entity\IncidentReport;
+use App\Entity\PersonName;
+use App\Entity\Programme;
+use App\Entity\ProgrammeYear;
+use App\Entity\Sanction;
+use App\Entity\Student;
+use App\Entity\Teacher;
+use App\Repository\SanctionRepository;
+use App\Tests\Integration\RepositoryTestCase;
+
+class SanctionRepositoryTest extends RepositoryTestCase
+{
+    private SanctionRepository $repo;
+    private int $nextReportNumber = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        /** @var SanctionRepository $repo */
+        $repo       = self::getContainer()->get(SanctionRepository::class);
+        $this->repo = $repo;
+    }
+
+    // ── findById ────────────────────────────────────────────────────────────
+
+    public function testFindByIdReturnsKnownSanction(): void
+    {
+        $world    = $this->makeWorld();
+        $creator  = $this->makeTeacher('findbyid.creator');
+        $this->persist($creator);
+        $sanction = $this->makeSanction($world, $creator);
+
+        $found = $this->repo->findById($sanction->getId()->toRfc4122());
+
+        self::assertNotNull($found);
+        self::assertSame($sanction->getId()->toRfc4122(), $found->getId()->toRfc4122());
+    }
+
+    public function testFindByIdReturnsNullForUnknownId(): void
+    {
+        $found = $this->repo->findById('00000000-0000-0000-0000-000000000000');
+
+        self::assertNull($found);
+    }
+
+    // ── findByCentreForViewer: visibilidad admin ─────────────────────────────
+
+    public function testGlobalAdminSeesAllSanctionsOfCentre(): void
+    {
+        $world    = $this->makeWorld();
+        $admin    = $this->makeTeacher('admin.sees.all', admin: true);
+        $creator  = $this->makeTeacher('creator.for.admin');
+        $this->persist($admin, $creator);
+        $sanction = $this->makeSanctionWithReport($world, $creator);
+
+        $results = $this->repo->findByCentreForViewer($world['centre'], $admin);
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testCentreAdminSeesAllSanctionsOfHisCentre(): void
+    {
+        $world   = $this->makeWorld();
+        $cadmin  = $this->makeTeacher('cadmin.sees');
+        $creator = $this->makeTeacher('creator.for.cadmin');
+        $this->persist($cadmin, $creator);
+        $world['centre']->addAdmin($cadmin);
+        $this->flush();
+        $sanction = $this->makeSanctionWithReport($world, $creator);
+
+        $results = $this->repo->findByCentreForViewer($world['centre'], $cadmin);
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testAdminDoesNotSeeSanctionsOfAnotherCentre(): void
+    {
+        $worldA  = $this->makeWorld('A');
+        $worldB  = $this->makeWorld('B');
+        $cadmin  = $this->makeTeacher('cadmin.other.centre');
+        $creator = $this->makeTeacher('creator.other.centre');
+        $this->persist($cadmin, $creator);
+        $worldA['centre']->addAdmin($cadmin);
+        $this->flush();
+        $this->makeSanctionWithReport($worldA, $creator);
+
+        $results = $this->repo->findByCentreForViewer($worldB['centre'], $cadmin);
+
+        self::assertCount(0, $results);
+    }
+
+    // ── findByCentreForViewer: visibilidad no-admin ──────────────────────────
+
+    public function testNonAdminSeesOwnReportSanction(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('non.admin.own');
+        $this->persist($teacher);
+        $sanction = $this->makeSanctionWithReport($world, $teacher);
+
+        $results = $this->repo->findByCentreForViewer($world['centre'], $teacher);
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testNonAdminTutorSeesSanctionsOfHisGroup(): void
+    {
+        $world   = $this->makeWorld();
+        $tutor   = $this->makeTeacher('non.admin.tutor');
+        $creator = $this->makeTeacher('creator.for.tutor');
+        $this->persist($tutor, $creator);
+        $world['group']->addTutor($tutor);
+        $this->flush();
+        $sanction = $this->makeSanctionWithReport($world, $creator);
+
+        $results = $this->repo->findByCentreForViewer($world['centre'], $tutor);
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testNonAdminUnrelatedTeacherSeesNothing(): void
+    {
+        $world   = $this->makeWorld();
+        $other   = $this->makeTeacher('unrelated.teacher');
+        $creator = $this->makeTeacher('creator.unrelated');
+        $this->persist($other, $creator);
+        $this->makeSanctionWithReport($world, $creator);
+
+        $results = $this->repo->findByCentreForViewer($world['centre'], $other);
+
+        self::assertCount(0, $results);
+    }
+
+    public function testNonAdminWithMultipleReportsOnSameSanctionGetsSingleResult(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('non.admin.dedup');
+        $this->persist($teacher);
+        $sanction = $this->makeSanction($world, $teacher);
+        $this->makeReport($world, $teacher, $sanction);
+        $this->makeReport($world, $teacher, $sanction);
+
+        $results = $this->repo->findByCentreForViewer($world['centre'], $teacher);
+
+        self::assertCount(1, $results);
+    }
+
+    // ── findEligibleReports ──────────────────────────────────────────────────
+
+    public function testFindEligibleReportsReturnsUnprescribedUnsanctionedReports(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('eligible.creator');
+        $this->persist($teacher);
+        $report  = $this->makeReport($world, $teacher);
+
+        $results = $this->repo->findEligibleReports($world['student'], $world['group']);
+
+        self::assertCount(1, $results);
+        self::assertSame($report->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testFindEligibleReportsExcludesPrescribedReports(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('eligible.prescribed');
+        $this->persist($teacher);
+        $report  = $this->makeReport($world, $teacher);
+        $report->setPrescribedAt(new \DateTimeImmutable());
+        $this->flush();
+
+        $results = $this->repo->findEligibleReports($world['student'], $world['group']);
+
+        self::assertCount(0, $results);
+    }
+
+    public function testFindEligibleReportsExcludesAlreadySanctionedReports(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('eligible.sanctioned');
+        $this->persist($teacher);
+        $sanction = $this->makeSanction($world, $teacher);
+        $this->makeReport($world, $teacher, $sanction);
+
+        $results = $this->repo->findEligibleReports($world['student'], $world['group']);
+
+        self::assertCount(0, $results);
+    }
+
+    public function testFindEligibleReportsOnlyReturnsReportsForGivenStudentAndGroup(): void
+    {
+        $worldA  = $this->makeWorld('A');
+        $worldB  = $this->makeWorld('B');
+        $teacher = $this->makeTeacher('eligible.scope');
+        $this->persist($teacher);
+        $this->makeReport($worldA, $teacher);
+        $this->makeReport($worldB, $teacher);
+
+        $results = $this->repo->findEligibleReports($worldA['student'], $worldA['group']);
+
+        self::assertCount(1, $results);
+    }
+
+    // ── findStudentStatsForCentre ────────────────────────────────────────────
+
+    public function testFindStudentStatsReturnsEmptyWhenNoCentreActiveYear(): void
+    {
+        $centre = (new EducationalCentre())->setCode('41000999')->setName('IES No Year')->setCity('Sevilla');
+        $this->persist($centre);
+
+        $result = $this->repo->findStudentStatsForCentre($centre);
+
+        self::assertSame(0, $result['total']);
+        self::assertCount(0, $result['rows']);
+    }
+
+    public function testFindStudentStatsCountsSanctionableReports(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('stats.sanctionable');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+        $this->makeReport($world, $teacher);
+        $this->makeReport($world, $teacher);
+
+        $result = $this->repo->findStudentStatsForCentre($world['centre']);
+
+        self::assertSame(1, $result['total']);
+        self::assertSame(2, $result['rows'][0]['sanctionableCount']);
+        self::assertSame(0, $result['rows'][0]['seriousCount']);
+    }
+
+    public function testFindStudentStatsCountsSeriousReports(): void
+    {
+        $world       = $this->makeWorld();
+        $seriousCat  = (new IncidentBehaviorCategory())
+            ->setEducationalCentre($world['centre'])
+            ->setName('Graves')
+            ->setSerious(true)
+            ->setPosition(1);
+        $seriousBeh  = (new IncidentBehavior())
+            ->setEducationalCentre($world['centre'])
+            ->setCategory($seriousCat)
+            ->setName('Agresión')
+            ->setPosition(0)
+            ->setActive(true);
+        $this->persist($seriousCat, $seriousBeh);
+        $teacher = $this->makeTeacher('stats.serious');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $normal = $this->makeReport($world, $teacher);
+        $serious = (new IncidentReport())
+            ->setAcademicYear($world['year'])
+            ->setNumber(++$this->nextReportNumber)
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($teacher)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Agresión</p>')
+            ->setExpelledFromClass(false);
+        $serious->addBehavior($seriousBeh);
+        $this->persist($serious);
+
+        $result = $this->repo->findStudentStatsForCentre($world['centre']);
+
+        self::assertSame(1, $result['total']);
+        self::assertSame(2, $result['rows'][0]['sanctionableCount']);
+        self::assertSame(1, $result['rows'][0]['seriousCount']);
+    }
+
+    public function testFindStudentStatsCountsPrescribedReports(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('stats.prescribed');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        // One sanctionable report so the student appears in the list
+        $this->makeReport($world, $teacher);
+        // One prescribed report counted separately
+        $prescribed = $this->makeReport($world, $teacher);
+        $prescribed->setPrescribedAt(new \DateTimeImmutable());
+        $this->flush();
+
+        $result = $this->repo->findStudentStatsForCentre($world['centre']);
+
+        self::assertSame(1, $result['total']);
+        self::assertSame(1, $result['rows'][0]['sanctionableCount']);
+        self::assertSame(1, $result['rows'][0]['prescribedCount']);
+    }
+
+    public function testFindStudentStatsSortsBySanctionableCountDesc(): void
+    {
+        $world    = $this->makeWorld();
+        $studentB = (new Student(new PersonName('Bea', 'López')))->setStudentId('NIE-B-' . uniqid('', false));
+        $this->persist($studentB);
+        $teacher  = $this->makeTeacher('stats.sort');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+        $world['group']->addStudent($studentB);
+        $this->flush();
+
+        // Student A (Ana) gets 1 report, Student B (Bea) gets 3 reports
+        $this->makeReport($world, $teacher);
+
+        for ($i = 0; $i < 3; $i++) {
+            $r = (new IncidentReport())
+                ->setAcademicYear($world['year'])
+                ->setNumber(++$this->nextReportNumber)
+                ->setStudent($studentB)
+                ->setGroup($world['group'])
+                ->setRegisteredBy($teacher)
+                ->setOccurredAt(new \DateTimeImmutable())
+                ->setDescription('<p>Test</p>')
+                ->setExpelledFromClass(false);
+            $r->addBehavior($world['behavior']);
+            $this->persist($r);
+        }
+
+        $result = $this->repo->findStudentStatsForCentre($world['centre']);
+
+        self::assertSame(2, $result['total']);
+        // Bea (3 reports) should come first
+        self::assertSame('López', $result['rows'][0]['lastName']);
+        self::assertSame(3, $result['rows'][0]['sanctionableCount']);
+        self::assertSame(1, $result['rows'][1]['sanctionableCount']);
+    }
+
+    public function testFindStudentStatsFiltersbyName(): void
+    {
+        $world    = $this->makeWorld();
+        $studentB = (new Student(new PersonName('Pedro', 'Martínez')))->setStudentId('NIE-P-' . uniqid('', false));
+        $this->persist($studentB);
+        $teacher  = $this->makeTeacher('stats.filter');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+        $world['group']->addStudent($studentB);
+        $this->flush();
+
+        // Both need at least one sanctionable report to appear; only García should match the name filter
+        $this->makeReport($world, $teacher);
+        $reportB = (new IncidentReport())
+            ->setAcademicYear($world['year'])
+            ->setNumber(++$this->nextReportNumber)
+            ->setStudent($studentB)
+            ->setGroup($world['group'])
+            ->setRegisteredBy($teacher)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Test</p>')
+            ->setExpelledFromClass(false);
+        $reportB->addBehavior($world['behavior']);
+        $this->persist($reportB);
+
+        $result = $this->repo->findStudentStatsForCentre($world['centre'], 'García');
+
+        self::assertSame(1, $result['total']);
+        self::assertSame('García', $result['rows'][0]['lastName']);
+    }
+
+    public function testFindStudentStatsPaginatesResults(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('stats.page');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+
+        /** @var list<Student> $extras */
+        $extras = [];
+        for ($i = 0; $i < 4; $i++) {
+            $s = (new Student(new PersonName('Extra', 'Student' . $i)))->setStudentId('NIE-EX-' . $i . uniqid('', false));
+            $this->persist($s);
+            $world['group']->addStudent($s);
+            $extras[] = $s;
+        }
+        $this->flush();
+
+        // Give every student one sanctionable report so they all appear in the list
+        $this->makeReport($world, $teacher);
+        foreach ($extras as $extra) {
+            $r = (new IncidentReport())
+                ->setAcademicYear($world['year'])
+                ->setNumber(++$this->nextReportNumber)
+                ->setStudent($extra)
+                ->setGroup($world['group'])
+                ->setRegisteredBy($teacher)
+                ->setOccurredAt(new \DateTimeImmutable())
+                ->setDescription('<p>Test</p>')
+                ->setExpelledFromClass(false);
+            $r->addBehavior($world['behavior']);
+            $this->persist($r);
+        }
+
+        $page1 = $this->repo->findStudentStatsForCentre($world['centre'], '', 1, 3);
+        $page2 = $this->repo->findStudentStatsForCentre($world['centre'], '', 2, 3);
+
+        self::assertSame(5, $page1['total']);
+        self::assertCount(3, $page1['rows']);
+        self::assertCount(2, $page2['rows']);
+    }
+
+    // ── helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior}
+     */
+    private function makeWorld(string $suffix = ''): array
+    {
+        $centre    = (new EducationalCentre())->setCode('41000' . substr(md5($suffix . 'r'), 0, 3))->setName('IES ' . $suffix)->setCity('Sevilla');
+        $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
+        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
+        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
+        $group     = (new Group())->setName('1ºA' . $suffix)->setProgrammeYear($level);
+        $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE' . $suffix . uniqid('', false));
+        $category  = (new IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)
+            ->setName('Contrarias')
+            ->setSerious(false)
+            ->setPosition(0);
+        $behavior  = (new IncidentBehavior())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName('Perturbación')
+            ->setPosition(0)
+            ->setActive(true);
+
+        $centre->setActiveAcademicYear($year);
+        $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior);
+
+        return compact('centre', 'year', 'group', 'student', 'behavior');
+    }
+
+    /**
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
+     */
+    private function makeSanction(array $world, Teacher $creator): Sanction
+    {
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('Detalles de prueba')
+            ->setNoMeasureApplied(false);
+        $this->persist($sanction);
+
+        return $sanction;
+    }
+
+    /**
+     * Creates a sanction and immediately links a report to it (needed for non-admin visibility queries).
+     *
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
+     */
+    private function makeSanctionWithReport(array $world, Teacher $creator): Sanction
+    {
+        $sanction = $this->makeSanction($world, $creator);
+        $this->makeReport($world, $creator, $sanction);
+
+        return $sanction;
+    }
+
+    /**
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
+     */
+    private function makeReport(
+        array $world,
+        Teacher $creator,
+        ?Sanction $sanction = null,
+    ): IncidentReport {
+        $report = (new IncidentReport())
+            ->setAcademicYear($world['year'])
+            ->setNumber(++$this->nextReportNumber)
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Test</p>')
+            ->setExpelledFromClass(false);
+        $report->addBehavior($world['behavior']);
+
+        if ($sanction !== null) {
+            $report->setSanction($sanction);
+        }
+
+        $this->persist($report);
+
+        return $report;
+    }
+
+    private function makeTeacher(string $username, bool $admin = false): Teacher
+    {
+        return (new Teacher(new PersonName('Test', 'Teacher')))
+            ->setUsername($username)
+            ->setAdmin($admin);
+    }
+}

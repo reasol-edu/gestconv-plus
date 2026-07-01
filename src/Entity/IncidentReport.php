@@ -63,6 +63,10 @@ class IncidentReport
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $prescribedAt = null;
 
+    #[ORM\ManyToOne(inversedBy: 'reports')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Sanction $sanction = null;
+
     public function __construct()
     {
         $this->behaviors = new ArrayCollection();
@@ -232,5 +236,17 @@ class IncidentReport
     public function isPrescribed(): bool
     {
         return $this->prescribedAt !== null;
+    }
+
+    public function getSanction(): ?Sanction
+    {
+        return $this->sanction;
+    }
+
+    public function setSanction(?Sanction $sanction): static
+    {
+        $this->sanction = $sanction;
+
+        return $this;
     }
 }

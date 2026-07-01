@@ -11,6 +11,7 @@ use App\Entity\IncidentBehaviorCategory;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class IncidentBehaviorControllerTest extends ControllerTestCase
 {
@@ -34,6 +35,139 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->loginAs($teacher);
 
         $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/conductas');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    // ── export ────────────────────────────────────────────────────────────────
+
+    public function testExportReturnsJsonWithBehaviors(): void
+    {
+        [$cadmin, $centre, , $behavior] = $this->makeScenarioWithBehavior();
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/conductas/export');
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+        self::assertSame($centre->getName(), $data['centre']);
+        self::assertSame($behavior->getName(), $data['categories'][0]['behaviors'][0]['name']);
+    }
+
+    public function testExportIsDeniedToNonAdmin(): void
+    {
+        [, $centre] = $this->makeScenario();
+        $teacher = $this->makeTeacher('teacher.no.priv.export');
+        $this->persist($teacher);
+        $this->loginAs($teacher);
+
+        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/conductas/export');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    // ── import ────────────────────────────────────────────────────────────────
+
+    public function testImportGetRendersForm(): void
+    {
+        [$cadmin, $centre] = $this->makeScenario();
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/conductas/import');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('input[name="json"]');
+    }
+
+    public function testImportPostWithValidJsonCreatesBehaviorsAndRedirects(): void
+    {
+        [$cadmin, $centre] = $this->makeScenario();
+        $this->loginAs($cadmin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas/import');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $file = $this->makeJsonUploadFile([
+            'categories' => [
+                ['name' => 'Faltas leves', 'serious' => false, 'behaviors' => [
+                    ['name' => 'Llegar tarde', 'active' => true],
+                ]],
+            ],
+        ]);
+
+        $this->client->request('POST', '/admin/centros/' . $centreId . '/conductas/import', [
+            '_token' => $token,
+        ], ['json' => $file]);
+
+        self::assertResponseRedirects('/admin/centros/' . $centreId . '/conductas');
+
+        $this->em->clear();
+        $behaviors = $this->em->getRepository(IncidentBehavior::class)->findBy(['educationalCentre' => $centre->getId()]);
+        self::assertCount(1, $behaviors);
+        self::assertSame('Llegar tarde', $behaviors[0]->getName());
+    }
+
+    public function testImportPostWithInvalidJsonShowsError(): void
+    {
+        [$cadmin, $centre] = $this->makeScenario();
+        $this->loginAs($cadmin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas/import');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
+        file_put_contents($tmpFile, 'not json');
+        $file = new UploadedFile($tmpFile, 'behaviors.json', 'application/json', null, true);
+
+        $this->client->request('POST', '/admin/centros/' . $centreId . '/conductas/import', [
+            '_token' => $token,
+        ], ['json' => $file]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('div', 'JSON válido');
+    }
+
+    public function testImportPostWithReplaceExistingRemovesPreviousCategory(): void
+    {
+        [$cadmin, $centre, $oldCategory] = $this->makeScenarioWithBehavior();
+        $this->loginAs($cadmin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/conductas/import');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $file = $this->makeJsonUploadFile([
+            'categories' => [
+                ['name' => 'Faltas nuevas', 'serious' => false, 'behaviors' => [
+                    ['name' => 'Conducta nueva', 'active' => true],
+                ]],
+            ],
+        ]);
+
+        $this->client->request('POST', '/admin/centros/' . $centreId . '/conductas/import', [
+            '_token'           => $token,
+            'replace_existing' => '1',
+        ], ['json' => $file]);
+
+        self::assertResponseRedirects('/admin/centros/' . $centreId . '/conductas');
+
+        $this->em->clear();
+        self::assertNull($this->em->find(IncidentBehaviorCategory::class, $oldCategory->getId()));
+        $categories = $this->em->getRepository(IncidentBehaviorCategory::class)->findBy(['educationalCentre' => $centre->getId()]);
+        self::assertCount(1, $categories);
+        self::assertSame('Faltas nuevas', $categories[0]->getName());
+    }
+
+    public function testImportIsDeniedToNonAdmin(): void
+    {
+        [, $centre] = $this->makeScenario();
+        $teacher = $this->makeTeacher('teacher.no.priv.import');
+        $this->persist($teacher);
+        $this->loginAs($teacher);
+
+        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/conductas/import');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -281,5 +415,14 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
     private function makeTeacher(string $username): Teacher
     {
         return (new Teacher(new PersonName('Test', 'Teacher')))->setUsername($username);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function makeJsonUploadFile(array $data): UploadedFile
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
+        file_put_contents($tmpFile, (string) json_encode($data));
+
+        return new UploadedFile($tmpFile, 'behaviors.json', 'application/json', null, true);
     }
 }

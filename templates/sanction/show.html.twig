@@ -1,0 +1,133 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'sanction.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+                <a href="{{ path('app_sanctions_index') }}" class="hover:text-forest-600 transition-colors">{{ 'sanction.title'|trans({}, 'admin') }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                {{ sanction.group.name }} · {{ sanction.createdAt|date('d/m/Y') }}
+            </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            {% if is_granted('sanction.edit', sanction) %}
+                <a href="{{ path('app_sanctions_edit', {id: sanction.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
+                    {{ 'sanction.edit'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
+            {% if is_granted('sanction.delete', sanction) %}
+                <form method="post" action="{{ path('app_sanctions_delete', {id: sanction.id}) }}"
+                      class="js-confirm-form"
+                      data-confirm="{{ 'sanction.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_sanction_' ~ sanction.id) }}">
+                    <button type="submit"
+                            class="js-confirm-trigger inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600
+                                   hover:bg-red-50 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}
+                        {{ 'sanction.delete'|trans({}, 'admin') }}
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs divide-y divide-gray-100">
+
+        {# Metadata #}
+        <div class="px-6 py-4 grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.col.registered_by'|trans({}, 'admin') }}</p>
+                <p class="text-gray-900">{{ sanction.registeredBy.name.lastName }}, {{ sanction.registeredBy.name.firstName }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.col.created_at'|trans({}, 'admin') }}</p>
+                <p class="text-gray-900">{{ sanction.createdAt|date('d/m/Y H:i') }}</p>
+            </div>
+        </div>
+
+        {# Partes asociados #}
+        <div class="px-6 py-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'sanction.section.reports'|trans({}, 'admin') }}</p>
+            {% if sanction.reports is empty %}
+                <p class="text-xs text-gray-400">—</p>
+            {% else %}
+                <div class="space-y-1">
+                    {% for report in sanction.reports %}
+                        <div class="flex items-center gap-2">
+                            <a href="{{ path('app_incidents_show', {id: report.id}) }}"
+                               class="text-sm text-forest-700 hover:text-forest-900 font-mono font-medium transition-colors">
+                                #{{ report.number }}
+                            </a>
+                            <span class="text-xs text-gray-500">{{ report.occurredAt|date('d/m/Y') }}</span>
+                            <span class="text-xs text-gray-400 truncate">{{ report.description|striptags|slice(0, 80) }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {# Medidas #}
+        <div class="px-6 py-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'sanction.section.measures'|trans({}, 'admin') }}</p>
+            {% if sanction.noMeasureApplied %}
+                <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-600 px-2.5 py-0.5 text-xs font-medium">
+                    {{ 'sanction.badge.no_measure'|trans({}, 'admin') }}
+                </span>
+                {% if sanction.noMeasureReason %}
+                    <div class="mt-3">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.field.no_measure_reason'|trans({}, 'admin') }}</p>
+                        <div class="prose prose-sm max-w-none text-gray-700">{{ sanction.noMeasureReason|raw }}</div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="flex flex-wrap gap-2">
+                    {% for measure in sanction.measures %}
+                        <span class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 px-2.5 py-0.5 text-xs font-medium">
+                            {{ measure.name }}
+                            {% if measure.hasDateRange %}
+                                {{ ux_icon('heroicons:calendar-days', {class: 'h-3 w-3 ml-1'}) }}
+                            {% endif %}
+                        </span>
+                    {% else %}
+                        <span class="text-xs text-gray-400">—</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {# Período de vigencia #}
+        {% if sanction.effectiveFrom and sanction.effectiveTo %}
+            <div class="px-6 py-4 grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.field.effective_from'|trans({}, 'admin') }}</p>
+                    <p class="text-gray-900">{{ sanction.effectiveFrom|date('d/m/Y') }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.field.effective_to'|trans({}, 'admin') }}</p>
+                    <p class="text-gray-900">{{ sanction.effectiveTo|date('d/m/Y') }}</p>
+                </div>
+            </div>
+        {% endif %}
+
+        {# Detalle #}
+        <div class="px-6 py-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'sanction.field.details'|trans({}, 'admin') }}</p>
+            <div class="prose prose-sm max-w-none text-gray-700">{{ sanction.details|raw }}</div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

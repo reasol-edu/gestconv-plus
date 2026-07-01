@@ -95,6 +95,14 @@ Para cada conducta pueden:
 
 Al crear un centro nuevo se configuran automáticamente **19 conductas por defecto** basadas en la normativa de convivencia escolar de Andalucía, ordenadas de contrarias a graves.
 
+Los botones **Exportar JSON** e **Importar JSON** permiten copiar la configuración de conductas y categorías entre centros: la exportación descarga un fichero con las categorías y sus conductas, y la importación lo vuelve a cargar, creando lo que no exista y actualizando el resto por nombre (sin distinguir mayúsculas). La importación ofrece además la opción de **vaciar las conductas y categorías existentes** antes de incorporar las del fichero; esta acción elimina también las categorías actuales y no se puede deshacer.
+
+### Medidas disciplinarias
+
+Los administradores de centro configuran las medidas disponibles en **Centro educativo → Sanciones → Medidas disciplinarias**, organizadas en categorías igual que las conductas contrarias.
+
+Al igual que en las conductas, los botones **Exportar JSON** e **Importar JSON** permiten copiar la configuración de medidas y categorías entre centros, con la misma opción de vaciar las medidas y categorías existentes antes de importar.
+
 ## Administración
 
 ### Registro de actividad
