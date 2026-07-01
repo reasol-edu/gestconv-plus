@@ -28,49 +28,55 @@
         <h1 class="text-xl font-bold">{{ 'board_title'|trans({}, 'calendar') }}</h1>
     </header>
 
-    <div class="flex-1 grid grid-cols-2 divide-x divide-white/10 overflow-hidden">
+    <div class="flex-1 relative overflow-hidden"
+         data-controller="board"
+         data-board-current-seconds-value="{{ currentSeconds }}"
+         data-board-next-seconds-value="{{ nextSeconds }}">
         {% for week in weeks %}
-            <section class="flex flex-col overflow-y-auto">
-                <h2 class="sticky top-0 z-10 bg-forest-900 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-forest-200 border-b border-white/10">
+            <section class="absolute inset-0 flex flex-col transition-opacity duration-700 ease-in-out {{ loop.first ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
+                      data-board-target="{{ week.target }}">
+                <h2 class="shrink-0 bg-forest-900 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-forest-200 border-b border-white/10">
                     {{ week.label|trans({}, 'calendar') }}
                 </h2>
-                <div class="flex-1 divide-y divide-white/10">
+                <div class="flex-1 grid grid-cols-5 divide-x divide-white/10 overflow-hidden">
                     {% for day in week.days %}
                         {% set is_today = day.day.format('Y-m-d') == today.format('Y-m-d') %}
-                        <div class="px-6 py-4">
-                            <h3 class="mb-2 text-sm font-semibold {{ is_today ? 'text-amber-300' : 'text-forest-200' }}">
+                        <div class="flex flex-col overflow-hidden">
+                            <h3 class="shrink-0 px-4 pt-4 pb-2 text-sm font-semibold {{ is_today ? 'text-amber-300' : 'text-forest-200' }}">
                                 {{ ('weekday.' ~ day.day.format('N'))|trans({}, 'calendar') }}
                                 {{ day.day.format('j') }} {{ 'de'|trans({}, 'calendar') }}
                                 {{ ('month.' ~ day.day.format('n'))|trans({}, 'calendar')|lower }}
                             </h3>
 
-                            {% if day.groups is empty %}
-                                <p class="text-xs text-forest-400">{{ 'board_no_sanctions'|trans({}, 'calendar') }}</p>
-                            {% else %}
-                                <div class="space-y-3">
-                                    {% for group in day.groups %}
-                                        <div>
-                                            <p class="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold {{ group.color.bg }} {{ group.color.text }}">
-                                                {{ group.name }}
-                                            </p>
-                                            <ul class="space-y-1.5 pl-1 text-sm">
-                                                {% for item in group.items %}
-                                                    <li>
-                                                        <span class="font-medium">{{ item.student }}</span>
-                                                        {% if item.details %}
-                                                            <span class="text-forest-300"> — {{ item.details }}</span>
-                                                        {% endif %}
-                                                        <span class="block text-xs text-forest-400">
-                                                            {{ 'board_start_date'|trans({}, 'calendar') }}: {{ item.from|date('d/m/Y') }}
-                                                            · {{ 'board_end_date'|trans({}, 'calendar') }}: {{ (item.to ?? item.from)|date('d/m/Y') }}
-                                                        </span>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            <div class="flex-1 overflow-hidden px-4 pb-4" data-controller="board-column">
+                                {% if day.groups is empty %}
+                                    <p class="text-xs text-forest-400">{{ 'board_no_sanctions'|trans({}, 'calendar') }}</p>
+                                {% else %}
+                                    <div class="space-y-3">
+                                        {% for group in day.groups %}
+                                            <div>
+                                                <p class="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold {{ group.color.bg }} {{ group.color.text }}">
+                                                    {{ group.name }}
+                                                </p>
+                                                <ul class="space-y-1.5 pl-1 text-sm">
+                                                    {% for item in group.items %}
+                                                        <li>
+                                                            <span class="font-medium">{{ item.student }}</span>
+                                                            {% if item.details %}
+                                                                <span class="text-forest-300"> — {{ item.details }}</span>
+                                                            {% endif %}
+                                                            <span class="block text-xs text-forest-400">
+                                                                {{ 'board_start_date'|trans({}, 'calendar') }}: {{ item.from|date('d/m/Y') }}
+                                                                · {{ 'board_end_date'|trans({}, 'calendar') }}: {{ (item.to ?? item.from)|date('d/m/Y') }}
+                                                            </span>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
                     {% endfor %}
                 </div>

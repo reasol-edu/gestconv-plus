@@ -19,11 +19,13 @@
                 class="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
             {{ 'today'|trans({}, 'calendar') }}
         </button>
-        <a href="{{ path('app_calendar_board') }}"
-           class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-            {{ ux_icon('heroicons:rectangle-stack', {class: 'h-3.5 w-3.5'}) }}
-            {{ 'board_mode'|trans({}, 'calendar') }}
-        </a>
+        {% if this.centre and is_granted('educational_centre.section', this.centre) %}
+            <a href="{{ path('app_calendar_board') }}"
+               class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                {{ ux_icon('heroicons:rectangle-stack', {class: 'h-3.5 w-3.5'}) }}
+                {{ 'board_mode'|trans({}, 'calendar') }}
+            </a>
+        {% endif %}
     </div>
 
     {# ── Day-of-week headers (solo lectivos: sin sábado ni domingo) ─────────── #}

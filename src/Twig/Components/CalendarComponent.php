@@ -3,6 +3,7 @@
 namespace App\Twig\Components;
 
 use App\Entity\AcademicYear;
+use App\Entity\EducationalCentre;
 use App\Entity\Sanction;
 use App\Repository\SanctionRepository;
 use App\Service\CalendarSegmentBuilder;
@@ -70,6 +71,11 @@ class CalendarComponent extends AbstractController
         $today       = new \DateTimeImmutable();
         $this->year  = (int) $today->format('Y');
         $this->month = (int) $today->format('n');
+    }
+
+    public function getCentre(): ?EducationalCentre
+    {
+        return $this->tenantContext->getSelectedCentre();
     }
 
     public function getMonthLabel(): string

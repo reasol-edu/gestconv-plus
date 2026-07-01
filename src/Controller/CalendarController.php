@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Sanction;
 use App\Repository\SanctionRepository;
+use App\Security\Voter\EducationalCentreVoter;
+use App\Service\AppSettings;
 use App\Service\CalendarBoardBuilder;
 use App\Service\KioskMode;
 use App\Service\TenantContext;
@@ -15,6 +17,7 @@ class CalendarController extends AbstractController
 {
     public function __construct(
         private readonly TenantContext $tenantContext,
+        private readonly AppSettings $appSettings,
     ) {}
 
     #[Route('/calendario', name: 'app_calendar')]
@@ -38,6 +41,7 @@ class CalendarController extends AbstractController
         if ($centre === null) {
             return $this->redirectToRoute('app_select_centre');
         }
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
 
         $academicYear = $this->tenantContext->getViewYear($centre);
         $items        = $academicYear !== null
@@ -50,12 +54,23 @@ class CalendarController extends AbstractController
         // sesión del navegador: solo se podrá salir cerrando sesión.
         $kioskMode->activate();
 
+        $currentSeconds = $this->appSettings->getInt('board.current_week_seconds');
+        $nextSeconds    = $this->appSettings->getInt('board.next_week_seconds');
+        $showNextWeek   = $currentSeconds > 0 && $nextSeconds > 0;
+
+        $weeks = [
+            ['label' => 'board_this_week', 'target' => 'currentWeek', 'days' => $boardBuilder->build($items, $this->weekdaysOf($today))],
+        ];
+        if ($showNextWeek) {
+            $weeks[] = ['label' => 'board_next_week', 'target' => 'nextWeek', 'days' => $boardBuilder->build($items, $this->weekdaysOf($today->modify('+7 days')))];
+        }
+
         return $this->render('calendar/board.html.twig', [
-            'weeks' => [
-                ['label' => 'board_this_week', 'days' => $boardBuilder->build($items, $this->weekdaysOf($today))],
-                ['label' => 'board_next_week', 'days' => $boardBuilder->build($items, $this->weekdaysOf($today->modify('+7 days')))],
-            ],
-            'today' => $today,
+            'weeks'          => $weeks,
+            'today'          => $today,
+            'currentSeconds' => $currentSeconds,
+            'nextSeconds'    => $nextSeconds,
+            'showNextWeek'   => $showNextWeek,
         ]);
     }
 

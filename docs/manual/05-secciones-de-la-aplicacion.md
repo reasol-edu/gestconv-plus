@@ -26,12 +26,13 @@ La sección **Calendario**, accesible desde el menú lateral, muestra en una vis
 
 ### Modo tablón
 
-El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista a pantalla completa pensada para mostrarse en una pantalla o monitor del centro (por ejemplo, en la sala de profesorado).
+El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista a pantalla completa pensada para mostrarse en una pantalla o monitor del centro (por ejemplo, en la sala de profesorado). Solo pueden activarlo los administradores de centro y los administradores globales; el resto de docentes no ven el botón ni pueden acceder a la URL directamente.
 
-![Modo tablón con la semana actual y la siguiente](img/calendario/calendario-tablon.png)
+![Modo tablón con la semana actual](img/calendario/calendario-tablon.png)
 
-- Muestra dos columnas: la semana actual (lunes a viernes) a la izquierda y la semana siguiente a la derecha.
-- Para cada día se listan las sanciones que lo cubren, agrupadas por grupo, indicando el alumno, el detalle de la sanción y sus fechas de inicio y fin.
+- Muestra una semana (lunes a viernes) a la vez, en cinco columnas, para que todo el contenido se lea de un vistazo sin necesidad de hacer scroll manual.
+- Para cada día se listan las sanciones que lo cubren, agrupadas por grupo, indicando el alumno, el detalle de la sanción y sus fechas de inicio y fin. Si el contenido de un día no cabe en la columna, se desplaza automáticamente hacia arriba y hacia abajo; no se puede desplazar manualmente.
+- La semana actual y la semana siguiente se alternan automáticamente con una transición suave. Los administradores de centro y globales pueden configurar en **Ajustes** cuántos segundos se muestra cada una (0-3600 segundos; 15 y 5 por defecto). Si cualquiera de los dos ajustes vale 0, solo se muestra la semana actual, sin alternancia.
 - Un botón en la esquina superior permite alternar la pantalla completa del navegador.
 - Un botón con icono de encendido/apagado, en la misma esquina, cierra la sesión.
 

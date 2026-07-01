@@ -56,6 +56,8 @@ abstract class ControllerTestCase extends WebTestCase
             ['email.notification.tutor_assigned',     SettingType::Boolean, 'true', true,  true,  true,  null, null],
             ['email.notification.positions_created',  SettingType::Boolean, 'true', true,  true,  true,  null, null],
             ['email.notification.signature_reminder', SettingType::Boolean, 'true', true,  true,  true,  null, null],
+            ['board.current_week_seconds',             SettingType::Integer, '15',   true,  true,  false, 0,    3600],
+            ['board.next_week_seconds',                SettingType::Integer, '5',    true,  true,  false, 0,    3600],
         ];
 
         foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max]) {

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Sanction;
+use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -47,6 +49,31 @@ class CalendarControllerTest extends ControllerTestCase
         $this->client->request('GET', '/calendario');
 
         self::assertResponseIsSuccessful();
+    }
+
+    public function testCalendarShowsBoardModeLinkToAdmin(): void
+    {
+        $centre = $this->makeCentre('46000004');
+        $admin  = $this->makeAdmin('calendar.link.admin');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('/calendario/tablon', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testCalendarHidesBoardModeLinkFromNonAdmin(): void
+    {
+        $centre  = $this->makeCentre('46000005');
+        $teacher = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.link.noadmin');
+        $this->persist($teacher);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('/calendario/tablon', (string) $this->client->getResponse()->getContent());
     }
 
     // ── Barras de sanciones ──────────────────────────────────────────────────
@@ -131,6 +158,32 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertResponseRedirects('/seleccion/centro');
     }
 
+    public function testBoardDeniesAccessToTeacherWithoutAdminRole(): void
+    {
+        $world   = $this->makeScenario();
+        $teacher = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.board.noadmin');
+        $this->persist($teacher);
+        $this->loginAs($teacher, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testBoardAllowsAccessToCentreAdminWithoutGlobalAdminRole(): void
+    {
+        $world   = $this->makeScenario();
+        $teacher = (new Teacher(new PersonName('Centre', 'AdminTeacher')))->setUsername('calendar.board.centreadmin');
+        $this->persist($teacher);
+        $world['centre']->addAdmin($teacher);
+        $this->flush();
+        $this->loginAs($teacher, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+    }
+
     public function testBoardRendersWithSelectedCentre(): void
     {
         $centre = $this->makeCentre('46000042');
@@ -145,7 +198,7 @@ class CalendarControllerTest extends ControllerTestCase
     public function testBoardShowsSanctionGroupedByGroupWithStartAndEndDates(): void
     {
         $world   = $this->makeScenario();
-        $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.board.dates');
+        $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.board.dates')->setAdmin(true);
         $this->persist($creator);
 
         $monday = (new \DateTimeImmutable('today'))->modify('monday this week');
@@ -210,7 +263,77 @@ class CalendarControllerTest extends ControllerTestCase
         );
     }
 
+    public function testBoardShowsNextWeekTargetWithDefaultDurations(): void
+    {
+        $centre = $this->makeCentre('46000045');
+        $admin  = $this->makeAdmin('calendar.board.defaults');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-board-current-seconds-value="15"', $content);
+        self::assertStringContainsString('data-board-next-seconds-value="5"', $content);
+        self::assertStringContainsString('data-board-target="currentWeek"', $content);
+        self::assertStringContainsString('data-board-target="nextWeek"', $content);
+    }
+
+    public function testBoardHidesNextWeekWhenNextWeekSecondsIsZero(): void
+    {
+        $centre = $this->makeCentre('46000046');
+        $admin  = $this->makeAdmin('calendar.board.nonext');
+        $this->seedCentreValue('board.next_week_seconds', '0', $centre);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-board-target="currentWeek"', $content);
+        self::assertStringNotContainsString('data-board-target="nextWeek"', $content);
+    }
+
+    public function testBoardHidesNextWeekWhenCurrentWeekSecondsIsZero(): void
+    {
+        $centre = $this->makeCentre('46000047');
+        $admin  = $this->makeAdmin('calendar.board.nocurrent');
+        $this->seedCentreValue('board.current_week_seconds', '0', $centre);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringNotContainsString('data-board-target="nextWeek"', $content);
+    }
+
+    public function testBoardReflectsCustomDurationSettings(): void
+    {
+        $centre = $this->makeCentre('46000048');
+        $admin  = $this->makeAdmin('calendar.board.custom');
+        $this->seedCentreValue('board.current_week_seconds', '30', $centre);
+        $this->seedCentreValue('board.next_week_seconds', '10', $centre);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-board-current-seconds-value="30"', $content);
+        self::assertStringContainsString('data-board-next-seconds-value="10"', $content);
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
+
+    private function seedCentreValue(string $key, string $value, EducationalCentre $centre): CentreSettingValue
+    {
+        $def    = $this->em->getRepository(SettingDefinition::class)->findOneBy(['key' => $key]);
+        $entity = (new CentreSettingValue())->setDefinition($def)->setCentre($centre)->setValue($value);
+        $this->persist($entity);
+
+        return $entity;
+    }
 
     /**
      * Returns a weekday (Mon–Fri) date within the current real-world month, so the
