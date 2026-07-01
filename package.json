@@ -1,0 +1,28 @@
+{
+  "name": "gestconv-plus",
+  "version": "1.0.0",
+  "description": "Automatización de capturas de pantalla del manual con Playwright.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reasol-edu/gestconv-plus.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/reasol-edu/gestconv-plus/issues"
+  },
+  "homepage": "https://github.com/reasol-edu/gestconv-plus#readme",
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  }
+}

@@ -6,7 +6,12 @@ namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
+use App\Entity\Group;
 use App\Entity\PersonName;
+use App\Entity\Programme;
+use App\Entity\ProgrammeYear;
+use App\Entity\Sanction;
+use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
 
@@ -44,7 +49,202 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    // ── Barras de sanciones ──────────────────────────────────────────────────
+
+    public function testShowsSanctionBarToAnyTeacherRegardlessOfAuthorship(): void
+    {
+        $world    = $this->makeScenario();
+        $creator  = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.bar.creator');
+        $viewer   = (new Teacher(new PersonName('Viewer', 'Teacher')))->setUsername('calendar.bar.viewer');
+        $this->persist($creator, $viewer);
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('<p>Expulsión por <strong>conducta grave</strong></p>')
+            ->setNoMeasureApplied(true)
+            ->setEffectiveFrom($this->weekdayInCurrentMonth());
+        $this->persist($sanction);
+
+        $this->loginAs($viewer, $world['centre']);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Ana García', $content);
+        self::assertStringContainsString('1ºA', $content);
+        self::assertStringContainsString('Expulsión por conducta grave', $content);
+        self::assertStringNotContainsString('<strong>', $content);
+    }
+
+    public function testHidesSaturdayAndSundayColumns(): void
+    {
+        $centre = $this->makeCentre('46000031');
+        $admin  = $this->makeAdmin('calendar.no.weekend');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringNotContainsString('>Sáb<', $content);
+        self::assertStringNotContainsString('>Dom<', $content);
+    }
+
+    public function testDoesNotShowSanctionWithoutDates(): void
+    {
+        $world   = $this->makeScenario();
+        $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.bar.nodate');
+        $this->persist($creator);
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('Sin fechas asociadas')
+            ->setNoMeasureApplied(true);
+        $this->persist($sanction);
+
+        $this->loginAs($creator, $world['centre']);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('Sin fechas asociadas', (string) $this->client->getResponse()->getContent());
+    }
+
+    // ── Modo tablón ──────────────────────────────────────────────────────────
+
+    public function testBoardRedirectsToCentreSelectionWithoutSelectedCentre(): void
+    {
+        $admin = $this->makeAdmin('calendar.board.nocentre');
+        $this->makeCentre('46000040');
+        $this->makeCentre('46000041');
+        $this->loginAs($admin);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseRedirects('/seleccion/centro');
+    }
+
+    public function testBoardRendersWithSelectedCentre(): void
+    {
+        $centre = $this->makeCentre('46000042');
+        $admin  = $this->makeAdmin('calendar.board.ok');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testBoardShowsSanctionGroupedByGroupWithStartAndEndDates(): void
+    {
+        $world   = $this->makeScenario();
+        $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.board.dates');
+        $this->persist($creator);
+
+        $monday = (new \DateTimeImmutable('today'))->modify('monday this week');
+        $friday = $monday->modify('+2 days');
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('Expulsión del aula')
+            ->setNoMeasureApplied(true)
+            ->setEffectiveFrom($monday)
+            ->setEffectiveTo($friday);
+        $this->persist($sanction);
+
+        $this->loginAs($creator, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Ana García', $content);
+        self::assertStringContainsString('1ºA', $content);
+        self::assertStringContainsString('Expulsión del aula', $content);
+        self::assertStringContainsString($monday->format('d/m/Y'), $content);
+        self::assertStringContainsString($friday->format('d/m/Y'), $content);
+    }
+
+    public function testActivatingBoardModeLocksOutTheRestOfTheApplication(): void
+    {
+        $centre = $this->makeCentre('46000043');
+        $admin  = $this->makeAdmin('calendar.board.lock');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+        self::assertResponseIsSuccessful();
+
+        $this->client->request('GET', '/calendario');
+        self::assertResponseRedirects('/calendario/tablon');
+
+        $this->client->request('GET', '/');
+        self::assertResponseRedirects('/calendario/tablon');
+    }
+
+    public function testBoardModeLockStillAllowsLoggingOut(): void
+    {
+        $centre = $this->makeCentre('46000044');
+        $admin  = $this->makeAdmin('calendar.board.logout');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+        self::assertResponseIsSuccessful();
+
+        $token = static::getContainer()->get('security.csrf.token_manager')->getToken('logout')->getValue();
+        $this->client->request('GET', '/logout', ['_csrf_token' => $token]);
+
+        self::assertResponseRedirects();
+        self::assertStringNotContainsString(
+            '/calendario/tablon',
+            (string) $this->client->getResponse()->headers->get('Location')
+        );
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
+
+    /**
+     * Returns a weekday (Mon–Fri) date within the current real-world month, so the
+     * default calendar view (which opens on today's month) always shows it regardless
+     * of which day of the week the test suite happens to run on.
+     */
+    private function weekdayInCurrentMonth(): \DateTimeImmutable
+    {
+        $today = new \DateTimeImmutable();
+        $date  = $today->setDate((int) $today->format('Y'), (int) $today->format('n'), 15)->setTime(0, 0, 0);
+
+        return match ((int) $date->format('N')) {
+            6       => $date->modify('+2 days'),
+            7       => $date->modify('+1 day'),
+            default => $date,
+        };
+    }
+
+    /**
+     * @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student}
+     */
+    private function makeScenario(): array
+    {
+        $centre    = (new EducationalCentre())->setCode('46000030')->setName('IES Calendar')->setCity('Sevilla');
+        $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
+        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
+        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
+        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-CAL-' . uniqid('', false));
+        $centre->setActiveAcademicYear($year);
+        $this->persist($centre, $year, $programme, $level, $group, $student);
+
+        return compact('centre', 'year', 'group', 'student');
+    }
 
     private function makeCentre(string $code): EducationalCentre
     {

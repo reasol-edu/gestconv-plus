@@ -19,11 +19,16 @@
                 class="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
             {{ 'today'|trans({}, 'calendar') }}
         </button>
+        <a href="{{ path('app_calendar_board') }}"
+           class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+            {{ ux_icon('heroicons:rectangle-stack', {class: 'h-3.5 w-3.5'}) }}
+            {{ 'board_mode'|trans({}, 'calendar') }}
+        </a>
     </div>
 
-    {# ── Day-of-week headers ───────────────────────────────────────────────── #}
-    <div class="grid grid-cols-7 border-b border-gray-100 bg-gray-50">
-        {% for key in ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'] %}
+    {# ── Day-of-week headers (solo lectivos: sin sábado ni domingo) ─────────── #}
+    <div class="grid grid-cols-5 border-b border-gray-100 bg-gray-50">
+        {% for key in ['lun', 'mar', 'mie', 'jue', 'vie'] %}
             <div class="py-2 text-center text-xs font-medium text-gray-500">
                 {{ key|trans({}, 'calendar') }}
             </div>
@@ -42,14 +47,16 @@
                         {{ loop.index is even ? 'bg-gray-50' : 'bg-white' }}
                         hover:bg-forest-50">
 
-                {# Full-height column separator lines #}
-                <div class="absolute inset-0 grid grid-cols-7 divide-x divide-gray-100 pointer-events-none z-0"
+                {# Full-height column separator lines, con resalte de la columna del día actual #}
+                <div class="absolute inset-0 grid grid-cols-5 divide-x divide-gray-100 pointer-events-none z-0"
                      aria-hidden="true">
-                    {% for i in 1..7 %}<div></div>{% endfor %}
+                    {% for day in week.days %}
+                        <div class="{{ this.isToday(day) ? 'bg-forest-50' : '' }}"></div>
+                    {% endfor %}
                 </div>
 
                 {# Day numbers — top of each week row #}
-                <div class="relative z-10 grid grid-cols-7">
+                <div class="relative z-10 grid grid-cols-5">
                     {% for day in week.days %}
                         <div class="py-1 px-1.5 text-right text-xs
                                     {{ this.isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-300' }}">
@@ -64,7 +71,21 @@
                     {% endfor %}
                 </div>
 
-                <div class="relative z-10 min-h-2"></div>
+                {% if week.segments is not empty %}
+                    <div class="relative z-10 grid grid-cols-5 gap-x-1 gap-y-1 px-1 pb-1"
+                         style="grid-template-rows: repeat({{ week.maxLane + 1 }}, minmax(1.25rem, auto));">
+                        {% for segment in week.segments %}
+                            <div class="truncate rounded-md border px-1.5 py-0.5 text-[11px] leading-tight {{ segment.color.bg }} {{ segment.color.text }} {{ segment.color.border }}"
+                                 style="grid-column: {{ segment.startCol + 1 }} / span {{ segment.span }}; grid-row: {{ segment.lane + 1 }};"
+                                 title="{{ segment.label }} — {{ segment.details }}">
+                                <span class="font-semibold">{{ segment.label }}</span>
+                                <span class="opacity-80">{{ segment.details }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="relative z-10 min-h-2"></div>
+                {% endif %}
 
             </div>
         {% endfor %}

@@ -14,6 +14,29 @@ Los administradores de centro y los administradores globales pueden consultar cu
 
 ## Calendario
 
+La sección **Calendario**, accesible desde el menú lateral, muestra en una vista mensual las sanciones del curso académico activo que tienen fecha asignada (campo *Fecha de inicio*, y opcionalmente *Fecha de fin*, del parte de sanción).
+
+![Vista mensual del calendario de sanciones](img/calendario/calendario.png)
+
+- Se muestran **todas las sanciones con fecha del curso**, sin filtrar por autoría ni tutoría: cualquier docente con un centro seleccionado las ve todas.
+- Cada sanción aparece como una barra horizontal que puede abarcar varios días si tiene fecha de fin. Dentro de la barra se muestra el nombre del alumno, su grupo (el grupo con el que se registró la sanción) y el detalle de la sanción.
+- El color de la barra depende del grupo: todas las sanciones de alumnos del mismo grupo comparten color, lo que permite distinguir de un vistazo a qué grupos pertenecen las sanciones visibles en una misma semana.
+- Solo se muestran los días lectivos de lunes a viernes; sábados y domingos no aparecen en la cuadrícula.
+- El día actual se resalta con un color de fondo distinto en toda su columna.
+
+### Modo tablón
+
+El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista a pantalla completa pensada para mostrarse en una pantalla o monitor del centro (por ejemplo, en la sala de profesorado).
+
+![Modo tablón con la semana actual y la siguiente](img/calendario/calendario-tablon.png)
+
+- Muestra dos columnas: la semana actual (lunes a viernes) a la izquierda y la semana siguiente a la derecha.
+- Para cada día se listan las sanciones que lo cubren, agrupadas por grupo, indicando el alumno, el detalle de la sanción y sus fechas de inicio y fin.
+- Un botón en la esquina superior permite alternar la pantalla completa del navegador.
+- Un botón con icono de encendido/apagado, en la misma esquina, cierra la sesión.
+
+> Una vez activado el modo tablón, no se puede navegar a ninguna otra parte de la aplicación en esa sesión del navegador: cualquier intento de acceder a otra pantalla redirige de vuelta al tablón. La única salida es cerrar sesión con el botón de encendido/apagado.
+
 ## Centro Educativo
 
 ### Estructurar la oferta formativa

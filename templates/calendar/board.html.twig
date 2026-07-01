@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'board_title'|trans({}, 'calendar') }} · {{ app_name }}{% endblock %}
+
+{% block body %}
+<div class="fixed inset-0 flex flex-col bg-forest-950 text-white overflow-hidden" data-controller="fullscreen">
+
+    {# ── Esquina: pantalla completa + power-off (única salida: logout) ─────── #}
+    <div class="absolute top-4 right-4 z-20 flex items-center gap-2">
+        <button type="button"
+                data-action="fullscreen#toggle"
+                title="{{ 'board_fullscreen'|trans({}, 'calendar') }}"
+                aria-label="{{ 'board_fullscreen'|trans({}, 'calendar') }}"
+                class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
+            <span data-fullscreen-target="enterIcon">{{ ux_icon('heroicons:arrows-pointing-out', {class: 'h-5 w-5'}) }}</span>
+            <span data-fullscreen-target="exitIcon" class="hidden">{{ ux_icon('heroicons:arrows-pointing-in', {class: 'h-5 w-5'}) }}</span>
+        </button>
+        <a href="{{ path('app_logout', {'_csrf_token': csrf_token('logout')}) }}"
+           title="{{ 'board_logout'|trans({}, 'calendar') }}"
+           aria-label="{{ 'board_logout'|trans({}, 'calendar') }}"
+           class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-red-500/80 transition-colors">
+            {{ ux_icon('heroicons:power', {class: 'h-5 w-5'}) }}
+        </a>
+    </div>
+
+    <header class="shrink-0 px-8 py-5 border-b border-white/10 flex items-center gap-3">
+        {{ ux_icon('heroicons:rectangle-stack', {class: 'h-6 w-6 text-forest-300'}) }}
+        <h1 class="text-xl font-bold">{{ 'board_title'|trans({}, 'calendar') }}</h1>
+    </header>
+
+    <div class="flex-1 grid grid-cols-2 divide-x divide-white/10 overflow-hidden">
+        {% for week in weeks %}
+            <section class="flex flex-col overflow-y-auto">
+                <h2 class="sticky top-0 z-10 bg-forest-900 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-forest-200 border-b border-white/10">
+                    {{ week.label|trans({}, 'calendar') }}
+                </h2>
+                <div class="flex-1 divide-y divide-white/10">
+                    {% for day in week.days %}
+                        {% set is_today = day.day.format('Y-m-d') == today.format('Y-m-d') %}
+                        <div class="px-6 py-4">
+                            <h3 class="mb-2 text-sm font-semibold {{ is_today ? 'text-amber-300' : 'text-forest-200' }}">
+                                {{ ('weekday.' ~ day.day.format('N'))|trans({}, 'calendar') }}
+                                {{ day.day.format('j') }} {{ 'de'|trans({}, 'calendar') }}
+                                {{ ('month.' ~ day.day.format('n'))|trans({}, 'calendar')|lower }}
+                            </h3>
+
+                            {% if day.groups is empty %}
+                                <p class="text-xs text-forest-400">{{ 'board_no_sanctions'|trans({}, 'calendar') }}</p>
+                            {% else %}
+                                <div class="space-y-3">
+                                    {% for group in day.groups %}
+                                        <div>
+                                            <p class="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold {{ group.color.bg }} {{ group.color.text }}">
+                                                {{ group.name }}
+                                            </p>
+                                            <ul class="space-y-1.5 pl-1 text-sm">
+                                                {% for item in group.items %}
+                                                    <li>
+                                                        <span class="font-medium">{{ item.student }}</span>
+                                                        {% if item.details %}
+                                                            <span class="text-forest-300"> — {{ item.details }}</span>
+                                                        {% endif %}
+                                                        <span class="block text-xs text-forest-400">
+                                                            {{ 'board_start_date'|trans({}, 'calendar') }}: {{ item.from|date('d/m/Y') }}
+                                                            · {{ 'board_end_date'|trans({}, 'calendar') }}: {{ (item.to ?? item.from)|date('d/m/Y') }}
+                                                        </span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

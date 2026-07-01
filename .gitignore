@@ -32,3 +32,11 @@
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+
+###> playwright ###
+/node_modules/
+###< playwright ###
+
+###> macos ###
+.DS_Store
+###< macos ###

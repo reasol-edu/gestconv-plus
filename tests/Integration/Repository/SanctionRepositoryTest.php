@@ -161,6 +161,68 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertCount(1, $results);
     }
 
+    // ── findWithDatesForAcademicYear ──────────────────────────────────────────
+
+    public function testFindWithDatesForAcademicYearExcludesSanctionsWithoutDates(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('dates.no.dates');
+        $this->persist($teacher);
+        $this->makeSanction($world, $teacher);
+
+        $results = $this->repo->findWithDatesForAcademicYear($world['year']);
+
+        self::assertCount(0, $results);
+    }
+
+    public function testFindWithDatesForAcademicYearReturnsSanctionsWithEffectiveFrom(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('dates.with.dates');
+        $this->persist($teacher);
+        $sanction = $this->makeSanction($world, $teacher);
+        $sanction->setEffectiveFrom(new \DateTimeImmutable('2026-02-10'));
+        $this->flush();
+
+        $results = $this->repo->findWithDatesForAcademicYear($world['year']);
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testFindWithDatesForAcademicYearOrdersByEffectiveFromAscending(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('dates.order');
+        $this->persist($teacher);
+        $later   = $this->makeSanction($world, $teacher);
+        $later->setEffectiveFrom(new \DateTimeImmutable('2026-03-01'));
+        $earlier = $this->makeSanction($world, $teacher);
+        $earlier->setEffectiveFrom(new \DateTimeImmutable('2026-01-15'));
+        $this->flush();
+
+        $results = $this->repo->findWithDatesForAcademicYear($world['year']);
+
+        self::assertCount(2, $results);
+        self::assertSame($earlier->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+        self::assertSame($later->getId()->toRfc4122(), $results[1]->getId()->toRfc4122());
+    }
+
+    public function testFindWithDatesForAcademicYearIsScopedToTheGivenYear(): void
+    {
+        $worldA   = $this->makeWorld('A');
+        $worldB   = $this->makeWorld('B');
+        $teacher  = $this->makeTeacher('dates.scope');
+        $this->persist($teacher);
+        $sanction = $this->makeSanction($worldA, $teacher);
+        $sanction->setEffectiveFrom(new \DateTimeImmutable('2026-02-10'));
+        $this->flush();
+
+        $results = $this->repo->findWithDatesForAcademicYear($worldB['year']);
+
+        self::assertCount(0, $results);
+    }
+
     // ── findEligibleReports ──────────────────────────────────────────────────
 
     public function testFindEligibleReportsReturnsUnprescribedUnsanctionedReports(): void

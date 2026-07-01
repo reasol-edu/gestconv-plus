@@ -194,6 +194,29 @@ class SanctionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns all sanctions with a start date set for the given academic year, ordered by start date.
+     * Not filtered by viewer: the calendar shows every dated sanction of the year to any teacher.
+     *
+     * @return list<Sanction>
+     */
+    public function findWithDatesForAcademicYear(AcademicYear $year): array
+    {
+        /** @var list<Sanction> $result */
+        $result = $this->createQueryBuilder('s')
+            ->addSelect('st', 'g')
+            ->join('s.student', 'st')
+            ->join('s.group', 'g')
+            ->where('s.academicYear = :year')
+            ->andWhere('s.effectiveFrom IS NOT NULL')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->orderBy('s.effectiveFrom', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
      * Returns reports for a student/group that are not prescribed and not yet in a sanction.
      *
      * @return list<IncidentReport>
