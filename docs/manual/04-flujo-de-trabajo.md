@@ -22,4 +22,10 @@ Se importan los estudiantes desde el CSV de Séneca. El importador rellena autom
 
 A lo largo del curso, cualquier docente puede registrar partes de convivencia desde la sección **Partes** del menú lateral o desde el botón de acceso rápido del inicio. El parte queda vinculado al alumno, el grupo y el docente que lo registra. Los tutores de grupo y los administradores de centro pueden consultar los partes de sus grupos o de todo el centro, respectivamente.
 
-## 6 — Generar informes
+## 6 — Notificar a las familias
+
+Antes de poder tramitar una sanción, la familia debe ser informada del parte. La sección **Notificaciones** del menú lateral muestra la cola de partes y sanciones pendientes de comunicar, y permite registrar cada intento (método, fecha y hora, descripción y resultado). Un parte **sin comunicación exitosa no puede incorporarse a una sanción**. Consulta [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones) para el detalle del formulario, el historial y quién puede notificar según los ajustes del centro.
+
+## 7 — Registrar sanciones
+
+Con el parte ya notificado, el docente o el equipo directivo registra la sanción desde la sección **Sanciones**, incorporando uno o varios partes del estudiante y aplicando las medidas disciplinarias configuradas por el centro. La sanción también debe **notificarse a la familia** para entrar en vigor: hasta entonces no aparece en el [calendario ni en el modo tablón](05-secciones-de-la-aplicacion.md#calendario), aunque tenga fechas de vigencia asignadas.

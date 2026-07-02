@@ -59,6 +59,18 @@ La comisión de convivencia y el orientador/a solo tienen esta visibilidad ampli
 
 Solo la comisión de convivencia tiene los mismos permisos que un administrador de centro para registrar, editar y eliminar sanciones de cualquier estudiante. El orientador/a solo puede verlas.
 
+### Notificaciones a las familias
+
+Registrar una comunicación con la familia (ver [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones)) está controlado por dos ajustes de centro — *Quién notifica los partes* y *Quién notifica las sanciones* — que admiten tres valores: **el docente que registró** el parte o la sanción, **el tutor/a del grupo**, o **ambos** (valor por defecto). Consulta [Ajustes](07-ajustes.md#notificaciones).
+
+| Acción | Docente autor | Tutor del grupo | Comisión | Orientador/a | Admin de centro | Admin global |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Ver la cola de Notificaciones | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Notificar un parte | según ajuste | según ajuste | — | — | ✓ | ✓ |
+| Notificar una sanción | según ajuste | según ajuste | ✓ | — | ✓ | ✓ |
+
+La cola de pendientes muestra a cada docente los elementos que puede ver según las reglas de visibilidad de partes y sanciones; el botón **Notificar** solo aparece en los que además puede notificar.
+
 ### Centro educativo
 
 | Acción | Docente | Admin de centro | Admin global |
