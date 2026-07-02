@@ -67,7 +67,6 @@ ${BOLD}╔═══════════════════════�
 Este script instalará GestConv+ con:
   •  FrankenPHP como servidor web (HTTPS automático vía Let's Encrypt)
   •  PostgreSQL como base de datos
-  •  Hub Mercure embebido (sincronización en tiempo real)
   •  Dos servicios systemd con arranque automático al reiniciar
 "
 
@@ -214,8 +213,6 @@ export APP_EXTERNAL_URL_FORCE_SECURITY="${APP_EXTERNAL_URL_FORCE_SECURITY:-true}
 export MAILER_DSN="${MAILER_DSN:-null://null}"
 export MAILER_FROM="${MAILER_FROM:-no-responder@example.com}"
 export MESSENGER_TRANSPORT_DSN="${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}"
-export MERCURE_URL="${MERCURE_URL:-${DEFAULT_URI}/.well-known/mercure}"
-export MERCURE_PUBLIC_URL="${MERCURE_PUBLIC_URL:-/.well-known/mercure}"
 
 mkdir -p "${DATA}"
 
@@ -224,12 +221,6 @@ if [[ ! -f "${DATA}/.secret" ]]; then
     "${FP}" php-cli -r 'echo bin2hex(random_bytes(32));' > "${DATA}/.secret"
 fi
 export APP_SECRET="$(< "${DATA}/.secret")"
-
-# Generar MERCURE_JWT_SECRET en el primer arranque y guardarlo en data/.mercure_secret
-if [[ ! -f "${DATA}/.mercure_secret" ]]; then
-    "${FP}" php-cli -r 'echo bin2hex(random_bytes(32));' > "${DATA}/.mercure_secret"
-fi
-export MERCURE_JWT_SECRET="$(< "${DATA}/.mercure_secret")"
 
 # Escribir app/.env para que Symfony lo lea vía bootEnv (requerido por el binario)
 cat > "${APP}/.env" << EOF
@@ -248,9 +239,6 @@ APP_EXTERNAL_URL_FORCE_SECURITY=${APP_EXTERNAL_URL_FORCE_SECURITY}
 MAILER_DSN=${MAILER_DSN}
 MAILER_FROM=${MAILER_FROM}
 MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN}
-MERCURE_URL=${MERCURE_URL}
-MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
-MERCURE_JWT_SECRET=${MERCURE_JWT_SECRET}
 EOF
 
 # Inicializar: migraciones, datos por defecto y caché de producción
@@ -293,15 +281,12 @@ export APP_EXTERNAL_URL_FORCE_SECURITY="${APP_EXTERNAL_URL_FORCE_SECURITY:-true}
 export MAILER_DSN="${MAILER_DSN:-null://null}"
 export MAILER_FROM="${MAILER_FROM:-no-responder@example.com}"
 export MESSENGER_TRANSPORT_DSN="${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}"
-export MERCURE_URL="${MERCURE_URL:-${DEFAULT_URI}/.well-known/mercure}"
-export MERCURE_PUBLIC_URL="${MERCURE_PUBLIC_URL:-/.well-known/mercure}"
 
-# Esperar a que gestconv-start.sh haya generado los secretos (primer arranque)
-until [[ -f "${DATA}/.secret" && -f "${DATA}/.mercure_secret" ]]; do
+# Esperar a que gestconv-start.sh haya generado el secreto (primer arranque)
+until [[ -f "${DATA}/.secret" ]]; do
     sleep 1
 done
 export APP_SECRET="$(< "${DATA}/.secret")"
-export MERCURE_JWT_SECRET="$(< "${DATA}/.mercure_secret")"
 
 cat > "${APP}/.env" << EOF
 APP_ENV=prod
@@ -319,9 +304,6 @@ APP_EXTERNAL_URL_FORCE_SECURITY=${APP_EXTERNAL_URL_FORCE_SECURITY}
 MAILER_DSN=${MAILER_DSN}
 MAILER_FROM=${MAILER_FROM}
 MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN}
-MERCURE_URL=${MERCURE_URL}
-MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
-MERCURE_JWT_SECRET=${MERCURE_JWT_SECRET}
 EOF
 
 cd "${APP}"
