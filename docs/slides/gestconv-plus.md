@@ -5,7 +5,7 @@ author: GestConv+
 lang: es
 paginate: true
 header: 'GestConv+'
-footer: 'v{{VERSION}} ({{PUB_DATE}}) · Gestión de la FFEOE'
+footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 style: |
   :root {
     --nx-ink: #1c2b1a;

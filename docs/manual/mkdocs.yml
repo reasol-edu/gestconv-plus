@@ -1,5 +1,5 @@
 site_name: Manual de usuario de GestConv+
-site_description: Gestión de la planificación y asignación de las estancias del alumnado en empresas de la FFEOE
+site_description: Gestión de la convivencia
 site_url: https://reasol-edu.github.io/gestconv-plus/
 # Versión y fecha del release en el pie de la web. Fuente única: config/services.yaml.
 # El target "docs-web" del Makefile exporta MANUAL_COPYRIGHT con app.version y
