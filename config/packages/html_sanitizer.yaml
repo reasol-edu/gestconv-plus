@@ -1,8 +1,9 @@
 framework:
     html_sanitizer:
         sanitizers:
-            app.company_contact:
+            app.rich_text:
                 allow_safe_elements: false
+                max_input_length: 50000
                 allow_elements:
                     p: '*'
                     br: '*'

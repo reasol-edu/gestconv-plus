@@ -104,7 +104,7 @@
         {# Description #}
         <div class="px-6 py-4">
             <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'incident.field.description'|trans({}, 'admin') }}</p>
-            <div class="prose prose-sm max-w-none text-gray-700">{{ report.description|raw }}</div>
+            <div class="prose prose-sm max-w-none text-gray-700">{{ report.description|sanitize_html('app.rich_text') }}</div>
         </div>
 
         {# Prescripción #}

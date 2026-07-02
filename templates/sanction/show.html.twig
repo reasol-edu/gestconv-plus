@@ -108,7 +108,7 @@
                 {% if sanction.noMeasureReason %}
                     <div class="mt-3">
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.field.no_measure_reason'|trans({}, 'admin') }}</p>
-                        <div class="prose prose-sm max-w-none text-gray-700">{{ sanction.noMeasureReason|raw }}</div>
+                        <div class="prose prose-sm max-w-none text-gray-700">{{ sanction.noMeasureReason|sanitize_html('app.rich_text') }}</div>
                     </div>
                 {% endif %}
             {% else %}
@@ -144,7 +144,7 @@
         {# Detalle #}
         <div class="px-6 py-4">
             <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'sanction.field.details'|trans({}, 'admin') }}</p>
-            <div class="prose prose-sm max-w-none text-gray-700">{{ sanction.details|raw }}</div>
+            <div class="prose prose-sm max-w-none text-gray-700">{{ sanction.details|sanitize_html('app.rich_text') }}</div>
         </div>
 
     </div>
