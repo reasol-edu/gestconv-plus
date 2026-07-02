@@ -52,8 +52,10 @@ class SanctionRepository extends ServiceEntityRepository
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->orderBy('s.createdAt', 'DESC');
 
-        $isCentreAdmin = $centre->getAdmins()->contains($viewer);
-        if (!$viewer->isAdmin() && !$isCentreAdmin) {
+        $hasFullAccess = $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+        if (!$viewer->isAdmin() && !$hasFullAccess) {
             $qb->distinct()
                ->join('s.reports', 'r')
                ->andWhere(

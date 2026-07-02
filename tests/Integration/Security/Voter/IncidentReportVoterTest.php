@@ -140,6 +140,66 @@ class IncidentReportVoterTest extends RepositoryTestCase
         );
     }
 
+    // ── Comisión de convivencia ──────────────────────────────────────────────
+
+    public function testCommitteeMemberIsGrantedView(): void
+    {
+        [$report, $centre] = $this->makeScenario();
+        $committee          = $this->makeTeacher('committee.view');
+        $this->persist($committee);
+        $centre->addCommitteeMember($committee);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($committee), $report, [IncidentReportVoter::VIEW])
+        );
+    }
+
+    public function testCommitteeMemberIsDeniedEdit(): void
+    {
+        [$report, $centre] = $this->makeScenario();
+        $committee          = $this->makeTeacher('committee.edit');
+        $this->persist($committee);
+        $centre->addCommitteeMember($committee);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($committee), $report, [IncidentReportVoter::EDIT])
+        );
+    }
+
+    // ── Orientador/a ─────────────────────────────────────────────────────────
+
+    public function testCounselorIsGrantedView(): void
+    {
+        [$report, $centre] = $this->makeScenario();
+        $counselor          = $this->makeTeacher('counselor.view');
+        $this->persist($counselor);
+        $centre->addCounselor($counselor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($counselor), $report, [IncidentReportVoter::VIEW])
+        );
+    }
+
+    public function testCounselorIsDeniedEdit(): void
+    {
+        [$report, $centre] = $this->makeScenario();
+        $counselor          = $this->makeTeacher('counselor.edit');
+        $this->persist($counselor);
+        $centre->addCounselor($counselor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($counselor), $report, [IncidentReportVoter::EDIT])
+        );
+    }
+
     // ── Docente creador del parte ────────────────────────────────────────────
 
     public function testCreatorIsGrantedView(): void

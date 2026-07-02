@@ -61,6 +61,36 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertCount(1, $results);
     }
 
+    // ── Visibilidad: comisión de convivencia / orientador ────────────────────
+
+    public function testCommitteeMemberSeesAllReportsOfHisCentre(): void
+    {
+        $world    = $this->makeWorld();
+        $member   = $this->makeTeacher('committee.vis');
+        $report   = $this->makeReport($world);
+        $this->persist($member, $report);
+        $world['centre']->addCommitteeMember($member);
+        $this->flush();
+
+        $results = $this->repo->createFilteredQuery($world['centre'], $member)->getResult();
+
+        self::assertCount(1, $results);
+    }
+
+    public function testCounselorSeesAllReportsOfHisCentre(): void
+    {
+        $world     = $this->makeWorld();
+        $counselor = $this->makeTeacher('counselor.vis');
+        $report    = $this->makeReport($world);
+        $this->persist($counselor, $report);
+        $world['centre']->addCounselor($counselor);
+        $this->flush();
+
+        $results = $this->repo->createFilteredQuery($world['centre'], $counselor)->getResult();
+
+        self::assertCount(1, $results);
+    }
+
     public function testCentreAdminDoesNotSeeReportsOfAnotherCentre(): void
     {
         $worldA = $this->makeWorld('A');

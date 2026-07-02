@@ -228,6 +228,19 @@ centre_teachers.import_assignments.error.no_file: 'No se ha seleccionado ningún
 centre_teachers.import_assignments.error.empty_file: 'El fichero está vacío o no tiene cabeceras válidas.'
 centre_teachers.import_assignments.error.missing_column: 'Columna requerida no encontrada en el fichero:'
 
+# Perfiles especiales (comisión de convivencia y orientador)
+centre_profiles.title: 'Perfiles'
+centre_profiles.hub_help: 'Asigna los perfiles de comisión de convivencia y orientador.'
+centre_profiles.manage: 'Gestionar perfiles'
+centre_profiles.help: 'Estos perfiles amplían el acceso de un docente a los partes de convivencia y las sanciones de todo el centro, independientemente de sus grupos o tutorías.'
+centre_profiles.no_active_year: 'Este centro no tiene un curso académico activo. Establece uno activo para gestionar los perfiles.'
+centre_profiles.committee.label: 'Comisión de convivencia'
+centre_profiles.committee.help: 'Pueden ver todos los partes del centro y registrar sanciones para cualquier estudiante. Escribe al menos 2 caracteres para buscar.'
+centre_profiles.counselors.label: 'Orientador/a'
+centre_profiles.counselors.help: 'Pueden ver todos los partes y sanciones del centro, sin poder modificar los que no son suyos. Escribe al menos 2 caracteres para buscar.'
+centre_profiles.save: 'Guardar'
+centre_profiles.flash.saved: 'Perfiles actualizados correctamente.'
+
 # Estudiantes
 students.title: 'Estudiantes'
 students.new: 'Nuevo estudiante'

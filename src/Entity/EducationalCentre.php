@@ -33,9 +33,21 @@ class EducationalCentre
     #[ORM\JoinTable(name: 'educational_centre_admins')]
     private Collection $admins;
 
+    /** @var Collection<int, Teacher> */
+    #[ORM\ManyToMany(targetEntity: Teacher::class, fetch: 'EXTRA_LAZY')]
+    #[ORM\JoinTable(name: 'educational_centre_committee_members')]
+    private Collection $committeeMembers;
+
+    /** @var Collection<int, Teacher> */
+    #[ORM\ManyToMany(targetEntity: Teacher::class, fetch: 'EXTRA_LAZY')]
+    #[ORM\JoinTable(name: 'educational_centre_counselors')]
+    private Collection $counselors;
+
     public function __construct()
     {
         $this->admins = new ArrayCollection();
+        $this->committeeMembers = new ArrayCollection();
+        $this->counselors = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -121,6 +133,54 @@ class EducationalCentre
     public function removeAdmin(Teacher $admin): static
     {
         $this->admins->removeElement($admin);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Teacher>
+     */
+    public function getCommitteeMembers(): Collection
+    {
+        return $this->committeeMembers;
+    }
+
+    public function addCommitteeMember(Teacher $teacher): static
+    {
+        if (!$this->committeeMembers->contains($teacher)) {
+            $this->committeeMembers->add($teacher);
+        }
+
+        return $this;
+    }
+
+    public function removeCommitteeMember(Teacher $teacher): static
+    {
+        $this->committeeMembers->removeElement($teacher);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Teacher>
+     */
+    public function getCounselors(): Collection
+    {
+        return $this->counselors;
+    }
+
+    public function addCounselor(Teacher $teacher): static
+    {
+        if (!$this->counselors->contains($teacher)) {
+            $this->counselors->add($teacher);
+        }
+
+        return $this;
+    }
+
+    public function removeCounselor(Teacher $teacher): static
+    {
+        $this->counselors->removeElement($teacher);
 
         return $this;
     }

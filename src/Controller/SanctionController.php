@@ -69,7 +69,7 @@ class SanctionController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        if (!$user->isAdmin() && !$centre->getAdmins()->contains($user)) {
+        if (!$user->isAdmin() && !$centre->getAdmins()->contains($user) && !$centre->getCommitteeMembers()->contains($user)) {
             throw $this->createAccessDeniedException();
         }
 

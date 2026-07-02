@@ -87,6 +87,38 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
+    public function testCommitteeMemberSeesAllSanctionsOfHisCentre(): void
+    {
+        $world   = $this->makeWorld();
+        $member  = $this->makeTeacher('committee.sees');
+        $creator = $this->makeTeacher('creator.for.committee');
+        $this->persist($member, $creator);
+        $world['centre']->addCommitteeMember($member);
+        $this->flush();
+        $sanction = $this->makeSanctionWithReport($world, $creator);
+
+        $results = $this->repo->findByCentreForViewer($world['centre'], $member);
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testCounselorSeesAllSanctionsOfHisCentre(): void
+    {
+        $world     = $this->makeWorld();
+        $counselor = $this->makeTeacher('counselor.sees');
+        $creator   = $this->makeTeacher('creator.for.counselor');
+        $this->persist($counselor, $creator);
+        $world['centre']->addCounselor($counselor);
+        $this->flush();
+        $sanction = $this->makeSanctionWithReport($world, $creator);
+
+        $results = $this->repo->findByCentreForViewer($world['centre'], $counselor);
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
     public function testAdminDoesNotSeeSanctionsOfAnotherCentre(): void
     {
         $worldA  = $this->makeWorld('A');

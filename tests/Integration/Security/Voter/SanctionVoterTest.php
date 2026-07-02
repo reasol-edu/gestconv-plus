@@ -166,6 +166,94 @@ class SanctionVoterTest extends RepositoryTestCase
         );
     }
 
+    // ── Comisión de convivencia ──────────────────────────────────────────────
+
+    public function testCommitteeMemberIsGrantedView(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre();
+        $committee            = $this->makeTeacher('committee.v');
+        $this->persist($committee);
+        $centre->addCommitteeMember($committee);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($committee), $sanction, [SanctionVoter::VIEW])
+        );
+    }
+
+    public function testCommitteeMemberIsGrantedEdit(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre();
+        $committee            = $this->makeTeacher('committee.e');
+        $this->persist($committee);
+        $centre->addCommitteeMember($committee);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($committee), $sanction, [SanctionVoter::EDIT])
+        );
+    }
+
+    public function testCommitteeMemberIsGrantedDelete(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre();
+        $committee            = $this->makeTeacher('committee.d');
+        $this->persist($committee);
+        $centre->addCommitteeMember($committee);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($committee), $sanction, [SanctionVoter::DELETE])
+        );
+    }
+
+    // ── Orientador/a ─────────────────────────────────────────────────────────
+
+    public function testCounselorIsGrantedView(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre();
+        $counselor            = $this->makeTeacher('counselor.v');
+        $this->persist($counselor);
+        $centre->addCounselor($counselor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($counselor), $sanction, [SanctionVoter::VIEW])
+        );
+    }
+
+    public function testCounselorIsDeniedEdit(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre();
+        $counselor            = $this->makeTeacher('counselor.e');
+        $this->persist($counselor);
+        $centre->addCounselor($counselor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($counselor), $sanction, [SanctionVoter::EDIT])
+        );
+    }
+
+    public function testCounselorIsDeniedDelete(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre();
+        $counselor            = $this->makeTeacher('counselor.d');
+        $this->persist($counselor);
+        $centre->addCounselor($counselor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($counselor), $sanction, [SanctionVoter::DELETE])
+        );
+    }
+
     // ── Docente: creador de un parte vinculado a la sanción ──────────────────
 
     public function testReportCreatorIsGrantedView(): void

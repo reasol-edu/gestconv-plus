@@ -45,7 +45,7 @@ final class SanctionVoter extends Voter
             ->getAcademicYear()
             ->getEducationalCentre();
 
-        if ($centre->getAdmins()->contains($user)) {
+        if ($centre->getAdmins()->contains($user) || $centre->getCommitteeMembers()->contains($user)) {
             return true;
         }
 
@@ -53,7 +53,8 @@ final class SanctionVoter extends Voter
             self::VIEW => $subject->getReports()->exists(
                 static fn(int $k, \App\Entity\IncidentReport $r): bool =>
                     $r->getRegisteredBy() === $user
-            ) || $subject->getGroup()->getTutors()->contains($user),
+            ) || $subject->getGroup()->getTutors()->contains($user)
+                || $centre->getCounselors()->contains($user),
             self::EDIT,
             self::DELETE => false,
             default      => false,

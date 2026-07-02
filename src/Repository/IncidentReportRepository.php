@@ -28,9 +28,10 @@ class IncidentReportRepository extends ServiceEntityRepository
      * Builds a pageable/filterable query for incident reports visible to the viewer.
      *
      * Visibility rules:
-     *  - Global admin  → all reports of the centre
-     *  - Centre admin  → all reports of the centre
-     *  - Other teacher → only reports they registered OR reports for groups they tutor
+     *  - Global admin              → all reports of the centre
+     *  - Centre admin              → all reports of the centre
+     *  - Committee member / counselor → all reports of the centre
+     *  - Other teacher             → only reports they registered OR reports for groups they tutor
      *
      * Accepted filter keys (all optional):
      *   search   string   — fulltext search
@@ -64,8 +65,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->setParameter('centre', $centre->getId(), 'uuid');
 
         // Visibility restriction for non-admins
-        $isCentreAdmin = $centre->getAdmins()->contains($viewer);
-        if (!$viewer->isAdmin() && !$isCentreAdmin) {
+        $hasFullAccess = $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+        if (!$viewer->isAdmin() && !$hasFullAccess) {
             $qb->andWhere(
                 $qb->expr()->orX(
                     'r.registeredBy = :viewer',
@@ -177,8 +180,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('since', $since);
 
-        $isCentreAdmin = $centre->getAdmins()->contains($viewer);
-        if (!$viewer->isAdmin() && !$isCentreAdmin) {
+        $hasFullAccess = $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+        if (!$viewer->isAdmin() && !$hasFullAccess) {
             $qb->andWhere(
                 $qb->expr()->orX(
                     'r.registeredBy = :viewer',
@@ -210,8 +215,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->orderBy('g.name', 'ASC');
 
-        $isCentreAdmin = $centre->getAdmins()->contains($viewer);
-        if (!$viewer->isAdmin() && !$isCentreAdmin) {
+        $hasFullAccess = $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+        if (!$viewer->isAdmin() && !$hasFullAccess) {
             $qb->andWhere(
                 $qb->expr()->orX(
                     'r.registeredBy = :viewer',

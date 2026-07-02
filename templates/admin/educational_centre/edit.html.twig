@@ -124,6 +124,7 @@
                         data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_admin'}) }}"
                         data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
                         data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
+                        data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
                         class="w-full">
                     {% for admin in selectedAdmins %}
                         <option value="{{ admin.id }}" selected>{{ admin.name.lastName }}, {{ admin.name.firstName }}</option>

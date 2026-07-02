@@ -44,6 +44,17 @@ El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista
 
 ### Exportar e importar la oferta formativa
 
+### Perfiles
+
+La card **Perfiles** del hub de centro educativo permite a los administradores de centro y globales asignar dos roles especiales a docentes concretos del centro:
+
+- **Comisión de convivencia** — acceden a todos los partes del centro y pueden registrar sanciones para cualquier estudiante, con los mismos permisos que un administrador de centro sobre partes y sanciones.
+- **Orientador/a** — acceden a todos los partes y sanciones del centro, pero no pueden crear, editar ni eliminar los que no han registrado ellos mismos.
+
+Ambos perfiles se asignan mediante buscadores de docentes con autocompletado, restringidos al curso académico activo del centro. Si el centro no tiene un curso activo, la página muestra un aviso y no permite gestionar los perfiles.
+
+Ninguno de los dos perfiles concede acceso al resto del hub de centro (oferta formativa, estudiantes, conductas, etc.): solo amplían la visibilidad y los permisos sobre partes de convivencia y sanciones.
+
 ## Partes de convivencia
 
 La sección **Partes** está accesible desde el menú lateral para cualquier docente con un centro seleccionado. Permite registrar y consultar los partes de convivencia del curso activo.
@@ -54,6 +65,8 @@ La sección **Partes** está accesible desde el menú lateral para cualquier doc
 |---|---|
 | Docente (sin rol especial) | Solo los partes que él mismo ha registrado |
 | Tutor/a de grupo | Sus propios partes y todos los del grupo que tutoriza |
+| Comisión de convivencia | Todos los partes del centro |
+| Orientador/a | Todos los partes del centro |
 | Administrador de centro | Todos los partes del centro |
 | Administrador global | Todos los partes de todos los centros |
 

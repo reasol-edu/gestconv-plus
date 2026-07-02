@@ -55,7 +55,9 @@ final class IncidentReportVoter extends Voter
         // Non-admin, non-centre-admin
         return match ($attribute) {
             self::VIEW      => $subject->getRegisteredBy() === $user
-                               || $subject->getGroup()->getTutors()->contains($user),
+                               || $subject->getGroup()->getTutors()->contains($user)
+                               || $centre->getCommitteeMembers()->contains($user)
+                               || $centre->getCounselors()->contains($user),
             self::EDIT      => $subject->getRegisteredBy() === $user,
             self::DELETE,
             self::PRESCRIBE => false,
