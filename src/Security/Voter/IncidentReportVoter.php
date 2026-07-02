@@ -19,10 +19,11 @@ final class IncidentReportVoter extends Voter
     public const EDIT      = 'incident_report.edit';
     public const DELETE    = 'incident_report.delete';
     public const PRESCRIBE = 'incident_report.prescribe';
+    public const REASSIGN  = 'incident_report.reassign';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::PRESCRIBE], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::PRESCRIBE, self::REASSIGN], true)
             && $subject instanceof IncidentReport;
     }
 
@@ -60,7 +61,8 @@ final class IncidentReportVoter extends Voter
                                || $centre->getCounselors()->contains($user),
             self::EDIT      => $subject->getRegisteredBy() === $user,
             self::DELETE,
-            self::PRESCRIBE => false,
+            self::PRESCRIBE,
+            self::REASSIGN  => false,
             default         => false,
         };
     }

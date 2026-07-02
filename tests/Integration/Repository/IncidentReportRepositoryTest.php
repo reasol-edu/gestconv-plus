@@ -245,6 +245,19 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertSame($world['group']->getId(), $pairs[0]['group']->getId());
     }
 
+    public function testSearchStudentGroupPairsFindsStudentByGroupName(): void
+    {
+        $world = $this->makeWorld();
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $pairs = $this->repo->searchStudentGroupPairs($world['centre'], '1ºA', 10);
+
+        self::assertCount(1, $pairs);
+        self::assertSame($world['student']->getId(), $pairs[0]['student']->getId());
+        self::assertSame($world['group']->getId(), $pairs[0]['group']->getId());
+    }
+
     public function testSearchStudentGroupPairsReturnsEmptyWhenNoMatch(): void
     {
         $world = $this->makeWorld();

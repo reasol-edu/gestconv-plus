@@ -11,6 +11,8 @@ use App\Repository\GroupRepository;
 use App\Repository\IncidentBehaviorRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\StudentRepository;
+use App\Repository\TeacherRepository;
+use App\Security\Voter\EducationalCentreVoter;
 use App\Security\Voter\IncidentReportVoter;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +33,7 @@ class IncidentReportController extends AbstractController
         private readonly IncidentBehaviorRepository $behaviors,
         private readonly GroupRepository $groups,
         private readonly StudentRepository $students,
+        private readonly TeacherRepository $teachers,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -97,10 +100,25 @@ class IncidentReportController extends AbstractController
         $errors              = [];
         $formData            = [];
         $preloadedStudents   = [];
+        $canChooseTeacher    = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
+        $registeredBy        = $user;
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_incident', $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
+            }
+
+            if ($canChooseTeacher) {
+                $registeredByRaw = trim($request->request->getString('registered_by'));
+                if ($registeredByRaw !== '') {
+                    $activeYear      = $centre->getActiveAcademicYear();
+                    $selectedTeacher = $activeYear !== null ? $this->teachers->findByAcademicYearAndId($activeYear, $registeredByRaw) : null;
+                    if ($selectedTeacher === null) {
+                        $errors[] = $this->t('incident.error.invalid_teacher');
+                    } else {
+                        $registeredBy = $selectedTeacher;
+                    }
+                }
             }
 
             $studentPairs      = $request->request->all('students');
@@ -187,7 +205,7 @@ class IncidentReportController extends AbstractController
                            ->setNumber($nextNumbers[$yearKey])
                            ->setStudent($student)
                            ->setGroup($group)
-                           ->setRegisteredBy($user)
+                           ->setRegisteredBy($registeredBy)
                            ->setOccurredAt($occurredAt)
                            ->setDescription($description)
                            ->setExpelledFromClass($expelled)
@@ -250,6 +268,8 @@ class IncidentReportController extends AbstractController
             'errors'              => $errors,
             'formData'            => $formData,
             'preloadedStudents'   => $preloadedStudents,
+            'canChooseTeacher'    => $canChooseTeacher,
+            'selectedTeacher'     => $registeredBy,
         ]);
     }
 
@@ -307,6 +327,36 @@ class IncidentReportController extends AbstractController
                 ? trim($request->request->getString('prescribed_at'))
                 : null;
 
+            $canReassign  = $this->isGranted(IncidentReportVoter::REASSIGN, $report);
+            $registeredBy = $report->getRegisteredBy();
+            $student      = $report->getStudent();
+            $group        = $report->getGroup();
+
+            if ($canReassign) {
+                $registeredByRaw = trim($request->request->getString('registered_by'));
+                $registeredBy    = $this->teachers->findByAcademicYearAndId($report->getAcademicYear(), $registeredByRaw);
+                if ($registeredBy === null) {
+                    $errors[] = $this->t('incident.error.invalid_teacher');
+                }
+
+                $studentGroupParts = explode('::', trim($request->request->getString('student_group')), 2);
+                $student           = null;
+                $group             = null;
+                if (count($studentGroupParts) === 2) {
+                    [$studentId, $groupId] = $studentGroupParts;
+                    $student     = $this->students->findById($studentId);
+                    $groupResult = $this->groups->find($groupId);
+                    $group       = $groupResult instanceof \App\Entity\Group ? $groupResult : null;
+                }
+                if ($student === null || $group === null
+                    || $group->getProgrammeYear()->getProgramme()->getAcademicYear() !== $report->getAcademicYear()
+                ) {
+                    $errors[] = $this->t('incident.error.invalid_student');
+                    $student  = null;
+                    $group    = null;
+                }
+            }
+
             if (empty($behaviorIds)) {
                 $errors[] = $this->t('incident.error.no_behaviors');
             }
@@ -327,6 +377,11 @@ class IncidentReportController extends AbstractController
             if (empty($errors)) {
                 if ($occurredAt !== null) {
                     $report->setOccurredAt($occurredAt);
+                }
+                if ($canReassign && $registeredBy !== null && $student !== null && $group !== null) {
+                    $report->setRegisteredBy($registeredBy)
+                           ->setStudent($student)
+                           ->setGroup($group);
                 }
                 $report->setDescription($description)
                        ->setExpelledFromClass($expelled)

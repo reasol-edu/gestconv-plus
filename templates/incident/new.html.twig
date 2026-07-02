@@ -97,6 +97,25 @@
                 </select>
                 <p class="mt-1 text-xs text-gray-400">{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}</p>
             </div>
+
+            {% if canChooseTeacher and centre.activeAcademicYear is not null %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                        {{ 'incident.field.registered_by'|trans({}, 'admin') }}
+                    </label>
+                    <select name="registered_by" required
+                            data-controller="symfony--ux-autocomplete--autocomplete"
+                            data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
+                            data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
+                            data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
+                            data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
+                            class="w-full">
+                        <option value="{{ selectedTeacher.id }}" selected>
+                            {{ selectedTeacher.name.lastName }}, {{ selectedTeacher.name.firstName }}
+                        </option>
+                    </select>
+                </div>
+            {% endif %}
         </div>
 
         {# ── Datos del incidente ────────────────────────────────────────── #}
@@ -246,6 +265,9 @@ const select = new TomSelect('#students-select', {
             const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" style="width:.875rem;height:.875rem;opacity:.55;flex-shrink:0"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z"/></svg>`;
             const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${data.secondary}</span>` : '';
             return `<span style="display:inline-flex;align-items:center;gap:.25rem">${icon}${data.label}${secondary}</span>`;
+        },
+        no_results: function() {
+            return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;
         },
     },
     shouldLoad: (q) => q.length >= 2,

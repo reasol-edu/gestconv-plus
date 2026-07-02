@@ -261,7 +261,8 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->andWhere(
                 'LOWER(s.name.firstName) LIKE LOWER(:search)
                  OR LOWER(s.name.lastName) LIKE LOWER(:search)
-                 OR LOWER(s.studentId) LIKE LOWER(:search)'
+                 OR LOWER(s.studentId) LIKE LOWER(:search)
+                 OR LOWER(g.name) LIKE LOWER(:search)'
             )
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('search', '%' . $q . '%')

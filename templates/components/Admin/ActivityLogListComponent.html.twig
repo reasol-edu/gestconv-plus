@@ -63,7 +63,7 @@
                         data-controller="symfony--ux-autocomplete--autocomplete"
                         data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_admin'}) }}"
                         data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
-                        data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="Sin resultados"
+                        data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                         data-symfony--ux-autocomplete--autocomplete-placeholder-value="Buscar usuario…"
                         data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
                         class="rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm text-gray-900

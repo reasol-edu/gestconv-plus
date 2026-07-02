@@ -2,6 +2,30 @@
 
 {% block title %}{{ 'incident.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
 
+{% block stylesheets %}{{ parent() }}
+{% if is_granted('incident_report.reassign', report) %}
+<style>
+.ts-wrapper { font-size: 0.875rem; }
+.ts-control {
+    border-radius: 0.75rem !important;
+    border-color: #e5e7eb !important;
+    background-color: #f9fafb !important;
+    padding: 0.5rem 0.875rem !important;
+    box-shadow: none !important;
+    gap: 0.25rem;
+}
+.ts-control:focus-within {
+    border-color: var(--color-forest-500) !important;
+    background-color: #fff !important;
+    box-shadow: 0 0 0 3px rgb(119 150 203 / 0.18) !important;
+}
+.ts-dropdown { border-radius: 0.75rem; border-color: #e5e7eb; box-shadow: 0 4px 12px rgb(0 0 0 / 0.08); overflow: hidden; }
+.ts-dropdown .option { padding: 0.5rem 0.875rem; font-size: 0.875rem; }
+.ts-dropdown .active { background: var(--color-forest-50); color: var(--color-forest-800); }
+</style>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
 
@@ -31,15 +55,44 @@
     <form method="post" action="{{ path('app_incidents_edit', {id: report.id}) }}" class="space-y-8">
         <input type="hidden" name="_token" value="{{ csrf_token('edit_incident_' ~ report.id) }}">
 
-        {# ── Estudiante (readonly) ──────────────────────────────────────── #}
+        {# ── Estudiante y docente ───────────────────────────────────────── #}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6">
             <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3 mb-4">
                 {{ 'incident.section.student'|trans({}, 'admin') }}
             </h2>
-            <p class="text-sm text-gray-700 font-medium">
-                {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
-                <span class="ml-2 text-gray-400 font-normal">{{ report.group.name }}</span>
-            </p>
+
+            {% if is_granted('incident_report.reassign', report) %}
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            {{ 'incident.field.student'|trans({}, 'admin') }}
+                        </label>
+                        <select id="student-select" name="student_group" required class="w-full"></select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            {{ 'incident.field.registered_by'|trans({}, 'admin') }}
+                        </label>
+                        <select name="registered_by" required
+                                data-controller="symfony--ux-autocomplete--autocomplete"
+                                data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: report.academicYear.id}) }}"
+                                data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
+                                data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
+                                data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
+                                class="w-full">
+                            <option value="{{ report.registeredBy.id }}" selected>
+                                {{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-sm text-gray-700 font-medium">
+                    {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+                    <span class="ml-2 text-gray-400 font-normal">{{ report.group.name }}</span>
+                </p>
+            {% endif %}
         </div>
 
         {# ── Datos del incidente ────────────────────────────────────────── #}
@@ -168,4 +221,48 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+{% if is_granted('incident_report.reassign', report) %}
+<script type="module">
+import TomSelect from 'tom-select';
+
+const preload = {
+    value: {{ (report.student.id.toRfc4122 ~ '::' ~ report.group.id.toRfc4122)|json_encode|raw }},
+    label: {{ (report.student.name.lastName ~ ', ' ~ report.student.name.firstName)|json_encode|raw }},
+    secondary: {{ report.group.name|json_encode|raw }},
+};
+
+new TomSelect('#student-select', {
+    valueField: 'value',
+    labelField: 'label',
+    searchField: ['label', 'secondary'],
+    options: [preload],
+    items: [preload.value],
+    maxItems: 1,
+    load: function(query, callback) {
+        if (query.length < 2) return callback();
+        fetch('{{ path('app_incidents_search_students') }}?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(callback)
+            .catch(() => callback());
+    },
+    render: {
+        option: function(data) {
+            return `<div><span class="font-medium">${data.label}</span> <span class="text-xs text-gray-400 ml-1">${data.secondary || ''}</span></div>`;
+        },
+        item: function(data) {
+            const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${data.secondary}</span>` : '';
+            return `<span>${data.label}${secondary}</span>`;
+        },
+        no_results: function() {
+            return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;
+        },
+    },
+    shouldLoad: (q) => q.length >= 2,
+    dropdownParent: 'body',
+});
+</script>
+{% endif %}
 {% endblock %}

@@ -172,6 +172,125 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    public function testNewGetShowsTeacherFieldToCentreAdmin(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('cadmin.new.fields');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('select[name="registered_by"]');
+    }
+
+    public function testNewGetHidesTeacherFieldFromRegularTeacher(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('select[name="registered_by"]');
+    }
+
+    public function testNewPostAsCentreAdminAssignsChosenTeacher(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $year = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+
+        $cadmin     = $this->makeTeacher('cadmin.new.assign');
+        $newTeacher = $this->makeTeacher('new.teacher.assign');
+        $this->persist($cadmin, $newTeacher);
+        $centre->addAdmin($cadmin);
+        $year->addTeacher($newTeacher);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $studentPair = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
+
+        $this->client->request('POST', '/partes/nuevo', [
+            '_token'        => $token,
+            'students'      => [$studentPair],
+            'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'description'   => '<p>Registrado por otro docente.</p>',
+            'registered_by' => $newTeacher->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseRedirects('/partes');
+
+        $this->em->clear();
+        $reports = $this->em->getRepository(IncidentReport::class)->findAll();
+        self::assertCount(1, $reports);
+        self::assertSame($newTeacher->getId()->toRfc4122(), $reports[0]->getRegisteredBy()->getId()->toRfc4122());
+    }
+
+    public function testNewPostAsRegularTeacherCannotChooseTeacher(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $otherTeacher = $this->makeTeacher('other.new.assign');
+        $this->persist($otherTeacher);
+        $group->getProgrammeYear()->getProgramme()->getAcademicYear()->addTeacher($otherTeacher);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $studentPair = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
+
+        $this->client->request('POST', '/partes/nuevo', [
+            '_token'        => $token,
+            'students'      => [$studentPair],
+            'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'description'   => '<p>Intento de asignación.</p>',
+            'registered_by' => $otherTeacher->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseRedirects('/partes');
+
+        $this->em->clear();
+        $reports = $this->em->getRepository(IncidentReport::class)->findAll();
+        self::assertCount(1, $reports);
+        self::assertSame($teacher->getId()->toRfc4122(), $reports[0]->getRegisteredBy()->getId()->toRfc4122());
+    }
+
+    public function testNewPostWithInvalidTeacherIdShowsError(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('cadmin.new.invalid');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $studentPair = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
+
+        $this->client->request('POST', '/partes/nuevo', [
+            '_token'        => $token,
+            'students'      => [$studentPair],
+            'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'description'   => '<p>Test.</p>',
+            'registered_by' => '00000000-0000-0000-0000-000000000000',
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'docente');
+    }
+
     // ── show ──────────────────────────────────────────────────────────────────
 
     public function testShowIsAccessibleToCreator(): void
@@ -273,6 +392,134 @@ class IncidentReportControllerTest extends ControllerTestCase
         $updated = $this->em->find(IncidentReport::class, $report->getId());
         self::assertNotNull($updated);
         self::assertSame('<p>Descripción actualizada.</p>', $updated->getDescription());
+    }
+
+    public function testEditGetShowsReassignFieldsToCentreAdmin(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('cadmin.edit.fields');
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('select[name="registered_by"]');
+        self::assertSelectorExists('select[name="student_group"]');
+    }
+
+    public function testEditGetHidesReassignFieldsFromCreator(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('select[name="registered_by"]');
+        self::assertSelectorNotExists('select[name="student_group"]');
+    }
+
+    public function testEditPostAsCentreAdminReassignsTeacherAndStudent(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $year = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+
+        $cadmin      = $this->makeTeacher('cadmin.reassign');
+        $newTeacher  = $this->makeTeacher('new.teacher.reassign');
+        $newStudent  = (new \App\Entity\Student(new PersonName('Marta', 'Ruiz')))->setStudentId('NIE-REASSIGN');
+        $this->persist($cadmin, $newTeacher, $newStudent);
+        $centre->addAdmin($cadmin);
+        $year->addTeacher($newTeacher);
+        $newStudent->addGroup($group);
+        $this->flush();
+
+        $report   = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($cadmin, $centre);
+
+        $reportId = $report->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId . '/editar');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $reportId . '/editar', [
+            '_token'        => $token,
+            'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'description'   => '<p>Reasignado.</p>',
+            'registered_by' => $newTeacher->getId()->toRfc4122(),
+            'student_group' => $newStudent->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $reportId);
+
+        $this->em->clear();
+        $updated = $this->em->find(IncidentReport::class, $report->getId());
+        self::assertNotNull($updated);
+        self::assertSame($newTeacher->getId()->toRfc4122(), $updated->getRegisteredBy()->getId()->toRfc4122());
+        self::assertSame($newStudent->getId()->toRfc4122(), $updated->getStudent()->getId()->toRfc4122());
+    }
+
+    public function testEditPostAsCreatorCannotReassignTeacher(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $otherTeacher = $this->makeTeacher('other.attempt.reassign');
+        $this->persist($otherTeacher);
+        $group->getProgrammeYear()->getProgramme()->getAcademicYear()->addTeacher($otherTeacher);
+        $this->flush();
+
+        $report   = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $reportId = $report->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId . '/editar');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $reportId . '/editar', [
+            '_token'        => $token,
+            'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'description'   => '<p>Intento de reasignación.</p>',
+            'registered_by' => $otherTeacher->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $reportId);
+
+        $this->em->clear();
+        $updated = $this->em->find(IncidentReport::class, $report->getId());
+        self::assertNotNull($updated);
+        self::assertSame($teacher->getId()->toRfc4122(), $updated->getRegisteredBy()->getId()->toRfc4122());
+    }
+
+    public function testEditPostWithInvalidTeacherIdShowsError(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('cadmin.invalid.teacher');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        $report   = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($cadmin, $centre);
+
+        $reportId = $report->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId . '/editar');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $reportId . '/editar', [
+            '_token'        => $token,
+            'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'description'   => '<p>Test.</p>',
+            'registered_by' => '00000000-0000-0000-0000-000000000000',
+            'student_group' => $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'docente');
     }
 
     // ── delete ────────────────────────────────────────────────────────────────

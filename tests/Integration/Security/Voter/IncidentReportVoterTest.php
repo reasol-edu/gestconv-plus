@@ -94,6 +94,18 @@ class IncidentReportVoterTest extends RepositoryTestCase
         );
     }
 
+    public function testGlobalAdminIsGrantedReassign(): void
+    {
+        [$report] = $this->makeScenario();
+        $admin    = $this->makeTeacher('global.admin.reassign', admin: true);
+        $this->persist($admin);
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($admin), $report, [IncidentReportVoter::REASSIGN])
+        );
+    }
+
     // ── Administrador de centro ──────────────────────────────────────────────
 
     public function testCentreAdminIsGrantedView(): void
@@ -121,6 +133,20 @@ class IncidentReportVoterTest extends RepositoryTestCase
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
             $this->voter->vote($this->token($cadmin), $report, [IncidentReportVoter::DELETE])
+        );
+    }
+
+    public function testCentreAdminIsGrantedReassign(): void
+    {
+        [$report, $centre] = $this->makeScenario();
+        $cadmin            = $this->makeTeacher('centre.admin.reassign');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($cadmin), $report, [IncidentReportVoter::REASSIGN])
         );
     }
 
@@ -229,6 +255,16 @@ class IncidentReportVoterTest extends RepositoryTestCase
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
             $this->voter->vote($this->token($report->getRegisteredBy()), $report, [IncidentReportVoter::DELETE])
+        );
+    }
+
+    public function testCreatorIsDeniedReassign(): void
+    {
+        [$report] = $this->makeScenario();
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($report->getRegisteredBy()), $report, [IncidentReportVoter::REASSIGN])
         );
     }
 
