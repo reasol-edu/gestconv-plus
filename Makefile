@@ -86,7 +86,7 @@ docs-pdf:
 		--lua-filter=docs/pandoc-admonitions.lua \
 		--lua-filter=docs/pandoc-internal-links.lua \
 		--metadata title="Manual de usuario de GestConv+" \
-		--metadata subtitle="Preparación de la Fase de Formación en Empresa u Organismo Equiparado (FFEOE)" \
+		--metadata subtitle="Gestión de la convivencia escolar" \
 		--metadata date="Versión $(VERSION) · $(PUB_DATE)" \
 		--metadata lang=es \
 		-c assets/theme.css -c assets/print.css \

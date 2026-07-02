@@ -42,7 +42,33 @@ El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista
 
 ### Estructurar la oferta formativa
 
+La card **Oferta formativa** del hub de centro educativo abre un editor de tres columnas
+(enseñanzas → niveles → grupos, también llamado «columnas de Miller») para el curso académico
+activo del centro. Seleccionar un elemento de una columna muestra sus elementos dependientes en la
+columna siguiente; las altas, ediciones y bajas se aplican al instante, sin recargar la página.
+
+- **Enseñanzas** — se crean indicando su familia profesional y su nombre. Desde el panel de detalle
+  se les puede asignar un coordinador.
+- **Niveles** — cursos dentro de una enseñanza (por ejemplo, 1º y 2º de un ciclo). Admiten uno o
+  varios coordinadores.
+- **Grupos** — unidades dentro de un nivel (por ejemplo, 1ºA, 1ºB). Admiten uno o varios tutores y
+  el resto del profesorado que imparte clase en ellos.
+
+Si el centro no tiene un curso académico activo, la sección muestra un aviso y no permite gestionar
+la oferta formativa. Ver también el paso a paso completo en
+[Primeros pasos](02-primeros-pasos.md#3-estructurar-la-oferta-formativa-del-curso-academico-equipo-directivo).
+
 ### Exportar e importar la oferta formativa
+
+Los botones **Exportar JSON** e **Importar JSON**, disponibles junto al editor, permiten copiar la
+oferta formativa completa (enseñanzas, niveles y grupos) de un curso o centro a otro sin
+reconstruirla a mano. El fichero JSON es un formato propio de GestConv+, no algo que se descargue de
+Séneca.
+
+Al importar puede marcarse la opción de incluir también las asignaciones de **tutores** y
+**docentes de grupo**; si algún docente mencionado en el fichero no existe en el centro de destino,
+se omite su asignación y se informa de los nombres no encontrados al finalizar la importación. Los
+botones de exportar/importar no están disponibles al consultar un curso académico histórico.
 
 ### Perfiles
 
@@ -205,4 +231,8 @@ El listado de actividad admite filtrado por usuario, centro educativo, curso aca
 
 #### Retención y privacidad
 
-Los registros de actividad se pueden purgar manualmente mediante el comando de consola `app:purge-activity-log`. Consulta el capítulo [Comandos de consola](08-comandos-de-consola.md) para más detalles.
+Los registros de actividad se purgan automáticamente cada semana mediante una tarea programada
+(no existe un comando de consola para lanzar la purga manualmente): se eliminan los registros
+anteriores al número de días configurado en la variable de entorno `APP_LOG_RETENTION_DAYS` (90
+días por defecto). Consulta el capítulo [Operación y mantenimiento](10-operacion-y-mantenimiento.md)
+para más detalles sobre esta tarea programada.
