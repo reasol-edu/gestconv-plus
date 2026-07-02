@@ -698,7 +698,7 @@ sanction.empty_search: 'Sin resultados para este filtro.'
 sanction.badge.no_measure: 'Sin corrección'
 sanction.badge.has_date_range: 'implica fechas'
 
-sanction.no_eligible_reports: 'No hay partes disponibles para este estudiante y grupo (todos están prescritos o ya tienen sanción asignada).'
+sanction.no_eligible_reports: 'No hay partes disponibles para este estudiante y grupo: o bien están prescritos o ya tienen sanción asignada, o bien está pendiente de notificarse a la familia (puedes hacerlo desde la sección «Notificaciones»).'
 
 sanction.error.no_reports: 'Debes seleccionar al menos un parte de convivencia.'
 sanction.error.no_measures: 'Debes seleccionar al menos una medida disciplinaria.'
