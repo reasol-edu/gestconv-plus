@@ -103,13 +103,15 @@ class SanctionRepository extends ServiceEntityRepository
                 g.name AS groupName,
                 (SELECT COUNT(r1.id) FROM App\Entity\IncidentReport r1
                  WHERE r1.student = s AND r1.group = g
-                 AND r1.prescribedAt IS NULL AND r1.sanction IS NULL) AS sanctionableCount,
+                 AND r1.prescribedAt IS NULL AND r1.sanction IS NULL
+                 AND r1.notifiedCommunication IS NOT NULL) AS sanctionableCount,
                 (SELECT COUNT(DISTINCT r2.id)
                  FROM App\Entity\IncidentReport r2
                  JOIN r2.behaviors b2
                  JOIN b2.category bc2
                  WHERE r2.student = s AND r2.group = g
                  AND r2.prescribedAt IS NULL AND r2.sanction IS NULL
+                 AND r2.notifiedCommunication IS NOT NULL
                  AND bc2.serious = :serious) AS seriousCount,
                 (SELECT COUNT(r3.id) FROM App\Entity\IncidentReport r3
                  WHERE r3.student = s AND r3.group = g
@@ -196,6 +198,45 @@ class SanctionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns sanctions pending notification (no successful communication yet) visible to the viewer,
+     * ordered by creation date ascending (oldest first).
+     *
+     * @return list<Sanction>
+     */
+    public function findPendingNotification(EducationalCentre $centre, Teacher $viewer): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->join('s.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('s.notifiedCommunication IS NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->orderBy('s.createdAt', 'ASC');
+
+        $hasFullAccess = $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+        if (!$viewer->isAdmin() && !$hasFullAccess) {
+            $qb->distinct()
+               ->join('s.reports', 'r')
+               ->andWhere(
+                   $qb->expr()->orX(
+                       'r.registeredBy = :viewer',
+                       ':viewer MEMBER OF g.tutors',
+                   )
+               )
+               ->setParameter('viewer', $viewer->getId(), 'uuid');
+        }
+
+        /** @var list<Sanction> $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $result;
+    }
+
+    /**
      * Returns all sanctions with a start date set for the given academic year, ordered by start date.
      * Not filtered by viewer: the calendar shows every dated sanction of the year to any teacher.
      *
@@ -210,6 +251,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->join('s.group', 'g')
             ->where('s.academicYear = :year')
             ->andWhere('s.effectiveFrom IS NOT NULL')
+            ->andWhere('s.notifiedCommunication IS NOT NULL')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('s.effectiveFrom', 'ASC')
             ->getQuery()
@@ -233,6 +275,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('r.group = :group')
             ->andWhere('r.prescribedAt IS NULL')
             ->andWhere('r.sanction IS NULL')
+            ->andWhere('r.notifiedCommunication IS NOT NULL')
             ->setParameter('student', $student->getId(), 'uuid')
             ->setParameter('group', $group->getId(), 'uuid')
             ->orderBy('r.occurredAt', 'DESC')

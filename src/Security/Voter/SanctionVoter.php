@@ -6,6 +6,7 @@ namespace App\Security\Voter;
 
 use App\Entity\Sanction;
 use App\Entity\Teacher;
+use App\Service\AppSettingsInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -19,10 +20,15 @@ final class SanctionVoter extends Voter
     public const CREATE = 'sanction.create';
     public const EDIT   = 'sanction.edit';
     public const DELETE = 'sanction.delete';
+    public const NOTIFY = 'sanction.notify';
+
+    public function __construct(
+        private readonly AppSettingsInterface $settings,
+    ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::NOTIFY], true)
             && $subject instanceof Sanction;
     }
 
@@ -55,6 +61,12 @@ final class SanctionVoter extends Voter
                     $r->getRegisteredBy() === $user
             ) || $subject->getGroup()->getTutors()->contains($user)
                 || $centre->getCounselors()->contains($user),
+            self::NOTIFY => match ($this->settings->getForCentre('notifications.sanction_notifier', $centre)) {
+                'report_teacher' => $subject->getRegisteredBy() === $user,
+                'group_tutor'    => $subject->getGroup()->getTutors()->contains($user),
+                default          => $subject->getRegisteredBy() === $user
+                                     || $subject->getGroup()->getTutors()->contains($user),
+            },
             self::EDIT,
             self::DELETE => false,
             default      => false,

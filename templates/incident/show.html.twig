@@ -17,6 +17,26 @@
             <p class="mt-1 text-sm text-gray-500">
                 {{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}
             </p>
+            <div class="mt-2">
+                {% set notifyUrl = is_granted('incident_report.notify', report) ? path('app_notifications_register_report', {id: report.id}) : null %}
+                {% if report.isNotified %}
+                    {% set badgeClasses, badgeIcon, badgeLabel = 'bg-green-100 text-green-700', 'heroicons:check-circle', 'notification.badge.notified'|trans({}, 'notifications') %}
+                {% else %}
+                    {% set badgeClasses, badgeIcon, badgeLabel = 'bg-amber-100 text-amber-800', 'heroicons:bell-alert', 'notification.badge.pending'|trans({}, 'notifications') %}
+                {% endif %}
+                {% if notifyUrl %}
+                    <a href="{{ notifyUrl }}"
+                       class="inline-flex items-center gap-1.5 rounded-full {{ badgeClasses }} px-2.5 py-0.5 text-xs font-medium hover:opacity-80 transition-opacity">
+                        {{ ux_icon(badgeIcon, {class: 'h-3 w-3'}) }}
+                        {{ badgeLabel }}
+                    </a>
+                {% else %}
+                    <span class="inline-flex items-center gap-1.5 rounded-full {{ badgeClasses }} px-2.5 py-0.5 text-xs font-medium">
+                        {{ ux_icon(badgeIcon, {class: 'h-3 w-3'}) }}
+                        {{ badgeLabel }}
+                    </span>
+                {% endif %}
+            </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
             {% if is_granted('incident_report.edit', report) %}

@@ -6,6 +6,9 @@ namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
 use App\Entity\CentreSettingValue;
+use App\Entity\Communication;
+use App\Entity\CommunicationMethod;
+use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
@@ -94,6 +97,7 @@ class CalendarControllerTest extends ControllerTestCase
             ->setNoMeasureApplied(true)
             ->setEffectiveFrom($this->weekdayInCurrentMonth());
         $this->persist($sanction);
+        $this->notifySanction($sanction, $world['centre'], $creator);
 
         $this->loginAs($viewer, $world['centre']);
 
@@ -214,6 +218,7 @@ class CalendarControllerTest extends ControllerTestCase
             ->setEffectiveFrom($monday)
             ->setEffectiveTo($friday);
         $this->persist($sanction);
+        $this->notifySanction($sanction, $world['centre'], $creator);
 
         $this->loginAs($creator, $world['centre']);
 
@@ -378,6 +383,21 @@ class CalendarControllerTest extends ControllerTestCase
         $this->flush();
 
         return $centre;
+    }
+
+    private function notifySanction(Sanction $sanction, EducationalCentre $centre, Teacher $teacher): void
+    {
+        $method = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $this->persist($method);
+
+        $communication = Communication::forSanction($sanction, $method, $teacher, new \DateTimeImmutable(), CommunicationResult::Notified);
+        $this->persist($communication);
+        $sanction->setNotifiedCommunication($communication);
+        $this->flush();
     }
 
     private function makeAdmin(string $username): Teacher

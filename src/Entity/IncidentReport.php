@@ -67,9 +67,18 @@ class IncidentReport
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Sanction $sanction = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Communication $notifiedCommunication = null;
+
+    /** @var Collection<int, Communication> */
+    #[ORM\OneToMany(targetEntity: Communication::class, mappedBy: 'incidentReport', orphanRemoval: true)]
+    private Collection $communications;
+
     public function __construct()
     {
-        $this->behaviors = new ArrayCollection();
+        $this->behaviors      = new ArrayCollection();
+        $this->communications = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -248,5 +257,28 @@ class IncidentReport
         $this->sanction = $sanction;
 
         return $this;
+    }
+
+    public function getNotifiedCommunication(): ?Communication
+    {
+        return $this->notifiedCommunication;
+    }
+
+    public function setNotifiedCommunication(?Communication $notifiedCommunication): static
+    {
+        $this->notifiedCommunication = $notifiedCommunication;
+
+        return $this;
+    }
+
+    public function isNotified(): bool
+    {
+        return $this->notifiedCommunication !== null;
+    }
+
+    /** @return Collection<int, Communication> */
+    public function getCommunications(): Collection
+    {
+        return $this->communications;
     }
 }

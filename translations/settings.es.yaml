@@ -41,6 +41,18 @@ settings.key.board_current_week_seconds.description: 'Segundos que se muestra la
 settings.key.board_next_week_seconds.label: 'Duración de la semana siguiente (modo tablón)'
 settings.key.board_next_week_seconds.description: 'Segundos que se muestra la semana siguiente en el modo tablón antes de volver a la semana actual (0-3600). Un valor de 0 en este ajuste o en "Duración de la semana actual" desactiva la visualización de la semana siguiente.'
 
+settings.key.notifications_report_notifier.label: 'Quién notifica los partes de convivencia'
+settings.key.notifications_report_notifier.description: 'Determina qué docentes pueden registrar la comunicación con la familia de un parte, además de la administración.'
+settings.key.notifications_report_notifier.choice.report_teacher: 'El docente del parte'
+settings.key.notifications_report_notifier.choice.group_tutor: 'El tutor/a de grupo'
+settings.key.notifications_report_notifier.choice.both: 'Ambos'
+
+settings.key.notifications_sanction_notifier.label: 'Quién notifica las sanciones'
+settings.key.notifications_sanction_notifier.description: 'Determina qué docentes pueden registrar la comunicación con la familia de una sanción, además de la administración.'
+settings.key.notifications_sanction_notifier.choice.report_teacher: 'El docente de la sanción'
+settings.key.notifications_sanction_notifier.choice.group_tutor: 'El tutor/a de grupo'
+settings.key.notifications_sanction_notifier.choice.both: 'Ambos'
+
 # ── Errores de validación ──────────────────────────────────────────────────────
 settings.error.integer_range: 'Debe ser un número entre %min% y %max%'
 settings.error.invalid_value: 'Valor no válido'

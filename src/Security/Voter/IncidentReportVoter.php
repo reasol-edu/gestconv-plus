@@ -6,6 +6,7 @@ namespace App\Security\Voter;
 
 use App\Entity\IncidentReport;
 use App\Entity\Teacher;
+use App\Service\AppSettingsInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -20,10 +21,15 @@ final class IncidentReportVoter extends Voter
     public const DELETE    = 'incident_report.delete';
     public const PRESCRIBE = 'incident_report.prescribe';
     public const REASSIGN  = 'incident_report.reassign';
+    public const NOTIFY    = 'incident_report.notify';
+
+    public function __construct(
+        private readonly AppSettingsInterface $settings,
+    ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::PRESCRIBE, self::REASSIGN], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::PRESCRIBE, self::REASSIGN, self::NOTIFY], true)
             && $subject instanceof IncidentReport;
     }
 
@@ -60,6 +66,12 @@ final class IncidentReportVoter extends Voter
                                || $centre->getCommitteeMembers()->contains($user)
                                || $centre->getCounselors()->contains($user),
             self::EDIT      => $subject->getRegisteredBy() === $user,
+            self::NOTIFY    => match ($this->settings->getForCentre('notifications.report_notifier', $centre)) {
+                'report_teacher' => $subject->getRegisteredBy() === $user,
+                'group_tutor'    => $subject->getGroup()->getTutors()->contains($user),
+                default          => $subject->getRegisteredBy() === $user
+                                     || $subject->getGroup()->getTutors()->contains($user),
+            },
             self::DELETE,
             self::PRESCRIBE,
             self::REASSIGN  => false,

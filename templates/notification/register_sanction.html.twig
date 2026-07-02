@@ -1,0 +1,60 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'notification.register_sanction.title'|trans({}, 'notifications') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            <a href="{{ path('app_notifications_index') }}" class="hover:text-forest-600 transition-colors">{{ 'notification.title'|trans({}, 'notifications') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
+        </h1>
+        <p class="mt-1 text-sm text-gray-500">
+            {{ sanction.group.name }} · {{ sanction.createdAt|date('d/m/Y') }}
+        </p>
+        <p class="mt-2">
+            <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}" class="text-sm text-forest-700 hover:text-forest-900 font-medium transition-colors">
+                {{ 'notification.register_sanction.view_sanction'|trans({}, 'notifications') }}
+            </a>
+        </p>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="rounded-xl px-4 py-3 text-sm font-medium
+                        {{ label == 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {% if sanction.isNotified %}
+        <div class="rounded-xl px-4 py-3 text-sm font-medium bg-green-50 text-green-800 border border-green-200 flex items-center gap-2">
+            {{ ux_icon('heroicons:check-circle', {class: 'h-4 w-4 shrink-0'}) }}
+            {{ 'notification.register_sanction.already_notified'|trans({}, 'notifications') }}
+        </div>
+    {% endif %}
+
+    {% if methods is empty %}
+        <div class="rounded-xl px-4 py-3 text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200">
+            {{ 'notification.form.no_methods'|trans({}, 'notifications') }}
+        </div>
+    {% else %}
+        {% include 'notification/_communication_form.html.twig' with {
+            action_url: path('app_notifications_register_sanction', {id: sanction.id}),
+            target_id: sanction.id,
+            methods: methods,
+        } %}
+    {% endif %}
+
+    <div>
+        <h2 class="text-base font-semibold text-gray-900 mb-3">{{ 'notification.history.title'|trans({}, 'notifications') }}</h2>
+        {% include 'notification/_communication_history.html.twig' with { history: history } %}
+    </div>
+
+</div>
+{% endblock %}

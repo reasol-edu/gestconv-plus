@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\Communication;
+use App\Entity\CommunicationMethod;
+use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -255,6 +258,26 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertCount(0, $results);
     }
 
+    public function testFindWithDatesForAcademicYearExcludesUnnotifiedSanctions(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('dates.unnotified');
+        $this->persist($teacher);
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($teacher)
+            ->setDetails('Sin notificar')
+            ->setNoMeasureApplied(false)
+            ->setEffectiveFrom(new \DateTimeImmutable('2026-02-10'));
+        $this->persist($sanction);
+
+        $results = $this->repo->findWithDatesForAcademicYear($world['year']);
+
+        self::assertCount(0, $results);
+    }
+
     // ── findEligibleReports ──────────────────────────────────────────────────
 
     public function testFindEligibleReportsReturnsUnprescribedUnsanctionedReports(): void
@@ -311,6 +334,49 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertCount(1, $results);
     }
 
+    public function testFindEligibleReportsExcludesUnnotifiedReports(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('eligible.unnotified');
+        $this->persist($teacher);
+        $this->makeUnnotifiedReport($world, $teacher);
+
+        $results = $this->repo->findEligibleReports($world['student'], $world['group']);
+
+        self::assertCount(0, $results);
+    }
+
+    // ── findPendingNotification ───────────────────────────────────────────────
+
+    public function testFindPendingNotificationExcludesNotifiedSanctions(): void
+    {
+        $world   = $this->makeWorld();
+        $admin   = $this->makeTeacher('pending.admin', admin: true);
+        $this->persist($admin);
+        $pending = $this->makeUnnotifiedSanctionWithReport($world, $admin);
+        $this->makeSanctionWithReport($world, $admin);
+
+        $results = $this->repo->findPendingNotification($world['centre'], $admin);
+
+        self::assertCount(1, $results);
+        self::assertSame($pending->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testFindPendingNotificationRestrictsVisibilityForRegularTeacher(): void
+    {
+        $world = $this->makeWorld();
+        $t1    = $this->makeTeacher('pending.t1');
+        $t2    = $this->makeTeacher('pending.t2');
+        $this->persist($t1, $t2);
+        $own   = $this->makeUnnotifiedSanctionWithReport($world, $t1);
+        $this->makeUnnotifiedSanctionWithReport($world, $t2);
+
+        $results = $this->repo->findPendingNotification($world['centre'], $t1);
+
+        self::assertCount(1, $results);
+        self::assertSame($own->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
     // ── findStudentStatsForCentre ────────────────────────────────────────────
 
     public function testFindStudentStatsReturnsEmptyWhenNoCentreActiveYear(): void
@@ -339,6 +405,24 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame(1, $result['total']);
         self::assertSame(2, $result['rows'][0]['sanctionableCount']);
         self::assertSame(0, $result['rows'][0]['seriousCount']);
+    }
+
+    public function testFindStudentStatsDoesNotCountUnnotifiedReportsAsSanctionable(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('stats.unnotified');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        // One notified report so the student appears in the list, one unnotified that must not count
+        $this->makeReport($world, $teacher);
+        $this->makeUnnotifiedReport($world, $teacher);
+
+        $result = $this->repo->findStudentStatsForCentre($world['centre']);
+
+        self::assertSame(1, $result['total']);
+        self::assertSame(1, $result['rows'][0]['sanctionableCount']);
     }
 
     public function testFindStudentStatsCountsSeriousReports(): void
@@ -373,6 +457,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
             ->setExpelledFromClass(false);
         $serious->addBehavior($seriousBeh);
         $this->persist($serious);
+        $this->notify($serious, $world, $teacher);
 
         $result = $this->repo->findStudentStatsForCentre($world['centre']);
 
@@ -429,6 +514,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
                 ->setExpelledFromClass(false);
             $r->addBehavior($world['behavior']);
             $this->persist($r);
+            $this->notify($r, $world, $teacher);
         }
 
         $result = $this->repo->findStudentStatsForCentre($world['centre']);
@@ -515,7 +601,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**
-     * @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior}
+     * @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod}
      */
     private function makeWorld(string $suffix = ''): array
     {
@@ -536,15 +622,20 @@ class SanctionRepositoryTest extends RepositoryTestCase
             ->setName('Perturbación')
             ->setPosition(0)
             ->setActive(true);
+        $method    = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
 
         $centre->setActiveAcademicYear($year);
-        $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior);
+        $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior, $method);
 
-        return compact('centre', 'year', 'group', 'student', 'behavior');
+        return compact('centre', 'year', 'group', 'student', 'behavior', 'method');
     }
 
     /**
-     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod} $world
      */
     private function makeSanction(array $world, Teacher $creator): Sanction
     {
@@ -556,6 +647,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
             ->setDetails('Detalles de prueba')
             ->setNoMeasureApplied(false);
         $this->persist($sanction);
+        $this->notify($sanction, $world, $creator);
 
         return $sanction;
     }
@@ -563,7 +655,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
     /**
      * Creates a sanction and immediately links a report to it (needed for non-admin visibility queries).
      *
-     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod} $world
      */
     private function makeSanctionWithReport(array $world, Teacher $creator): Sanction
     {
@@ -574,7 +666,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
     }
 
     /**
-     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod} $world
      */
     private function makeReport(
         array $world,
@@ -597,8 +689,77 @@ class SanctionRepositoryTest extends RepositoryTestCase
         }
 
         $this->persist($report);
+        $this->notify($report, $world, $creator);
 
         return $report;
+    }
+
+    /**
+     * Creates a report without registering any communication (stays pending notification).
+     *
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod} $world
+     */
+    private function makeUnnotifiedReport(array $world, Teacher $creator): IncidentReport
+    {
+        $report = (new IncidentReport())
+            ->setAcademicYear($world['year'])
+            ->setNumber(++$this->nextReportNumber)
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Sin notificar</p>')
+            ->setExpelledFromClass(false);
+        $report->addBehavior($world['behavior']);
+        $this->persist($report);
+
+        return $report;
+    }
+
+    /**
+     * Creates a sanction with a linked report, neither of which is notified.
+     *
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod} $world
+     */
+    private function makeUnnotifiedSanctionWithReport(array $world, Teacher $creator): Sanction
+    {
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('Sin notificar')
+            ->setNoMeasureApplied(false);
+        $this->persist($sanction);
+
+        $report = (new IncidentReport())
+            ->setAcademicYear($world['year'])
+            ->setNumber(++$this->nextReportNumber)
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Sin notificar</p>')
+            ->setExpelledFromClass(false)
+            ->setSanction($sanction);
+        $report->addBehavior($world['behavior']);
+        $sanction->getReports()->add($report);
+        $this->persist($report);
+
+        return $sanction;
+    }
+
+    /**
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod} $world
+     */
+    private function notify(IncidentReport|Sanction $target, array $world, Teacher $teacher): void
+    {
+        $communication = $target instanceof IncidentReport
+            ? Communication::forIncidentReport($target, $world['method'], $teacher, new \DateTimeImmutable(), CommunicationResult::Notified)
+            : Communication::forSanction($target, $world['method'], $teacher, new \DateTimeImmutable(), CommunicationResult::Notified);
+        $this->persist($communication);
+        $target->setNotifiedCommunication($communication);
+        $this->flush();
     }
 
     private function makeTeacher(string $username, bool $admin = false): Teacher

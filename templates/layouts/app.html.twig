@@ -119,6 +119,18 @@
                 </a>
             {% endif %}
 
+            {# Notificaciones — todos los docentes con centro activo #}
+            {% if active_centre %}
+                {% set notifications_active = current_route starts with 'app_notifications' %}
+                <a href="{{ path('app_notifications_index') }}"
+                    {{ notifications_active ? 'aria-current="page"' : '' }}
+                   class="{{ notifications_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:bell-alert', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'notifications'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
             {# Calendario #}
             {{ _self.nav_item(
                 'calendar'|trans({}, 'navigation'),

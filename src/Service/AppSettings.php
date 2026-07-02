@@ -69,7 +69,8 @@ final class AppSettings implements AppSettingsInterface
         return match ($definition->getType()) {
             SettingType::Boolean => $raw === 'true',
             SettingType::Integer => (int) $raw,
-            SettingType::String  => $raw,
+            SettingType::String,
+            SettingType::Choice  => $raw,
         };
     }
 
@@ -95,7 +96,8 @@ final class AppSettings implements AppSettingsInterface
         return match ($definition->getType()) {
             SettingType::Boolean => $raw === 'true',
             SettingType::Integer => (int) $raw,
-            SettingType::String  => $raw,
+            SettingType::String,
+            SettingType::Choice  => $raw,
         };
     }
 
@@ -134,7 +136,8 @@ final class AppSettings implements AppSettingsInterface
             $this->resolved[$key] = match ($definition->getType()) {
                 SettingType::Boolean => $raw === 'true',
                 SettingType::Integer => (int) $raw,
-                SettingType::String  => $raw,
+                SettingType::String,
+                SettingType::Choice  => $raw,
             };
         }
     }

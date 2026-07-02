@@ -115,6 +115,16 @@ class AppSettingsTest extends TestCase
         self::assertSame('hello', $service->get('some.string'));
     }
 
+    public function testChoiceTypeCasting(): void
+    {
+        $def = $this->makeDef('notifications.report_notifier', SettingType::Choice, 'both');
+
+        $service = $this->makeService(defs: ['notifications.report_notifier' => $def]);
+
+        self::assertIsString($service->get('notifications.report_notifier'));
+        self::assertSame('both', $service->get('notifications.report_notifier'));
+    }
+
     // ── Single load ───────────────────────────────────────────────────────────
 
     public function testRepositoriesAreCalledOnlyOnce(): void
@@ -374,6 +384,24 @@ class AppSettingsTest extends TestCase
         $service = $this->makeServiceWithCentreRepo(defs: [], globals: [], centreRepo: $centreRepo);
 
         self::assertNull($service->getForCentre('nonexistent.key', $centre));
+    }
+
+    public function testGetForCentreResolvesChoiceValue(): void
+    {
+        $def    = $this->makeDef('notifications.report_notifier', SettingType::Choice, 'both');
+        $centre = $this->createStub(EducationalCentre::class);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')
+            ->willReturn(['notifications.report_notifier' => $this->makeCentreValue('group_tutor')]);
+
+        $service = $this->makeServiceWithCentreRepo(
+            defs:       ['notifications.report_notifier' => $def],
+            globals:    [],
+            centreRepo: $centreRepo,
+        );
+
+        self::assertSame('group_tutor', $service->getForCentre('notifications.report_notifier', $centre));
     }
 
     // ── Lock: global locked overrides all ─────────────────────────────────────

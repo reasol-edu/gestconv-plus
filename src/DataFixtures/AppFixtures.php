@@ -12,6 +12,7 @@ use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Service\CommunicationMethodSeeder;
 use App\Service\IncidentBehaviorSeeder;
 use App\Service\SanctionMeasureSeeder;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -26,6 +27,7 @@ class AppFixtures extends Fixture
         private readonly Connection $connection,
         private readonly IncidentBehaviorSeeder $behaviorSeeder,
         private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
+        private readonly CommunicationMethodSeeder $communicationMethodSeeder,
     ) {}
 
     public function load(ObjectManager $manager): void
@@ -236,6 +238,7 @@ class AppFixtures extends Fixture
 
         $this->behaviorSeeder->seedForCentre($centre);
         $this->sanctionMeasureSeeder->seedForCentre($centre);
+        $this->communicationMethodSeeder->seedForCentre($centre);
         $centre->addAdmin($teachers['rafael.exposito']);
         $centre->addAdmin($teachers['carmen.diaz']);
         foreach ($teachers as $t) {
@@ -285,6 +288,7 @@ class AppFixtures extends Fixture
 
         $this->behaviorSeeder->seedForCentre($centre);
         $this->sanctionMeasureSeeder->seedForCentre($centre);
+        $this->communicationMethodSeeder->seedForCentre($centre);
         $centre->addAdmin($teachers['mariajose.alvarez']);
         $centre->addAdmin($teachers['pedro.fernandez']);
         foreach ($teachers as $t) {

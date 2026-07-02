@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Security\Voter;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -12,6 +13,8 @@ use App\Entity\IncidentReport;
 use App\Entity\PersonName;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
+use App\Entity\SettingDefinition;
+use App\Entity\SettingType;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Security\Voter\IncidentReportVoter;
@@ -350,6 +353,124 @@ class IncidentReportVoterTest extends RepositoryTestCase
         );
     }
 
+    // ── Notificar (NOTIFY) ───────────────────────────────────────────────────
+
+    public function testGlobalAdminIsGrantedNotifyRegardlessOfSetting(): void
+    {
+        [$report, $centre] = $this->makeScenario('notify.admin');
+        $this->setReportNotifierSetting($centre, 'report_teacher');
+        $admin = $this->makeTeacher('global.admin.notify', admin: true);
+        $this->persist($admin);
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($admin), $report, [IncidentReportVoter::NOTIFY])
+        );
+    }
+
+    public function testCentreAdminIsGrantedNotifyRegardlessOfSetting(): void
+    {
+        [$report, $centre] = $this->makeScenario('notify.cadmin');
+        $this->setReportNotifierSetting($centre, 'report_teacher');
+        $cadmin = $this->makeTeacher('centre.admin.notify');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($cadmin), $report, [IncidentReportVoter::NOTIFY])
+        );
+    }
+
+    public function testReportTeacherSettingGrantsCreatorAndDeniesTutor(): void
+    {
+        [$report, $centre, $group, $creator] = $this->makeScenario('rt');
+        $this->setReportNotifierSetting($centre, 'report_teacher');
+        $tutor = $this->makeTeacher('tutor.rt');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($creator), $report, [IncidentReportVoter::NOTIFY])
+        );
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($tutor), $report, [IncidentReportVoter::NOTIFY])
+        );
+    }
+
+    public function testGroupTutorSettingGrantsTutorAndDeniesCreator(): void
+    {
+        [$report, $centre, $group, $creator] = $this->makeScenario('gt');
+        $this->setReportNotifierSetting($centre, 'group_tutor');
+        $tutor = $this->makeTeacher('tutor.gt');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($creator), $report, [IncidentReportVoter::NOTIFY])
+        );
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($tutor), $report, [IncidentReportVoter::NOTIFY])
+        );
+    }
+
+    public function testBothSettingGrantsCreatorAndTutor(): void
+    {
+        [$report, $centre, $group, $creator] = $this->makeScenario('both');
+        $this->setReportNotifierSetting($centre, 'both');
+        $tutor = $this->makeTeacher('tutor.both');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($creator), $report, [IncidentReportVoter::NOTIFY])
+        );
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($tutor), $report, [IncidentReportVoter::NOTIFY])
+        );
+    }
+
+    public function testNoSettingDefinedDefaultsToBothBehaviour(): void
+    {
+        [$report, , $group, $creator] = $this->makeScenario('nodef');
+        $tutor = $this->makeTeacher('tutor.nodef');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($creator), $report, [IncidentReportVoter::NOTIFY])
+        );
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($tutor), $report, [IncidentReportVoter::NOTIFY])
+        );
+    }
+
+    public function testUnrelatedTeacherIsDeniedNotify(): void
+    {
+        [$report, $centre] = $this->makeScenario('unrel');
+        $this->setReportNotifierSetting($centre, 'both');
+        $other = $this->makeTeacher('unrelated.notify');
+        $this->persist($other);
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($other), $report, [IncidentReportVoter::NOTIFY])
+        );
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**
@@ -395,6 +516,24 @@ class IncidentReportVoterTest extends RepositoryTestCase
         $this->persist($report);
 
         return [$report, $centre, $group, $creator];
+    }
+
+    private function setReportNotifierSetting(EducationalCentre $centre, string $value): void
+    {
+        $definition = (new SettingDefinition())
+            ->setKey('notifications.report_notifier')
+            ->setType(SettingType::Choice)
+            ->setDefaultValue('both')
+            ->setGlobalScope(true)
+            ->setCentreScope(true)
+            ->setChoices('report_teacher,group_tutor,both');
+        $this->persist($definition);
+
+        $centreValue = (new CentreSettingValue())
+            ->setDefinition($definition)
+            ->setCentre($centre)
+            ->setValue($value);
+        $this->persist($centreValue);
     }
 
     private function makeTeacher(string $username, bool $admin = false): Teacher

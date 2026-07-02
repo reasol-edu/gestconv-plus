@@ -63,11 +63,20 @@ class Sanction
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $effectiveTo = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Communication $notifiedCommunication = null;
+
+    /** @var Collection<int, Communication> */
+    #[ORM\OneToMany(targetEntity: Communication::class, mappedBy: 'sanction', orphanRemoval: true)]
+    private Collection $communications;
+
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->reports   = new ArrayCollection();
-        $this->measures  = new ArrayCollection();
+        $this->createdAt      = new \DateTimeImmutable();
+        $this->reports        = new ArrayCollection();
+        $this->measures       = new ArrayCollection();
+        $this->communications = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -225,5 +234,28 @@ class Sanction
         }
 
         return false;
+    }
+
+    public function getNotifiedCommunication(): ?Communication
+    {
+        return $this->notifiedCommunication;
+    }
+
+    public function setNotifiedCommunication(?Communication $notifiedCommunication): static
+    {
+        $this->notifiedCommunication = $notifiedCommunication;
+
+        return $this;
+    }
+
+    public function isNotified(): bool
+    {
+        return $this->notifiedCommunication !== null;
+    }
+
+    /** @return Collection<int, Communication> */
+    public function getCommunications(): Collection
+    {
+        return $this->communications;
     }
 }

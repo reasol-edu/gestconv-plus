@@ -1,0 +1,7 @@
+methods:
+    - 'Llamada telefónica'
+    - 'Mensajería Pasen'
+    - 'Correo electrónico'
+    - 'SMS'
+    - 'WhatsApp'
+    - 'Otros'

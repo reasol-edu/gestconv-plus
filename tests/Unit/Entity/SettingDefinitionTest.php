@@ -149,6 +149,46 @@ class SettingDefinitionTest extends TestCase
         self::assertFalse($def->isValueValid(''));
     }
 
+    // ── Choice ────────────────────────────────────────────────────────────────
+
+    public function testChoiceValueInListIsValid(): void
+    {
+        $def = $this->makeChoiceDef('report_teacher,group_tutor,both');
+
+        self::assertTrue($def->isValueValid('report_teacher'));
+        self::assertTrue($def->isValueValid('group_tutor'));
+        self::assertTrue($def->isValueValid('both'));
+    }
+
+    public function testChoiceValueNotInListIsInvalid(): void
+    {
+        $def = $this->makeChoiceDef('report_teacher,group_tutor,both');
+
+        self::assertFalse($def->isValueValid('unknown'));
+        self::assertFalse($def->isValueValid(''));
+    }
+
+    public function testChoicesArraySplitsTrimsAndFiltersEmpty(): void
+    {
+        $def = $this->makeChoiceDef(' report_teacher , group_tutor ,, both ');
+
+        self::assertSame(['report_teacher', 'group_tutor', 'both'], $def->getChoicesArray());
+    }
+
+    public function testChoicesArrayIsEmptyWhenChoicesIsNull(): void
+    {
+        $def = $this->makeChoiceDef(null);
+
+        self::assertSame([], $def->getChoicesArray());
+    }
+
+    public function testChoiceCastedDefaultValueIsRawString(): void
+    {
+        $def = $this->makeChoiceDef('report_teacher,group_tutor,both');
+
+        self::assertSame('both', $def->getCastedDefaultValue());
+    }
+
     // ── min/max getters and setters ───────────────────────────────────────────
 
     public function testMinMaxDefaultToNull(): void
@@ -197,5 +237,14 @@ class SettingDefinitionTest extends TestCase
             ->setKey('email.notifications')
             ->setType(SettingType::Boolean)
             ->setDefaultValue('true');
+    }
+
+    private function makeChoiceDef(?string $choices): SettingDefinition
+    {
+        return (new SettingDefinition())
+            ->setKey('notifications.report_notifier')
+            ->setType(SettingType::Choice)
+            ->setDefaultValue('both')
+            ->setChoices($choices);
     }
 }

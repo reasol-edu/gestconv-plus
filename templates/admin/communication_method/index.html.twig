@@ -1,0 +1,126 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'communication_method.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-5xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+                <a href="{{ path('app_admin_centres_index') }}" class="hover:text-forest-600 transition-colors">{{ 'Centros educativos' }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+                <a href="{{ path('app_admin_centres_edit', {id: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ centre.name }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ 'communication_method.title'|trans({}, 'admin') }}</h1>
+        </div>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="rounded-xl px-4 py-3 text-sm font-medium
+                        {{ label == 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+
+        {% if methods is empty %}
+            <div class="px-6 py-8 text-center">
+                <p class="text-sm text-gray-400">{{ 'communication_method.empty'|trans({}, 'admin') }}</p>
+            </div>
+        {% else %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <tbody class="divide-y divide-gray-100">
+                        {% for i, method in methods %}
+                            <tr class="hover:bg-gray-50 transition-colors {{ not method.active ? 'opacity-50' : '' }}">
+                                <td class="px-4 py-3 w-10">
+                                    <div class="flex flex-col gap-0.5">
+                                        {% if i > 0 %}
+                                            <form method="post" action="{{ path('app_admin_communication_methods_move_up', {centreId: centre.id, id: method.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('move_communication_method_' ~ method.id) }}">
+                                                <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Subir">
+                                                    {{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="p-0.5 text-transparent">{{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}</span>
+                                        {% endif %}
+                                        {% if i < methods|length - 1 %}
+                                            <form method="post" action="{{ path('app_admin_communication_methods_move_down', {centreId: centre.id, id: method.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('move_communication_method_' ~ method.id) }}">
+                                                <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Bajar">
+                                                    {{ ux_icon('heroicons:chevron-down', {class: 'h-3.5 w-3.5'}) }}
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-gray-800 flex-1">{{ method.name }}</td>
+                                <td class="px-4 py-3 w-28">
+                                    <form method="post" action="{{ path('app_admin_communication_methods_toggle_active', {centreId: centre.id, id: method.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle_communication_method_' ~ method.id) }}">
+                                        <button type="submit"
+                                                class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-colors
+                                                       {{ method.active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                                            {{ method.active ? 'communication_method.badge.active'|trans({}, 'admin') : 'communication_method.badge.inactive'|trans({}, 'admin') }}
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="px-4 py-3 w-32">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ path('app_admin_communication_methods_edit', {centreId: centre.id, id: method.id}) }}"
+                                           class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                                  hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                            {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
+                                            Editar
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_communication_methods_delete', {centreId: centre.id, id: method.id}) }}"
+                                              class="js-confirm-form"
+                                              data-confirm="{{ 'communication_method.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_communication_method_' ~ method.id) }}">
+                                            <button type="submit"
+                                                    class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium
+                                                           text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors">
+                                                {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+        {# ── Formulario para nuevo método ───────────────────────────────── #}
+        <div class="border-t border-gray-100 px-5 py-4 bg-gray-50/60">
+            <form method="post" action="{{ path('app_admin_communication_methods_create', {centreId: centre.id}) }}"
+                  class="flex flex-wrap items-end gap-3">
+                <input type="hidden" name="_token" value="{{ csrf_token('new_communication_method_' ~ centre.id) }}">
+                <div class="flex-1 min-w-48">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">{{ 'communication_method.field.name'|trans({}, 'admin') }}</label>
+                    <input type="text" name="name" required maxlength="200"
+                           class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900
+                                  focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                </div>
+                <div class="shrink-0">
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 rounded-xl bg-forest-600 px-3.5 py-2 text-sm font-semibold text-white
+                                   hover:bg-forest-700 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                        {{ 'communication_method.new'|trans({}, 'admin') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

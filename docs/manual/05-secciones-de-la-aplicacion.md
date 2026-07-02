@@ -140,6 +140,53 @@ Los administradores de centro configuran las medidas disponibles en **Centro edu
 
 Al igual que en las conductas, los botones **Exportar JSON** e **Importar JSON** permiten copiar la configuración de medidas y categorías entre centros, con la misma opción de vaciar las medidas y categorías existentes antes de importar.
 
+## Notificaciones
+
+La sección **Notificaciones**, accesible desde el menú lateral con un centro seleccionado, es la cola de partes y sanciones cuya familia todavía no ha sido informada.
+
+![Cola de notificaciones pendientes](img/notificaciones/notificaciones-pendientes.png)
+
+Mientras un parte no tenga registrada una comunicación exitosa con la familia, **no puede incorporarse a una sanción**. De la misma forma, una sanción sin comunicación exitosa **no aparece en el calendario ni en el modo tablón**, aunque tenga fechas de vigencia asignadas: a efectos de visualización, no entra en vigor hasta que se notifica.
+
+El botón **Notificar** solo aparece si el docente tiene permiso para registrar la comunicación de ese elemento (ver *Quién puede notificar* más abajo); en caso contrario, el parte o sanción aparece igualmente en la lista, sin acción disponible. Los administradores siempre pueden notificar cualquier elemento.
+
+### Registrar una comunicación
+
+Pulsa **Notificar** en la fila correspondiente para abrir el formulario de registro, común a partes y sanciones.
+
+![Formulario de registro de comunicación](img/notificaciones/notificaciones-registrar-parte.png)
+
+1. **Método utilizado** — uno de los métodos de comunicación activos del centro (ver más abajo).
+2. **Fecha y hora** — por defecto el momento actual.
+3. **Resultado** — *Notificado* (la familia ha sido informada correctamente) o *No notificado* (no se ha podido contactar o informar).
+4. **Observaciones** — campo de texto opcional.
+
+Cada intento de comunicación queda registrado en el **historial**, se marque o no como notificado. La primera comunicación con resultado *Notificado* es la que desbloquea el parte o la sanción; los intentos posteriores se siguen añadiendo al historial pero no cambian ese estado.
+
+![Historial de comunicaciones tras registrar una notificación exitosa](img/notificaciones/notificaciones-registrar-parte-historial.png)
+
+El detalle de un parte o de una sanción muestra un indicador de estado (**Notificado** / **Pendiente de notificar**) enlazado a esta pantalla de registro.
+
+![Indicador de notificado en el detalle de un parte](img/notificaciones/parte-badge-notificado.png)
+
+### Quién puede notificar
+
+Un ajuste por centro (**Centro educativo → Ajustes**) determina, además de los administradores, qué docentes pueden registrar la comunicación de un parte y de una sanción, de forma independiente:
+
+- **El docente del parte / de la sanción** — solo quien lo registró.
+- **El tutor/a de grupo** — solo los tutores del grupo del alumno.
+- **Ambos** (opción por defecto).
+
+![Ajustes de quién notifica partes y sanciones](img/notificaciones/ajustes-notificaciones.png)
+
+### Métodos de comunicación
+
+Los administradores de centro configuran los métodos disponibles en **Centro educativo → Métodos de comunicación**: una lista plana (sin categorías) que se activa o desactiva por elemento y se puede reordenar con las flechas. Solo los métodos activos son seleccionables al registrar una comunicación.
+
+![Administración de métodos de comunicación](img/notificaciones/admin-metodos-comunicacion.png)
+
+Al crear un centro nuevo se configuran automáticamente **6 métodos por defecto**: Llamada telefónica, Mensajería Pasen, Correo electrónico, SMS, WhatsApp y Otros. Un método que ya se ha usado en alguna comunicación no se puede eliminar (aparece un aviso); en ese caso, desactívalo en su lugar.
+
 ## Administración
 
 ### Registro de actividad

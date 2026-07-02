@@ -7,6 +7,7 @@ use App\Entity\EducationalCentre;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Repository\TeacherRepository;
+use App\Service\CommunicationMethodSeeder;
 use App\Service\IncidentBehaviorSeeder;
 use App\Service\SanctionMeasureSeeder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,6 +29,7 @@ class SetupCommand extends Command
         private readonly TranslatorInterface $translator,
         private readonly IncidentBehaviorSeeder $behaviorSeeder,
         private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
+        private readonly CommunicationMethodSeeder $communicationMethodSeeder,
     ) {
         parent::__construct();
     }
@@ -72,6 +74,7 @@ class SetupCommand extends Command
         $this->em->persist($teacher);
         $this->behaviorSeeder->seedForCentre($centre);
         $this->sanctionMeasureSeeder->seedForCentre($centre);
+        $this->communicationMethodSeeder->seedForCentre($centre);
         $this->em->flush();
 
         $io->success($t('setup.success'));

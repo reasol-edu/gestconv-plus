@@ -96,6 +96,27 @@
                             data-action="change->setting-save#save"
                             data-setting-key="{{ key }}">
 
+                    {% elseif def.type.value == 'choice' %}
+                        <select
+                            class="rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-3 pr-8 text-sm text-gray-900
+                                   focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20
+                                   transition-colors cursor-pointer
+                                   disabled:cursor-not-allowed disabled:opacity-50"
+                            {{ parentLock is not null ? 'disabled' : '' }}
+                            data-controller="setting-save"
+                            data-action="change->setting-save#save"
+                            data-setting-key="{{ key }}">
+                            <option value="__default__" {{ displayValue is null ? 'selected' : '' }} {{ isLocked ? 'disabled' : '' }}>
+                                {{ 'settings.default_label'|trans({}, 'settings') }}
+                                ({{ ('settings.key.' ~ keySlug ~ '.choice.' ~ effective)|trans({}, 'settings') }})
+                            </option>
+                            {% for choice in def.choicesArray %}
+                                <option value="{{ choice }}" {{ displayValue == choice ? 'selected' : '' }}>
+                                    {{ ('settings.key.' ~ keySlug ~ '.choice.' ~ choice)|trans({}, 'settings') }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
                     {% else %}
                         <input
                             type="text"

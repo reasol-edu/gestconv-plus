@@ -300,6 +300,42 @@ class IncidentReportRepository extends ServiceEntityRepository
         return (int) ($max ?? 0) + 1;
     }
 
+    /**
+     * Returns reports pending notification (no successful communication yet) visible to the viewer,
+     * ordered by occurrence date ascending (oldest first).
+     *
+     * @return list<IncidentReport>
+     */
+    public function findPendingNotification(EducationalCentre $centre, Teacher $viewer): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->join('r.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('r.notifiedCommunication IS NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->orderBy('r.occurredAt', 'ASC');
+
+        $hasFullAccess = $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+        if (!$viewer->isAdmin() && !$hasFullAccess) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    'r.registeredBy = :viewer',
+                    ':viewer MEMBER OF g.tutors',
+                )
+            )->setParameter('viewer', $viewer->getId(), 'uuid');
+        }
+
+        /** @var list<IncidentReport> $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $result;
+    }
+
     public function findById(string $id): ?IncidentReport
     {
         $result = $this->createQueryBuilder('r')

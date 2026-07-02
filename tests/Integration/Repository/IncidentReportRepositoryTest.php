@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\Communication;
+use App\Entity\CommunicationMethod;
+use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -269,6 +272,54 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertCount(0, $pairs);
     }
 
+    // ── findPendingNotification ───────────────────────────────────────────────
+
+    public function testFindPendingNotificationExcludesNotifiedReports(): void
+    {
+        $world    = $this->makeWorld('pn1');
+        $admin    = $this->makeTeacher('admin.pending', admin: true);
+        $pending  = $this->makeReport($world, creator: $admin);
+        $notified = $this->makeReport($world, creator: $admin);
+        $this->persist($admin, $pending, $notified);
+        $this->notify($notified, $world, $admin);
+
+        $results = $this->repo->findPendingNotification($world['centre'], $admin);
+
+        self::assertCount(1, $results);
+        self::assertSame($pending->getId(), $results[0]->getId());
+    }
+
+    public function testFindPendingNotificationRestrictsVisibilityForRegularTeacher(): void
+    {
+        $world = $this->makeWorld('pn2');
+        $t1    = $this->makeTeacher('t1.pending');
+        $t2    = $this->makeTeacher('t2.pending');
+        $rOwn  = $this->makeReport($world, creator: $t1);
+        $rOth  = $this->makeReport($world, creator: $t2);
+        $this->persist($t1, $t2, $rOwn, $rOth);
+
+        $results = $this->repo->findPendingNotification($world['centre'], $t1);
+
+        self::assertCount(1, $results);
+        self::assertSame($rOwn->getId(), $results[0]->getId());
+    }
+
+    public function testFindPendingNotificationIncludesGroupTutorReports(): void
+    {
+        $world  = $this->makeWorld('pn3');
+        $tutor  = $this->makeTeacher('tutor.pending');
+        $other  = $this->makeTeacher('other.pending');
+        $rOwn   = $this->makeReport($world, creator: $tutor);
+        $rGroup = $this->makeReport($world, creator: $other);
+        $this->persist($tutor, $other, $rOwn, $rGroup);
+        $world['group']->addTutor($tutor);
+        $this->flush();
+
+        $results = $this->repo->findPendingNotification($world['centre'], $tutor);
+
+        self::assertCount(2, $results);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**
@@ -350,5 +401,24 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         return (new Teacher(new PersonName('Test', 'Teacher')))
             ->setUsername($username)
             ->setAdmin($admin);
+    }
+
+    /**
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
+     */
+    private function notify(IncidentReport $report, array $world, Teacher $teacher): void
+    {
+        $method = (new CommunicationMethod())
+            ->setEducationalCentre($world['centre'])
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $this->persist($method);
+
+        $communication = Communication::forIncidentReport($report, $method, $teacher, new \DateTimeImmutable(), CommunicationResult::Notified);
+        $this->persist($communication);
+
+        $report->setNotifiedCommunication($communication);
+        $this->flush();
     }
 }

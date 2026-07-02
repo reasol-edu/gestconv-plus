@@ -613,6 +613,27 @@ behavior.import.flash.summary: '%categories% categoría(s) y %behaviors% conduct
 behavior.import.error.no_file: 'No se ha seleccionado ningún fichero.'
 behavior.import.error.invalid_json: 'El fichero no contiene JSON válido.'
 
+# Métodos de comunicación
+communication_method.title: 'Métodos de comunicación'
+communication_method.hub_help: 'Define los métodos disponibles para notificar a las familias partes y sanciones.'
+communication_method.manage: 'Gestionar métodos de comunicación'
+communication_method.new: 'Nuevo método'
+communication_method.field.name: 'Nombre del método'
+communication_method.field.active: 'Disponibilidad al notificar'
+communication_method.field.active_on: 'Puede seleccionarse al registrar comunicaciones nuevas'
+communication_method.field.active_off: 'No puede seleccionarse al registrar comunicaciones nuevas'
+communication_method.flash.created: 'Método de comunicación añadido.'
+communication_method.flash.updated: 'Método de comunicación actualizado.'
+communication_method.flash.deleted: 'Método de comunicación eliminado.'
+communication_method.flash.moved: 'Orden actualizado.'
+communication_method.flash.toggled: 'Estado actualizado.'
+communication_method.flash.invalid: 'Faltan datos obligatorios.'
+communication_method.flash.in_use: 'No se puede eliminar: este método tiene comunicaciones registradas. Desactívalo en su lugar.'
+communication_method.badge.active: 'Activo'
+communication_method.badge.inactive: 'Inactivo'
+communication_method.empty: 'No hay métodos de comunicación configurados.'
+communication_method.delete_confirm: '¿Eliminar este método de comunicación?'
+
 # Categorías de conductas
 category.title: 'Nueva categoría'
 category.field.name: 'Nombre de la categoría'

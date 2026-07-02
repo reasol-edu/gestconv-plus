@@ -42,6 +42,9 @@ class SettingDefinition
     #[ORM\Column(nullable: true)]
     private ?int $maxValue = null;
 
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $choices = null;
+
     public function getId(): Uuid
     {
         return $this->id;
@@ -143,6 +146,28 @@ class SettingDefinition
         return $this;
     }
 
+    public function getChoices(): ?string
+    {
+        return $this->choices;
+    }
+
+    public function setChoices(?string $choices): static
+    {
+        $this->choices = $choices;
+
+        return $this;
+    }
+
+    /** @return list<string> */
+    public function getChoicesArray(): array
+    {
+        if ($this->choices === null || $this->choices === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $this->choices)), static fn (string $c): bool => $c !== ''));
+    }
+
     /**
      * Returns true if $value is acceptable for this definition.
      * Booleans must be 'true' or 'false'.
@@ -155,6 +180,7 @@ class SettingDefinition
             SettingType::Boolean => in_array($value, ['true', 'false'], true),
             SettingType::Integer => $this->isIntValueValid($value),
             SettingType::String  => $this->isStringValueValid($value),
+            SettingType::Choice  => in_array($value, $this->getChoicesArray(), true),
         };
     }
 
@@ -202,7 +228,8 @@ class SettingDefinition
         return match ($this->type) {
             SettingType::Boolean => $this->defaultValue === 'true',
             SettingType::Integer => (int) $this->defaultValue,
-            SettingType::String  => $this->defaultValue,
+            SettingType::String,
+            SettingType::Choice  => $this->defaultValue,
         };
     }
 }

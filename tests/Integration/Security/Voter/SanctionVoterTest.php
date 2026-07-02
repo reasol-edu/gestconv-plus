@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Security\Voter;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -14,6 +15,8 @@ use App\Entity\PersonName;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Sanction;
+use App\Entity\SettingDefinition;
+use App\Entity\SettingType;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Security\Voter\SanctionVoter;
@@ -374,6 +377,124 @@ class SanctionVoterTest extends RepositoryTestCase
         );
     }
 
+    // ── Notificar (NOTIFY) ───────────────────────────────────────────────────
+
+    public function testGlobalAdminIsGrantedNotifyRegardlessOfSetting(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre('notify.admin');
+        $this->setSanctionNotifierSetting($centre, 'report_teacher');
+        $admin = $this->makeTeacher('global.admin.notify', admin: true);
+        $this->persist($admin);
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($admin), $sanction, [SanctionVoter::NOTIFY])
+        );
+    }
+
+    public function testCentreAdminIsGrantedNotifyRegardlessOfSetting(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre('notify.cadmin');
+        $this->setSanctionNotifierSetting($centre, 'report_teacher');
+        $cadmin = $this->makeTeacher('centre.admin.notify');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($cadmin), $sanction, [SanctionVoter::NOTIFY])
+        );
+    }
+
+    public function testReportTeacherSettingGrantsCreatorAndDeniesTutor(): void
+    {
+        [$sanction, $centre, $group, $creator] = $this->makeSanctionWithCentre('rt');
+        $this->setSanctionNotifierSetting($centre, 'report_teacher');
+        $tutor = $this->makeTeacher('tutor.rt');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($creator), $sanction, [SanctionVoter::NOTIFY])
+        );
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($tutor), $sanction, [SanctionVoter::NOTIFY])
+        );
+    }
+
+    public function testGroupTutorSettingGrantsTutorAndDeniesCreator(): void
+    {
+        [$sanction, $centre, $group, $creator] = $this->makeSanctionWithCentre('gt');
+        $this->setSanctionNotifierSetting($centre, 'group_tutor');
+        $tutor = $this->makeTeacher('tutor.gt');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($creator), $sanction, [SanctionVoter::NOTIFY])
+        );
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($tutor), $sanction, [SanctionVoter::NOTIFY])
+        );
+    }
+
+    public function testBothSettingGrantsCreatorAndTutor(): void
+    {
+        [$sanction, $centre, $group, $creator] = $this->makeSanctionWithCentre('both');
+        $this->setSanctionNotifierSetting($centre, 'both');
+        $tutor = $this->makeTeacher('tutor.both');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($creator), $sanction, [SanctionVoter::NOTIFY])
+        );
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($tutor), $sanction, [SanctionVoter::NOTIFY])
+        );
+    }
+
+    public function testNoSettingDefinedDefaultsToBothBehaviour(): void
+    {
+        [$sanction, , $group, $creator] = $this->makeSanctionWithCentre('nodef');
+        $tutor = $this->makeTeacher('tutor.nodef');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($creator), $sanction, [SanctionVoter::NOTIFY])
+        );
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($tutor), $sanction, [SanctionVoter::NOTIFY])
+        );
+    }
+
+    public function testUnrelatedTeacherIsDeniedNotify(): void
+    {
+        [$sanction, $centre] = $this->makeSanctionWithCentre('unrel');
+        $this->setSanctionNotifierSetting($centre, 'both');
+        $other = $this->makeTeacher('unrelated.notify');
+        $this->persist($other);
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($other), $sanction, [SanctionVoter::NOTIFY])
+        );
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private function makeSanction(string $suffix = ''): Sanction
@@ -515,6 +636,24 @@ class SanctionVoterTest extends RepositoryTestCase
         $this->persist($sanction, $report);
 
         return $sanction;
+    }
+
+    private function setSanctionNotifierSetting(EducationalCentre $centre, string $value): void
+    {
+        $definition = (new SettingDefinition())
+            ->setKey('notifications.sanction_notifier')
+            ->setType(SettingType::Choice)
+            ->setDefaultValue('both')
+            ->setGlobalScope(true)
+            ->setCentreScope(true)
+            ->setChoices('report_teacher,group_tutor,both');
+        $this->persist($definition);
+
+        $centreValue = (new CentreSettingValue())
+            ->setDefinition($definition)
+            ->setCentre($centre)
+            ->setValue($value);
+        $this->persist($centreValue);
     }
 
     private function makeTeacher(string $username, bool $admin = false): Teacher

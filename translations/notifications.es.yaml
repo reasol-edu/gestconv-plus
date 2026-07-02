@@ -10,3 +10,50 @@ item:
     missing_tutor: '{1} 1 puesto sin tutor dual docente|]1,Inf[ %count% puestos sin tutor dual docente'
     missing_mentor: '{1} 1 puesto sin tutor dual de empresa|]1,Inf[ %count% puestos sin tutor dual de empresa'
     students_without_position: '{1} 1 estudiante sin puesto|]1,Inf[ %count% estudiantes sin puesto'
+
+# ── Sección "Notificaciones" (comunicaciones a familias de partes y sanciones) ──
+notification.title: 'Notificaciones'
+notification.index.help: 'Partes y sanciones pendientes de comunicar a las familias.'
+notification.index.reports_title: 'Partes pendientes de notificar'
+notification.index.reports_empty: 'No hay partes pendientes de notificar.'
+notification.index.sanctions_title: 'Sanciones pendientes de notificar'
+notification.index.sanctions_empty: 'No hay sanciones pendientes de notificar.'
+notification.index.view: 'Ver'
+notification.index.notify: 'Notificar'
+
+notification.register_report.title: 'Notificar parte'
+notification.register_report.report_ref: 'Parte #%number%'
+notification.register_report.view_report: 'Ver parte completo'
+notification.register_report.already_notified: 'Este parte ya ha sido notificado a la familia.'
+
+notification.register_sanction.title: 'Notificar sanción'
+notification.register_sanction.view_sanction: 'Ver sanción completa'
+notification.register_sanction.already_notified: 'Esta sanción ya ha sido notificada a la familia.'
+
+notification.form.title: 'Registrar comunicación'
+notification.form.no_methods: 'El centro no tiene métodos de comunicación activos. Actívalos desde Centro educativo → Métodos de comunicación.'
+notification.form.field.method: 'Método utilizado'
+notification.form.field.method_placeholder: 'Selecciona un método'
+notification.form.field.performed_at: 'Fecha y hora'
+notification.form.field.result: 'Resultado'
+notification.form.field.result_notified_help: 'La familia ha sido informada correctamente'
+notification.form.field.result_not_notified_help: 'No se ha podido contactar o informar a la familia'
+notification.form.field.description: 'Observaciones (opcional)'
+notification.form.submit: 'Registrar comunicación'
+
+notification.history.title: 'Historial de comunicaciones'
+notification.history.empty: 'Todavía no se ha registrado ninguna comunicación.'
+notification.history.col.performed_at: 'Fecha'
+notification.history.col.method: 'Método'
+notification.history.col.performed_by: 'Docente'
+notification.history.col.result: 'Resultado'
+notification.history.col.description: 'Observaciones'
+
+notification.result.notified: 'Notificado'
+notification.result.not_notified: 'No notificado'
+
+notification.badge.notified: 'Notificado'
+notification.badge.pending: 'Pendiente de notificar'
+
+notification.flash.registered: 'Comunicación registrada.'
+notification.flash.invalid: 'Revisa los datos del formulario: faltan campos obligatorios o son inválidos.'

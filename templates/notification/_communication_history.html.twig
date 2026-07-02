@@ -1,0 +1,33 @@
+{% if history is empty %}
+    <p class="text-sm text-gray-400">{{ 'notification.history.empty'|trans({}, 'notifications') }}</p>
+{% else %}
+    <div class="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-xs">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <th class="px-4 py-3">{{ 'notification.history.col.performed_at'|trans({}, 'notifications') }}</th>
+                    <th class="px-4 py-3">{{ 'notification.history.col.method'|trans({}, 'notifications') }}</th>
+                    <th class="px-4 py-3">{{ 'notification.history.col.performed_by'|trans({}, 'notifications') }}</th>
+                    <th class="px-4 py-3">{{ 'notification.history.col.result'|trans({}, 'notifications') }}</th>
+                    <th class="px-4 py-3">{{ 'notification.history.col.description'|trans({}, 'notifications') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for communication in history %}
+                    <tr>
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ communication.performedAt|date('d/m/Y H:i') }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ communication.method.name }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ communication.performedBy.name.lastName }}, {{ communication.performedBy.name.firstName }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                         {{ communication.result.value == 'notified' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                {{ ('notification.result.' ~ communication.result.value)|trans({}, 'notifications') }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-500">{{ communication.description ?: '—' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
