@@ -183,9 +183,8 @@ class IncidentReportController extends AbstractController
                     }
                     [$studentId, $groupId] = $parts;
 
-                    $student     = $this->students->findById($studentId);
-                    $groupResult = $this->groups->find($groupId);
-                    $group       = $groupResult instanceof \App\Entity\Group ? $groupResult : null;
+                    $student = $this->students->findById($studentId);
+                    $group   = $this->groups->findByIdAndCentre($groupId, $centre);
 
                     if ($student === null || $group === null) {
                         continue;
@@ -246,9 +245,8 @@ class IncidentReportController extends AbstractController
                     continue;
                 }
                 [$studentId, $groupId] = $parts;
-                $student     = $this->students->findById($studentId);
-                $groupResult = $this->groups->find($groupId);
-                $group       = $groupResult instanceof \App\Entity\Group ? $groupResult : null;
+                $student = $this->students->findById($studentId);
+                $group   = $this->groups->findByIdAndCentre($groupId, $centre);
                 if ($student !== null && $group !== null) {
                     $preloadedStudents[] = [
                         'value'     => $pair,

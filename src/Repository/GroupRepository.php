@@ -99,6 +99,22 @@ class GroupRepository extends ServiceEntityRepository
         return $result instanceof Group ? $result : null;
     }
 
+    public function findByIdAndCentre(string $id, EducationalCentre $centre): ?Group
+    {
+        $result = $this->createQueryBuilder('g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('g.id = :id')
+            ->andWhere('ay.educationalCentre = :centre')
+            ->setParameter('id', $id, 'uuid')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof Group ? $result : null;
+    }
+
     /**
      * Returns all groups (with students eagerly loaded) that belong to ProgrammeYears
      * of the given programme. Ordered by level name → group name → student surname.

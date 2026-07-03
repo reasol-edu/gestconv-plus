@@ -82,9 +82,8 @@ class SanctionController extends AbstractController
 
         // Step 2 — full form (studentId + groupId in query string)
         if ($studentId !== '' && $groupId !== '') {
-            $student     = $this->students->findById($studentId);
-            $groupResult = $this->groups->find($groupId);
-            $group       = $groupResult instanceof \App\Entity\Group ? $groupResult : null;
+            $student = $this->students->findById($studentId);
+            $group   = $this->groups->findByIdAndCentre($groupId, $centre);
 
             if ($student === null || $group === null) {
                 return $this->redirectToRoute('app_sanctions_new');

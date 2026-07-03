@@ -19,6 +19,7 @@ use App\Tests\Integration\ControllerTestCase;
 class IncidentReportControllerTest extends ControllerTestCase
 {
     private int $nextReportNumber = 0;
+    private static int $scenarioCounter = 0;
     // ── index ─────────────────────────────────────────────────────────────────
 
     public function testIndexIsAccessibleToAnyTeacher(): void
@@ -157,6 +158,33 @@ class IncidentReportControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'conducta');
+    }
+
+    public function testNewPostIgnoresGroupFromAnotherCentre(): void
+    {
+        [$teacher, $centre, , , $behavior] = $this->makeScenario();
+        [, , $otherGroup, $otherStudent] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $pair = $otherStudent->getId()->toRfc4122() . '::' . $otherGroup->getId()->toRfc4122();
+
+        $this->client->request('POST', '/partes/nuevo', [
+            '_token'              => $token,
+            'students'            => [$pair],
+            'behaviors'           => [$behavior->getId()->toRfc4122()],
+            'description'         => '<p>Test.</p>',
+            'expelled_from_class' => '0',
+        ]);
+
+        // El par estudiante/grupo de otro centro se descarta silenciosamente: no
+        // se crea ningún parte, aunque la petición redirige como si hubiera éxito.
+        self::assertResponseRedirects('/partes');
+
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(IncidentReport::class)->findAll());
     }
 
     public function testNewPostWithInvalidCsrfIsDenied(): void
@@ -571,8 +599,9 @@ class IncidentReportControllerTest extends ControllerTestCase
      */
     private function makeScenario(): array
     {
-        $teacher   = $this->makeTeacher('teacher.' . uniqid('', false));
-        $centre    = (new EducationalCentre())->setCode('41' . substr(uniqid('', false), 0, 6))->setName('IES Test')->setCity('Sevilla');
+        $suffix    = (string) ++self::$scenarioCounter;
+        $teacher   = $this->makeTeacher('teacher.' . uniqid('', false) . $suffix);
+        $centre    = (new EducationalCentre())->setCode('4' . str_pad($suffix, 7, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
         $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
         $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);

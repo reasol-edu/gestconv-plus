@@ -88,6 +88,31 @@ class GroupRepositoryTest extends RepositoryTestCase
         self::assertNull($this->repo->findByLevelAndId($pyB, $group->getId()->toRfc4122()));
     }
 
+    // ── findByIdAndCentre ─────────────────────────────────────────────────────
+
+    public function testFindByIdAndCentreReturnsGroup(): void
+    {
+        [$centre, , , $py] = $this->makeChain('41000018');
+        $group = $this->makeGroup($py, 'DAM2A');
+        $this->persist($group);
+
+        $result = $this->repo->findByIdAndCentre($group->getId()->toRfc4122(), $centre);
+
+        self::assertNotNull($result);
+        self::assertSame($group->getId()->toRfc4122(), $result->getId()->toRfc4122());
+    }
+
+    public function testFindByIdAndCentreReturnsNullForDifferentCentre(): void
+    {
+        [, , , $pyA] = $this->makeChain('41000019');
+        [$centreB]   = $this->makeChain('41000020');
+
+        $group = $this->makeGroup($pyA, 'DAM1A');
+        $this->persist($group);
+
+        self::assertNull($this->repo->findByIdAndCentre($group->getId()->toRfc4122(), $centreB));
+    }
+
     // ── findByProgrammeWithStudents ───────────────────────────────────────────
 
     public function testFindByProgrammeWithStudentsReturnsGroupsWithStudentsEagerLoaded(): void

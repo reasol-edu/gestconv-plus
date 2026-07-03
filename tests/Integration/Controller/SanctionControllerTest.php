@@ -23,6 +23,7 @@ use App\Tests\Integration\ControllerTestCase;
 class SanctionControllerTest extends ControllerTestCase
 {
     private int $nextReportNumber = 0;
+    private static int $scenarioCounter = 0;
 
     // ── index ─────────────────────────────────────────────────────────────────
 
@@ -102,6 +103,19 @@ class SanctionControllerTest extends ControllerTestCase
 
         $url = '/sanciones/nueva?studentId=00000000-0000-0000-0000-000000000000'
              . '&groupId=' . $group->getId()->toRfc4122();
+        $this->client->request('GET', $url);
+
+        self::assertResponseRedirects('/sanciones/nueva');
+    }
+
+    public function testNewStepTwoRedirectsForGroupOfAnotherCentre(): void
+    {
+        [$admin, $centre, , $student] = $this->makeScenario();
+        [, , $otherGroup] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $url = '/sanciones/nueva?studentId=' . $student->getId()->toRfc4122()
+             . '&groupId=' . $otherGroup->getId()->toRfc4122();
         $this->client->request('GET', $url);
 
         self::assertResponseRedirects('/sanciones/nueva');
@@ -405,8 +419,9 @@ class SanctionControllerTest extends ControllerTestCase
      */
     private function makeScenario(): array
     {
-        $admin     = $this->makeTeacher('cadmin.' . uniqid('', false));
-        $centre    = (new EducationalCentre())->setCode('41' . substr(uniqid('', false), 0, 6))->setName('IES Test')->setCity('Sevilla');
+        $suffix    = (string) ++self::$scenarioCounter;
+        $admin     = $this->makeTeacher('cadmin.' . uniqid('', false) . $suffix);
+        $centre    = (new EducationalCentre())->setCode('4' . str_pad($suffix, 7, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
         $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
         $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
