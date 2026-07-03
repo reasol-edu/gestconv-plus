@@ -32,6 +32,12 @@
                                 </td>
                                 <td class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ report.group.name }}</td>
                                 <td class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('d/m/Y H:i') }}</td>
+                                {% set age = date().diff(date(report.occurredAt)).days %}
+                                <td class="px-6 py-3 whitespace-nowrap">
+                                    <span class="text-xs font-medium {{ age >= 7 ? 'text-red-600' : (age >= 3 ? 'text-amber-600' : 'text-gray-400') }}">
+                                        {{ 'notification.index.age'|trans({'%count%': age}, 'notifications') }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-3 w-56">
                                     <div class="flex items-center justify-end gap-3">
                                         <a href="{{ path('app_incidents_show', {id: report.id}) }}"
@@ -78,6 +84,12 @@
                                 </td>
                                 <td class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ sanction.group.name }}</td>
                                 <td class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ sanction.createdAt|date('d/m/Y') }}</td>
+                                {% set age = date().diff(date(sanction.createdAt)).days %}
+                                <td class="px-6 py-3 whitespace-nowrap">
+                                    <span class="text-xs font-medium {{ age >= 7 ? 'text-red-600' : (age >= 3 ? 'text-amber-600' : 'text-gray-400') }}">
+                                        {{ 'notification.index.age'|trans({'%count%': age}, 'notifications') }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-3 w-56">
                                     <div class="flex items-center justify-end gap-3">
                                         <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}"

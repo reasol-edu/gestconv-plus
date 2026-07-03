@@ -116,7 +116,7 @@ class NotificationControllerTest extends ControllerTestCase
             'description'  => 'Llamada realizada a la familia.',
         ]);
 
-        self::assertResponseRedirects('/notificaciones/partes/' . $reportId . '/registrar');
+        self::assertResponseRedirects('/notificaciones');
 
         $this->em->clear();
         $updated = $this->em->find(IncidentReport::class, $report->getId());
@@ -143,7 +143,7 @@ class NotificationControllerTest extends ControllerTestCase
             'description'  => 'La familia no responde.',
         ]);
 
-        self::assertResponseRedirects('/notificaciones/partes/' . $reportId . '/registrar');
+        self::assertResponseRedirects('/notificaciones');
 
         $this->em->clear();
         $updated = $this->em->find(IncidentReport::class, $report->getId());
@@ -212,7 +212,7 @@ class NotificationControllerTest extends ControllerTestCase
             'description'  => 'Comunicada por correo.',
         ]);
 
-        self::assertResponseRedirects('/notificaciones/sanciones/' . $sanctionId . '/registrar');
+        self::assertResponseRedirects('/notificaciones');
 
         $this->em->clear();
         $updated = $this->em->find(Sanction::class, $sanction->getId());
@@ -238,7 +238,7 @@ class NotificationControllerTest extends ControllerTestCase
             'result'       => 'not_notified',
         ]);
 
-        self::assertResponseRedirects('/notificaciones/sanciones/' . $sanctionId . '/registrar');
+        self::assertResponseRedirects('/notificaciones');
 
         $this->em->clear();
         $updated = $this->em->find(Sanction::class, $sanction->getId());

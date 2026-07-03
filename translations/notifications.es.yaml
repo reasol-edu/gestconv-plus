@@ -23,6 +23,7 @@ notification.index.sanctions_title: 'Sanciones pendientes de notificar'
 notification.index.sanctions_empty: 'No hay sanciones pendientes de notificar.'
 notification.index.view: 'Ver'
 notification.index.notify: 'Notificar'
+notification.index.age: '{0} Hoy|{1} Hace 1 día|]1,Inf[ Hace %count% días'
 
 notification.register_report.title: 'Notificar parte'
 notification.register_report.report_ref: 'Parte #%number%'

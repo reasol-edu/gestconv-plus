@@ -77,9 +77,11 @@ class NotificationController extends AbstractController
 
             if ($this->registerCommunication($report, $centre, $user, $request)) {
                 $this->addFlash('success', $this->t('notification.flash.registered'));
-            } else {
-                $this->addFlash('error', $this->t('notification.flash.invalid'));
+
+                return $this->redirectToRoute('app_notifications_index');
             }
+
+            $this->addFlash('error', $this->t('notification.flash.invalid'));
 
             return $this->redirectToRoute('app_notifications_register_report', ['id' => $id]);
         }
@@ -112,9 +114,11 @@ class NotificationController extends AbstractController
 
             if ($this->registerCommunication($sanction, $centre, $user, $request)) {
                 $this->addFlash('success', $this->t('notification.flash.registered'));
-            } else {
-                $this->addFlash('error', $this->t('notification.flash.invalid'));
+
+                return $this->redirectToRoute('app_notifications_index');
             }
+
+            $this->addFlash('error', $this->t('notification.flash.invalid'));
 
             return $this->redirectToRoute('app_notifications_register_sanction', ['id' => $id]);
         }
