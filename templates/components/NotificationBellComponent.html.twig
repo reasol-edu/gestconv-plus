@@ -5,6 +5,12 @@
             aria-label="{{ 'bell.aria'|trans({}, 'notifications') }}"
             class="relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors">
         {{ ux_icon('heroicons:bell', {class: 'h-5 w-5'}) }}
+        {% if this.total > 0 %}
+            <span class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full
+                         bg-red-500 px-1 text-[10px] font-semibold leading-none text-white">
+                {{ this.total > 99 ? '99+' : this.total }}
+            </span>
+        {% endif %}
     </button>
 
     <div data-dropdown-target="menu"
@@ -17,10 +23,36 @@
             </p>
         </div>
 
-        <div class="px-4 py-8 text-center">
-            {{ ux_icon('heroicons:check-circle', {class: 'mx-auto h-8 w-8 text-green-300 mb-2'}) }}
-            <p class="text-sm text-gray-500">{{ 'bell.empty'|trans({}, 'notifications') }}</p>
-        </div>
+        {% if this.total == 0 %}
+            <div class="px-4 py-8 text-center">
+                {{ ux_icon('heroicons:check-circle', {class: 'mx-auto h-8 w-8 text-green-300 mb-2'}) }}
+                <p class="text-sm text-gray-500">{{ 'bell.empty'|trans({}, 'notifications') }}</p>
+            </div>
+        {% else %}
+            <ul class="max-h-80 divide-y divide-gray-100 overflow-y-auto">
+                {% for item in this.visibleItems %}
+                    {% set entity = item.entity %}
+                    <li>
+                        <a href="{{ item.type == 'report'
+                                ? path('app_notifications_register_report', {id: entity.id})
+                                : path('app_notifications_register_sanction', {id: entity.id}) }}"
+                           class="block px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                            <p class="text-sm text-gray-800">
+                                {{ (item.type == 'report' ? 'bell.item.report' : 'bell.item.sanction')|trans(
+                                    {'%student%': entity.student.name.firstName ~ ' ' ~ entity.student.name.lastName}, 'notifications'
+                                ) }}
+                            </p>
+                            <p class="mt-0.5 text-xs text-gray-400">{{ item.date|date('d/m/Y') }}</p>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="border-t border-gray-100 px-4 py-2.5">
+                <a href="{{ path('app_notifications_index') }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
+                    {{ 'bell.view_all'|trans({}, 'notifications') }}
+                </a>
+            </div>
+        {% endif %}
 
     </div>
 </div>

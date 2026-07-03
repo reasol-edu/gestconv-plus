@@ -75,9 +75,124 @@
                     {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4.5 w-4.5'}) }}
                 </span>
             </div>
-            <p class="mt-3 text-3xl font-bold text-gray-900 tabular-nums">{{ incidentCount }}</p>
+            <p class="mt-3 text-3xl font-bold text-gray-900 tabular-nums">{{ reportCount30d }}</p>
             <p class="mt-1 text-xs text-gray-500">{{ 'incidents_last_30_days'|trans({}, 'dashboard') }}</p>
         </a>
+
+        <a href="{{ path('app_sanctions_index') }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
+            <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {{ 'active_sanctions'|trans({}, 'dashboard') }}
+                </p>
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                    {{ ux_icon('heroicons:scale', {class: 'h-4.5 w-4.5'}) }}
+                </span>
+            </div>
+            <p class="mt-3 text-3xl font-bold text-gray-900 tabular-nums">{{ activeSanctionsCount }}</p>
+            <p class="mt-1 text-xs text-gray-500">{{ 'active_sanctions_help'|trans({}, 'dashboard') }}</p>
+        </a>
+
+        {% if pendingQueue.total > 0 %}
+        <a href="{{ path('app_notifications_index') }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
+            <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {{ 'pending_notifications'|trans({}, 'dashboard') }}
+                </p>
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-500">
+                    {{ ux_icon('heroicons:bell-alert', {class: 'h-4.5 w-4.5'}) }}
+                </span>
+            </div>
+            <p class="mt-3 text-3xl font-bold text-red-600 tabular-nums">{{ pendingQueue.total }}</p>
+            <p class="mt-1 text-xs text-gray-500">{{ 'pending_notifications_help'|trans({}, 'dashboard') }}</p>
+        </a>
+        {% endif %}
+    </div>
+
+    {# ── Últimos partes + panel condicional por rol ────────────────────────── #}
+    <div class="grid grid-cols-1 gap-6 {{ (hasFullAccess or tutoredGroups|length > 0) ? 'lg:grid-cols-3' : '' }}">
+
+        <div class="{{ (hasFullAccess or tutoredGroups|length > 0) ? 'lg:col-span-2' : '' }} rounded-2xl border border-gray-200 bg-white shadow-xs">
+            <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
+                <h2 class="text-sm font-semibold text-gray-800">{{ 'recent_reports_title'|trans({}, 'dashboard') }}</h2>
+                <a href="{{ path('app_incidents_index') }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
+                    {{ 'recent_reports_view_all'|trans({}, 'dashboard') }}
+                </a>
+            </div>
+            {% if recentReports|length == 0 %}
+                <p class="px-5 py-8 text-center text-sm text-gray-500">{{ 'recent_reports_empty'|trans({}, 'dashboard') }}</p>
+            {% else %}
+                <ul class="divide-y divide-gray-100">
+                    {% for report in recentReports %}
+                        <li>
+                            <a href="{{ path('app_incidents_show', {id: report.id}) }}" class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-gray-800">
+                                        {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+                                    </p>
+                                    <p class="mt-0.5 text-xs text-gray-500">{{ report.group.name }} · {{ report.occurredAt|date('d/m/Y') }}</p>
+                                </div>
+                                {% if report.isNotified %}
+                                    <span class="shrink-0 inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium">
+                                        {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
+                                        {{ 'notification.badge.notified'|trans({}, 'notifications') }}
+                                    </span>
+                                {% else %}
+                                    <span class="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[11px] font-medium">
+                                        {{ ux_icon('heroicons:bell-alert', {class: 'h-3 w-3'}) }}
+                                        {{ 'notification.badge.pending'|trans({}, 'notifications') }}
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        {% if hasFullAccess %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+            <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
+                <h2 class="text-sm font-semibold text-gray-800">{{ 'top_students_title'|trans({}, 'dashboard') }}</h2>
+                <a href="{{ path('app_sanctions_index') }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
+                    {{ 'recent_reports_view_all'|trans({}, 'dashboard') }}
+                </a>
+            </div>
+            {% if topStudents|length == 0 %}
+                <p class="px-5 py-8 text-center text-sm text-gray-500">{{ 'top_students_empty'|trans({}, 'dashboard') }}</p>
+            {% else %}
+                <ul class="divide-y divide-gray-100">
+                    {% for row in topStudents %}
+                        <li class="flex items-center justify-between gap-3 px-5 py-3">
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-medium text-gray-800">{{ row.lastName }}, {{ row.firstName }}</p>
+                                <p class="mt-0.5 text-xs text-gray-500">{{ row.groupName }}</p>
+                            </div>
+                            <div class="shrink-0 text-right">
+                                <p class="text-sm font-semibold text-gray-800 tabular-nums">{{ row.sanctionableCount }}</p>
+                                {% if row.seriousCount > 0 %}
+                                    <p class="text-[11px] text-red-600">{{ row.seriousCount }} {{ 'top_students_col_serious'|trans({}, 'dashboard') }}</p>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        {% elseif tutoredGroups|length > 0 %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+            <div class="border-b border-gray-100 px-5 py-3.5">
+                <h2 class="text-sm font-semibold text-gray-800">{{ 'tutored_groups_title'|trans({}, 'dashboard') }}</h2>
+            </div>
+            <ul class="divide-y divide-gray-100">
+                {% for entry in tutoredGroups %}
+                    <li class="flex items-center justify-between gap-3 px-5 py-3">
+                        <p class="truncate text-sm font-medium text-gray-800">{{ entry.group.name }}</p>
+                        <p class="shrink-0 text-xs text-gray-500">{{ entry.students }} {{ 'tutored_groups_students'|trans({}, 'dashboard') }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
     </div>
 
     {% endif %}

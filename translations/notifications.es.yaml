@@ -3,6 +3,9 @@ bell:
     title: 'Tareas pendientes'
     empty: 'No tienes tareas pendientes'
     view_all: 'Ver todas en el panel'
+    item:
+        report: 'Parte de %student% pendiente de notificar'
+        sanction: 'Sanción de %student% pendiente de notificar'
 
 item:
     signature_due: '{1} 1 firma pendiente (la estancia termina pronto)|]1,Inf[ %count% firmas pendientes (la estancia termina pronto)'

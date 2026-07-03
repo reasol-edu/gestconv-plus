@@ -139,6 +139,30 @@ class GroupRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns the groups of the centre's active year that the viewer tutors, ordered by name.
+     *
+     * @return Group[]
+     */
+    public function findTutoredByActiveYear(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): array
+    {
+        $year ??= $centre->getActiveAcademicYear();
+        if ($year === null) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->where('prog.academicYear = :year')
+            ->andWhere(':viewer MEMBER OF g.tutors')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('viewer', $viewer->getId(), 'uuid')
+            ->orderBy('g.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Returns student and teacher counts for every group in the given academic year,
      * keyed by group UUID (RFC4122). Single query; avoids N+1 per group.
      *

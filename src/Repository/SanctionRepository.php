@@ -74,6 +74,42 @@ class SanctionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Counts sanctions currently in effect today (notified and within their effective date range)
+     * that are visible to the viewer.
+     */
+    public function countActiveByCentre(EducationalCentre $centre, Teacher $viewer, \DateTimeImmutable $today): int
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('COUNT(DISTINCT s.id)')
+            ->join('s.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('s.notifiedCommunication IS NOT NULL')
+            ->andWhere('s.effectiveFrom <= :today')
+            ->andWhere('s.effectiveTo IS NULL OR s.effectiveTo >= :today')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('today', $today);
+
+        $hasFullAccess = $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+        if (!$viewer->isAdmin() && !$hasFullAccess) {
+            $qb->join('s.reports', 'r')
+               ->andWhere(
+                   $qb->expr()->orX(
+                       'r.registeredBy = :viewer',
+                       ':viewer MEMBER OF g.tutors',
+                   )
+               )
+               ->setParameter('viewer', $viewer->getId(), 'uuid');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * Returns (student, group) pairs for the centre's active academic year with their report counts:
      * sanctionable (not prescribed, not yet sanctioned), serious (sanctionable with serious behavior),
      * and prescribed. Results are sorted by sanctionable count DESC, then by student name.
