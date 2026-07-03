@@ -157,6 +157,32 @@ class StudentRepository extends ServiceEntityRepository
         return $this->findOneBy(['studentId' => $studentId]);
     }
 
+    /**
+     * A student with no groups yet has no centre affiliation to check against
+     * (e.g. just imported, not yet assigned) and is treated as belonging to
+     * whichever centre is asking. Otherwise, at least one of its groups must
+     * resolve to the given centre.
+     */
+    public function belongsToCentre(Student $student, EducationalCentre $centre): bool
+    {
+        if ($student->getGroups()->isEmpty()) {
+            return true;
+        }
+
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->join('s.groups', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('s.id = :id')
+            ->andWhere('ay.educationalCentre = :centre')
+            ->setParameter('id', $student->getId(), 'uuid')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
+    }
+
     public function countByActiveYear(EducationalCentre $centre, ?Teacher $viewer = null, ?AcademicYear $year = null): int
     {
         $year ??= $centre->getActiveAcademicYear();

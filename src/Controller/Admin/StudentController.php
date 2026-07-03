@@ -109,7 +109,7 @@ class StudentController extends AbstractController
     {
         $centre  = $this->requireCentre($centreId);
         $this->denyIfViewingPastYear($centre);
-        $student = $this->requireStudent($id);
+        $student = $this->requireStudent($id, $centre);
 
         $centreGroupsById = $this->indexGroupsById($centre);
 
@@ -504,7 +504,7 @@ class StudentController extends AbstractController
     {
         $centre  = $this->requireCentre($centreId);
         $this->denyIfViewingPastYear($centre);
-        $student = $this->requireStudent($id);
+        $student = $this->requireStudent($id, $centre);
 
         if (!$this->isCsrfTokenValid('delete_student_' . $student->getId(), $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
@@ -547,10 +547,10 @@ class StudentController extends AbstractController
         }
     }
 
-    private function requireStudent(string $id): Student
+    private function requireStudent(string $id, EducationalCentre $centre): Student
     {
         $student = $this->students->findById($id);
-        if ($student === null) {
+        if ($student === null || !$this->students->belongsToCentre($student, $centre)) {
             throw $this->createNotFoundException();
         }
 

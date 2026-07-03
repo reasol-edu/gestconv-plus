@@ -224,6 +224,25 @@ class StudentControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    public function testEditIsDeniedForStudentOfAnotherCentre(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        [$otherAdmin, $otherCentre, $otherYear] = $this->makeCentreWithYear();
+        $otherAdmin->setUsername('admin.other');
+        $otherCentre->setCode('41000002');
+        [$programme, $level, $group] = $this->makeGroupChain($otherYear, 'DAM1');
+        $student = $this->makeStudent('2024-001')->addGroup($group);
+        $this->persist($admin, $centre, $year, $otherAdmin, $otherCentre, $otherYear, $programme, $level, $group, $student);
+        $this->loginAs($admin);
+
+        $centreId  = $centre->getId()->toRfc4122();
+        $studentId = $student->getId()->toRfc4122();
+
+        $this->client->request('GET', '/admin/centros/' . $centreId . '/estudiantes/' . $studentId . '/editar');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
     // ── import ────────────────────────────────────────────────────────────────
 
     public function testImportGetRendersForm(): void
@@ -539,6 +558,32 @@ class StudentControllerTest extends ControllerTestCase
         ]);
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testDeleteIsDeniedForStudentOfAnotherCentre(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        [$otherAdmin, $otherCentre, $otherYear] = $this->makeCentreWithYear();
+        $otherAdmin->setUsername('admin.other');
+        $otherCentre->setCode('41000002');
+        [$programme, $level, $group] = $this->makeGroupChain($otherYear, 'DAM1');
+        $student = $this->makeStudent('2024-001')->addGroup($group);
+        $this->persist($admin, $centre, $year, $otherAdmin, $otherCentre, $otherYear, $programme, $level, $group, $student);
+        $this->loginAs($admin);
+
+        $centreId  = $centre->getId()->toRfc4122();
+        $studentId = $student->getId()->toRfc4122();
+
+        // El control de pertenencia al centro ocurre antes de validar el CSRF,
+        // así que un token cualquiera basta para probar el 404.
+        $this->client->request('POST', '/admin/centros/' . $centreId . '/estudiantes/' . $studentId . '/eliminar', [
+            '_token' => 'irrelevant',
+        ]);
+
+        self::assertResponseStatusCodeSame(404);
+
+        $this->em->clear();
+        self::assertNotNull($this->em->find(Student::class, $student->getId()));
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
