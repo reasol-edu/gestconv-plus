@@ -53,6 +53,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         array $filters = [],
     ): Query {
         $qb = $this->createQueryBuilder('r')
+            ->addSelect('g', 's', 't', 'beh', 'bc')
             ->join('r.group', 'g')
             ->join('g.programmeYear', 'py')
             ->join('py.programme', 'prog')

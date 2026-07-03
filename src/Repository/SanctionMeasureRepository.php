@@ -27,6 +27,7 @@ class SanctionMeasureRepository extends ServiceEntityRepository
     {
         /** @var list<SanctionMeasure> $result */
         $result = $this->createQueryBuilder('m')
+            ->addSelect('c')
             ->join('m.category', 'c')
             ->where('m.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
@@ -45,6 +46,7 @@ class SanctionMeasureRepository extends ServiceEntityRepository
     {
         /** @var list<SanctionMeasure> $result */
         $result = $this->createQueryBuilder('m')
+            ->addSelect('c')
             ->join('m.category', 'c')
             ->where('m.educationalCentre = :centre')
             ->andWhere('m.active = true')

@@ -29,6 +29,7 @@ class IncidentBehaviorRepository extends ServiceEntityRepository
     {
         /** @var list<IncidentBehavior> $result */
         $result = $this->createQueryBuilder('b')
+            ->addSelect('c')
             ->join('b.category', 'c')
             ->where('b.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
@@ -49,6 +50,7 @@ class IncidentBehaviorRepository extends ServiceEntityRepository
     {
         /** @var list<IncidentBehavior> $result */
         $result = $this->createQueryBuilder('b')
+            ->addSelect('c')
             ->join('b.category', 'c')
             ->where('b.educationalCentre = :centre')
             ->andWhere('b.active = true')
