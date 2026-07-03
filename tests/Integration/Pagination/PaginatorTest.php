@@ -36,7 +36,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(7);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 3);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 3);
 
         self::assertSame(7, $paginator->getTotalItems());
     }
@@ -45,14 +45,14 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(7);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 3);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 3);
 
         self::assertSame(3, $paginator->getTotalPages()); // ceil(7/3) = 3
     }
 
     public function testGetTotalPagesIsOneForEmptyResultSet(): void
     {
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 10);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 10);
 
         self::assertSame(1, $paginator->getTotalPages());
         self::assertSame(0, $paginator->getTotalItems());
@@ -64,7 +64,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(5);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 2, 2);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 2, 2);
 
         self::assertSame(2, $paginator->getCurrentPage());
     }
@@ -73,7 +73,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(5);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 4);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 4);
 
         self::assertSame(4, $paginator->getPageSize());
     }
@@ -84,7 +84,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(10);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 3);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 3);
 
         self::assertSame(1, $paginator->getFirstItemIndex());
     }
@@ -93,7 +93,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(10);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 2, 3);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 2, 3);
 
         self::assertSame(4, $paginator->getFirstItemIndex()); // (2-1)*3 + 1 = 4
     }
@@ -102,14 +102,14 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(7);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 3, 3); // página 3 tiene 1 elemento
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 3, 3); // página 3 tiene 1 elemento
 
         self::assertSame(7, $paginator->getLastItemIndex());
     }
 
     public function testGetFirstItemIndexIsZeroForEmptyResultSet(): void
     {
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 5);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 5);
 
         self::assertSame(0, $paginator->getFirstItemIndex());
     }
@@ -120,7 +120,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(5);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 2);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 2);
 
         self::assertFalse($paginator->hasPreviousPage());
     }
@@ -129,7 +129,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(5);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 2, 2);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 2, 2);
 
         self::assertTrue($paginator->hasPreviousPage());
     }
@@ -138,7 +138,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(5);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 2);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 2);
 
         self::assertTrue($paginator->hasNextPage());
     }
@@ -147,7 +147,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(4);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 2, 2);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 2, 2);
 
         self::assertFalse($paginator->hasNextPage());
     }
@@ -156,7 +156,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(6);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 3, 2);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 3, 2);
 
         self::assertSame(2, $paginator->getPreviousPage());
     }
@@ -165,7 +165,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(6);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 2);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 2);
 
         self::assertSame(2, $paginator->getNextPage());
     }
@@ -176,7 +176,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(3);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 10);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 10);
 
         self::assertSame([1], $paginator->getPageRange());
     }
@@ -187,7 +187,7 @@ class PaginatorTest extends RepositoryTestCase
         // el rango inner cubre páginas 2 y 3 sin ellipsis → [1, 2, 3, 4].
         $this->seedTeachers(8);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 2, 2); // página 2 de 4
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 2, 2); // página 2 de 4
 
         self::assertSame([1, 2, 3, 4], $paginator->getPageRange());
     }
@@ -196,7 +196,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(20);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 1, 1); // 20 páginas
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 1, 1); // 20 páginas
 
         $range = $paginator->getPageRange();
 
@@ -210,7 +210,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(20);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 10, 1); // página 10 de 20
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 10, 1); // página 10 de 20
 
         $range = $paginator->getPageRange();
 
@@ -223,7 +223,7 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(5);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 2, 2);
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 2, 2);
 
         // DoctrinePaginator::count() devuelve el total, no los items de la página;
         // hay que iterar para obtener los items efectivos.
@@ -234,8 +234,35 @@ class PaginatorTest extends RepositoryTestCase
     {
         $this->seedTeachers(5);
 
-        $paginator = new Paginator($this->allTeachersQuery(), 3, 2); // página 3: 1 elemento
+        $paginator = Paginator::fromQuery($this->allTeachersQuery(), 3, 2); // página 3: 1 elemento
 
         self::assertCount(1, iterator_to_array($paginator->getItems()));
+    }
+
+    // ── fromArray ─────────────────────────────────────────────────────────────
+
+    public function testFromArrayExposesRowsAndTotalsWithoutSlicing(): void
+    {
+        $rows = [['name' => 'a'], ['name' => 'b']];
+
+        $paginator = Paginator::fromArray($rows, 7, 2, 2); // página 2 de ceil(7/2) = 4
+
+        self::assertSame($rows, $paginator->getItems());
+        self::assertSame(7, $paginator->getTotalItems());
+        self::assertSame(4, $paginator->getTotalPages());
+        self::assertSame(3, $paginator->getFirstItemIndex());
+        self::assertSame(4, $paginator->getLastItemIndex());
+        self::assertTrue($paginator->hasPreviousPage());
+        self::assertTrue($paginator->hasNextPage());
+    }
+
+    public function testFromArrayWithEmptyRows(): void
+    {
+        $paginator = Paginator::fromArray([], 0, 1, 10);
+
+        self::assertSame(0, $paginator->getTotalItems());
+        self::assertSame(1, $paginator->getTotalPages());
+        self::assertSame(0, $paginator->getFirstItemIndex());
+        self::assertFalse($paginator->hasNextPage());
     }
 }

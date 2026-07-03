@@ -233,19 +233,9 @@ class SanctionController extends AbstractController
             ]);
         }
 
-        // Step 1 — paginated student list with report stats
-        $search  = $request->query->getString('search');
-        $page    = max(1, $request->query->getInt('page', 1));
-        $perPage = 20;
-        $stats   = $this->sanctions->findStudentStatsForCentre($centre, $search, $page, $perPage);
-
+        // Step 1 — live-filtered student list with report stats
         return $this->render('sanction/new_select_student.html.twig', [
-            'centre'   => $centre,
-            'rows'     => $stats['rows'],
-            'total'    => $stats['total'],
-            'page'     => $page,
-            'perPage'  => $perPage,
-            'search'   => $search,
+            'centre' => $centre,
         ]);
     }
 

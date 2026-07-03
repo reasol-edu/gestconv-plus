@@ -38,6 +38,6 @@ trait PaginatedListTrait
      */
     private function paginate(Query $query): Paginator
     {
-        return new Paginator($query, max(1, $this->page), $this->appSettings->getInt('page.size'));
+        return Paginator::fromQuery($query, max(1, $this->page), $this->appSettings->getInt('page.size'));
     }
 }

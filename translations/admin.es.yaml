@@ -707,8 +707,6 @@ sanction.col.serious_abbr: 'Graves'
 sanction.col.prescribed: 'Prescritos'
 
 sanction.filter.search_placeholder: 'Filtrar por nombre, apellidos o grupo…'
-sanction.filter.apply: 'Filtrar'
-sanction.filter.clear: 'Borrar filtro'
 sanction.filter.effective_today: 'Vigentes hoy'
 sanction.filter.pending_notification: 'Pendientes de notificar'
 sanction.search_empty: 'No se encontraron sanciones con esos filtros.'

@@ -69,7 +69,7 @@ class StudentListComponent extends AbstractController
     {
         $year = $this->tenantContext->getViewYear($this->centre);
         if ($year === null) {
-            return new Paginator($this->students->findNoneQuery(), 1, $this->appSettings->getInt('page.size'));
+            return Paginator::fromQuery($this->students->findNoneQuery(), 1, $this->appSettings->getInt('page.size'));
         }
 
         return $this->paginate(

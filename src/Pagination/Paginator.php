@@ -8,40 +8,54 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 
 /**
- * Paginador ligero basado en Doctrine\ORM\Tools\Pagination\Paginator.
+ * Paginador ligero. Se construye a partir de una Query de Doctrine
+ * (fromQuery) o de filas ya materializadas y recortadas (fromArray).
  *
- * @template T of object
+ * @template T
  */
 final class Paginator
 {
-    /** @var DoctrinePaginator<T> */
-    private readonly DoctrinePaginator $paginator;
-    private readonly int $totalItems;
-
     /**
-     * @param Query<null, T> $query
+     * @param iterable<array-key, T> $items elementos de la página actual
      */
-    public function __construct(
-        Query $query,
+    private function __construct(
+        private readonly iterable $items,
+        private readonly int $totalItems,
         private readonly int $currentPage,
         private readonly int $pageSize,
-    ) {
-        $firstResult = max(0, ($currentPage - 1) * $pageSize);
+    ) {}
 
+    /**
+     * @template U of object
+     * @param Query<null, U> $query
+     * @return self<U>
+     */
+    public static function fromQuery(Query $query, int $currentPage, int $pageSize): self
+    {
         $query
-            ->setFirstResult($firstResult)
+            ->setFirstResult(max(0, ($currentPage - 1) * $pageSize))
             ->setMaxResults($pageSize);
 
-        /** @var DoctrinePaginator<T> $paginator */
+        /** @var DoctrinePaginator<U> $paginator */
         $paginator = new DoctrinePaginator($query);
-        $this->paginator  = $paginator;
-        $this->totalItems = count($paginator);
+
+        return new self($paginator, count($paginator), $currentPage, $pageSize);
     }
 
-    /** @return DoctrinePaginator<T> */
-    public function getItems(): DoctrinePaginator
+    /**
+     * @template U
+     * @param list<U> $rows elementos de la página actual, ya recortados
+     * @return self<U>
+     */
+    public static function fromArray(array $rows, int $totalItems, int $currentPage, int $pageSize): self
     {
-        return $this->paginator;
+        return new self($rows, $totalItems, $currentPage, $pageSize);
+    }
+
+    /** @return iterable<array-key, T> */
+    public function getItems(): iterable
+    {
+        return $this->items;
     }
 
     public function getTotalItems(): int
@@ -137,10 +151,3 @@ final class Paginator
         return $pages;
     }
 }
-
-
-
-
-
-
-
