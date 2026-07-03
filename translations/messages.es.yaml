@@ -14,7 +14,7 @@ profile.tab.personal: 'Datos personales'
 profile.section.personal: 'Datos personales'
 profile.section.password: 'Cambiar contraseña'
 profile.save: 'Guardar cambios'
-profile.badge.external: 'IdEA / Séneca'
+profile.badge.external: 'Usuario IdEA (Séneca)'
 
 profile.field.first_name: 'Nombre'
 profile.field.last_name: 'Apellidos'
@@ -26,7 +26,7 @@ profile.field.new_password: 'Nueva contraseña'
 profile.field.new_password_help: 'Dejar en blanco para no cambiar la contraseña'
 profile.field.new_password_confirm: 'Confirmar nueva contraseña'
 
-profile.password.external_notice: 'Tu contraseña está gestionada por el sistema IdEA (Séneca). Para cambiarla, accede al portal de la Junta de Andalucía.'
+profile.password.external_notice: 'Tu contraseña la gestiona tu usuario IdEA (Séneca). Para cambiarla, accede al portal de la Junta de Andalucía.'
 
 profile.error.first_name_required: 'El nombre es obligatorio.'
 profile.error.last_name_required: 'Los apellidos son obligatorios.'

@@ -166,7 +166,7 @@ centre_teachers.action.remove: 'Quitar del curso'
 
 centre_teachers.add.title: 'Añadir docente al curso'
 centre_teachers.add.hint: 'Introduce el nombre de usuario del docente. Si no existe en el sistema, podrás registrarlo a continuación.'
-centre_teachers.add.username_label: 'Nombre de usuario de Séneca'
+centre_teachers.add.username_label: 'Usuario IdEA (Séneca)'
 centre_teachers.add.username_placeholder: 'Usuario IdEA'
 centre_teachers.add.submit: 'Añadir'
 
@@ -203,7 +203,7 @@ centre_teachers.import.help.encoding: 'Se aceptan ficheros en UTF-8 y Windows-12
 centre_teachers.import.help.skipped: 'Se omiten las filas sin usuario IdEA o sin nombre en la columna «Empleado/a».'
 centre_teachers.import.help.cese: 'Los docentes con fecha de cese también se importan.'
 centre_teachers.import.help.existing: 'Si el docente ya existe en el sistema, se añade al curso activo sin modificar sus datos.'
-centre_teachers.import.help.new: 'Si el docente no existe, se crea con autenticación externa (IdEA) y se añade al curso activo.'
+centre_teachers.import.help.new: 'Si el docente no existe, se crea con autenticación externa (usuario IdEA) y se añade al curso activo.'
 centre_teachers.import.flash.summary: '%created% docente(s) registrado(s) y añadido(s), %added% añadido(s) al curso, %skipped% omitido(s).'
 centre_teachers.import.error.no_file: 'No se ha seleccionado ningún fichero.'
 centre_teachers.import.error.empty_file: 'El fichero está vacío o no tiene cabeceras válidas.'
@@ -370,7 +370,7 @@ families.import.help.teachers: 'Las asignaciones de docentes se realizan por nom
 families.import.flash.summary: '%families% familia(s), %programmes% enseñanza(s), %levels% nivel(es) y %groups% grupo(s) creado(s) o actualizado(s).'
 families.import.flash.missing_teachers: 'Docentes no encontrados (asignaciones ignoradas): %teachers%.'
 families.import.error.no_file: 'No se ha seleccionado ningún fichero.'
-families.import.error.invalid_json: 'El fichero no contiene JSON válido.'
+families.import.error.invalid_json: 'El fichero no es un JSON válido. Usa un fichero exportado desde esta misma sección con el botón «Exportar JSON».'
 
 family.new.title: 'Nueva familia profesional'
 family.edit.title: 'Editar familia profesional'
@@ -515,7 +515,7 @@ offer.import.option.teachers: 'Docentes de grupo'
 offer.import.flash.summary: '%programmes% enseñanza(s), %levels% nivel(es) y %groups% grupo(s) creado(s) o actualizado(s).'
 offer.import.flash.missing_teachers: 'Docentes no encontrados (asignaciones ignoradas): %teachers%.'
 offer.import.error.no_file: 'No se ha seleccionado ningún fichero.'
-offer.import.error.invalid_json: 'El fichero no contiene JSON válido.'
+offer.import.error.invalid_json: 'El fichero no es un JSON válido. Usa un fichero exportado desde esta misma sección con el botón «Exportar JSON».'
 
 # Partes de convivencia
 incident.title: 'Partes de convivencia'
@@ -616,7 +616,7 @@ behavior.import.option.replace: 'Vaciar las conductas y categorías existentes a
 behavior.import.option.replace_help: 'Elimina todas las categorías y conductas actuales del centro antes de incorporar las del fichero. Esta acción no se puede deshacer.'
 behavior.import.flash.summary: '%categories% categoría(s) y %behaviors% conducta(s) creada(s) o actualizada(s).'
 behavior.import.error.no_file: 'No se ha seleccionado ningún fichero.'
-behavior.import.error.invalid_json: 'El fichero no contiene JSON válido.'
+behavior.import.error.invalid_json: 'El fichero no es un JSON válido. Usa un fichero exportado desde esta misma sección con el botón «Exportar JSON».'
 
 # Métodos de comunicación
 communication_method.title: 'Métodos de comunicación'
@@ -757,7 +757,7 @@ sanction_measure.import.option.replace: 'Vaciar las medidas y categorías existe
 sanction_measure.import.option.replace_help: 'Elimina todas las categorías y medidas actuales del centro antes de incorporar las del fichero. Esta acción no se puede deshacer.'
 sanction_measure.import.flash.summary: '%categories% categoría(s) y %measures% medida(s) creada(s) o actualizada(s).'
 sanction_measure.import.error.no_file: 'No se ha seleccionado ningún fichero.'
-sanction_measure.import.error.invalid_json: 'El fichero no contiene JSON válido.'
+sanction_measure.import.error.invalid_json: 'El fichero no es un JSON válido. Usa un fichero exportado desde esta misma sección con el botón «Exportar JSON».'
 sanction_measure.save: 'Guardar'
 sanction_measure.cancel: 'Cancelar'
 
