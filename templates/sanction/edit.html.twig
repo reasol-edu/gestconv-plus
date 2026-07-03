@@ -25,7 +25,7 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{{ path('app_sanctions_edit', {id: sanction.id}) }}" class="space-y-8">
+    <form method="post" action="{{ path('app_sanctions_edit', {id: sanction.id}) }}" class="space-y-8" data-controller="form-submit">
         <input type="hidden" name="_token" value="{{ csrf_token('edit_sanction_' ~ sanction.id) }}">
 
         {# ── Estudiante (readonly) ──────────────────────────────────────── #}
@@ -40,10 +40,14 @@
         </div>
 
         {# ── Partes asociados ───────────────────────────────────────────── #}
-        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-3">
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-3"
+             {% if errors.reports is defined %}aria-invalid="true" tabindex="-1"{% endif %}>
             <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
-                {{ 'sanction.section.reports'|trans({}, 'admin') }}
+                {{ 'sanction.section.reports'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
             </h2>
+            {% if errors.reports is defined %}
+                <p class="text-xs text-red-600">{{ errors.reports }}</p>
+            {% endif %}
             {% set linkedIds = sanction.reports|map(r => r.id.toRfc4122) %}
             {% if availableReports is empty %}
                 <p class="text-sm text-gray-500">{{ 'sanction.no_eligible_reports'|trans({}, 'admin') }}</p>
@@ -83,7 +87,11 @@
 
             {% set selectedMeasureIds = sanction.measures|map(m => m.id.toRfc4122) %}
 
-            <div data-sanction-measures-target="measureSelector">
+            <div data-sanction-measures-target="measureSelector"
+                 {% if errors.measures is defined %}aria-invalid="true" tabindex="-1"{% endif %}>
+                {% if errors.measures is defined %}
+                    <p class="mb-3 text-xs text-red-600">{{ errors.measures }}</p>
+                {% endif %}
                 {% for group in measuresByCategory %}
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2 {{ not loop.first ? 'mt-4' : '' }}">
                         {{ group.category.name }}
@@ -116,6 +124,7 @@
                     name="no_measure_reason"
                     label="{{ 'sanction.field.no_measure_reason'|trans({}, 'admin') }}"
                     value="{{ sanction.noMeasureReason ?? '' }}"
+                    :error="errors.no_measure_reason ?? null"
                 />
             </div>
 
@@ -127,9 +136,13 @@
                     </label>
                     <input type="date" id="effective_from" name="effective_from"
                            value="{{ sanction.effectiveFrom ? sanction.effectiveFrom|date('Y-m-d') : '' }}"
+                           {% if errors.effective_from is defined %}aria-invalid="true"{% endif %}
                            data-sanction-measures-target="effectiveFrom"
                            class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
                                   focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                    {% if errors.effective_from is defined %}
+                        <p class="mt-1 text-xs text-red-600">{{ errors.effective_from }}</p>
+                    {% endif %}
                 </div>
                 <div>
                     <label for="effective_to" class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -137,9 +150,13 @@
                     </label>
                     <input type="date" id="effective_to" name="effective_to"
                            value="{{ sanction.effectiveTo ? sanction.effectiveTo|date('Y-m-d') : '' }}"
+                           {% if errors.effective_to is defined %}aria-invalid="true"{% endif %}
                            data-sanction-measures-target="effectiveTo"
                            class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
                                   focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                    {% if errors.effective_to is defined %}
+                        <p class="mt-1 text-xs text-red-600">{{ errors.effective_to }}</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -154,6 +171,8 @@
                 name="details"
                 label="{{ 'sanction.field.details'|trans({}, 'admin') }}"
                 value="{{ sanction.details }}"
+                :required="true"
+                :error="errors.details ?? null"
             />
         </div>
 

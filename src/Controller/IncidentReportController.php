@@ -114,7 +114,7 @@ class IncidentReportController extends AbstractController
                     $activeYear      = $centre->getActiveAcademicYear();
                     $selectedTeacher = $activeYear !== null ? $this->teachers->findByAcademicYearAndId($activeYear, $registeredByRaw) : null;
                     if ($selectedTeacher === null) {
-                        $errors[] = $this->t('incident.error.invalid_teacher');
+                        $errors['registered_by'] = $this->t('incident.error.invalid_teacher');
                     } else {
                         $registeredBy = $selectedTeacher;
                     }
@@ -130,15 +130,15 @@ class IncidentReportController extends AbstractController
             $tasksCompletedRaw = $request->request->getString('tasks_completed');
 
             if (empty($studentPairs)) {
-                $errors[] = $this->t('incident.error.no_students');
+                $errors['students'] = $this->t('incident.error.no_students');
             }
 
             if (empty($behaviorIds)) {
-                $errors[] = $this->t('incident.error.no_behaviors');
+                $errors['behaviors'] = $this->t('incident.error.no_behaviors');
             }
 
             if ($description === '') {
-                $errors[] = $this->t('incident.error.description_required');
+                $errors['description'] = $this->t('incident.error.description_required');
             }
 
             $occurredAt = null;
@@ -146,7 +146,7 @@ class IncidentReportController extends AbstractController
                 try {
                     $occurredAt = new \DateTimeImmutable($occurredAtRaw);
                 } catch (\Exception) {
-                    $errors[] = $this->t('incident.field.occurred_at') . ' inválida.';
+                    $errors['occurred_at'] = $this->t('incident.field.occurred_at') . ' inválida.';
                 }
             } else {
                 $occurredAt = new \DateTimeImmutable();
@@ -383,7 +383,7 @@ class IncidentReportController extends AbstractController
                 $registeredByRaw = trim($request->request->getString('registered_by'));
                 $registeredBy    = $this->teachers->findByAcademicYearAndId($report->getAcademicYear(), $registeredByRaw);
                 if ($registeredBy === null) {
-                    $errors[] = $this->t('incident.error.invalid_teacher');
+                    $errors['registered_by'] = $this->t('incident.error.invalid_teacher');
                 }
 
                 $studentGroupParts = explode('::', trim($request->request->getString('student_group')), 2);
@@ -398,18 +398,18 @@ class IncidentReportController extends AbstractController
                 if ($student === null || $group === null
                     || $group->getProgrammeYear()->getProgramme()->getAcademicYear() !== $report->getAcademicYear()
                 ) {
-                    $errors[] = $this->t('incident.error.invalid_student');
+                    $errors['student_group'] = $this->t('incident.error.invalid_student');
                     $student  = null;
                     $group    = null;
                 }
             }
 
             if (empty($behaviorIds)) {
-                $errors[] = $this->t('incident.error.no_behaviors');
+                $errors['behaviors'] = $this->t('incident.error.no_behaviors');
             }
 
             if ($description === '') {
-                $errors[] = $this->t('incident.error.description_required');
+                $errors['description'] = $this->t('incident.error.description_required');
             }
 
             $occurredAt = null;
@@ -417,7 +417,7 @@ class IncidentReportController extends AbstractController
                 try {
                     $occurredAt = new \DateTimeImmutable($occurredAtRaw);
                 } catch (\Exception) {
-                    $errors[] = $this->t('incident.field.occurred_at') . ' inválida.';
+                    $errors['occurred_at'] = $this->t('incident.field.occurred_at') . ' inválida.';
                 }
             }
 

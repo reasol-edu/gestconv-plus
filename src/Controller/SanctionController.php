@@ -101,19 +101,19 @@ class SanctionController extends AbstractController
                 $effectiveToRaw   = trim($request->request->getString('effective_to'));
 
                 if (empty($reportIds)) {
-                    $errors[] = $this->t('sanction.error.no_reports');
+                    $errors['reports'] = $this->t('sanction.error.no_reports');
                 }
 
                 if ($details === '') {
-                    $errors[] = $this->t('sanction.error.details_required');
+                    $errors['details'] = $this->t('sanction.error.details_required');
                 }
 
                 if (!$noMeasure && empty($measureIds)) {
-                    $errors[] = $this->t('sanction.error.no_measures');
+                    $errors['measures'] = $this->t('sanction.error.no_measures');
                 }
 
                 if ($noMeasure && $noMeasureReason === '') {
-                    $errors[] = $this->t('sanction.error.no_measure_reason_required');
+                    $errors['no_measure_reason'] = $this->t('sanction.error.no_measure_reason_required');
                 }
 
                 /** @var list<\App\Entity\SanctionMeasure> $selectedMeasures */
@@ -143,19 +143,19 @@ class SanctionController extends AbstractController
 
                 if ($requiresDates) {
                     if ($effectiveFromRaw === '') {
-                        $errors[] = $this->t('sanction.error.effective_from_required');
+                        $errors['effective_from'] = $this->t('sanction.error.effective_from_required');
                     } else {
                         $effectiveFrom = \DateTimeImmutable::createFromFormat('Y-m-d', $effectiveFromRaw) ?: null;
                         if ($effectiveFrom === null) {
-                            $errors[] = $this->t('sanction.error.effective_from_invalid');
+                            $errors['effective_from'] = $this->t('sanction.error.effective_from_invalid');
                         }
                     }
                     if ($effectiveToRaw === '') {
-                        $errors[] = $this->t('sanction.error.effective_to_required');
+                        $errors['effective_to'] = $this->t('sanction.error.effective_to_required');
                     } else {
                         $effectiveTo = \DateTimeImmutable::createFromFormat('Y-m-d', $effectiveToRaw) ?: null;
                         if ($effectiveTo === null) {
-                            $errors[] = $this->t('sanction.error.effective_to_invalid');
+                            $errors['effective_to'] = $this->t('sanction.error.effective_to_invalid');
                         }
                     }
                 }
@@ -305,19 +305,19 @@ class SanctionController extends AbstractController
             $effectiveToRaw   = trim($request->request->getString('effective_to'));
 
             if (empty($reportIds)) {
-                $errors[] = $this->t('sanction.error.no_reports');
+                $errors['reports'] = $this->t('sanction.error.no_reports');
             }
 
             if ($details === '') {
-                $errors[] = $this->t('sanction.error.details_required');
+                $errors['details'] = $this->t('sanction.error.details_required');
             }
 
             if (!$noMeasure && empty($measureIds)) {
-                $errors[] = $this->t('sanction.error.no_measures');
+                $errors['measures'] = $this->t('sanction.error.no_measures');
             }
 
             if ($noMeasure && $noMeasureReason === '') {
-                $errors[] = $this->t('sanction.error.no_measure_reason_required');
+                $errors['no_measure_reason'] = $this->t('sanction.error.no_measure_reason_required');
             }
 
             /** @var list<\App\Entity\SanctionMeasure> $selectedMeasures */
@@ -347,19 +347,19 @@ class SanctionController extends AbstractController
 
             if ($requiresDates) {
                 if ($effectiveFromRaw === '') {
-                    $errors[] = $this->t('sanction.error.effective_from_required');
+                    $errors['effective_from'] = $this->t('sanction.error.effective_from_required');
                 } else {
                     $effectiveFrom = \DateTimeImmutable::createFromFormat('Y-m-d', $effectiveFromRaw) ?: null;
                     if ($effectiveFrom === null) {
-                        $errors[] = $this->t('sanction.error.effective_from_invalid');
+                        $errors['effective_from'] = $this->t('sanction.error.effective_from_invalid');
                     }
                 }
                 if ($effectiveToRaw === '') {
-                    $errors[] = $this->t('sanction.error.effective_to_required');
+                    $errors['effective_to'] = $this->t('sanction.error.effective_to_required');
                 } else {
                     $effectiveTo = \DateTimeImmutable::createFromFormat('Y-m-d', $effectiveToRaw) ?: null;
                     if ($effectiveTo === null) {
-                        $errors[] = $this->t('sanction.error.effective_to_invalid');
+                        $errors['effective_to'] = $this->t('sanction.error.effective_to_invalid');
                     }
                 }
             }
