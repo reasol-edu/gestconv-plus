@@ -8,8 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Sanction;
 use App\Repository\SanctionRepository;
-use App\Service\CalendarSegmentBuilder;
-use App\Service\GroupColorPalette;
+use App\Service\CalendarMonthGridBuilder;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -36,8 +35,7 @@ class CalendarComponent extends AbstractController
         private readonly TenantContext $tenantContext,
         private readonly TranslatorInterface $translator,
         private readonly SanctionRepository $sanctionRepository,
-        private readonly GroupColorPalette $colorPalette,
-        private readonly CalendarSegmentBuilder $segmentBuilder,
+        private readonly CalendarMonthGridBuilder $gridBuilder,
     ) {}
 
     public function mount(): void
@@ -96,68 +94,9 @@ class CalendarComponent extends AbstractController
             return [];
         }
 
-        $sanctions   = $this->getSanctionsForYear($academicYear);
-        $sanctionsById = [];
-        foreach ($sanctions as $sanction) {
-            $sanctionsById[$sanction->getId()->toRfc4122()] = $sanction;
-        }
+        $sanctions = $this->getSanctionsForYear($academicYear);
 
-        $firstDay  = (new \DateTimeImmutable())->setDate($this->year, $this->month, 1)->setTime(0, 0, 0);
-        $lastDay   = $firstDay->modify('last day of this month');
-        $startDow  = (int) $firstDay->format('N');
-        $gridStart = $firstDay->modify('-' . ($startDow - 1) . ' days');
-        $endDow    = (int) $lastDay->format('N');
-        $gridEnd   = $lastDay->modify('+' . (7 - $endDow) . ' days');
-
-        $weeks  = [];
-        $cursor = $gridStart;
-        while ($cursor <= $gridEnd) {
-            $days = [];
-            $d    = $cursor;
-            for ($i = 0; $i < 7; $i++) {
-                // No hay clase en sábado y domingo (N: 6 y 7): no se muestran en el calendario.
-                if ((int) $d->format('N') <= 5) {
-                    $days[] = $d;
-                }
-                $d = $d->modify('+1 day');
-            }
-
-            $weekStart = $days[0];
-            $weekEnd   = $days[count($days) - 1];
-
-            $events = [];
-            foreach ($sanctions as $sanction) {
-                $start = $sanction->getEffectiveFrom();
-                if ($start === null) {
-                    continue;
-                }
-                $end = $sanction->getEffectiveTo() ?? $start;
-                if ($end < $weekStart || $start > $weekEnd) {
-                    continue;
-                }
-                $events[] = ['id' => $sanction->getId()->toRfc4122(), 'start' => $start, 'end' => $end];
-            }
-
-            $layout   = $this->segmentBuilder->build($events, $days);
-            $segments = array_map(function (array $segment) use ($sanctionsById): array {
-                $sanction = $sanctionsById[$segment['id']];
-                $group    = $sanction->getGroup();
-
-                return [
-                    'startCol' => $segment['startCol'],
-                    'span'     => $segment['span'],
-                    'lane'     => $segment['lane'],
-                    'label'    => $sanction->getStudent()->getName()->full() . ' · ' . $group->getName(),
-                    'details'  => trim(strip_tags($sanction->getDetails())),
-                    'color'    => $this->colorPalette->colorFor($group->getId()->toRfc4122()),
-                ];
-            }, $layout['segments']);
-
-            $weeks[] = ['days' => $days, 'segments' => $segments, 'maxLane' => $layout['maxLane']];
-            $cursor  = $cursor->modify('+7 days');
-        }
-
-        return $weeks;
+        return $this->gridBuilder->build($this->year, $this->month, $sanctions);
     }
 
     public function isToday(\DateTimeImmutable $day): bool
