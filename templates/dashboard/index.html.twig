@@ -35,18 +35,20 @@
 
     {# ── Accesos rápidos ───────────────────────────────────────────────────── #}
     {% set can_students_section = is_granted('educational_centre.section', active_centre) %}
-    {% if not viewing_past and can_students_section %}
-        <div class="flex flex-wrap gap-2">
-            <a href="{{ path('app_admin_students_import', {centreId: active_centre.id}) }}"
-               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-xs hover:border-forest-300 hover:text-forest-700 transition-colors">
-                {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-3.5 w-3.5'}) }}
-                {{ 'action_import_students'|trans({}, 'dashboard') }}
-            </a>
+    {% if not viewing_past %}
+        <div class="flex flex-wrap items-center gap-2">
             <a href="{{ path('app_incidents_new') }}"
-               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-xs hover:border-forest-300 hover:text-forest-700 transition-colors">
-                {{ ux_icon('heroicons:plus', {class: 'h-3.5 w-3.5'}) }}
+               class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-forest-700 transition-colors">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
                 {{ 'incident.new'|trans({}, 'admin') }}
             </a>
+            {% if can_students_section %}
+                <a href="{{ path('app_admin_students_import', {centreId: active_centre.id}) }}"
+                   class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-xs hover:border-forest-300 hover:text-forest-700 transition-colors">
+                    {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-3.5 w-3.5'}) }}
+                    {{ 'action_import_students'|trans({}, 'dashboard') }}
+                </a>
+            {% endif %}
         </div>
     {% endif %}
 
