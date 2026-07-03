@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/centros/{centreId}/estudiantes')]
+#[Route('/centros/{centreId}/estudiantes')]
 class StudentController extends AbstractController
 {
     public function __construct(

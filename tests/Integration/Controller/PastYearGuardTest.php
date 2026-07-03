@@ -27,7 +27,7 @@ class PastYearGuardTest extends ControllerTestCase
         $this->loginAs($admin, $centre);
         $this->viewPastYear($pastYear);
 
-        $this->client->request($method, '/admin/centros/' . $centre->getId()->toRfc4122() . $pathSuffix);
+        $this->client->request($method, '/centros/' . $centre->getId()->toRfc4122() . $pathSuffix);
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -56,7 +56,7 @@ class PastYearGuardTest extends ControllerTestCase
         $this->loginAs($admin, $centre);
         $this->viewPastYear($pastYear);
 
-        $crawler = $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso');
+        $crawler = $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists('a[href*="/importar"]');
@@ -73,7 +73,7 @@ class PastYearGuardTest extends ControllerTestCase
         $this->loginAs($admin, $centre);
         $this->viewPastYear($pastYear);
 
-        $this->client->request($method, '/admin/centros/' . $centre->getId()->toRfc4122() . '/estudiantes' . $pathSuffix);
+        $this->client->request($method, '/centros/' . $centre->getId()->toRfc4122() . '/estudiantes' . $pathSuffix);
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -95,7 +95,7 @@ class PastYearGuardTest extends ControllerTestCase
         $this->loginAs($admin, $centre);
         $this->viewPastYear($pastYear);
 
-        $crawler = $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/estudiantes');
+        $crawler = $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/estudiantes');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists('a[href*="/nuevo"]');
@@ -111,7 +111,7 @@ class PastYearGuardTest extends ControllerTestCase
         $this->loginAs($admin, $centre);
         $this->viewPastYear($pastYear);
 
-        $this->client->request($method, '/admin/centros/' . $centre->getId()->toRfc4122() . '/offer' . $pathSuffix);
+        $this->client->request($method, '/centros/' . $centre->getId()->toRfc4122() . '/offer' . $pathSuffix);
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -128,7 +128,7 @@ class PastYearGuardTest extends ControllerTestCase
         $this->loginAs($admin, $centre);
         $this->viewPastYear($pastYear);
 
-        $crawler = $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/offer');
+        $crawler = $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/offer');
 
         self::assertResponseIsSuccessful();
         // Write button (import) hidden
@@ -171,7 +171,7 @@ class PastYearGuardTest extends ControllerTestCase
         $this->loginAs($admin, $centre);
         // No viewPastYear() call — session has no year override
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso/registrar');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso/registrar');
 
         self::assertResponseIsSuccessful();
     }
@@ -181,7 +181,7 @@ class PastYearGuardTest extends ControllerTestCase
         [$admin, $centre] = $this->makeCentreWithTwoYears();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/estudiantes/nuevo');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/estudiantes/nuevo');
 
         self::assertResponseIsSuccessful();
     }
@@ -191,7 +191,7 @@ class PastYearGuardTest extends ControllerTestCase
         [$admin, $centre] = $this->makeCentreWithTwoYears();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/offer/import');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/offer/import');
 
         self::assertResponseIsSuccessful();
     }

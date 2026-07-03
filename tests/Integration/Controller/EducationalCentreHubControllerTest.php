@@ -12,16 +12,19 @@ use App\Tests\Integration\ControllerTestCase;
 
 class EducationalCentreHubControllerTest extends ControllerTestCase
 {
-    public function testIndexRedirectsToSelectCentreWhenNoTenantSet(): void
+    public function testIndexReturns404ForNonexistentCentre(): void
     {
         $teacher = $this->makeTeacher('teacher.1');
-        $this->persist($teacher);
-        $this->loginAs($teacher);
+        $centre  = (new EducationalCentre())->setCode('41000099')->setName('IES Test')->setCity('Sevilla');
+        $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
+        $this->persist($teacher, $centre, $year);
+        $centre->setActiveAcademicYear($year);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/centro');
+        $this->client->request('GET', '/centros/00000000-0000-0000-0000-000000000000');
 
-        self::assertResponseRedirects();
-        self::assertStringContainsString('/centro', (string) $this->client->getResponse()->headers->get('Location'));
+        self::assertResponseStatusCodeSame(404);
     }
 
     public function testIndexRendersPageForGlobalAdmin(): void
@@ -34,7 +37,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/centro');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
     }
@@ -50,7 +53,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/centro');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
     }
@@ -65,7 +68,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/centro');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122());
 
         self::assertResponseStatusCodeSame(403);
     }

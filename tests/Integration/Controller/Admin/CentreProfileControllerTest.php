@@ -19,7 +19,7 @@ class CentreProfileControllerTest extends ControllerTestCase
         [$cadmin, $centre] = $this->makeScenario();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
 
         self::assertResponseIsSuccessful();
     }
@@ -31,7 +31,7 @@ class CentreProfileControllerTest extends ControllerTestCase
         $this->persist($globalAdmin);
         $this->loginAs($globalAdmin);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
 
         self::assertResponseIsSuccessful();
     }
@@ -43,7 +43,7 @@ class CentreProfileControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -57,7 +57,7 @@ class CentreProfileControllerTest extends ControllerTestCase
 
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists('form');
@@ -77,7 +77,7 @@ class CentreProfileControllerTest extends ControllerTestCase
 
         $this->loginAs($cadmin);
 
-        $crawler = $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
+        $crawler = $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/perfiles');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('select[name="committee_members[]"] option[value="' . $member->getId()->toRfc4122() . '"][selected]');
@@ -96,16 +96,16 @@ class CentreProfileControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/perfiles');
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/perfiles');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/perfiles', [
+        $this->client->request('POST', '/centros/' . $centreId . '/perfiles', [
             '_token'           => $token,
             'committee_members' => [$member->getId()->toRfc4122()],
             'counselors'         => [$counselor->getId()->toRfc4122()],
         ]);
 
-        self::assertResponseRedirects('/admin/centros/' . $centreId . '/perfiles');
+        self::assertResponseRedirects('/centros/' . $centreId . '/perfiles');
 
         $this->em->clear();
         $updated          = $this->em->find(EducationalCentre::class, $centre->getId());
@@ -127,14 +127,14 @@ class CentreProfileControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/perfiles');
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/perfiles');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/perfiles', [
+        $this->client->request('POST', '/centros/' . $centreId . '/perfiles', [
             '_token' => $token,
         ]);
 
-        self::assertResponseRedirects('/admin/centros/' . $centreId . '/perfiles');
+        self::assertResponseRedirects('/centros/' . $centreId . '/perfiles');
 
         $this->em->clear();
         $updated         = $this->em->find(EducationalCentre::class, $centre->getId());
@@ -148,7 +148,7 @@ class CentreProfileControllerTest extends ControllerTestCase
         [$cadmin, $centre] = $this->makeScenario();
         $this->loginAs($cadmin);
 
-        $this->client->request('POST', '/admin/centros/' . $centre->getId()->toRfc4122() . '/perfiles', [
+        $this->client->request('POST', '/centros/' . $centre->getId()->toRfc4122() . '/perfiles', [
             '_token' => 'invalid-token',
         ]);
 

@@ -107,8 +107,8 @@ abstract class ControllerTestCase extends WebTestCase
     {
         $this->client->loginUser($teacher);
         // One request is needed to materialise the session file before we can
-        // add keys to it.  /centro is always accessible to an authenticated teacher.
-        $this->client->request('GET', '/centro');
+        // add keys to it. / is always accessible to an authenticated teacher.
+        $this->client->request('GET', '/');
 
         if ($centre !== null) {
             $session = $this->client->getRequest()->getSession();

@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/centros/{centreId}/perfiles')]
+#[Route('/centros/{centreId}/perfiles')]
 class CentreProfileController extends AbstractController
 {
     public function __construct(

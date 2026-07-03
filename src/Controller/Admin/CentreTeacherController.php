@@ -23,7 +23,7 @@ use App\Security\Voter\EducationalCentreVoter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/centros/{centreId}/docentes-curso')]
+#[Route('/centros/{centreId}/docentes-curso')]
 class CentreTeacherController extends AbstractController
 {
     public function __construct(

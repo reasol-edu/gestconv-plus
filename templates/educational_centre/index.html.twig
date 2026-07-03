@@ -199,7 +199,7 @@
 
         {# ── Ajustes del centro ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ path('app_educational_centre_settings') }}"
+            <a href="{{ path('app_educational_centre_settings', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">

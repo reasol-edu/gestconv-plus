@@ -149,7 +149,7 @@
                     or current_route starts with 'app_admin_programmes'
                     or current_route starts with 'app_admin_levels'
                     or current_route starts with 'app_admin_groups' %}
-                <a href="{{ path('app_educational_centre_index') }}"
+                <a href="{{ path('app_educational_centre_index', {centreId: active_centre.id}) }}"
                    class="{{ centre_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:building-library', {class: 'h-5 w-5 shrink-0'}) }}
