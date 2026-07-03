@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - La importación de estudiantes desde el CSV de Séneca rellena también el correo electrónico de los tutores legales, además de teléfonos y observaciones.
 - Los administradores pueden reasignar el docente y el estudiante de un parte ya registrado.
 
+### Changed
+
+- La tarjeta «Pendientes de notificar» del inicio se muestra siempre: en verde cuando no queda nada por comunicar a las familias.
+
 ### Fixed
 
 - El acceso rápido «Nuevo parte» del inicio solo aparecía al equipo directivo; ahora lo ve todo el profesorado, como describe el manual.

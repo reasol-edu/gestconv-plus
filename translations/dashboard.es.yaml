@@ -17,6 +17,7 @@ active_sanctions_help: 'en vigor actualmente'
 
 pending_notifications: 'Pendientes de notificar'
 pending_notifications_help: 'partes y sanciones sin comunicar a la familia'
+pending_notifications_none: 'todo comunicado a las familias'
 
 action_import_students: 'Importar estudiantes'
 
