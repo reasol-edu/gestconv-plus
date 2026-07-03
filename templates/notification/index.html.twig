@@ -10,15 +10,6 @@
         <p class="mt-1 text-sm text-gray-500">{{ 'notification.index.help'|trans({}, 'notifications') }}</p>
     </div>
 
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="rounded-xl px-4 py-3 text-sm font-medium
-                        {{ label == 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endfor %}
-
     {# ── Partes pendientes ─────────────────────────────────────────── #}
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
         <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">

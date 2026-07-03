@@ -15,15 +15,6 @@
         <h1 class="text-2xl font-bold text-gray-900">{{ 'sanction_measure.import.title'|trans({}, 'admin') }}</h1>
     </div>
 
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="rounded-xl px-4 py-3 text-sm font-medium
-                        {{ label == 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endfor %}
-
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
             <h2 class="text-base font-semibold text-gray-900">{{ 'sanction_measure.import.title'|trans({}, 'admin') }}</h2>

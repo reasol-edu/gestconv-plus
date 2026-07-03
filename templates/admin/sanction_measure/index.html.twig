@@ -37,15 +37,6 @@
         </div>
     </div>
 
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="rounded-xl px-4 py-3 text-sm font-medium
-                        {{ label == 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endfor %}
-
     {% if categories is empty %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-16 text-center">
             {{ ux_icon('heroicons:scale', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}

@@ -23,15 +23,6 @@
         </p>
     </div>
 
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="rounded-xl px-4 py-3 text-sm font-medium
-                        {{ label == 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endfor %}
-
     {% if sanction.isNotified %}
         <div class="rounded-xl px-4 py-3 text-sm font-medium bg-green-50 text-green-800 border border-green-200 flex items-center gap-2">
             {{ ux_icon('heroicons:check-circle', {class: 'h-4 w-4 shrink-0'}) }}
