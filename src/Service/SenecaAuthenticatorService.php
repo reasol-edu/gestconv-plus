@@ -23,6 +23,8 @@ use Psr\Log\LoggerInterface;
 use Random\RandomException;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SenecaAuthenticatorService
 {
@@ -33,6 +35,7 @@ class SenecaAuthenticatorService
         private readonly bool $forceSecurity,
         #[Autowire(env: 'bool:APP_EXTERNAL_ENABLED')]
         private readonly bool $enabled,
+        private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
     ) {
         if (!$this->forceSecurity) {
@@ -105,53 +108,25 @@ class SenecaAuthenticatorService
             return '';
         }
 
-        $fieldsString = '';
-        foreach ($fields as $key => $value) {
-            $fieldsString .= $key.'='.rawurlencode((string) $value).'&';
-        }
-        $fieldsString = rtrim($fieldsString, '&');
+        try {
+            $response = $this->httpClient->request('POST', $postUrl, [
+                'verify_peer' => $forceSecurity,
+                'verify_host' => $forceSecurity,
+                'timeout' => 10,
+                'max_redirects' => 2,
+                'headers' => [
+                    'Referer' => $refererUrl,
+                    'User-Agent' => 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) ' .
+                        'AppleWebKit/533.4 (KHTML, like Gecko) Chrome/5.0.375.125 Safari/533.4',
+                ],
+                'body' => $fields,
+            ]);
 
-        $curl = curl_init();
+            return $response->getContent(false);
+        } catch (ExceptionInterface $e) {
+            $this->logger->error('iSéneca HTTP client error', ['exception' => $e]);
 
-        if ($curl === false) {
             return '';
         }
-
-        $this->setCurlDefaultOptions($postUrl, $forceSecurity, $curl);
-        curl_setopt($curl, CURLOPT_REFERER, $refererUrl);
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $fieldsString);
-        $str = curl_exec($curl);
-        if ($str === false) {
-            $this->logger->error('iSéneca cURL error', [
-                'errno' => curl_errno($curl),
-                'error' => curl_error($curl),
-            ]);
-        }
-        curl_close($curl);
-
-        return $str === false ? '' : (string) $str;
-    }
-
-    private function setCurlDefaultOptions(string $url, bool $forceSecurity, \CurlHandle $curl): void
-    {
-        if ($url === '') {
-            return;
-        }
-
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $forceSecurity);
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 10);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($curl, CURLOPT_MAXREDIRS, 2);
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt(
-            $curl,
-            CURLOPT_USERAGENT,
-            'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) ' .
-            'AppleWebKit/533.4 (KHTML, like Gecko) Chrome/5.0.375.125 Safari/533.4'
-        );
     }
 }
