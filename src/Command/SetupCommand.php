@@ -2,14 +2,10 @@
 
 namespace App\Command;
 
-use App\Entity\AcademicYear;
-use App\Entity\EducationalCentre;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Repository\TeacherRepository;
-use App\Service\CommunicationMethodSeeder;
-use App\Service\IncidentBehaviorSeeder;
-use App\Service\SanctionMeasureSeeder;
+use App\Service\CentreProvisioner;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -27,9 +23,7 @@ class SetupCommand extends Command
         private readonly TeacherRepository $teachers,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly TranslatorInterface $translator,
-        private readonly IncidentBehaviorSeeder $behaviorSeeder,
-        private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
-        private readonly CommunicationMethodSeeder $communicationMethodSeeder,
+        private readonly CentreProvisioner $centreProvisioner,
     ) {
         parent::__construct();
     }
@@ -53,28 +47,14 @@ class SetupCommand extends Command
         $year     = (int) (new \DateTimeImmutable())->format('Y');
         $yearName = $year . '-' . ($year + 1);
 
-        $centre = new EducationalCentre();
-        $centre->setCode('23999999');
-        $centre->setName('IES Test');
-        $centre->setCity('Linares');
-
-        $academicYear = (new AcademicYear())
-            ->setName($yearName)
-            ->setEducationalCentre($centre);
-
-        $centre->setActiveAcademicYear($academicYear);
+        $this->centreProvisioner->provision('23999999', 'IES Test', 'Linares', $yearName);
 
         $teacher = new Teacher(new PersonName('Admin', 'User'));
         $teacher->setUsername('admin');
         $teacher->setPassword($this->passwordHasher->hashPassword($teacher, 'admin'));
         $teacher->setAdmin(true);
 
-        $this->em->persist($centre);
-        $this->em->persist($academicYear);
         $this->em->persist($teacher);
-        $this->behaviorSeeder->seedForCentre($centre);
-        $this->sanctionMeasureSeeder->seedForCentre($centre);
-        $this->communicationMethodSeeder->seedForCentre($centre);
         $this->em->flush();
 
         $io->success($t('setup.success'));

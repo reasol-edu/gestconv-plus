@@ -2,13 +2,8 @@
 
 namespace App\Command;
 
-use App\Entity\AcademicYear;
-use App\Entity\EducationalCentre;
 use App\Repository\EducationalCentreRepository;
-use App\Service\CommunicationMethodSeeder;
-use App\Service\IncidentBehaviorSeeder;
-use App\Service\SanctionMeasureSeeder;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\CentreProvisioner;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,12 +16,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class CreateEducationalCentreCommand extends Command
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
         private readonly TranslatorInterface $translator,
-        private readonly IncidentBehaviorSeeder $behaviorSeeder,
-        private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
-        private readonly CommunicationMethodSeeder $communicationMethodSeeder,
+        private readonly CentreProvisioner $centreProvisioner,
     ) {
         parent::__construct();
     }
@@ -77,23 +69,7 @@ class CreateEducationalCentreCommand extends Command
         $year = (int) (new \DateTimeImmutable())->format('Y');
         $yearName = $year . '-' . ($year + 1);
 
-        $centre = new EducationalCentre();
-        $centre->setCode($code);
-        $centre->setName($name);
-        $centre->setCity($city);
-
-        $academicYear = (new AcademicYear())
-            ->setName($yearName)
-            ->setEducationalCentre($centre);
-
-        $centre->setActiveAcademicYear($academicYear);
-
-        $this->em->persist($centre);
-        $this->em->persist($academicYear);
-        $this->behaviorSeeder->seedForCentre($centre);
-        $this->sanctionMeasureSeeder->seedForCentre($centre);
-        $this->communicationMethodSeeder->seedForCentre($centre);
-        $this->em->flush();
+        $this->centreProvisioner->provision($code, $name, $city, $yearName);
 
         $io->success($t('create_centre.success', ['%name%' => $name, '%code%' => $code, '%year%' => $yearName]));
 

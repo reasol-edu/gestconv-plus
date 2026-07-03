@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Entity\AcademicYear;
-use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Student;
 use App\Entity\Teacher;
-use App\Service\CommunicationMethodSeeder;
-use App\Service\IncidentBehaviorSeeder;
-use App\Service\SanctionMeasureSeeder;
+use App\Service\CentreProvisioner;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ObjectManager;
@@ -25,9 +22,7 @@ class AppFixtures extends Fixture
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly Connection $connection,
-        private readonly IncidentBehaviorSeeder $behaviorSeeder,
-        private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
-        private readonly CommunicationMethodSeeder $communicationMethodSeeder,
+        private readonly CentreProvisioner $centreProvisioner,
     ) {}
 
     public function load(ObjectManager $manager): void
@@ -226,19 +221,9 @@ class AppFixtures extends Fixture
      */
     private function buildAdaLovelace(ObjectManager $manager, array $teachers): array
     {
-        $centre = (new EducationalCentre())
-            ->setCode('23006123')
-            ->setName('IES Ada Lovelace')
-            ->setCity('Linares');
+        $centre = $this->centreProvisioner->provision('23006123', 'IES Ada Lovelace', 'Linares', '2025-2026');
+        $year   = $centre->requireActiveAcademicYear();
 
-        $year = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $centre->setActiveAcademicYear($year);
-        $manager->persist($centre);
-        $manager->persist($year);
-
-        $this->behaviorSeeder->seedForCentre($centre);
-        $this->sanctionMeasureSeeder->seedForCentre($centre);
-        $this->communicationMethodSeeder->seedForCentre($centre);
         $centre->addAdmin($teachers['rafael.exposito']);
         $centre->addAdmin($teachers['carmen.diaz']);
         foreach ($teachers as $t) {
@@ -276,19 +261,9 @@ class AppFixtures extends Fixture
      */
     private function buildMonterrubio(ObjectManager $manager, array $teachers): array
     {
-        $centre = (new EducationalCentre())
-            ->setCode('41017845')
-            ->setName('IES Monterrubio')
-            ->setCity('Utrera');
+        $centre = $this->centreProvisioner->provision('41017845', 'IES Monterrubio', 'Utrera', '2025-2026');
+        $year   = $centre->requireActiveAcademicYear();
 
-        $year = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $centre->setActiveAcademicYear($year);
-        $manager->persist($centre);
-        $manager->persist($year);
-
-        $this->behaviorSeeder->seedForCentre($centre);
-        $this->sanctionMeasureSeeder->seedForCentre($centre);
-        $this->communicationMethodSeeder->seedForCentre($centre);
         $centre->addAdmin($teachers['mariajose.alvarez']);
         $centre->addAdmin($teachers['pedro.fernandez']);
         foreach ($teachers as $t) {
