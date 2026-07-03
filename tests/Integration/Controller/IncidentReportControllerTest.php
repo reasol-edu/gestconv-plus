@@ -85,7 +85,9 @@ class IncidentReportControllerTest extends ControllerTestCase
             'expelled_from_class' => '0',
         ]);
 
-        self::assertResponseRedirects('/partes');
+        self::assertResponseRedirects();
+        $location = (string) $this->client->getResponse()->headers->get('Location');
+        self::assertStringStartsWith('/partes/creados?ids=', $location);
 
         $this->em->clear();
         $reports = $this->em->getRepository(IncidentReport::class)->findAll();
@@ -114,10 +116,36 @@ class IncidentReportControllerTest extends ControllerTestCase
             'description' => '<p>Incidente múltiple.</p>',
         ]);
 
-        self::assertResponseRedirects('/partes');
+        self::assertResponseRedirects();
+        $location = (string) $this->client->getResponse()->headers->get('Location');
+        self::assertStringStartsWith('/partes/creados?ids=', $location);
+        self::assertCount(2, explode(',', substr($location, strlen('/partes/creados?ids='))));
 
         $this->em->clear();
         self::assertCount(2, $this->em->getRepository(IncidentReport::class)->findAll());
+    }
+
+    public function testCreatedPageListsReports(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/creados?ids=' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', $student->getName()->getLastName());
+        self::assertSelectorExists('a[href="/partes/' . $report->getId()->toRfc4122() . '"]');
+    }
+
+    public function testCreatedPageWithUnknownIdsRedirectsToIndex(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/creados?ids=00000000-0000-0000-0000-000000000000');
+
+        self::assertResponseRedirects('/partes');
     }
 
     public function testNewPostWithNoStudentsShowsError(): void
@@ -179,9 +207,9 @@ class IncidentReportControllerTest extends ControllerTestCase
             'expelled_from_class' => '0',
         ]);
 
-        // El par estudiante/grupo de otro centro se descarta silenciosamente: no
-        // se crea ningún parte, aunque la petición redirige como si hubiera éxito.
-        self::assertResponseRedirects('/partes');
+        // El par estudiante/grupo de otro centro se descarta: no se crea ningún
+        // parte y se vuelve al formulario con un error.
+        self::assertResponseRedirects('/partes/nuevo');
 
         $this->em->clear();
         self::assertCount(0, $this->em->getRepository(IncidentReport::class)->findAll());
@@ -253,7 +281,8 @@ class IncidentReportControllerTest extends ControllerTestCase
             'registered_by' => $newTeacher->getId()->toRfc4122(),
         ]);
 
-        self::assertResponseRedirects('/partes');
+        self::assertResponseRedirects();
+        self::assertStringStartsWith('/partes/creados?ids=', (string) $this->client->getResponse()->headers->get('Location'));
 
         $this->em->clear();
         $reports = $this->em->getRepository(IncidentReport::class)->findAll();
@@ -284,7 +313,8 @@ class IncidentReportControllerTest extends ControllerTestCase
             'registered_by' => $otherTeacher->getId()->toRfc4122(),
         ]);
 
-        self::assertResponseRedirects('/partes');
+        self::assertResponseRedirects();
+        self::assertStringStartsWith('/partes/creados?ids=', (string) $this->client->getResponse()->headers->get('Location'));
 
         $this->em->clear();
         $reports = $this->em->getRepository(IncidentReport::class)->findAll();

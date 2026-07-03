@@ -1,0 +1,81 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'incident.created.title'|trans({'%count%': reports|length}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            <a href="{{ path('app_incidents_index') }}" class="hover:text-forest-600 transition-colors">{{ 'incident.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
+                {{ ux_icon('heroicons:check', {class: 'h-5 w-5'}) }}
+            </span>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {{ 'incident.created.title'|trans({'%count%': reports|length}, 'admin') }}
+            </h1>
+        </div>
+        <p class="mt-2 text-sm text-gray-500">
+            {{ 'incident.created.next_step'|trans({}, 'admin') }}
+        </p>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs divide-y divide-gray-100">
+        {% for report in reports %}
+            <div class="flex items-center justify-between gap-4 px-6 py-4 flex-wrap">
+                <div class="min-w-0">
+                    <p class="text-sm font-medium text-gray-900">
+                        <span class="font-mono text-xs text-gray-400 mr-1">#{{ report.number }}</span>
+                        {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+                    </p>
+                    <p class="mt-0.5 text-xs text-gray-500">{{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a href="{{ path('app_incidents_show', {id: report.id}) }}"
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700
+                              hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                        {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
+                        {{ 'incident.view'|trans({}, 'admin') }}
+                    </a>
+                    {% if report.isNotified %}
+                        <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-1 text-xs font-medium">
+                            {{ ux_icon('heroicons:check-circle', {class: 'h-3.5 w-3.5'}) }}
+                            {{ 'notification.badge.notified'|trans({}, 'notifications') }}
+                        </span>
+                    {% elseif is_granted('incident_report.notify', report) %}
+                        <a href="{{ path('app_notifications_register_report', {id: report.id}) }}"
+                           class="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-1.5 text-xs font-semibold text-white
+                                  hover:bg-forest-700 transition-colors shadow-xs">
+                            {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}
+                            {{ 'incident.created.notify'|trans({}, 'admin') }}
+                        </a>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2.5 py-1 text-xs font-medium">
+                            {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}
+                            {{ 'notification.badge.pending'|trans({}, 'notifications') }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="flex items-center justify-end gap-3">
+        <a href="{{ path('app_incidents_index') }}"
+           class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                  hover:bg-gray-50 transition-colors">
+            {{ 'incident.created.back_to_list'|trans({}, 'admin') }}
+        </a>
+        <a href="{{ path('app_incidents_new') }}"
+           class="inline-flex items-center gap-2 rounded-xl border border-forest-200 bg-forest-50 px-4 py-2.5 text-sm font-medium text-forest-700
+                  hover:bg-forest-100 transition-colors">
+            {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+            {{ 'incident.created.create_another'|trans({}, 'admin') }}
+        </a>
+    </div>
+
+</div>
+{% endblock %}

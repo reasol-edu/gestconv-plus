@@ -173,6 +173,9 @@ class IncidentReportController extends AbstractController
                 /** @var array<string, int> $nextNumbers next number per academic-year ID */
                 $nextNumbers = [];
 
+                /** @var list<IncidentReport> $createdReports */
+                $createdReports = [];
+
                 foreach ($studentPairs as $pair) {
                     if (!is_string($pair)) {
                         continue;
@@ -216,13 +219,23 @@ class IncidentReportController extends AbstractController
                     }
 
                     $this->em->persist($report);
+                    $createdReports[] = $report;
                 }
 
                 $this->em->flush();
 
-                $this->addFlash('success', $this->t('incident.flash.created'));
+                if ($createdReports === []) {
+                    $this->addFlash('error', $this->t('incident.error.no_students'));
 
-                return $this->redirectToRoute('app_incidents_index');
+                    return $this->redirectToRoute('app_incidents_new');
+                }
+
+                return $this->redirectToRoute('app_incidents_created', [
+                    'ids' => implode(',', array_map(
+                        static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
+                        $createdReports,
+                    )),
+                ]);
             }
 
             // Validation failed — preserve submitted values for re-render
@@ -268,6 +281,42 @@ class IncidentReportController extends AbstractController
             'preloadedStudents'   => $preloadedStudents,
             'canChooseTeacher'    => $canChooseTeacher,
             'selectedTeacher'     => $registeredBy,
+        ]);
+    }
+
+    #[Route('/creados', name: 'app_incidents_created', methods: ['GET'])]
+    public function created(Request $request): Response
+    {
+        $centre = $this->tenantContext->getSelectedCentre();
+        if ($centre === null) {
+            return $this->redirectToRoute('app_select_centre');
+        }
+
+        if (!$this->getUser() instanceof Teacher) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $ids = array_slice(
+            array_values(array_filter(explode(',', $request->query->getString('ids')))),
+            0,
+            50,
+        );
+
+        $createdReports = [];
+        foreach ($ids as $id) {
+            $report = $this->reports->findById($id);
+            if ($report !== null && $this->isGranted(IncidentReportVoter::VIEW, $report)) {
+                $createdReports[] = $report;
+            }
+        }
+
+        if ($createdReports === []) {
+            return $this->redirectToRoute('app_incidents_index');
+        }
+
+        return $this->render('incident/created.html.twig', [
+            'centre'  => $centre,
+            'reports' => $createdReports,
         ]);
     }
 

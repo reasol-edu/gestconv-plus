@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Al registrar un parte, una pantalla de confirmación muestra los partes creados (uno por alumno) con acceso directo para notificar a la familia, crear otro parte o volver al listado.
 - Nuevos perfiles especiales de centro, asignables desde la card **Perfiles** del hub de centro educativo: **Comisión de convivencia** (acceso a todos los partes del centro y permiso para registrar sanciones de cualquier estudiante, con los mismos permisos que un administrador de centro) y **Orientador/a** (visibilidad de todos los partes y sanciones del centro, sin permiso para modificarlos si no los ha registrado).
 - Importación y exportación en JSON de conductas contrarias y medidas disciplinarias, con opción de vaciar las categorías existentes antes de importar.
 - El calendario muestra las sanciones con fecha del curso académico activo como barras, con el nombre del alumno, su grupo y el detalle de la sanción; el color de cada barra depende del grupo. Solo se muestran los días lectivos (lunes a viernes) y el día actual se resalta.
