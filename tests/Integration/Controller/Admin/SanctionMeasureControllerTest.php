@@ -22,7 +22,7 @@ class SanctionMeasureControllerTest extends ControllerTestCase
         [$cadmin, $centre, , $measure] = $this->makeScenarioWithMeasure();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas/export');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas/export');
 
         self::assertResponseIsSuccessful();
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
@@ -37,9 +37,22 @@ class SanctionMeasureControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas/export');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas/export');
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testIndexIsAccessibleToCentreAdminWithoutGlobalRoleAdmin(): void
+    {
+        [, $centre] = $this->makeScenario();
+        $pureCentreAdmin = $this->makeTeacher('pure.cadmin.' . uniqid('', false));
+        $centre->addAdmin($pureCentreAdmin);
+        $this->persist($pureCentreAdmin);
+        $this->loginAs($pureCentreAdmin);
+
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas');
+
+        self::assertResponseIsSuccessful();
     }
 
     // ── import ────────────────────────────────────────────────────────────────
@@ -49,7 +62,7 @@ class SanctionMeasureControllerTest extends ControllerTestCase
         [$cadmin, $centre] = $this->makeScenario();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas/import');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas/import');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('input[name="json"]');
@@ -61,7 +74,7 @@ class SanctionMeasureControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/sanciones/medidas/import');
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/medidas/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $file = $this->makeJsonUploadFile([
@@ -72,11 +85,11 @@ class SanctionMeasureControllerTest extends ControllerTestCase
             ],
         ]);
 
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/sanciones/medidas/import', [
+        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/medidas/import', [
             '_token' => $token,
         ], ['json' => $file]);
 
-        self::assertResponseRedirects('/admin/centros/' . $centreId . '/sanciones/medidas');
+        self::assertResponseRedirects('/centros/' . $centreId . '/sanciones/medidas');
 
         $this->em->clear();
         $measures = $this->em->getRepository(SanctionMeasure::class)->findBy(['educationalCentre' => $centre->getId()]);
@@ -90,14 +103,14 @@ class SanctionMeasureControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/sanciones/medidas/import');
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/medidas/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, 'not json');
         $file = new UploadedFile($tmpFile, 'measures.json', 'application/json', null, true);
 
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/sanciones/medidas/import', [
+        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/medidas/import', [
             '_token' => $token,
         ], ['json' => $file]);
 
@@ -111,7 +124,7 @@ class SanctionMeasureControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId . '/sanciones/medidas/import');
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/medidas/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $file = $this->makeJsonUploadFile([
@@ -122,12 +135,12 @@ class SanctionMeasureControllerTest extends ControllerTestCase
             ],
         ]);
 
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/sanciones/medidas/import', [
+        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/medidas/import', [
             '_token'           => $token,
             'replace_existing' => '1',
         ], ['json' => $file]);
 
-        self::assertResponseRedirects('/admin/centros/' . $centreId . '/sanciones/medidas');
+        self::assertResponseRedirects('/centros/' . $centreId . '/sanciones/medidas');
 
         $this->em->clear();
         self::assertNull($this->em->find(SanctionMeasureCategory::class, $oldCategory->getId()));
@@ -144,7 +157,7 @@ class SanctionMeasureControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/admin/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas/import');
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/sanciones/medidas/import');
 
         self::assertResponseStatusCodeSame(403);
     }
