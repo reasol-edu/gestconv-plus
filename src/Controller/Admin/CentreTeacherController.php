@@ -11,6 +11,7 @@ use App\Entity\Teacher;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\GroupRepository;
 use App\Repository\TeacherRepository;
+use App\Service\CsvReader;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,6 +34,7 @@ class CentreTeacherController extends AbstractController
         private readonly UserPasswordHasherInterface $hasher,
         private readonly TranslatorInterface $translator,
         private readonly TenantContext $tenantContext,
+        private readonly CsvReader $csvReader,
     ) {}
 
     #[Route('', name: 'app_admin_centre_teachers_index')]
@@ -95,39 +97,20 @@ class CentreTeacherController extends AbstractController
         }
 
         $content = (string) file_get_contents($file->getPathname());
-        $content = ltrim($content, "\xEF\xBB\xBF");
-        if (!mb_check_encoding($content, 'UTF-8')) {
-            $content = mb_convert_encoding($content, 'UTF-8', 'Windows-1252');
-        }
+        $parsed  = $this->csvReader->parse($content);
 
-        $stream = fopen('php://temp', 'rb+');
-        if ($stream === false) {
-            $this->addFlash('error', $this->t('centre_teachers.import.error.no_file'));
-
-            return $this->render('admin/centre_teacher/import.html.twig', ['centre' => $centre]);
-        }
-        fwrite($stream, $content);
-        rewind($stream);
-
-        $headers = fgetcsv($stream, escape: '');
-        if ($headers === false || $headers[0] === null) {
-            fclose($stream);
+        if ($parsed['headers'] === []) {
             $this->addFlash('error', $this->t('centre_teachers.import.error.empty_file'));
 
             return $this->redirectToRoute('app_admin_centre_teachers_import', ['centreId' => $centre->getId()]);
         }
 
-        /** @var array<string, int> $headerMap */
-        $headerMap = array_flip(array_map(static fn (?string $h): string => trim($h ?? ''), $headers));
-
         $required = ['Empleado/a', 'Usuario IdEA'];
-        foreach ($required as $col) {
-            if (!isset($headerMap[$col])) {
-                fclose($stream);
-                $this->addFlash('error', $this->t('centre_teachers.import.error.missing_column') . ' «' . $col . '»');
+        $missing  = $this->csvReader->findMissingColumn($parsed['headers'], $required);
+        if ($missing !== null) {
+            $this->addFlash('error', $this->t('centre_teachers.import.error.missing_column') . ' «' . $missing . '»');
 
-                return $this->redirectToRoute('app_admin_centre_teachers_import', ['centreId' => $centre->getId()]);
-            }
+            return $this->redirectToRoute('app_admin_centre_teachers_import', ['centreId' => $centre->getId()]);
         }
 
         $year    = $centre->getActiveAcademicYear();
@@ -136,18 +119,12 @@ class CentreTeacherController extends AbstractController
         $skipped = 0;
 
         if ($year === null) {
-            fclose($stream);
-
             return $this->redirectToRoute('app_admin_centre_teachers_import', ['centreId' => $centre->getId()]);
         }
 
-        while (($row = fgetcsv($stream, escape: '')) !== false) {
-            if (count(array_filter($row, static fn ($v) => trim((string) $v) !== '')) === 0) {
-                continue;
-            }
-
-            $username  = trim((string) ($row[$headerMap['Usuario IdEA']] ?? ''));
-            $fullName  = trim((string) ($row[$headerMap['Empleado/a']] ?? ''));
+        foreach ($parsed['rows'] as $row) {
+            $username  = $row['Usuario IdEA'] ?? '';
+            $fullName  = $row['Empleado/a'] ?? '';
             $nameParts = explode(', ', $fullName, 2);
             $lastName  = $nameParts[0];
             $firstName = $nameParts[1] ?? '';
@@ -172,7 +149,6 @@ class CentreTeacherController extends AbstractController
             }
         }
 
-        fclose($stream);
         $this->em->flush();
 
         $this->addFlash('success', $this->translator->trans('centre_teachers.import.flash.summary', [
@@ -206,39 +182,20 @@ class CentreTeacherController extends AbstractController
         }
 
         $content = (string) file_get_contents($file->getPathname());
-        $content = ltrim($content, "\xEF\xBB\xBF");
-        if (!mb_check_encoding($content, 'UTF-8')) {
-            $content = mb_convert_encoding($content, 'UTF-8', 'Windows-1252');
-        }
+        $parsed  = $this->csvReader->parse($content);
 
-        $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
-            $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.no_file'));
-
-            return $this->render('admin/centre_teacher/import_assignments.html.twig', ['centre' => $centre]);
-        }
-        fwrite($stream, $content);
-        rewind($stream);
-
-        $headers = fgetcsv($stream, escape: '');
-        if ($headers === false || $headers[0] === null) {
-            fclose($stream);
+        if ($parsed['headers'] === []) {
             $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.empty_file'));
 
             return $this->redirectToRoute('app_admin_centre_teachers_import_assignments', ['centreId' => $centre->getId()]);
         }
 
-        /** @var array<string, int> $headerMap */
-        $headerMap = array_flip(array_map(static fn (?string $h): string => trim($h ?? ''), $headers));
-
         $required = ['Unidad', 'Profesor/a'];
-        foreach ($required as $col) {
-            if (!isset($headerMap[$col])) {
-                fclose($stream);
-                $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.missing_column') . ' «' . $col . '»');
+        $missing  = $this->csvReader->findMissingColumn($parsed['headers'], $required);
+        if ($missing !== null) {
+            $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.missing_column') . ' «' . $missing . '»');
 
-                return $this->redirectToRoute('app_admin_centre_teachers_import_assignments', ['centreId' => $centre->getId()]);
-            }
+            return $this->redirectToRoute('app_admin_centre_teachers_import_assignments', ['centreId' => $centre->getId()]);
         }
 
         /** @var array<string, Group> $groupsByName */
@@ -254,13 +211,9 @@ class CentreTeacherController extends AbstractController
         /** @var array<string, true> $unknownGroups */
         $unknownGroups = [];
 
-        while (($row = fgetcsv($stream, escape: '')) !== false) {
-            if (count(array_filter($row, static fn ($v) => trim((string) $v) !== '')) === 0) {
-                continue;
-            }
-
-            $groupName  = trim((string) ($row[$headerMap['Unidad']] ?? ''));
-            $fullName   = trim((string) ($row[$headerMap['Profesor/a']] ?? ''));
+        foreach ($parsed['rows'] as $row) {
+            $groupName  = $row['Unidad'] ?? '';
+            $fullName   = $row['Profesor/a'] ?? '';
             $nameParts  = explode(', ', $fullName, 2);
             $lastName   = $nameParts[0];
             $firstName  = $nameParts[1] ?? '';
@@ -288,7 +241,6 @@ class CentreTeacherController extends AbstractController
             }
         }
 
-        fclose($stream);
         $this->em->flush();
 
         $summary = $this->translator->trans('centre_teachers.import_assignments.flash.summary', [

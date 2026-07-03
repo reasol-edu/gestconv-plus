@@ -11,6 +11,7 @@ use App\Entity\Student;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\GroupRepository;
 use App\Repository\StudentRepository;
+use App\Service\CsvReader;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,6 +33,7 @@ class StudentController extends AbstractController
         private readonly GroupRepository $groups,
         private readonly TranslatorInterface $translator,
         private readonly TenantContext $tenantContext,
+        private readonly CsvReader $csvReader,
     ) {}
 
     #[Route('', name: 'app_admin_students_index')]
@@ -240,7 +242,8 @@ class StudentController extends AbstractController
                 }
             }
             $groupsByName    = $this->buildGroupsByName($centre);
-            $result          = $this->processCsvImport($content, $groupsByName, dryRun: false, allowedGroupIds: $allowedGroupIds);
+            $rows            = $this->csvReader->parse($content)['rows'];
+            $result          = $this->processCsvImport($rows, $groupsByName, dryRun: false, allowedGroupIds: $allowedGroupIds);
             $this->em->flush();
             $this->buildImportFlash($result);
 
@@ -259,38 +262,22 @@ class StudentController extends AbstractController
         }
 
         $content = (string) file_get_contents($file->getPathname());
-        $content = ltrim($content, "\xEF\xBB\xBF");
-        if (!mb_check_encoding($content, 'UTF-8')) {
-            $content = mb_convert_encoding($content, 'UTF-8', 'Windows-1252');
-        }
+        $parsed  = $this->csvReader->parse($content);
 
-        // Validate headers before dry-run
-        $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
-            $this->addFlash('error', $this->t('students.import.error.no_file'));
-            return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
-        }
-        fwrite($stream, $content);
-        rewind($stream);
-        $headers = fgetcsv($stream, escape: '');
-        fclose($stream);
-
-        if ($headers === false || $headers[0] === null) {
+        if ($parsed['headers'] === []) {
             $this->addFlash('error', $this->t('students.import.error.empty_file'));
             return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
         }
 
-        $headerMap = array_flip(array_map(static fn (?string $h): string => trim($h ?? ''), $headers));
-        $required  = ['Estado Matrícula', 'Nº Id. Escolar', 'Primer apellido', 'Segundo apellido', 'Nombre', 'Unidad'];
-        foreach ($required as $col) {
-            if (!isset($headerMap[$col])) {
-                $this->addFlash('error', $this->t('students.import.error.missing_column') . ' «' . $col . '»');
-                return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
-            }
+        $required = ['Estado Matrícula', 'Nº Id. Escolar', 'Primer apellido', 'Segundo apellido', 'Nombre', 'Unidad'];
+        $missing  = $this->csvReader->findMissingColumn($parsed['headers'], $required);
+        if ($missing !== null) {
+            $this->addFlash('error', $this->t('students.import.error.missing_column') . ' «' . $missing . '»');
+            return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
         }
 
         $groupsByName = $this->buildGroupsByName($centre);
-        $result       = $this->processCsvImport($content, $groupsByName, dryRun: true);
+        $result       = $this->processCsvImport($parsed['rows'], $groupsByName, dryRun: true);
 
         $importId = Uuid::v4()->toRfc4122();
         $dir      = dirname($this->getTempImportPath($importId));
@@ -317,8 +304,9 @@ class StudentController extends AbstractController
     }
 
     /**
-     * @param array<string, Group> $groupsByName
-     * @param list<string>|null    $allowedGroupIds RFC4122 UUIDs; null = all (dry-run); [] = sin-grupo only
+     * @param list<array<string, string>> $rows
+     * @param array<string, Group>        $groupsByName
+     * @param list<string>|null           $allowedGroupIds RFC4122 UUIDs; null = all (dry-run); [] = sin-grupo only
      * @return array{
      *   created: int,
      *   updated: int,
@@ -327,41 +315,25 @@ class StudentController extends AbstractController
      *   groupStats: array<string, array{group: Group, name: string, created: int, updated: int}>
      * }
      */
-    private function processCsvImport(string $content, array $groupsByName, bool $dryRun, ?array $allowedGroupIds = null): array
+    private function processCsvImport(array $rows, array $groupsByName, bool $dryRun, ?array $allowedGroupIds = null): array
     {
-        $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
-            return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'unknownGroups' => [], 'groupStats' => []];
-        }
-        fwrite($stream, $content);
-        rewind($stream);
-
-        $headers   = fgetcsv($stream, escape: '');
-        $headerMap = $headers !== false
-            ? array_flip(array_map(static fn (?string $h): string => trim($h ?? ''), $headers))
-            : [];
-
         $created       = 0;
         $updated       = 0;
         $skipped       = 0;
         $unknownGroups = [];
         $groupStats    = [];
 
-        while (($row = fgetcsv($stream, escape: '')) !== false) {
-            if (count(array_filter($row, static fn($v) => trim((string) $v) !== '')) === 0) {
-                continue;
-            }
-
-            if (trim((string) ($row[$headerMap['Estado Matrícula']] ?? '')) !== '') {
+        foreach ($rows as $row) {
+            if (($row['Estado Matrícula'] ?? '') !== '') {
                 $skipped++;
                 continue;
             }
 
-            $studentId = trim((string) ($row[$headerMap['Nº Id. Escolar']] ?? ''));
-            $firstName = trim((string) ($row[$headerMap['Nombre']] ?? ''));
-            $lastName1 = trim((string) ($row[$headerMap['Primer apellido']] ?? ''));
-            $lastName2 = trim((string) ($row[$headerMap['Segundo apellido']] ?? ''));
-            $groupName = trim((string) ($row[$headerMap['Unidad']] ?? ''));
+            $studentId = $row['Nº Id. Escolar'] ?? '';
+            $firstName = $row['Nombre'] ?? '';
+            $lastName1 = $row['Primer apellido'] ?? '';
+            $lastName2 = $row['Segundo apellido'] ?? '';
+            $groupName = $row['Unidad'] ?? '';
 
             if ($studentId === '' || $firstName === '' || $lastName1 === '') {
                 $skipped++;
@@ -397,8 +369,7 @@ class StudentController extends AbstractController
                     $student = $existing;
                 }
 
-                $col = fn (string $name): string =>
-                    isset($headerMap[$name]) ? trim((string) ($row[$headerMap[$name]] ?? '')) : '';
+                $col = static fn (string $name): string => $row[$name] ?? '';
                 $n = static fn (string $v): ?string => $v !== '' ? $v : null;
 
                 // Tutor 1
@@ -452,8 +423,6 @@ class StudentController extends AbstractController
                 }
             }
         }
-
-        fclose($stream);
 
         // Ordenar por nombre de grupo
         uasort($groupStats, static fn($a, $b) => strcmp($a['name'], $b['name']));
