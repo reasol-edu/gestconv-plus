@@ -48,11 +48,8 @@ class SanctionController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $sanctions = $this->sanctions->findByCentreForViewer($centre, $user);
-
         return $this->render('sanction/index.html.twig', [
-            'centre'    => $centre,
-            'sanctions' => $sanctions,
+            'centre' => $centre,
         ]);
     }
 

@@ -13,6 +13,7 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use Symfony\Component\Uid\Uuid;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -37,13 +38,25 @@ class SanctionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Returns sanctions visible to the viewer for the given centre, ordered by creation date DESC.
+     * Builds the sanction listing query for the given centre, restricted to the viewer's
+     * visibility and ordered by creation date DESC.
      *
-     * @return list<Sanction>
+     * Supported filters:
+     *   search         string — student name or group name
+     *   effectiveToday bool   — only sanctions in effect today (notified, within date range)
+     *   pendingOnly    bool   — only sanctions without a successful communication
+     *
+     * @param array<string, mixed> $filters
+     * @return Query<null, Sanction>
      */
-    public function findByCentreForViewer(EducationalCentre $centre, Teacher $viewer): array
-    {
+    public function createFilteredQuery(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        array $filters = [],
+    ): Query {
         $qb = $this->createQueryBuilder('s')
+            ->addSelect('st', 'g')
+            ->join('s.student', 'st')
             ->join('s.group', 'g')
             ->join('g.programmeYear', 'py')
             ->join('py.programme', 'prog')
@@ -67,10 +80,29 @@ class SanctionRepository extends ServiceEntityRepository
                ->setParameter('viewer', $viewer->getId(), 'uuid');
         }
 
-        /** @var list<Sanction> $result */
-        $result = $qb->getQuery()->getResult();
+        $search = $filters['search'] ?? '';
+        if (is_string($search) && $search !== '') {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    'LOWER(st.name.firstName) LIKE LOWER(:search)',
+                    'LOWER(st.name.lastName) LIKE LOWER(:search)',
+                    'LOWER(g.name) LIKE LOWER(:search)',
+                )
+            )->setParameter('search', '%' . $search . '%');
+        }
 
-        return $result;
+        if (($filters['effectiveToday'] ?? false) === true) {
+            $qb->andWhere('s.notifiedCommunication IS NOT NULL')
+               ->andWhere('s.effectiveFrom <= :today')
+               ->andWhere('s.effectiveTo IS NULL OR s.effectiveTo >= :today')
+               ->setParameter('today', new \DateTimeImmutable('today'));
+        }
+
+        if (($filters['pendingOnly'] ?? false) === true) {
+            $qb->andWhere('s.notifiedCommunication IS NULL');
+        }
+
+        return $qb->getQuery();
     }
 
     /**

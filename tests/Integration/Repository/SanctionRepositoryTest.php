@@ -58,7 +58,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertNull($found);
     }
 
-    // ── findByCentreForViewer: visibilidad admin ─────────────────────────────
+    // ── createFilteredQuery: visibilidad admin ─────────────────────────────
 
     public function testGlobalAdminSeesAllSanctionsOfCentre(): void
     {
@@ -68,7 +68,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->persist($admin, $creator);
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->findByCentreForViewer($world['centre'], $admin);
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin)->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -84,7 +84,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->findByCentreForViewer($world['centre'], $cadmin);
+        $results = $this->repo->createFilteredQuery($world['centre'], $cadmin)->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -100,7 +100,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->findByCentreForViewer($world['centre'], $member);
+        $results = $this->repo->createFilteredQuery($world['centre'], $member)->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -116,7 +116,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->findByCentreForViewer($world['centre'], $counselor);
+        $results = $this->repo->createFilteredQuery($world['centre'], $counselor)->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -133,12 +133,12 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $this->makeSanctionWithReport($worldA, $creator);
 
-        $results = $this->repo->findByCentreForViewer($worldB['centre'], $cadmin);
+        $results = $this->repo->createFilteredQuery($worldB['centre'], $cadmin)->getResult();
 
         self::assertCount(0, $results);
     }
 
-    // ── findByCentreForViewer: visibilidad no-admin ──────────────────────────
+    // ── createFilteredQuery: visibilidad no-admin ──────────────────────────
 
     public function testNonAdminSeesOwnReportSanction(): void
     {
@@ -147,7 +147,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->persist($teacher);
         $sanction = $this->makeSanctionWithReport($world, $teacher);
 
-        $results = $this->repo->findByCentreForViewer($world['centre'], $teacher);
+        $results = $this->repo->createFilteredQuery($world['centre'], $teacher)->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -163,7 +163,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->findByCentreForViewer($world['centre'], $tutor);
+        $results = $this->repo->createFilteredQuery($world['centre'], $tutor)->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -177,7 +177,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->persist($other, $creator);
         $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->findByCentreForViewer($world['centre'], $other);
+        $results = $this->repo->createFilteredQuery($world['centre'], $other)->getResult();
 
         self::assertCount(0, $results);
     }
@@ -191,9 +191,64 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->makeReport($world, $teacher, $sanction);
         $this->makeReport($world, $teacher, $sanction);
 
-        $results = $this->repo->findByCentreForViewer($world['centre'], $teacher);
+        $results = $this->repo->createFilteredQuery($world['centre'], $teacher)->getResult();
 
         self::assertCount(1, $results);
+    }
+
+    // ── createFilteredQuery: filtros ─────────────────────────────────────────
+
+    public function testCreateFilteredQuerySearchMatchesStudentAndGroupName(): void
+    {
+        $world = $this->makeWorld();
+        $admin = $this->makeTeacher('filter.search', admin: true);
+        $this->persist($admin);
+        $this->makeSanctionWithReport($world, $admin);
+
+        self::assertCount(1, $this->repo->createFilteredQuery($world['centre'], $admin, ['search' => 'garcía'])->getResult());
+        self::assertCount(1, $this->repo->createFilteredQuery($world['centre'], $admin, ['search' => '1ºA'])->getResult());
+        self::assertCount(0, $this->repo->createFilteredQuery($world['centre'], $admin, ['search' => 'nadie'])->getResult());
+    }
+
+    public function testCreateFilteredQueryPendingOnlyExcludesNotifiedSanctions(): void
+    {
+        $world = $this->makeWorld();
+        $admin = $this->makeTeacher('filter.pending', admin: true);
+        $this->persist($admin);
+        $this->makeSanctionWithReport($world, $admin);
+        $pending = $this->makeUnnotifiedSanctionWithReport($world, $admin);
+        $this->flush();
+
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin, ['pendingOnly' => true])->getResult();
+
+        self::assertCount(1, $results);
+        self::assertSame($pending->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testCreateFilteredQueryEffectiveTodayReturnsOnlyNotifiedSanctionsInRange(): void
+    {
+        $world = $this->makeWorld();
+        $admin = $this->makeTeacher('filter.effective', admin: true);
+        $this->persist($admin);
+
+        $current = $this->makeSanctionWithReport($world, $admin);
+        $current->setEffectiveFrom(new \DateTimeImmutable('-2 days'))
+                ->setEffectiveTo(new \DateTimeImmutable('+2 days'));
+
+        $expired = $this->makeSanctionWithReport($world, $admin);
+        $expired->setEffectiveFrom(new \DateTimeImmutable('-10 days'))
+                ->setEffectiveTo(new \DateTimeImmutable('-5 days'));
+
+        // In range but never notified: must not count as in effect
+        $unnotified = $this->makeUnnotifiedSanctionWithReport($world, $admin);
+        $unnotified->setEffectiveFrom(new \DateTimeImmutable('-2 days'))
+                   ->setEffectiveTo(new \DateTimeImmutable('+2 days'));
+        $this->flush();
+
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin, ['effectiveToday' => true])->getResult();
+
+        self::assertCount(1, $results);
+        self::assertSame($current->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
     // ── findWithDatesForAcademicYear ──────────────────────────────────────────
