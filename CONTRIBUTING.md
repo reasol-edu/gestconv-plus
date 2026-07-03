@@ -90,12 +90,13 @@ El ámbito indica la capa técnica o el área de la aplicación afectada. Se pue
 
 #### Dominios de la aplicación
 
-| Ámbito | Sección |
-|--------|---------|
-| `stays` | Estancias y puestos formativos |
-| `companies` | Empresas, centros de trabajo y empleados |
-| `centre` | Centro educativo: docentes, estudiantes y oferta formativa |
-| `admin` | Administración global |
+| Ámbito         | Sección                                                    |
+|----------------|------------------------------------------------------------|
+| `incident`     | Partes                                                     |
+| `sanction`     | Sanciones                                                  |
+| `notification` | Notificaciones                                            |
+| `centre`       | Centro educativo: docentes, estudiantes y oferta formativa |
+| `admin`        | Administración global                                      |
 
 ### Referencias a incidencias
 
@@ -107,13 +108,13 @@ Cuando un commit resuelve o está relacionado con una incidencia de GitHub, incl
 ### Ejemplos
 
 ```
-feat(stays): filtro por estado en el listado de puestos formativos
+feat(notification): permitir agrupar notificaciones
 
 Closes #42
 ```
 
 ```
-fix(companies): los docentes de enlace no podían editar centros de trabajo
+fix(dashboard): mostrar estadísticas de sanciones correctamente
 
 Refs #38
 ```
@@ -128,7 +129,7 @@ Closes #51
 
 ```
 chore(deps): actualizar Symfony a 8.2
-refactor(stays/i18n): unificar cadenas de estado de puesto en un solo dominio
+refactor(centre/i18n): unificar cadenas de traducción en un solo dominio
 test(centre): cubrir el caso de importación con CSV en codificación Windows-1252
 docs: documentar el modo de despliegue con Docker en el README
 ```

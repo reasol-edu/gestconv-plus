@@ -18,9 +18,9 @@ body:
       options:
         - Administrador global
         - Administrador de centro
-        - Coordinador de FP dual
-        - Responsable de familia profesional
-        - Docente de enlace
+        - Tutor/a de grupo
+        - Comisión de convivencia
+        - Orientador/a
         - Docente
         - Todos los roles
     validations:

@@ -38,6 +38,8 @@ body:
         - Docker
         - Instalación nativa (Linux / macOS)
         - Instalación nativa (Windows)
+        - Ubuntu 26.04
+        - Plesk
         - Desarrollo local
     validations:
       required: true
