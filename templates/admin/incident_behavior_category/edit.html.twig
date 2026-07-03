@@ -35,7 +35,7 @@
             </div>
 
             <div>
-                <p class="block text-sm font-medium text-gray-700 mb-2">Tipo de conductas</p>
+                <p class="block text-sm font-medium text-gray-700 mb-2">{{ 'category.field.type'|trans({}, 'admin') }}</p>
                 <div class="grid grid-cols-2 gap-3">
                     <label class="flex items-start gap-3 cursor-pointer rounded-xl border-2 px-4 py-3.5 transition-all
                                   border-gray-200 bg-white hover:border-gray-300
@@ -45,7 +45,7 @@
                                class="mt-0.5 h-4 w-4 shrink-0 border-gray-300 text-gray-500 focus:ring-gray-400">
                         <div>
                             <span class="block text-sm font-semibold text-gray-900">{{ 'category.badge.contrary'|trans({}, 'admin') }}</span>
-                            <p class="text-xs text-gray-500 mt-0.5">Contrarias a la convivencia</p>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ 'category.field.type_contrary_help'|trans({}, 'admin') }}</p>
                         </div>
                     </label>
                     <label class="flex items-start gap-3 cursor-pointer rounded-xl border-2 px-4 py-3.5 transition-all
@@ -56,7 +56,7 @@
                                class="mt-0.5 h-4 w-4 shrink-0 border-gray-300 text-red-600 focus:ring-red-500">
                         <div>
                             <span class="block text-sm font-semibold text-gray-900">{{ 'category.badge.serious'|trans({}, 'admin') }}</span>
-                            <p class="text-xs text-gray-500 mt-0.5">Gravemente perjudiciales</p>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ 'category.field.type_serious_help'|trans({}, 'admin') }}</p>
                         </div>
                     </label>
                 </div>
@@ -66,13 +66,13 @@
                 <a href="{{ path('app_admin_incident_behaviors_index', {centreId: centre.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
                           hover:bg-gray-50 transition-colors">
-                    Cancelar
+                    {{ 'category.cancel'|trans({}, 'admin') }}
                 </a>
                 <button type="submit"
                         class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
                                hover:bg-forest-700 transition-colors shadow-xs">
                     {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
-                    Guardar
+                    {{ 'category.save'|trans({}, 'admin') }}
                 </button>
             </div>
         </form>

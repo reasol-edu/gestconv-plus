@@ -37,13 +37,13 @@
             <a href="{{ path('app_admin_sanction_measures_index', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
                       hover:bg-gray-50 transition-colors">
-                Cancelar
+                {{ 'sanction_category.cancel'|trans({}, 'admin') }}
             </a>
             <button type="submit"
                     class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
                            hover:bg-forest-700 transition-colors shadow-xs">
                 {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
-                Guardar
+                {{ 'sanction_category.save'|trans({}, 'admin') }}
             </button>
         </div>
     </form>

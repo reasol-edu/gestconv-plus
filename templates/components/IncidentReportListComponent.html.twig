@@ -140,7 +140,7 @@
                                             </span>
                                         {% else %}
                                             <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-600 px-2 py-0.5 text-xs font-medium">
-                                                {{ report.behaviors|length }} conducta(s)
+                                                {{ 'incident.badge.behavior_count'|trans({'%count%': report.behaviors|length}, 'admin') }}
                                             </span>
                                         {% endif %}
                                         {% if report.expelledFromClass %}
@@ -162,7 +162,7 @@
                                            class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium
                                                   text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
                                             {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
-                                            Ver
+                                            {{ 'incident.view'|trans({}, 'admin') }}
                                         </a>
                                     </div>
                                 </td>
