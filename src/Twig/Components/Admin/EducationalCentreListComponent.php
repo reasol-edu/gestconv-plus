@@ -8,6 +8,7 @@ use App\Entity\EducationalCentre;
 use App\Pagination\Paginator;
 use App\Repository\EducationalCentreRepository;
 use App\Service\AppSettings;
+use App\Twig\Components\PaginatedListTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
@@ -19,12 +20,10 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 class EducationalCentreListComponent extends AbstractController
 {
     use DefaultActionTrait;
+    use PaginatedListTrait;
 
     #[LiveProp(writable: true)]
     public string $search = '';
-
-    #[LiveProp(writable: true)]
-    public int $page = 1;
 
     #[LiveProp(writable: true)]
     public string $sort = '';
@@ -50,17 +49,9 @@ class EducationalCentreListComponent extends AbstractController
     /** @return Paginator<EducationalCentre> */
     public function getPagination(): Paginator
     {
-        return new Paginator(
+        return $this->paginate(
             $this->centres->createAllWithActiveYearFilteredQuery(trim($this->search), $this->sort, $this->sortDir),
-            max(1, $this->page),
-            $this->appSettings->getInt('page.size'),
         );
-    }
-
-    #[LiveAction]
-    public function setPage(#[LiveArg] int $page): void
-    {
-        $this->page = max(1, $page);
     }
 
     #[LiveAction]

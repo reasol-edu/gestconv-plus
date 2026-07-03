@@ -13,6 +13,7 @@ use App\Repository\AcademicYearRepository;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\TeacherRepository;
 use App\Service\AppSettings;
+use App\Twig\Components\PaginatedListTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
@@ -24,6 +25,7 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 class ActivityLogListComponent extends AbstractController
 {
     use DefaultActionTrait;
+    use PaginatedListTrait;
 
     #[LiveProp(writable: true)]
     public string $dateFrom = '';
@@ -49,9 +51,6 @@ class ActivityLogListComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $sortDir = 'desc';
 
-    #[LiveProp(writable: true)]
-    public int $page = 1;
-
     public function __construct(
         private readonly ActivityLogRepository $logs,
         private readonly EducationalCentreRepository $centres,
@@ -68,20 +67,16 @@ class ActivityLogListComponent extends AbstractController
     /** @return Paginator<\App\Entity\ActivityLog> */
     public function getPagination(): Paginator
     {
-        return new Paginator(
-            $this->logs->createFilteredQuery([
-                'dateFrom'   => $this->dateFrom,
-                'dateTo'     => $this->dateTo,
-                'userId'     => $this->userId,
-                'centreId'   => $this->centreId,
-                'yearId'     => $this->yearId,
-                'actionType' => $this->actionType,
-                'sort'       => $this->sort,
-                'sortDir'    => $this->sortDir,
-            ]),
-            max(1, $this->page),
-            $this->appSettings->getInt('page.size'),
-        );
+        return $this->paginate($this->logs->createFilteredQuery([
+            'dateFrom'   => $this->dateFrom,
+            'dateTo'     => $this->dateTo,
+            'userId'     => $this->userId,
+            'centreId'   => $this->centreId,
+            'yearId'     => $this->yearId,
+            'actionType' => $this->actionType,
+            'sort'       => $this->sort,
+            'sortDir'    => $this->sortDir,
+        ]));
     }
 
     /** @return EducationalCentre[] */
@@ -117,12 +112,6 @@ class ActivityLogListComponent extends AbstractController
     public function getDistinctActionTypes(): array
     {
         return $this->logs->findDistinctActionTypes();
-    }
-
-    #[LiveAction]
-    public function setPage(#[LiveArg] int $page): void
-    {
-        $this->page = max(1, $page);
     }
 
     #[LiveAction]

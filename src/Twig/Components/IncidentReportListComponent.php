@@ -14,7 +14,6 @@ use App\Service\AppSettings;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
-use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
@@ -22,6 +21,7 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 class IncidentReportListComponent extends AbstractController
 {
     use DefaultActionTrait;
+    use PaginatedListTrait;
 
     #[LiveProp]
     public EducationalCentre $centre;
@@ -48,9 +48,6 @@ class IncidentReportListComponent extends AbstractController
     /** '' = all, '1' = expelled, '0' = not expelled */
     #[LiveProp(writable: true)]
     public string $expelled = '';
-
-    #[LiveProp(writable: true)]
-    public int $page = 1;
 
     public function __construct(
         private readonly IncidentReportRepository $reports,
@@ -100,11 +97,7 @@ class IncidentReportListComponent extends AbstractController
             $filters['expelled'] = $this->expelled === '1';
         }
 
-        return new Paginator(
-            $this->reports->createFilteredQuery($this->centre, $user, $filters),
-            max(1, $this->page),
-            $this->appSettings->getInt('page.size'),
-        );
+        return $this->paginate($this->reports->createFilteredQuery($this->centre, $user, $filters));
     }
 
     public function hasActiveFilters(): bool
@@ -116,18 +109,6 @@ class IncidentReportListComponent extends AbstractController
             || $this->dateTo !== ''
             || $this->serious !== ''
             || $this->expelled !== '';
-    }
-
-    #[LiveAction]
-    public function resetPage(): void
-    {
-        $this->page = 1;
-    }
-
-    #[LiveAction]
-    public function setPage(#[LiveArg] int $page): void
-    {
-        $this->page = max(1, $page);
     }
 
     #[LiveAction]

@@ -13,6 +13,7 @@ use App\Repository\StudentRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\AppSettings;
 use App\Service\TenantContext;
+use App\Twig\Components\PaginatedListTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
@@ -24,6 +25,7 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 class StudentListComponent extends AbstractController
 {
     use DefaultActionTrait;
+    use PaginatedListTrait;
 
     #[LiveProp]
     public EducationalCentre $centre;
@@ -33,9 +35,6 @@ class StudentListComponent extends AbstractController
 
     #[LiveProp(writable: true)]
     public string $groupId = '';
-
-    #[LiveProp(writable: true)]
-    public int $page = 1;
 
     #[LiveProp(writable: true)]
     public string $sort = '';
@@ -73,7 +72,7 @@ class StudentListComponent extends AbstractController
             return new Paginator($this->students->findNoneQuery(), 1, $this->appSettings->getInt('page.size'));
         }
 
-        return new Paginator(
+        return $this->paginate(
             $this->students->createByCentreFilteredQuery(
                 $this->centre,
                 trim($this->search),
@@ -82,26 +81,12 @@ class StudentListComponent extends AbstractController
                 $this->sortDir,
                 $year,
             ),
-            max(1, $this->page),
-            $this->appSettings->getInt('page.size'),
         );
     }
 
     public function hasActiveFilters(): bool
     {
         return $this->search !== '' || $this->groupId !== '';
-    }
-
-    #[LiveAction]
-    public function resetPage(): void
-    {
-        $this->page = 1;
-    }
-
-    #[LiveAction]
-    public function setPage(#[LiveArg] int $page): void
-    {
-        $this->page = max(1, $page);
     }
 
     #[LiveAction]

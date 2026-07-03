@@ -8,10 +8,9 @@ use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\TeacherRepository;
 use App\Service\AppSettings;
+use App\Twig\Components\PaginatedListTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
-use Symfony\UX\LiveComponent\Attribute\LiveAction;
-use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
@@ -19,12 +18,10 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 class TeacherListComponent extends AbstractController
 {
     use DefaultActionTrait;
+    use PaginatedListTrait;
 
     #[LiveProp(writable: true)]
     public string $search = '';
-
-    #[LiveProp(writable: true)]
-    public int $page = 1;
 
     public function __construct(
         private readonly TeacherRepository $teachers,
@@ -44,16 +41,8 @@ class TeacherListComponent extends AbstractController
     /** @return Paginator<Teacher> */
     public function getPagination(): Paginator
     {
-        return new Paginator(
+        return $this->paginate(
             $this->teachers->createFilteredOrderedByNameQuery(trim($this->search)),
-            max(1, $this->page),
-            $this->appSettings->getInt('page.size'),
         );
-    }
-
-    #[LiveAction]
-    public function setPage(#[LiveArg] int $page): void
-    {
-        $this->page = max(1, $page);
     }
 }
