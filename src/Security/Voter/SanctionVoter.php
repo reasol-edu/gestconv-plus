@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
+use App\Entity\EducationalCentre;
 use App\Entity\Sanction;
 use App\Entity\Teacher;
 use App\Service\AppSettingsInterface;
@@ -12,11 +13,12 @@ use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
- * @extends Voter<string, Sanction>
+ * @extends Voter<string, Sanction|EducationalCentre>
  */
 final class SanctionVoter extends Voter
 {
     public const VIEW   = 'sanction.view';
+    /** Subject: EducationalCentre — the centre where the sanction would be created. */
     public const CREATE = 'sanction.create';
     public const EDIT   = 'sanction.edit';
     public const DELETE = 'sanction.delete';
@@ -28,6 +30,10 @@ final class SanctionVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
+        if ($attribute === self::CREATE) {
+            return $subject instanceof EducationalCentre;
+        }
+
         return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::NOTIFY], true)
             && $subject instanceof Sanction;
     }
@@ -37,6 +43,11 @@ final class SanctionVoter extends Voter
         $user = $token->getUser();
         if (!$user instanceof Teacher) {
             return false;
+        }
+
+        if ($attribute === self::CREATE) {
+            /** @var EducationalCentre $subject */
+            return $user->isAdmin() || $subject->getAdmins()->contains($user) || $subject->getCommitteeMembers()->contains($user);
         }
 
         /** @var Sanction $subject */

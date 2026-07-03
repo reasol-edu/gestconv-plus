@@ -71,6 +71,60 @@ class SanctionVoterTest extends RepositoryTestCase
         );
     }
 
+    // ── Crear sanción (CREATE, subject: EducationalCentre) ───────────────────
+
+    public function testGlobalAdminIsGrantedCreate(): void
+    {
+        $centre = (new EducationalCentre())->setCode('41000900')->setName('IES')->setCity('Sevilla');
+        $admin  = $this->makeTeacher('global.admin.create', admin: true);
+        $this->persist($centre, $admin);
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($admin), $centre, [SanctionVoter::CREATE])
+        );
+    }
+
+    public function testCentreAdminIsGrantedCreate(): void
+    {
+        $centre = (new EducationalCentre())->setCode('41000901')->setName('IES')->setCity('Sevilla');
+        $cadmin = $this->makeTeacher('cadmin.create');
+        $this->persist($centre, $cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($cadmin), $centre, [SanctionVoter::CREATE])
+        );
+    }
+
+    public function testCommitteeMemberIsGrantedCreate(): void
+    {
+        $centre    = (new EducationalCentre())->setCode('41000902')->setName('IES')->setCity('Sevilla');
+        $committee = $this->makeTeacher('committee.create');
+        $this->persist($centre, $committee);
+        $centre->addCommitteeMember($committee);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($committee), $centre, [SanctionVoter::CREATE])
+        );
+    }
+
+    public function testUnrelatedTeacherIsDeniedCreate(): void
+    {
+        $centre = (new EducationalCentre())->setCode('41000903')->setName('IES')->setCity('Sevilla');
+        $other  = $this->makeTeacher('unrelated.create');
+        $this->persist($centre, $other);
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($other), $centre, [SanctionVoter::CREATE])
+        );
+    }
+
     // ── Administrador global ─────────────────────────────────────────────────
 
     public function testGlobalAdminIsGrantedView(): void

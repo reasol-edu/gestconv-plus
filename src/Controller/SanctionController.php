@@ -69,9 +69,7 @@ class SanctionController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        if (!$user->isAdmin() && !$centre->getAdmins()->contains($user) && !$centre->getCommitteeMembers()->contains($user)) {
-            throw $this->createAccessDeniedException();
-        }
+        $this->denyAccessUnlessGranted(SanctionVoter::CREATE, $centre);
 
         $studentId = $request->query->getString('studentId');
         $groupId   = $request->query->getString('groupId');
