@@ -551,6 +551,12 @@ incident.field.registered_by: 'Docente que registra el parte'
 incident.field.occurred_at: 'Fecha y hora del suceso'
 incident.field.behaviors: 'Conductas'
 incident.field.behaviors_help: 'Selecciona al menos una conducta.'
+
+# Filtro local de listas de casillas (conductas y medidas)
+checkbox_filter.placeholder: 'Filtrar por texto…'
+checkbox_filter.selected_one: 'seleccionada'
+checkbox_filter.selected_many: 'seleccionadas'
+checkbox_filter.no_matches: 'Ninguna coincide con el filtro.'
 incident.field.description: 'Descripción de lo acontecido'
 incident.field.expelled_from_class: 'El alumno fue expulsado del aula'
 incident.field.assigned_tasks: 'Tareas encargadas durante la expulsión'
