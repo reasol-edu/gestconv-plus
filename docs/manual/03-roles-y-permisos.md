@@ -16,15 +16,15 @@ Gestiona un centro educativo concreto: docentes, oferta formativa, estudiantes, 
 
 ### Comisión de convivencia
 
-Perfil especial que se asigna a docentes concretos de un centro desde la card **Perfiles** del hub de centro educativo. Pueden ver todos los partes de convivencia del centro y registrar sanciones para cualquier estudiante, con los mismos permisos que un administrador de centro sobre partes y sanciones (pero sin acceso al resto de secciones del hub, como oferta formativa o estudiantes).
+Perfil especial que se asigna a docentes concretos de un centro desde la tarjeta **Perfiles** del panel de centro educativo. Pueden ver todos los partes de convivencia del centro y registrar sanciones para cualquier estudiante, con los mismos permisos que un administrador de centro sobre partes y sanciones (pero sin acceso al resto de secciones del panel, como oferta formativa o estudiantes).
 
 ### Orientador/a
 
 Perfil especial, asignado igual que el de comisión de convivencia. Puede ver todos los partes de convivencia y todas las sanciones del centro, pero no puede crear, editar ni eliminar los que no ha registrado él mismo.
 
-### Tutor/a de grupo / Docente de grupo
+### Tutor/a de grupo
 
-Docente asignado a un grupo como tutor/a. Puede ver todos los partes de convivencia de ese grupo, además de los suyos propios de cualquier grupo.
+Docente asignado a un grupo como tutor/a. Puede ver todos los partes de convivencia de ese grupo, además de los suyos propios de cualquier grupo. El resto del profesorado asignado a un grupo (sin ser su tutor/a) no obtiene por ello visibilidad adicional.
 
 ### Docente (sin rol específico)
 
@@ -43,6 +43,7 @@ Accede a la sección de partes y puede registrar nuevos partes. Solo ve los part
 | Ver todos los partes del centro | — | — | ✓ | ✓ | ✓ | ✓ |
 | Editar sus propios partes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Editar partes ajenos | — | — | — | — | ✓ | ✓ |
+| Reasignar el docente o el estudiante de un parte | — | — | — | — | ✓ | ✓ |
 | Eliminar partes | — | — | — | — | ✓ | ✓ |
 
 La comisión de convivencia y el orientador/a solo tienen esta visibilidad ampliada sobre partes que no son suyos; no pueden editarlos ni eliminarlos.
@@ -75,7 +76,7 @@ La cola de pendientes muestra a cada docente los elementos que puede ver según 
 
 | Acción | Docente | Admin de centro | Admin global |
 |---|:---:|:---:|:---:|
-| Ver el hub del centro | — | ✓ | ✓ |
+| Ver el panel del centro | — | ✓ | ✓ |
 | Gestionar docentes del curso | — | ✓ | ✓ |
 | Gestionar oferta formativa | — | ✓ | ✓ |
 | Gestionar estudiantes | — | ✓ | ✓ |
@@ -95,3 +96,4 @@ La cola de pendientes muestra a cada docente los elementos que puede ver según 
 
 - Cualquier docente puede ver y editar su propio perfil (nombre, contraseña, correo electrónico).
 - La sección de **Inicio** y **Calendario** son accesibles para todos los docentes autenticados con un centro seleccionado.
+- En la [ficha del alumno](05-secciones-de-la-aplicacion.md#ficha-del-alumno), los **datos de contacto de la familia** solo son visibles para los administradores, la comisión de convivencia, la orientación y los tutores/as del grupo del alumno; el historial muestra a cada docente únicamente los partes y sanciones que ya puede ver según las tablas anteriores.

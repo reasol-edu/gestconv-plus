@@ -4,7 +4,7 @@ El flujo habitual al inicio de cada curso académico sigue estos pasos. Los part
 
 ## 1 — Configurar el curso
 
-El administrador de centro crea o activa el curso académico en **Centro educativo → Configuración**. Si el centro es nuevo, se crean las 19 conductas contrarias por defecto; se pueden revisar y ajustar en **Conductas contrarias**.
+El administrador de centro crea o activa el curso académico en **Centro educativo › Cursos académicos**. Si el centro es nuevo, se crean las 19 conductas contrarias por defecto; se pueden revisar y ajustar en **Conductas contrarias**.
 
 ## 2 — Estructurar la oferta formativa
 
@@ -20,7 +20,7 @@ Se importan los estudiantes desde el CSV de Séneca. El importador rellena autom
 
 ## 5 — Registrar partes de convivencia
 
-A lo largo del curso, cualquier docente puede registrar partes de convivencia desde la sección **Partes** del menú lateral o desde el botón de acceso rápido del inicio. El parte queda vinculado al alumno, el grupo y el docente que lo registra. Los tutores de grupo y los administradores de centro pueden consultar los partes de sus grupos o de todo el centro, respectivamente.
+A lo largo del curso, cualquier docente puede registrar partes de convivencia desde la sección **Partes** del menú lateral o desde el botón de acceso rápido del inicio. Si en el incidente participaron varios estudiantes, se crea un parte por cada uno con los mismos datos, y al guardar una pantalla de confirmación ofrece notificar a las familias de inmediato. El parte queda vinculado al alumno, el grupo y el docente que lo registra. Los tutores de grupo y los administradores de centro pueden consultar los partes de sus grupos o de todo el centro, respectivamente.
 
 ## 6 — Notificar a las familias
 
@@ -28,4 +28,8 @@ Antes de poder tramitar una sanción, la familia debe ser informada del parte. L
 
 ## 7 — Registrar sanciones
 
-Con el parte ya notificado, el docente o el equipo directivo registra la sanción desde la sección **Sanciones**, incorporando uno o varios partes del estudiante y aplicando las medidas disciplinarias configuradas por el centro. La sanción también debe **notificarse a la familia** para entrar en vigor: hasta entonces no aparece en el [calendario ni en el modo tablón](05-secciones-de-la-aplicacion.md#calendario), aunque tenga fechas de vigencia asignadas.
+Con el parte ya notificado, la comisión de convivencia o el equipo directivo registra la sanción desde la sección [Sanciones](05-secciones-de-la-aplicacion.md#sanciones), incorporando uno o varios partes del estudiante y aplicando las medidas disciplinarias configuradas por el centro. La sanción también debe **notificarse a la familia** para entrar en vigor: hasta entonces no aparece en el [calendario ni en el modo tablón](05-secciones-de-la-aplicacion.md#calendario), aunque tenga fechas de vigencia asignadas.
+
+## 8 — Hacer el seguimiento
+
+Una vez notificadas, las sanciones con fechas de vigencia aparecen en el [calendario](05-secciones-de-la-aplicacion.md#calendario) y, si el centro lo usa, en el modo tablón de la sala de profesorado. Para consultar la trayectoria completa de un estudiante —sus partes, sanciones y el estado de notificación de cada uno— está la [ficha del alumno](05-secciones-de-la-aplicacion.md#ficha-del-alumno), accesible desde el buscador global (Ctrl+K) y desde los listados.

@@ -94,7 +94,16 @@ Unidad: Cualquiera › Exportar datos** (formato CSV).
 
 ## 5. Dar de alta a los estudiantes (equipo directivo)
 
+El último paso es importar el alumnado del curso, desde
+**Centro educativo › Estudiantes › Importar CSV**. Se sube el fichero CSV exportado de Séneca, la
+aplicación muestra un resumen de los cambios que va a realizar (altas, actualizaciones y grupos no
+encontrados) y, tras confirmar, crea o actualiza los estudiantes y los asigna a sus grupos. Igual
+que en los pasos anteriores, se aceptan ficheros en UTF-8 y en Windows-1252.
+
 ### Cómo exportar el CSV de Séneca (perfil Dirección)
+
+En Séneca, con el perfil de Dirección: **Alumnado › Alumnado del centro › Exportar datos**
+(formato CSV).
 
 ### Formato del CSV de importación
 
