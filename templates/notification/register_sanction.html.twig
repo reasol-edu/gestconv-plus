@@ -9,6 +9,7 @@
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
             <a href="{{ path('app_notifications_index') }}" class="hover:text-forest-600 transition-colors">{{ 'notification.title'|trans({}, 'notifications') }}</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'notification.register_sanction.title'|trans({}, 'notifications') }}</span>
         </div>
         <h1 class="text-2xl font-bold text-gray-900">
             {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}

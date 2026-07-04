@@ -37,6 +37,7 @@
                 {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
             </a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'incident.edit_ref'|trans({'%number%': report.number}, 'admin') }}</span>
         </div>
         <div class="flex items-baseline gap-2.5">
             <h1 class="text-2xl font-bold text-gray-900">Editar parte</h1>
