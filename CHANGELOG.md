@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- La paleta de búsqueda (Ctrl+K / ⌘K) incluye ahora un grupo de **Acciones** con accesos directos a «Nuevo parte», «Ir a notificaciones» y «Cambiar de curso». Las acciones aparecen al abrir la paleta y se filtran al escribir, sin distinguir mayúsculas ni tildes.
 - Nueva ficha del alumno con sus datos básicos, contadores de partes y sanciones, el historial cronológico de convivencia con el estado de notificación de cada elemento y accesos directos para registrar un nuevo parte o una nueva sanción con el alumno ya seleccionado. Se llega a ella desde el buscador global, el listado y el detalle de partes, el detalle de sanciones y la lista «Alumnado con más partes» del inicio. Los datos de contacto de la familia solo se muestran al equipo directivo, comisión de convivencia, orientación y tutores/as del grupo.
 - El listado de sanciones incorpora búsqueda por alumno o grupo, filtros de «vigentes hoy» y «pendientes de notificar», paginación y una columna con el estado de la notificación a la familia, con enlace directo para registrar la comunicación.
 - Al registrar un parte, una pantalla de confirmación muestra los partes creados (uno por alumno) con acceso directo para notificar a la familia, crear otro parte o volver al listado.

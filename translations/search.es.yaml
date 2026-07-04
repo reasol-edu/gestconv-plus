@@ -6,3 +6,8 @@ groups:
     companies: 'Empresas'
     students: 'Estudiantes'
     teachers: 'Docentes'
+    actions: 'Acciones'
+actions:
+    new_incident: 'Nuevo parte'
+    notifications: 'Ir a notificaciones'
+    change_year: 'Cambiar de curso'

@@ -1,15 +1,18 @@
 import { Controller } from '@hotwired/stimulus';
 
 const GROUP_LABELS = {
+    actions:   'Acciones',
     stays:     'Estancias',
     companies: 'Empresas',
     students:  'Estudiantes',
     teachers:  'Docentes',
 };
 
+const normalize = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 export default class extends Controller {
     static targets = ['backdrop', 'dialog', 'input', 'results', 'itemTemplate', 'groupTemplate'];
-    static values  = { url: String };
+    static values  = { url: String, actions: Array };
 
     #debounce = null;
     #abort    = null;
@@ -30,8 +33,7 @@ export default class extends Controller {
         this.backdropTarget.classList.remove('hidden');
         this.dialogTarget.classList.remove('hidden');
         this.inputTarget.value = '';
-        this.resultsTarget.innerHTML = '';
-        this.#selected = -1;
+        this.#renderResults({}, '');
         this.inputTarget.focus();
     }
 
@@ -81,7 +83,7 @@ export default class extends Controller {
     async #fetchResults() {
         const q = this.inputTarget.value.trim();
         if (q.length < 2) {
-            this.resultsTarget.innerHTML = '';
+            this.#renderResults({}, q);
             return;
         }
 
@@ -95,13 +97,21 @@ export default class extends Controller {
             );
             if (!res.ok) return;
             const data = await res.json();
-            this.#renderResults(data.groups ?? {});
+            this.#renderResults(data.groups ?? {}, q);
         } catch (err) {
             if (err.name !== 'AbortError') console.error(err);
         }
     }
 
-    #renderResults(groups) {
+    #filteredActions(query) {
+        const q = normalize(query);
+        return this.actionsValue.filter((a) => q === '' || normalize(a.label).includes(q));
+    }
+
+    #renderResults(serverGroups, query) {
+        const actions = this.#filteredActions(query);
+        const groups  = actions.length > 0 ? { actions, ...serverGroups } : serverGroups;
+
         this.resultsTarget.innerHTML = '';
         this.#selected = -1;
         const keys = Object.keys(groups);

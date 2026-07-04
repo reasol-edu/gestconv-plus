@@ -8,6 +8,11 @@
 {% set viewing_past = is_viewing_past_year() %}
 <div data-controller="sidebar command-palette confirm"
      data-command-palette-url-value="{{ path('app_search') }}"
+     data-command-palette-actions-value="{{ [
+         {label: 'actions.new_incident'|trans({}, 'search'), url: path('app_incidents_new')},
+         {label: 'actions.notifications'|trans({}, 'search'), url: path('app_notifications_index')},
+         {label: 'actions.change_year'|trans({}, 'search'), url: path('app_select_year_page')},
+     ]|json_encode }}"
      data-confirm-cancel-value="{{ 'ui.cancel'|trans }}"
      data-confirm-confirm-value="{{ 'ui.confirm_delete'|trans }}"
      data-confirm-close-value="{{ 'ui.close'|trans }}"
