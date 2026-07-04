@@ -1,6 +1,6 @@
 {% extends 'layouts/app.html.twig' %}
 
-{% block title %}{{ 'sanction.edit_title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+{% block title %}{{ 'sanction.edit_title'|trans({}, 'admin') }} · {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }} · {{ centre.name }} · {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="px-6 py-8 max-w-3xl mx-auto space-y-6">

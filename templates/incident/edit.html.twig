@@ -1,6 +1,6 @@
 {% extends 'layouts/app.html.twig' %}
 
-{% block title %}{{ 'incident.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+{% block title %}{{ 'incident.edit_ref'|trans({'%number%': report.number}, 'admin') }} · {{ report.student.name.lastName }}, {{ report.student.name.firstName }} · {{ centre.name }} · {{ app_name }}{% endblock %}
 
 {% block stylesheets %}{{ parent() }}
 {% if is_granted('incident_report.reassign', report) %}

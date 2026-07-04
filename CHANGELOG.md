@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- El título de la pestaña del navegador en el detalle y la edición de partes y sanciones incluye ahora el número de parte y el nombre del alumno, lo que facilita distinguir varias pestañas abiertas y mejora el historial de navegación.
 - En pantallas pequeñas, el listado de sanciones, la selección de alumno para una sanción y las colas de notificaciones muestran ahora cada fila como una tarjeta con sus etiquetas, igual que el listado de partes, en lugar de una tabla con desplazamiento horizontal.
 - La búsqueda de alumnado al registrar una sanción filtra en vivo mientras se escribe, sin botón «Filtrar», igual que el resto de listados.
 - Los formularios de parte y de sanción marcan con un asterisco los campos obligatorios y muestran cada error de validación junto al campo afectado, llevando el foco al primero; el resumen de errores de la parte superior se mantiene.
