@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\IncidentReport;
 use App\Entity\Teacher;
 use App\Entity\TasksCompletionStatus;
+use App\Repository\CommunicationRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentBehaviorRepository;
 use App\Repository\IncidentReportRepository;
@@ -34,6 +35,7 @@ class IncidentReportController extends AbstractController
         private readonly GroupRepository $groups,
         private readonly StudentRepository $students,
         private readonly TeacherRepository $teachers,
+        private readonly CommunicationRepository $communications,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -350,8 +352,9 @@ class IncidentReportController extends AbstractController
         $this->denyAccessUnlessGranted(IncidentReportVoter::VIEW, $report);
 
         return $this->render('incident/show.html.twig', [
-            'centre' => $centre,
-            'report' => $report,
+            'centre'  => $centre,
+            'report'  => $report,
+            'history' => $this->communications->findByIncidentReport($report),
         ]);
     }
 

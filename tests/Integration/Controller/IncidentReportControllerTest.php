@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\Communication;
+use App\Entity\CommunicationMethod;
+use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -388,6 +391,41 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
+    }
+
+    public function testShowDisplaysCommunicationHistory(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $method = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $communication = Communication::forIncidentReport(
+            $report, $method, $teacher, new \DateTimeImmutable(), CommunicationResult::Notified, 'Habló con la madre.',
+        );
+        $this->persist($report, $method, $communication);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Llamada telefónica');
+        self::assertSelectorTextContains('body', 'Habló con la madre.');
+    }
+
+    public function testShowWithoutCommunicationsDisplaysEmptyHistory(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->persist($report);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Todavía no se ha registrado ninguna comunicación.');
     }
 
     public function testShowReturns404ForNonExistentReport(): void
