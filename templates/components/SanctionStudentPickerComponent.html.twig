@@ -35,7 +35,7 @@
         </div>
     {% else %}
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-100 text-sm">
+            <table class="table-cards min-w-full divide-y divide-gray-100 text-sm">
                 <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left">{{ 'sanction.col.student'|trans({}, 'admin') }}</th>
@@ -49,13 +49,16 @@
                 <tbody class="divide-y divide-gray-100 bg-white">
                     {% for row in pagination.items %}
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-3 font-medium text-gray-900 whitespace-nowrap">
+                            <td data-label="{{ 'sanction.col.student'|trans({}, 'admin')|e('html_attr') }}"
+                                class="px-6 py-3 font-medium text-gray-900 whitespace-nowrap">
                                 {{ row.lastName }}, {{ row.firstName }}
                             </td>
-                            <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
+                            <td data-label="{{ 'sanction.col.group'|trans({}, 'admin')|e('html_attr') }}"
+                                class="px-4 py-3 text-gray-600 whitespace-nowrap">
                                 {{ row.groupName }}
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td data-label="{{ 'sanction.col.sanctionable'|trans({}, 'admin')|e('html_attr') }}"
+                                class="px-4 py-3 text-left sm:text-center">
                                 {% if row.sanctionableCount > 0 %}
                                     <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
                                         {{ row.sanctionableCount }}
@@ -64,7 +67,8 @@
                                     <span class="text-gray-300">—</span>
                                 {% endif %}
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td data-label="{{ 'sanction.col.serious_abbr'|trans({}, 'admin')|e('html_attr') }}"
+                                class="px-4 py-3 text-left sm:text-center">
                                 {% if row.seriousCount > 0 %}
                                     <span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
                                         {{ row.seriousCount }}
@@ -73,7 +77,8 @@
                                     <span class="text-gray-300">—</span>
                                 {% endif %}
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td data-label="{{ 'sanction.col.prescribed'|trans({}, 'admin')|e('html_attr') }}"
+                                class="px-4 py-3 text-left sm:text-center">
                                 {% if row.prescribedCount > 0 %}
                                     <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
                                         {{ row.prescribedCount }}

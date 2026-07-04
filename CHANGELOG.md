@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- En pantallas pequeñas, el listado de sanciones, la selección de alumno para una sanción y las colas de notificaciones muestran ahora cada fila como una tarjeta con sus etiquetas, igual que el listado de partes, en lugar de una tabla con desplazamiento horizontal.
 - La búsqueda de alumnado al registrar una sanción filtra en vivo mientras se escribe, sin botón «Filtrar», igual que el resto de listados.
 - Los formularios de parte y de sanción marcan con un asterisco los campos obligatorios y muestran cada error de validación junto al campo afectado, llevando el foco al primero; el resumen de errores de la parte superior se mantiene.
 - Tras registrar una comunicación se vuelve a la cola de notificaciones, lista para continuar con el siguiente elemento pendiente. Además, la cola muestra la antigüedad de cada elemento, destacada en ámbar a partir de tres días y en rojo a partir de siete.
