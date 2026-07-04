@@ -276,7 +276,7 @@
                      aria-atomic="true">
                     {% for type, messages in flashes %}
                         {% for message in messages %}
-                            <div data-flash
+                            <div data-flash="{{ type }}"
                                  class="flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-opacity duration-500
                                         {{ type == 'success'
                                             ? 'bg-green-50 border-green-200 text-green-800'
@@ -332,7 +332,8 @@
         el.style.opacity = '0';
         setTimeout(function () { el.remove(); }, 500);
     }
-    document.querySelectorAll('[data-flash]').forEach(function (el) {
+    // Los mensajes de error permanecen hasta que el usuario los cierre.
+    document.querySelectorAll('[data-flash="success"]').forEach(function (el) {
         setTimeout(function () { dismissFlash(el); }, 4000);
     });
     document.addEventListener('click', function (e) {

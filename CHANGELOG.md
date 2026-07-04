@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Los mensajes de error permanecen en pantalla hasta que se cierran manualmente; los de éxito siguen desapareciendo solos a los cuatro segundos.
 - Las migas de navegación de las páginas de detalle, creación y edición (partes, sanciones y notificaciones) muestran ahora la página actual («Parte #123», «Nueva sanción»…) en lugar de terminar en una flecha sin destino.
 - El título de la pestaña del navegador en el detalle y la edición de partes y sanciones incluye ahora el número de parte y el nombre del alumno, lo que facilita distinguir varias pestañas abiertas y mejora el historial de navegación.
 - En pantallas pequeñas, el listado de sanciones, la selección de alumno para una sanción y las colas de notificaciones muestran ahora cada fila como una tarjeta con sus etiquetas, igual que el listado de partes, en lugar de una tabla con desplazamiento horizontal.
