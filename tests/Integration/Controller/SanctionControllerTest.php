@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\Communication;
+use App\Entity\CommunicationMethod;
+use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -294,6 +297,42 @@ class SanctionControllerTest extends ControllerTestCase
         $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
+    }
+
+    public function testShowDisplaysCommunicationHistory(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $method   = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $communication = Communication::forSanction(
+            $sanction, $method, $admin, new \DateTimeImmutable(), CommunicationResult::Notified, 'Habló con el padre.',
+        );
+        $this->persist($method, $communication);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Llamada telefónica');
+        self::assertSelectorTextContains('body', 'Habló con el padre.');
+    }
+
+    public function testShowWithoutCommunicationsDisplaysEmptyHistory(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Todavía no se ha registrado ninguna comunicación.');
     }
 
     public function testShowReturns404ForNonExistentSanction(): void

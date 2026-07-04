@@ -144,7 +144,7 @@ El registro tiene dos pasos:
 
 ### Ver y editar una sanción
 
-Desde el listado, **Ver** abre el detalle de la sanción: los partes incorporados, las medidas, las fechas de vigencia y el estado de la notificación a la familia. Quien tiene permiso para registrarla también puede editarla o eliminarla.
+Desde el listado, **Ver** abre el detalle de la sanción: los partes incorporados, las medidas, las fechas de vigencia y el estado de la notificación a la familia. Al final de la página aparece el **historial de comunicaciones** con la familia. Quien tiene permiso para registrarla también puede editarla o eliminarla.
 
 ### Medidas disciplinarias
 

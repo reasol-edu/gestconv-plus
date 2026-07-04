@@ -153,5 +153,10 @@
 
     </div>
 
+    <div>
+        <h2 class="text-base font-semibold text-gray-900 mb-3">{{ 'notification.history.title'|trans({}, 'notifications') }}</h2>
+        {% include 'notification/_communication_history.html.twig' with { history: history } %}
+    </div>
+
 </div>
 {% endblock %}

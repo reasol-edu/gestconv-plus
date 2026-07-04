@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\Teacher;
+use App\Repository\CommunicationRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionMeasureRepository;
@@ -32,6 +33,7 @@ class SanctionController extends AbstractController
         private readonly IncidentReportRepository $reports,
         private readonly StudentRepository $students,
         private readonly GroupRepository $groups,
+        private readonly CommunicationRepository $communications,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -257,6 +259,7 @@ class SanctionController extends AbstractController
         return $this->render('sanction/show.html.twig', [
             'centre'   => $centre,
             'sanction' => $sanction,
+            'history'  => $this->communications->findBySanction($sanction),
         ]);
     }
 
