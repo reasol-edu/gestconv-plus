@@ -622,6 +622,25 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertNull($this->em->find(IncidentReport::class, $report->getId()));
     }
 
+    public function testNewPreloadsStudentFromQueryParams(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $group->addStudent($student);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo', [
+            'studentId' => $student->getId()->toRfc4122(),
+            'groupId'   => $group->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString(
+            $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122(),
+            (string) $this->client->getResponse()->getContent(),
+        );
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**

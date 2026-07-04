@@ -1,0 +1,202 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ student.name.lastName }}, {{ student.name.firstName }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set firstGroup = activeGroups|first %}
+<div class="px-6 py-8 max-w-5xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <p class="text-sm text-gray-500 mb-1">{{ 'student.show.title'|trans({}, 'admin') }}</p>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {{ student.name.lastName }}, {{ student.name.firstName }}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                {{ student.studentId }}
+                {%- for group in activeGroups %} · {{ group.name }}{% endfor %}
+            </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ firstGroup ? path('app_incidents_new', {studentId: student.id, groupId: firstGroup.id}) : path('app_incidents_new') }}"
+               class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs
+                      hover:bg-forest-700 transition-colors">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'incident.new'|trans({}, 'admin') }}
+            </a>
+            {% if firstGroup and is_granted('sanction.create', centre) %}
+                <a href="{{ path('app_sanctions_new', {studentId: student.id, groupId: firstGroup.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:scale', {class: 'h-4 w-4'}) }}
+                    {{ 'sanction.new'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Contadores ────────────────────────────────────────────────────────── #}
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ 'student.show.reports'|trans({}, 'admin') }}</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900 tabular-nums">{{ reportCount }}</p>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ 'student.show.serious'|trans({}, 'admin') }}</p>
+            <p class="mt-2 text-3xl font-bold tabular-nums {{ seriousCount > 0 ? 'text-red-600' : 'text-gray-900' }}">{{ seriousCount }}</p>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ 'student.show.prescribed'|trans({}, 'admin') }}</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900 tabular-nums">{{ prescribedCount }}</p>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ 'student.show.active_sanctions'|trans({}, 'admin') }}</p>
+            <p class="mt-2 text-3xl font-bold tabular-nums {{ activeSanctions > 0 ? 'text-amber-600' : 'text-gray-900' }}">{{ activeSanctions }}</p>
+        </div>
+    </div>
+
+    {# ── Datos de contacto ─────────────────────────────────────────────────── #}
+    {% if canSeeContact %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+            <div class="border-b border-gray-100 px-6 py-3.5">
+                <h2 class="text-sm font-semibold text-gray-800">{{ 'student.show.contact'|trans({}, 'admin') }}</h2>
+            </div>
+            <div class="px-6 py-4 grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
+                {% if student.tutorName1 %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'student.show.tutor1'|trans({}, 'admin') }}</p>
+                        <p class="text-gray-900">{{ student.tutorName1 }}</p>
+                        {% if student.tutorEmail1 %}<p class="text-gray-500">{{ student.tutorEmail1 }}</p>{% endif %}
+                    </div>
+                {% endif %}
+                {% if student.tutorName2 %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'student.show.tutor2'|trans({}, 'admin') }}</p>
+                        <p class="text-gray-900">{{ student.tutorName2 }}</p>
+                        {% if student.tutorEmail2 %}<p class="text-gray-500">{{ student.tutorEmail2 }}</p>{% endif %}
+                    </div>
+                {% endif %}
+                {% set phones = [
+                    {number: student.contactPhone1, notes: student.contactPhone1Notes},
+                    {number: student.contactPhone2, notes: student.contactPhone2Notes},
+                    {number: student.contactPhone3, notes: student.contactPhone3Notes},
+                ]|filter(p => p.number) %}
+                {% if phones|length > 0 %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'student.show.phones'|trans({}, 'admin') }}</p>
+                        {% for phone in phones %}
+                            <p class="text-gray-900">
+                                {{ phone.number }}
+                                {% if phone.notes %}<span class="text-gray-500">— {{ phone.notes }}</span>{% endif %}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if student.details %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'student.show.details'|trans({}, 'admin') }}</p>
+                        <p class="text-gray-700 whitespace-pre-wrap">{{ student.details }}</p>
+                    </div>
+                {% endif %}
+                {% if not student.tutorName1 and not student.tutorName2 and phones|length == 0 and not student.details %}
+                    <p class="text-gray-400 text-xs col-span-full">{{ 'student.show.contact_empty'|trans({}, 'admin') }}</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# ── Historial ─────────────────────────────────────────────────────────── #}
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+        <div class="border-b border-gray-100 px-6 py-3.5">
+            <h2 class="text-sm font-semibold text-gray-800">{{ 'student.show.history'|trans({}, 'admin') }}</h2>
+        </div>
+        {% if timeline is empty %}
+            <div class="px-6 py-16 text-center">
+                {{ ux_icon('heroicons:document-text', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+                <p class="text-sm text-gray-500">{{ 'student.show.history_empty'|trans({}, 'admin') }}</p>
+            </div>
+        {% else %}
+            <ul class="divide-y divide-gray-100">
+                {% for entry in timeline %}
+                    {% if entry.type == 'report' %}
+                        {% set report = entry.report %}
+                        <li>
+                            <a href="{{ path('app_incidents_show', {id: report.id}) }}"
+                               class="flex items-center justify-between gap-3 px-6 py-3 hover:bg-gray-50 transition-colors">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-gray-800">
+                                        <span class="inline-flex items-center rounded-full bg-red-50 text-red-700 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide mr-1.5">
+                                            {{ 'student.show.entry.report'|trans({}, 'admin') }}
+                                        </span>
+                                        <span class="font-mono text-gray-500">#{{ report.number }}</span>
+                                        · {{ report.occurredAt|date('d/m/Y H:i') }} · {{ report.group.name }}
+                                    </p>
+                                    <p class="mt-0.5 text-xs text-gray-500 truncate">{{ report.description|striptags|slice(0, 120) }}</p>
+                                </div>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    {% if report.behaviors|filter(b => b.serious)|length > 0 %}
+                                        <span class="inline-flex items-center rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-[11px] font-medium">
+                                            {{ 'incident.badge.serious'|trans({}, 'admin') }}
+                                        </span>
+                                    {% endif %}
+                                    {% if report.prescribed %}
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[11px] font-medium">
+                                            {{ 'incident.badge.prescribed'|trans({}, 'admin') }}
+                                        </span>
+                                    {% endif %}
+                                    {% if report.isNotified %}
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium">
+                                            {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
+                                            {{ 'notification.badge.notified'|trans({}, 'notifications') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[11px] font-medium">
+                                            {{ ux_icon('heroicons:bell-alert', {class: 'h-3 w-3'}) }}
+                                            {{ 'notification.badge.pending'|trans({}, 'notifications') }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </li>
+                    {% else %}
+                        {% set sanction = entry.sanction %}
+                        <li>
+                            <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}"
+                               class="flex items-center justify-between gap-3 px-6 py-3 hover:bg-gray-50 transition-colors">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-gray-800">
+                                        <span class="inline-flex items-center rounded-full bg-blue-50 text-blue-700 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide mr-1.5">
+                                            {{ 'student.show.entry.sanction'|trans({}, 'admin') }}
+                                        </span>
+                                        {{ sanction.createdAt|date('d/m/Y') }} · {{ sanction.group.name }}
+                                        {% if sanction.effectiveFrom and sanction.effectiveTo %}
+                                            · {{ sanction.effectiveFrom|date('d/m/Y') }} – {{ sanction.effectiveTo|date('d/m/Y') }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="mt-0.5 text-xs text-gray-500 truncate">
+                                        {% for measure in sanction.measures %}{{ measure.name }}{% if not loop.last %}, {% endif %}{% else %}{{ sanction.details|striptags|slice(0, 120) }}{% endfor %}
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    {% if sanction.isNotified %}
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium">
+                                            {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
+                                            {{ 'notification.badge.notified'|trans({}, 'notifications') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[11px] font-medium">
+                                            {{ ux_icon('heroicons:bell-alert', {class: 'h-3 w-3'}) }}
+                                            {{ 'notification.badge.pending'|trans({}, 'notifications') }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

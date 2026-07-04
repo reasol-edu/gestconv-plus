@@ -268,6 +268,20 @@ class IncidentReportController extends AbstractController
                     ];
                 }
             }
+        } else {
+            $studentId = trim($request->query->getString('studentId'));
+            $groupId   = trim($request->query->getString('groupId'));
+            if ($studentId !== '' && $groupId !== '') {
+                $student = $this->students->findById($studentId);
+                $group   = $this->groups->findByIdAndCentre($groupId, $centre);
+                if ($student !== null && $group !== null && $student->getGroups()->contains($group)) {
+                    $preloadedStudents[] = [
+                        'value'     => $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122(),
+                        'label'     => $student->getName()->getLastName() . ', ' . $student->getName()->getFirstName(),
+                        'secondary' => $group->getName(),
+                    ];
+                }
+            }
         }
 
         $availableGroups = $this->groups->findByActiveYearOfCentreOrderedByName($centre);

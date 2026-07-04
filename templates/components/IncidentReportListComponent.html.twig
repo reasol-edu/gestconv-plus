@@ -123,7 +123,10 @@
                                     class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('d/m/Y H:i') }}</td>
                                 <td data-label="{{ 'incident.col.student'|trans({}, 'admin')|e('html_attr') }}"
                                     class="px-6 py-4 font-medium text-gray-900">
-                                    {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+                                    <a href="{{ path('app_students_show', {id: report.student.id}) }}"
+                                       class="hover:text-forest-700 hover:underline transition-colors">
+                                        {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+                                    </a>
                                 </td>
                                 <td data-label="{{ 'incident.col.group'|trans({}, 'admin')|e('html_attr') }}"
                                     class="px-6 py-4 text-gray-600">{{ report.group.name }}</td>

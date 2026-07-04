@@ -165,17 +165,20 @@
             {% else %}
                 <ul class="divide-y divide-gray-100">
                     {% for row in topStudents %}
-                        <li class="flex items-center justify-between gap-3 px-5 py-3">
-                            <div class="min-w-0">
-                                <p class="truncate text-sm font-medium text-gray-800">{{ row.lastName }}, {{ row.firstName }}</p>
-                                <p class="mt-0.5 text-xs text-gray-500">{{ row.groupName }}</p>
-                            </div>
-                            <div class="shrink-0 text-right">
-                                <p class="text-sm font-semibold text-gray-800 tabular-nums">{{ row.sanctionableCount }}</p>
-                                {% if row.seriousCount > 0 %}
-                                    <p class="text-[11px] text-red-600">{{ row.seriousCount }} {{ 'top_students_col_serious'|trans({}, 'dashboard') }}</p>
-                                {% endif %}
-                            </div>
+                        <li>
+                            <a href="{{ path('app_students_show', {id: row.studentId}) }}"
+                               class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-gray-800">{{ row.lastName }}, {{ row.firstName }}</p>
+                                    <p class="mt-0.5 text-xs text-gray-500">{{ row.groupName }}</p>
+                                </div>
+                                <div class="shrink-0 text-right">
+                                    <p class="text-sm font-semibold text-gray-800 tabular-nums">{{ row.sanctionableCount }}</p>
+                                    {% if row.seriousCount > 0 %}
+                                        <p class="text-[11px] text-red-600">{{ row.seriousCount }} {{ 'top_students_col_serious'|trans({}, 'dashboard') }}</p>
+                                    {% endif %}
+                                </div>
+                            </a>
                         </li>
                     {% endfor %}
                 </ul>

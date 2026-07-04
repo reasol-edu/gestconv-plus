@@ -12,7 +12,10 @@
                 {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
             </div>
             <h1 class="text-2xl font-bold text-gray-900">
-                {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+                <a href="{{ path('app_students_show', {id: report.student.id}) }}"
+                   class="hover:text-forest-700 transition-colors">
+                    {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
+                </a>
             </h1>
             <p class="mt-1 text-sm text-gray-500">
                 {{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}

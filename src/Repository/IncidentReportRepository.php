@@ -37,6 +37,7 @@ class IncidentReportRepository extends ServiceEntityRepository
      *   search   string   — fulltext search
      *   ownOnly  bool     — only viewer's own reports
      *   groupId  string   — UUID of a group
+     *   studentId string  — UUID of a student
      *   dateFrom string   — Y-m-d lower bound
      *   dateTo   string   — Y-m-d upper bound
      *   serious  bool     — filter by behavior severity
@@ -90,6 +91,13 @@ class IncidentReportRepository extends ServiceEntityRepository
         if (is_string($groupId) && $groupId !== '') {
             $qb->andWhere('g.id = :groupId')
                ->setParameter('groupId', $groupId, 'uuid');
+        }
+
+        // studentId
+        $studentId = $filters['studentId'] ?? '';
+        if (is_string($studentId) && $studentId !== '') {
+            $qb->andWhere('r.student = :studentId')
+               ->setParameter('studentId', $studentId, 'uuid');
         }
 
         // dateFrom

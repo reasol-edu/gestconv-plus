@@ -43,6 +43,7 @@ class SanctionRepository extends ServiceEntityRepository
      *
      * Supported filters:
      *   search         string — student name or group name
+     *   studentId      string — UUID of a student
      *   effectiveToday bool   — only sanctions in effect today (notified, within date range)
      *   pendingOnly    bool   — only sanctions without a successful communication
      *
@@ -89,6 +90,12 @@ class SanctionRepository extends ServiceEntityRepository
                     'LOWER(g.name) LIKE LOWER(:search)',
                 )
             )->setParameter('search', '%' . $search . '%');
+        }
+
+        $studentId = $filters['studentId'] ?? '';
+        if (is_string($studentId) && $studentId !== '') {
+            $qb->andWhere('s.student = :studentId')
+               ->setParameter('studentId', $studentId, 'uuid');
         }
 
         if (($filters['effectiveToday'] ?? false) === true) {

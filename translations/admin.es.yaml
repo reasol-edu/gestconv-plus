@@ -297,6 +297,23 @@ student.flash.created: 'Estudiante creado correctamente.'
 student.flash.saved: 'Estudiante guardado correctamente.'
 student.flash.deleted: 'Estudiante eliminado correctamente.'
 
+# Ficha del alumno
+student.show.title: 'Ficha del alumno'
+student.show.reports: 'Partes'
+student.show.serious: 'Con conducta grave'
+student.show.prescribed: 'Prescritos'
+student.show.active_sanctions: 'Sanciones vigentes hoy'
+student.show.contact: 'Datos de contacto'
+student.show.contact_empty: 'No hay datos de contacto registrados.'
+student.show.tutor1: 'Tutor/a legal 1'
+student.show.tutor2: 'Tutor/a legal 2'
+student.show.phones: 'Teléfonos'
+student.show.details: 'Observaciones'
+student.show.history: 'Historial de convivencia'
+student.show.history_empty: 'Este estudiante no tiene partes ni sanciones visibles para ti.'
+student.show.entry.report: 'Parte'
+student.show.entry.sanction: 'Sanción'
+
 # Importación CSV
 students.import.title: 'Importar estudiantes desde CSV'
 students.import.button: 'Importar CSV'

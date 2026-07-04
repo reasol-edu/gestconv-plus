@@ -12,7 +12,10 @@
                 {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
             </div>
             <h1 class="text-2xl font-bold text-gray-900">
-                {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
+                <a href="{{ path('app_students_show', {id: sanction.student.id}) }}"
+                   class="hover:text-forest-700 transition-colors">
+                    {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
+                </a>
             </h1>
             <p class="mt-1 text-sm text-gray-500">
                 {{ sanction.group.name }} · {{ sanction.createdAt|date('d/m/Y') }}
