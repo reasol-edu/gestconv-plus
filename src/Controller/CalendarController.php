@@ -59,6 +59,7 @@ class CalendarController extends AbstractController
         $currentSeconds = $this->appSettings->getInt('board.current_week_seconds');
         $nextSeconds    = $this->appSettings->getInt('board.next_week_seconds');
         $showNextWeek   = $currentSeconds > 0 && $nextSeconds > 0;
+        $theme          = $this->appSettings->get('board.theme');
 
         $weeks = [
             ['label' => 'board_this_week', 'target' => 'currentWeek', 'days' => $boardBuilder->build($items, $this->weekdaysOf($today))],
@@ -73,6 +74,7 @@ class CalendarController extends AbstractController
             'currentSeconds' => $currentSeconds,
             'nextSeconds'    => $nextSeconds,
             'showNextWeek'   => $showNextWeek,
+            'theme'          => $theme,
         ]);
     }
 

@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- La pantalla de ajustes agrupa ahora cada ajuste en secciones por categoría (Visualización, Correo electrónico, Modo tablón, Notificaciones a familias y Avisos por correo), en lugar de mostrarlos todos en un único listado alfabético.
+- El modo tablón del calendario incorpora un tema claro, además del oscuro existente, y un nuevo ajuste (global y de centro) para elegir entre claro, oscuro o según el sistema; este último sigue en todo momento la preferencia de color del navegador o sistema operativo, incluidos los cambios mientras la pantalla permanece abierta. El tema claro es ahora el valor por defecto.
 - Una vez notificado a la familia, un parte solo puede ser modificado por un administrador; el docente que lo registró conserva la posibilidad de añadir y gestionar sus propias observaciones, pero ya no puede editar los datos del parte. Las sanciones ya funcionaban así: su edición y eliminación han sido siempre exclusivas de administradores y comisión de convivencia.
 - Los mensajes de error permanecen en pantalla hasta que se cierran manualmente; los de éxito siguen desapareciendo solos a los cuatro segundos.
 - Las migas de navegación de las páginas de detalle, creación y edición (partes, sanciones y notificaciones) muestran ahora la página actual («Parte #123», «Nueva sanción»…) en lugar de terminar en una flecha sin destino.
@@ -45,7 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tras registrar una comunicación se vuelve a la cola de notificaciones, lista para continuar con el siguiente elemento pendiente. Además, la cola muestra la antigüedad de cada elemento, destacada en ámbar a partir de tres días y en rojo a partir de siete.
 - La tarjeta «Pendientes de notificar» del inicio se muestra siempre: en verde cuando no queda nada por comunicar a las familias.
 - El listado de partes muestra ahora una pastilla de notificación (notificado/pendiente, con enlace directo para notificar) y otra de prescrito («no sancionable»); los partes prescritos se atenúan visualmente en toda la fila para indicar que ya no tienen efecto real.
-- La pantalla de ajustes agrupa ahora cada ajuste en secciones por categoría (Visualización, Correo electrónico, Modo tablón, Notificaciones a familias y Avisos por correo), en lugar de mostrarlos todos en un único listado alfabético.
 
 ### Fixed
 

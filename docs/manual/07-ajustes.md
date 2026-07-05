@@ -56,11 +56,18 @@ su centro, y cada docente para sí mismo.
 |---|---|---|---|---|
 | Duración de la semana actual | Global, centro | Entero (segundos) | 0-3600 | 15 |
 | Duración de la semana siguiente | Global, centro | Entero (segundos) | 0-3600 | 5 |
+| Tema del modo tablón | Global, centro | Selección | Claro / Oscuro / Según el sistema | Claro |
 
 Controlan cuántos segundos se muestra cada semana en el [modo tablón](05-secciones-de-la-aplicacion.md#modo-tablon)
 del calendario antes de alternar a la otra. Si cualquiera de los dos vale 0, el modo tablón deja de
-alternar y muestra solo la semana actual. No tienen ámbito de docente: se fijan a nivel global o de
-centro únicamente.
+alternar y muestra solo la semana actual.
+
+El tema controla la combinación de colores del modo tablón: claro, oscuro, o **según el sistema**,
+que sigue en todo momento la preferencia de color del navegador o sistema operativo del dispositivo
+que lo muestra (incluidos los cambios que se produzcan mientras la pantalla del tablón permanece
+abierta, sin necesidad de recargarla).
+
+Ninguno de los tres ajustes tiene ámbito de docente: se fijan a nivel global o de centro únicamente.
 
 ### Notificaciones a familias
 

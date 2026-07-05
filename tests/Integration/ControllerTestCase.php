@@ -49,18 +49,19 @@ abstract class ControllerTestCase extends WebTestCase
 
     private function seedDefaultSettings(): void
     {
-        // [key, type, default, globalScope, centreScope, teacherScope, minValue, maxValue, category, categoryOrder, position]
+        // [key, type, default, globalScope, centreScope, teacherScope, minValue, maxValue, category, categoryOrder, position, choices]
         $defs = [
-            ['page.size',                             SettingType::Integer, '20',   false, false, true,  5,    100,  'settings.category.display', 10, 10],
-            ['email.notifications',                   SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 10],
-            ['email.notification.tutor_assigned',     SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 20],
-            ['email.notification.positions_created',  SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 30],
-            ['email.notification.signature_reminder', SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 40],
-            ['board.current_week_seconds',             SettingType::Integer, '15',   true,  true,  false, 0,    3600, 'settings.category.board',   30, 10],
-            ['board.next_week_seconds',                SettingType::Integer, '5',    true,  true,  false, 0,    3600, 'settings.category.board',   30, 20],
+            ['page.size',                             SettingType::Integer, '20',   false, false, true,  5,    100,  'settings.category.display', 10, 10, null],
+            ['email.notifications',                   SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 10, null],
+            ['email.notification.tutor_assigned',     SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 20, null],
+            ['email.notification.positions_created',  SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 30, null],
+            ['email.notification.signature_reminder', SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 40, null],
+            ['board.current_week_seconds',             SettingType::Integer, '15',   true,  true,  false, 0,    3600, 'settings.category.board',   30, 10, null],
+            ['board.next_week_seconds',                SettingType::Integer, '5',    true,  true,  false, 0,    3600, 'settings.category.board',   30, 20, null],
+            ['board.theme',                            SettingType::Choice,  'light', true,  true,  false, null, null, 'settings.category.board',   30, 30, 'light,dark,system'],
         ];
 
-        foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max, $category, $categoryOrder, $position]) {
+        foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max, $category, $categoryOrder, $position, $choices]) {
             $def = (new SettingDefinition())
                 ->setKey($key)
                 ->setType($type)
@@ -72,7 +73,8 @@ abstract class ControllerTestCase extends WebTestCase
                 ->setMaxValue($max)
                 ->setCategory($category)
                 ->setCategoryOrder($categoryOrder)
-                ->setPosition($position);
+                ->setPosition($position)
+                ->setChoices($choices);
             $this->em->persist($def);
         }
 

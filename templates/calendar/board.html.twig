@@ -3,7 +3,9 @@
 {% block title %}{{ 'board_title'|trans({}, 'calendar') }} · {{ app_name }}{% endblock %}
 
 {% block body %}
-<div class="fixed inset-0 flex flex-col bg-forest-950 text-white overflow-hidden" data-controller="fullscreen">
+<div class="fixed inset-0 flex flex-col bg-gray-50 text-gray-900 dark:bg-forest-950 dark:text-white overflow-hidden"
+     data-controller="fullscreen board-theme"
+     data-board-theme-mode-value="{{ theme }}">
 
     {# ── Esquina: pantalla completa + power-off (única salida: logout) ─────── #}
     <div class="absolute top-4 right-4 z-20 flex items-center gap-2">
@@ -11,20 +13,20 @@
                 data-action="fullscreen#toggle"
                 title="{{ 'board_fullscreen'|trans({}, 'calendar') }}"
                 aria-label="{{ 'board_fullscreen'|trans({}, 'calendar') }}"
-                class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
+                class="flex h-11 w-11 items-center justify-center rounded-full bg-black/5 text-gray-700 hover:bg-black/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 transition-colors">
             <span data-fullscreen-target="enterIcon">{{ ux_icon('heroicons:arrows-pointing-out', {class: 'h-5 w-5'}) }}</span>
             <span data-fullscreen-target="exitIcon" class="hidden">{{ ux_icon('heroicons:arrows-pointing-in', {class: 'h-5 w-5'}) }}</span>
         </button>
         <a href="{{ path('app_logout', {'_csrf_token': csrf_token('logout')}) }}"
            title="{{ 'board_logout'|trans({}, 'calendar') }}"
            aria-label="{{ 'board_logout'|trans({}, 'calendar') }}"
-           class="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-red-500/80 transition-colors">
+           class="flex h-11 w-11 items-center justify-center rounded-full bg-black/5 text-gray-700 hover:bg-red-500/80 hover:text-white dark:bg-white/10 dark:text-white dark:hover:bg-red-500/80 transition-colors">
             {{ ux_icon('heroicons:power', {class: 'h-5 w-5'}) }}
         </a>
     </div>
 
-    <header class="shrink-0 px-8 py-5 border-b border-white/10 flex items-center gap-3">
-        {{ ux_icon('heroicons:rectangle-stack', {class: 'h-6 w-6 text-forest-300'}) }}
+    <header class="shrink-0 px-8 py-5 border-b border-gray-200 dark:border-white/10 flex items-center gap-3">
+        {{ ux_icon('heroicons:rectangle-stack', {class: 'h-6 w-6 text-forest-600 dark:text-forest-300'}) }}
         <h1 class="text-xl font-bold">{{ 'board_title'|trans({}, 'calendar') }}</h1>
     </header>
 
@@ -35,14 +37,14 @@
         {% for week in weeks %}
             <section class="absolute inset-0 flex flex-col transition-opacity duration-700 ease-in-out {{ loop.first ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
                       data-board-target="{{ week.target }}">
-                <h2 class="shrink-0 bg-forest-900 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-forest-200 border-b border-white/10">
+                <h2 class="shrink-0 bg-gray-100 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-gray-600 border-b border-gray-200 dark:bg-forest-900 dark:text-forest-200 dark:border-white/10">
                     {{ week.label|trans({}, 'calendar') }}
                 </h2>
-                <div class="flex-1 grid grid-cols-5 divide-x divide-white/10 overflow-hidden">
+                <div class="flex-1 grid grid-cols-5 divide-x divide-gray-200 dark:divide-white/10 overflow-hidden">
                     {% for day in week.days %}
                         {% set is_today = day.day.format('Y-m-d') == today.format('Y-m-d') %}
                         <div class="flex flex-col overflow-hidden">
-                            <h3 class="shrink-0 px-4 pt-4 pb-2 text-sm font-semibold {{ is_today ? 'text-amber-300' : 'text-forest-200' }}">
+                            <h3 class="shrink-0 px-4 pt-4 pb-2 text-sm font-semibold {{ is_today ? 'text-amber-600 dark:text-amber-300' : 'text-gray-600 dark:text-forest-200' }}">
                                 {{ ('weekday.' ~ day.day.format('N'))|trans({}, 'calendar') }}
                                 {{ day.day.format('j') }} {{ 'de'|trans({}, 'calendar') }}
                                 {{ ('month.' ~ day.day.format('n'))|trans({}, 'calendar')|lower }}
@@ -50,7 +52,7 @@
 
                             <div class="flex-1 overflow-hidden px-4 pb-4" data-controller="board-column">
                                 {% if day.groups is empty %}
-                                    <p class="text-xs text-forest-400">{{ 'board_no_sanctions'|trans({}, 'calendar') }}</p>
+                                    <p class="text-xs text-gray-400 dark:text-forest-400">{{ 'board_no_sanctions'|trans({}, 'calendar') }}</p>
                                 {% else %}
                                     <div class="space-y-3">
                                         {% for group in day.groups %}
@@ -63,9 +65,9 @@
                                                         <li>
                                                             <span class="font-medium">{{ item.student }}</span>
                                                             {% if item.details %}
-                                                                <span class="text-forest-300"> — {{ item.details }}</span>
+                                                                <span class="text-gray-500 dark:text-forest-300"> — {{ item.details }}</span>
                                                             {% endif %}
-                                                            <span class="block text-xs text-forest-400">
+                                                            <span class="block text-xs text-gray-400 dark:text-forest-400">
                                                                 {{ 'board_start_date'|trans({}, 'calendar') }}: {{ item.from|date('d/m/Y') }}
                                                                 · {{ 'board_end_date'|trans({}, 'calendar') }}: {{ (item.to ?? item.from)|date('d/m/Y') }}
                                                             </span>

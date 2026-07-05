@@ -329,6 +329,33 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertStringContainsString('data-board-next-seconds-value="10"', $content);
     }
 
+    public function testBoardUsesLightThemeByDefault(): void
+    {
+        $centre = $this->makeCentre('46000049');
+        $admin  = $this->makeAdmin('calendar.board.themedefault');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-board-theme-mode-value="light"', $content);
+    }
+
+    public function testBoardReflectsCustomThemeSetting(): void
+    {
+        $centre = $this->makeCentre('46000050');
+        $admin  = $this->makeAdmin('calendar.board.themecustom');
+        $this->seedCentreValue('board.theme', 'dark', $centre);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-board-theme-mode-value="dark"', $content);
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private function seedCentreValue(string $key, string $value, EducationalCentre $centre): CentreSettingValue

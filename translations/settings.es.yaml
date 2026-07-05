@@ -48,6 +48,12 @@ settings.key.board_current_week_seconds.description: 'Segundos que se muestra la
 settings.key.board_next_week_seconds.label: 'Duración de la semana siguiente'
 settings.key.board_next_week_seconds.description: 'Segundos que se muestra la semana siguiente antes de volver a la semana actual (0-3600). Un valor de 0 en este ajuste o en "Duración de la semana actual" desactiva la visualización de la semana siguiente.'
 
+settings.key.board_theme.label: 'Tema del modo tablón'
+settings.key.board_theme.description: 'Combinación de colores del modo tablón: claro, oscuro, o según la preferencia del navegador o sistema operativo del dispositivo que lo muestra.'
+settings.key.board_theme.choice.light: 'Claro'
+settings.key.board_theme.choice.dark: 'Oscuro'
+settings.key.board_theme.choice.system: 'Según el sistema'
+
 settings.key.notifications_report_notifier.label: 'Quién notifica los partes de convivencia'
 settings.key.notifications_report_notifier.description: 'Determina qué docentes pueden registrar la comunicación con la familia de un parte, además de la administración.'
 settings.key.notifications_report_notifier.choice.report_teacher: 'El docente del parte'

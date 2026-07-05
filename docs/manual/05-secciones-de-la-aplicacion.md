@@ -84,11 +84,13 @@ El listado muestra los partes accesibles según el perfil del docente, ordenados
 | Expulsión | Muestra solo partes con expulsión del aula |
 | Rango de fechas | Filtra por fecha del suceso (desde / hasta) |
 
+Cada fila muestra, junto a las conductas, una pastilla con el estado de notificación a la familia (**Notificado** en verde, o **Pendiente de notificar** en ámbar con enlace directo para registrar la comunicación si tienes permiso) y, si corresponde, otra pastilla **No sancionable** para los partes prescritos. Los partes prescritos se muestran atenuados en toda la fila para indicar de un vistazo que ya no tienen efecto real.
+
 En pantallas pequeñas, cada fila del listado se muestra como una tarjeta con las etiquetas de campo visibles.
 
 ### Ver y editar un parte
 
-Pulsa **Ver** en cualquier fila del listado para abrir el detalle completo del parte. Cualquier docente o administrador con acceso al parte puede añadir **observaciones**: anotaciones con fecha/hora, el docente que las registra y un texto que admite formato enriquecido. Se muestran en orden cronológico inverso, justo antes del historial de comunicaciones. Quien la ha registrado puede editarla o eliminarla durante la hora siguiente a su creación; pasado ese plazo, sólo un administrador puede editarla o eliminarla, sin límite de tiempo. Al final de la página aparece el **historial de comunicaciones** con la familia: cada intento registrado, con su fecha, método, docente, resultado y observaciones.
+Pulsa **Ver** en cualquier fila del listado para abrir el detalle completo del parte. Cualquier docente o administrador con acceso al parte puede añadir **observaciones**: anotaciones con la fecha/hora actual (no puede especificarse otra), el docente que las registra y un texto que admite formato enriquecido. Se muestran en orden cronológico inverso, justo antes del historial de comunicaciones. Quien la ha registrado puede editar su texto o eliminarla durante la hora siguiente a su creación —la fecha/hora solo puede corregirla un administrador—; pasado ese plazo, sólo un administrador puede editarla o eliminarla, sin límite de tiempo. Al final de la página aparece el **historial de comunicaciones** con la familia: cada intento registrado, con su fecha, método, docente, resultado y observaciones.
 
 Desde el detalle puedes **editar** el parte si eres el docente que lo registró o un administrador. El número de parte (`#1`, `#2`…) aparece junto al título y es de solo lectura: identifica el parte dentro del curso académico y no cambia al editar. En cuanto el parte se notifica a la familia, sólo un administrador puede seguir editando sus datos; el docente que lo registró conserva la posibilidad de añadir y gestionar sus observaciones, pero no de modificar el resto de campos.
 
@@ -137,7 +139,7 @@ El registro tiene dos pasos:
 
 1. **Seleccionar al estudiante** — pulsa **Nueva sanción**. El buscador filtra en vivo mientras se escribe y la tabla muestra, para cada estudiante, cuántos partes sancionables tiene (ya notificados y sin sanción), cuántos incluyen conductas graves y cuántos han prescrito.
 2. **Completar el formulario**:
-   - **Partes a incorporar** — la lista de partes sancionables del estudiante en ese grupo (notificados a la familia, sin otra sanción y no prescritos), del más reciente al más antiguo. Marca los que motivan la sanción.
+   - **Partes a incorporar** — la lista de partes sancionables del estudiante en ese grupo (notificados a la familia, sin otra sanción y no prescritos), del más reciente al más antiguo. Marca los que motivan la sanción. Cada uno muestra siempre la fecha y hora, el docente que lo registró y la descripción completa de lo acontecido; un desplegable «Ver observaciones e historial de notificaciones» permite consultar además sus observaciones (si las tiene) y su historial de comunicaciones con la familia, sin salir del formulario.
    - **Medidas disciplinarias** — marca las medidas aplicadas, con el mismo filtro de texto y contador de seleccionadas que las conductas del parte. Si no se aplica ninguna medida, marca la casilla correspondiente e indica el motivo.
    - **Detalle** — campo de texto enriquecido para describir la sanción.
    - **Fechas de inicio y fin** — determinan el periodo de vigencia y cuándo aparece la sanción en el calendario.
@@ -215,7 +217,7 @@ La pestaña **Historial de notificaciones** reúne, en una única tabla paginada
 
 Un docente sin permisos especiales solo ve las comunicaciones de los partes y sanciones que él mismo registró o que pertenecen a un grupo del que es tutor. Los administradores, la comisión de convivencia y orientación ven el historial completo del centro, sin restricción por autoría ni tutoría.
 
-Puede filtrarse por texto libre (alumno o grupo), por tipo de elemento y por resultado (*Notificado* / *No notificado*).
+Puede filtrarse por texto libre (alumno, grupo o docente que realizó la comunicación), por tipo de elemento y por resultado (*Notificado* / *No notificado*).
 
 ### Quién puede notificar
 
@@ -256,6 +258,7 @@ El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista
 - Muestra una semana (lunes a viernes) a la vez, en cinco columnas, para que todo el contenido se lea de un vistazo sin necesidad de desplazar la pantalla a mano.
 - Para cada día se listan las sanciones que lo cubren, agrupadas por grupo, indicando el alumno, el detalle de la sanción y sus fechas de inicio y fin. Si el contenido de un día no cabe en la columna, se desplaza automáticamente hacia arriba y hacia abajo; no se puede desplazar manualmente.
 - La semana actual y la semana siguiente se alternan automáticamente con una transición suave. Los administradores de centro y globales pueden configurar en **Ajustes** cuántos segundos se muestra cada una (0-3600 segundos; 15 y 5 por defecto). Si cualquiera de los dos ajustes vale 0, solo se muestra la semana actual, sin alternancia.
+- El tema de colores (claro, oscuro o según el sistema) también se configura en **Ajustes**; ver [Modo tablón](07-ajustes.md#modo-tablon).
 - Un botón en la esquina superior permite alternar la pantalla completa del navegador.
 - Un botón con icono de encendido/apagado, en la misma esquina, cierra la sesión.
 
