@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\IncidentReport;
+use App\Entity\IncidentReportObservation;
 use App\Entity\Teacher;
 use App\Entity\TasksCompletionStatus;
 use App\Repository\CommunicationRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentBehaviorRepository;
+use App\Repository\IncidentReportObservationRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
@@ -36,6 +38,7 @@ class IncidentReportController extends AbstractController
         private readonly StudentRepository $students,
         private readonly TeacherRepository $teachers,
         private readonly CommunicationRepository $communications,
+        private readonly IncidentReportObservationRepository $observations,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -352,10 +355,54 @@ class IncidentReportController extends AbstractController
         $this->denyAccessUnlessGranted(IncidentReportVoter::VIEW, $report);
 
         return $this->render('incident/show.html.twig', [
-            'centre'  => $centre,
-            'report'  => $report,
-            'history' => $this->communications->findByIncidentReport($report),
+            'centre'       => $centre,
+            'report'       => $report,
+            'history'      => $this->communications->findByIncidentReport($report),
+            'observations' => $this->observations->findByIncidentReport($report),
         ]);
+    }
+
+    #[Route('/{id}/observaciones', name: 'app_incidents_add_observation', methods: ['POST'])]
+    public function addObservation(string $id, Request $request): Response
+    {
+        $report = $this->reports->findById($id);
+        if ($report === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(IncidentReportVoter::VIEW, $report);
+
+        if (!$this->isCsrfTokenValid('add_observation_' . $id, $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $user = $this->getUser();
+        \assert($user instanceof Teacher);
+
+        $registeredAtRaw = trim($request->request->getString('registered_at'));
+        $text            = trim($request->request->getString('text'));
+
+        $registeredAt = null;
+        if ($registeredAtRaw !== '') {
+            try {
+                $registeredAt = new \DateTimeImmutable($registeredAtRaw);
+            } catch (\Exception) {
+                $registeredAt = null;
+            }
+        }
+
+        if ($registeredAt === null || $text === '') {
+            $this->addFlash('error', $this->t('incident.observation.error.invalid'));
+
+            return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
+        }
+
+        $this->em->persist(new IncidentReportObservation($report, $user, $registeredAt, $text));
+        $this->em->flush();
+
+        $this->addFlash('success', $this->t('incident.observation.flash.added'));
+
+        return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
     }
 
     #[Route('/{id}/editar', name: 'app_incidents_edit', methods: ['GET', 'POST'])]

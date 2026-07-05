@@ -75,10 +75,15 @@ class IncidentReport
     #[ORM\OneToMany(targetEntity: Communication::class, mappedBy: 'incidentReport', orphanRemoval: true)]
     private Collection $communications;
 
+    /** @var Collection<int, IncidentReportObservation> */
+    #[ORM\OneToMany(targetEntity: IncidentReportObservation::class, mappedBy: 'incidentReport', orphanRemoval: true)]
+    private Collection $observations;
+
     public function __construct()
     {
         $this->behaviors      = new ArrayCollection();
         $this->communications = new ArrayCollection();
+        $this->observations   = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -280,5 +285,11 @@ class IncidentReport
     public function getCommunications(): Collection
     {
         return $this->communications;
+    }
+
+    /** @return Collection<int, IncidentReportObservation> */
+    public function getObservations(): Collection
+    {
+        return $this->observations;
     }
 }

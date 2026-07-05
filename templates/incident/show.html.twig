@@ -140,6 +140,14 @@
     </div>
 
     <div>
+        <h2 class="text-base font-semibold text-gray-900 mb-3">{{ 'incident.observation.title'|trans({}, 'admin') }}</h2>
+        <div class="space-y-4">
+            {% include 'incident/_observation_form.html.twig' with { report: report } %}
+            {% include 'incident/_observation_list.html.twig' with { observations: observations } %}
+        </div>
+    </div>
+
+    <div>
         <h2 class="text-base font-semibold text-gray-900 mb-3">{{ 'notification.history.title'|trans({}, 'notifications') }}</h2>
         {% include 'notification/_communication_history.html.twig' with { history: history } %}
     </div>

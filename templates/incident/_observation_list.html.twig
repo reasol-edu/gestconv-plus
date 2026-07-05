@@ -1,0 +1,15 @@
+{# Expects: observations #}
+{% if observations is empty %}
+    <p class="text-sm text-gray-400">{{ 'incident.observation.empty'|trans({}, 'admin') }}</p>
+{% else %}
+    <ul class="space-y-3">
+        {% for observation in observations %}
+            <li class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+                    {{ observation.registeredAt|date('d/m/Y H:i') }} · {{ observation.registeredBy.name.lastName }}, {{ observation.registeredBy.name.firstName }}
+                </p>
+                <div class="prose prose-sm max-w-none text-gray-700">{{ observation.text|sanitize_html('app.rich_text') }}</div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

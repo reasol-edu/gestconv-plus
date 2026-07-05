@@ -12,6 +12,7 @@ use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentReport;
+use App\Entity\IncidentReportObservation;
 use App\Entity\PersonName;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
@@ -436,6 +437,113 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->client->request('GET', '/partes/00000000-0000-0000-0000-000000000000');
 
         self::assertResponseStatusCodeSame(404);
+    }
+
+    // ── observations ─────────────────────────────────────────────────────────
+
+    public function testShowDisplaysObservations(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Se calmó tras hablar con él.</p>');
+        $this->persist($observation);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Se calmó tras hablar con él.');
+    }
+
+    public function testShowWithoutObservationsDisplaysEmptyState(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Todavía no se ha registrado ninguna observación.');
+    }
+
+    public function testAddObservationCreatesIt(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $reportId = $report->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId);
+        $token    = $crawler->filter('form[action$="/observaciones"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $reportId . '/observaciones', [
+            '_token'        => $token,
+            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'text'          => '<p>Nueva observación.</p>',
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $reportId);
+
+        $this->em->clear();
+        $observations = $this->em->getRepository(IncidentReportObservation::class)->findAll();
+        self::assertCount(1, $observations);
+        self::assertSame('<p>Nueva observación.</p>', $observations[0]->getText());
+        self::assertSame($teacher->getId()->toRfc4122(), $observations[0]->getRegisteredBy()->getId()->toRfc4122());
+    }
+
+    public function testAddObservationWithEmptyTextShowsError(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $reportId = $report->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId);
+        $token    = $crawler->filter('form[action$="/observaciones"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $reportId . '/observaciones', [
+            '_token'        => $token,
+            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'text'          => '',
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $reportId);
+
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(IncidentReportObservation::class)->findAll());
+    }
+
+    public function testAddObservationIsDeniedToUnrelatedTeacher(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $other  = $this->makeTeacher('other.observation');
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->persist($other);
+        $this->loginAs($other, $centre);
+
+        $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones', [
+            '_token'        => 'any-token',
+            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'text'          => '<p>Intento no autorizado.</p>',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testAddObservationWithInvalidCsrfIsDenied(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones', [
+            '_token'        => 'invalid-token',
+            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'text'          => '<p>Test.</p>',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
     }
 
     // ── edit ──────────────────────────────────────────────────────────────────
