@@ -546,6 +546,171 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    public function testEditObservationGetIsAccessibleToOwnerWithinOneHour(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $this->persist($observation);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('form');
+    }
+
+    public function testEditObservationPostSavesChanges(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $this->persist($observation);
+        $this->loginAs($teacher, $centre);
+
+        $observationId = $observation->getId()->toRfc4122();
+        $url           = '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observationId . '/editar';
+        $crawler       = $this->client->request('GET', $url);
+        $token         = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', $url, [
+            '_token'        => $token,
+            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'text'          => '<p>Observación corregida.</p>',
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $report->getId()->toRfc4122());
+
+        $this->em->clear();
+        $updated = $this->em->find(IncidentReportObservation::class, $observation->getId());
+        self::assertNotNull($updated);
+        self::assertSame('<p>Observación corregida.</p>', $updated->getText());
+    }
+
+    public function testEditObservationIsDeniedToOwnerAfterOneHour(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $createdAt   = new \DateTimeImmutable('-2 hours');
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación antigua.</p>', $createdAt);
+        $this->persist($observation);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testEditObservationIsDeniedToNonOwningTeacher(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $other       = $this->makeTeacher('other.edit.observation');
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $this->persist($other, $observation);
+        $this->loginAs($other, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testEditObservationIsDeniedToCentreAdmin(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin      = $this->makeTeacher('cadmin.edit.observation');
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $this->persist($cadmin, $observation);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testDeleteObservationIsGrantedToOwnerWithinOneHour(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $this->persist($observation);
+        $this->loginAs($teacher, $centre);
+
+        $observationId = $observation->getId()->toRfc4122();
+        $crawler       = $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+        $token         = $crawler->filter('form[action$="/observaciones/' . $observationId . '/eliminar"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observationId . '/eliminar', [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $report->getId()->toRfc4122());
+
+        $this->em->clear();
+        self::assertNull($this->em->find(IncidentReportObservation::class, $observation->getId()));
+    }
+
+    public function testDeleteObservationIsDeniedToOwnerAfterOneHour(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $createdAt   = new \DateTimeImmutable('-2 hours');
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación antigua.</p>', $createdAt);
+        $this->persist($observation);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/eliminar', [
+            '_token' => 'any-token',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testDeleteObservationIsGrantedToCentreAdminRegardlessOfAge(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin      = $this->makeTeacher('cadmin.delete.observation');
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $createdAt   = new \DateTimeImmutable('-2 hours');
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación antigua.</p>', $createdAt);
+        $this->persist($cadmin, $observation);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $observationId = $observation->getId()->toRfc4122();
+        $crawler       = $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+        $token         = $crawler->filter('form[action$="/observaciones/' . $observationId . '/eliminar"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observationId . '/eliminar', [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $report->getId()->toRfc4122());
+
+        $this->em->clear();
+        self::assertNull($this->em->find(IncidentReportObservation::class, $observation->getId()));
+    }
+
+    public function testDeleteObservationIsDeniedToNonOwningTeacher(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $other       = $this->makeTeacher('other.delete.observation');
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $this->persist($other, $observation);
+        $this->loginAs($other, $centre);
+
+        $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/eliminar', [
+            '_token' => 'any-token',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
     // ── edit ──────────────────────────────────────────────────────────────────
 
     public function testEditGetIsAccessibleToCreator(): void

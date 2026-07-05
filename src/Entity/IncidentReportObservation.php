@@ -32,16 +32,21 @@ class IncidentReportObservation
     #[ORM\Column(type: Types::TEXT)]
     private string $text;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
+
     public function __construct(
         IncidentReport $incidentReport,
         Teacher $registeredBy,
         \DateTimeImmutable $registeredAt,
         string $text,
+        ?\DateTimeImmutable $createdAt = null,
     ) {
         $this->incidentReport = $incidentReport;
         $this->registeredBy   = $registeredBy;
         $this->registeredAt   = $registeredAt;
         $this->text           = $text;
+        $this->createdAt      = $createdAt ?? new \DateTimeImmutable();
     }
 
     public function getId(): Uuid
@@ -67,5 +72,24 @@ class IncidentReportObservation
     public function getText(): string
     {
         return $this->text;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setRegisteredAt(\DateTimeImmutable $registeredAt): static
+    {
+        $this->registeredAt = $registeredAt;
+
+        return $this;
+    }
+
+    public function setText(string $text): static
+    {
+        $this->text = $text;
+
+        return $this;
     }
 }

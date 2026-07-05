@@ -614,6 +614,11 @@ incident.observation.field.registered_at: 'Fecha y hora'
 incident.observation.submit: 'Añadir observación'
 incident.observation.error.invalid: 'Revisa la fecha y el texto de la observación: ambos son obligatorios.'
 incident.observation.flash.added: 'Observación añadida.'
+incident.observation.edit: 'Editar observación'
+incident.observation.delete: 'Eliminar observación'
+incident.observation.delete_confirm: '¿Eliminar esta observación? Esta acción no se puede deshacer.'
+incident.observation.flash.updated: 'Observación actualizada.'
+incident.observation.flash.deleted: 'Observación eliminada.'
 
 # Conductas contrarias a la convivencia
 behavior.title: 'Conductas contrarias a la convivencia'

@@ -29,6 +29,7 @@ final class Version20260101000012 extends AbstractMigration
                 registered_by_id    BINARY(16) NOT NULL,
                 registered_at       DATETIME   NOT NULL COMMENT '(DC2Type:datetime_immutable)',
                 text                LONGTEXT   NOT NULL,
+                created_at          DATETIME   NOT NULL COMMENT '(DC2Type:datetime_immutable)',
                 PRIMARY KEY (id),
                 INDEX idx_iro_report        (incident_report_id),
                 INDEX idx_iro_registered_by (registered_by_id),

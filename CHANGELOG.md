@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Las observaciones de un parte pueden editarse o eliminarse: el docente que las registró puede modificarlas o eliminarlas durante la hora siguiente a su creación, y los administradores pueden eliminar cualquier observación en cualquier momento.
 - El detalle de un parte permite añadir observaciones (anotaciones con fecha/hora, docente y un texto que admite formato enriquecido) a cualquier docente o administrador con acceso al parte; se muestran en orden cronológico inverso justo antes del historial de comunicaciones.
 - Al registrar una comunicación sobre un parte o una sanción se muestran ahora los datos de contacto completos del alumno (tutores legales, teléfonos y observaciones): los ve quien tenga esa visibilidad en la ficha del alumno (equipo directivo, comisión de convivencia, orientación y tutores/as del grupo) y, además, siempre el propio docente que registró el parte o la sanción.
 - El detalle de un parte y el de una sanción muestran ahora, al final de la página, el historial completo de comunicaciones con la familia (fecha, método, docente, resultado y observaciones), el mismo que ya se veía al registrar una notificación.

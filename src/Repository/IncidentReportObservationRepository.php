@@ -34,4 +34,15 @@ class IncidentReportObservationRepository extends ServiceEntityRepository
 
         return $result;
     }
+
+    public function findById(string $id): ?IncidentReportObservation
+    {
+        $result = $this->createQueryBuilder('o')
+            ->where('o.id = :id')
+            ->setParameter('id', $id, 'uuid')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof IncidentReportObservation ? $result : null;
+    }
 }

@@ -1,0 +1,71 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'incident.observation.edit'|trans({}, 'admin') }} · {{ 'incident.show_ref'|trans({'%number%': report.number}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            <a href="{{ path('app_incidents_index') }}" class="hover:text-forest-600 transition-colors">{{ 'incident.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <a href="{{ path('app_incidents_show', {id: report.id}) }}" class="hover:text-forest-600 transition-colors">
+                {{ 'incident.show_ref'|trans({'%number%': report.number}, 'admin') }}
+            </a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'incident.observation.edit'|trans({}, 'admin') }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'incident.observation.edit'|trans({}, 'admin') }}</h1>
+    </div>
+
+    {% if errors is not empty %}
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 space-y-1">
+            {% for error in errors %}
+                <p class="text-sm text-red-700">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6">
+        <form method="post" action="{{ path('app_incidents_edit_observation', {id: report.id, observationId: observation.id}) }}" class="space-y-5">
+            <input type="hidden" name="_token" value="{{ csrf_token('edit_observation_' ~ observation.id) }}">
+
+            <div>
+                <label for="observation_registered_at" class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'incident.observation.field.registered_at'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+                </label>
+                <input type="datetime-local" id="observation_registered_at" name="registered_at" required
+                       value="{{ observation.registeredAt|date('Y-m-d\\TH:i') }}"
+                       {% if errors.registered_at is defined %}aria-invalid="true"{% endif %}
+                       class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                              focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+
+            <div>
+                <twig:Form:RichEditor
+                    id="observation_text"
+                    name="text"
+                    label="{{ 'incident.observation.field.text'|trans({}, 'admin') }}"
+                    value="{{ observation.text }}"
+                    :required="true"
+                    :error="errors.text ?? null"
+                />
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <a href="{{ path('app_incidents_show', {id: report.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 transition-colors">
+                    {{ 'incident.cancel'|trans({}, 'admin') }}
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                               hover:bg-forest-700 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                    {{ 'incident.save'|trans({}, 'admin') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -29,6 +29,7 @@ final class Version20260101000012 extends AbstractMigration
                 registered_by_id    CHAR(36) NOT NULL,
                 registered_at       DATETIME NOT NULL,
                 text                CLOB     NOT NULL,
+                created_at          DATETIME NOT NULL,
                 PRIMARY KEY (id),
                 CONSTRAINT fk_iro_report        FOREIGN KEY (incident_report_id) REFERENCES incident_report (id) ON DELETE CASCADE,
                 CONSTRAINT fk_iro_registered_by FOREIGN KEY (registered_by_id)   REFERENCES teacher (id)

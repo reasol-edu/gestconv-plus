@@ -16,6 +16,7 @@ use App\Repository\IncidentReportRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Security\Voter\IncidentReportObservationVoter;
 use App\Security\Voter\IncidentReportVoter;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -401,6 +402,97 @@ class IncidentReportController extends AbstractController
         $this->em->flush();
 
         $this->addFlash('success', $this->t('incident.observation.flash.added'));
+
+        return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
+    }
+
+    #[Route('/{id}/observaciones/{observationId}/editar', name: 'app_incidents_edit_observation', methods: ['GET', 'POST'])]
+    public function editObservation(string $id, string $observationId, Request $request): Response
+    {
+        $centre = $this->tenantContext->getSelectedCentre();
+        if ($centre === null) {
+            return $this->redirectToRoute('app_select_centre');
+        }
+
+        $report = $this->reports->findById($id);
+        if ($report === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $observation = $this->observations->findById($observationId);
+        if ($observation === null || $observation->getIncidentReport() !== $report) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(IncidentReportObservationVoter::EDIT, $observation);
+
+        $errors = [];
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('edit_observation_' . $observationId, $request->request->getString('_token'))) {
+                throw $this->createAccessDeniedException();
+            }
+
+            $registeredAtRaw = trim($request->request->getString('registered_at'));
+            $text            = trim($request->request->getString('text'));
+
+            $registeredAt = null;
+            if ($registeredAtRaw !== '') {
+                try {
+                    $registeredAt = new \DateTimeImmutable($registeredAtRaw);
+                } catch (\Exception) {
+                    $registeredAt = null;
+                }
+            }
+
+            if ($registeredAt === null) {
+                $errors['registered_at'] = $this->t('incident.observation.error.invalid');
+            }
+            if ($text === '') {
+                $errors['text'] = $this->t('incident.observation.error.invalid');
+            }
+
+            if (empty($errors)) {
+                $observation->setRegisteredAt($registeredAt)->setText($text);
+                $this->em->flush();
+
+                $this->addFlash('success', $this->t('incident.observation.flash.updated'));
+
+                return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
+            }
+        }
+
+        return $this->render('incident/observation_edit.html.twig', [
+            'centre'      => $centre,
+            'report'      => $report,
+            'observation' => $observation,
+            'errors'      => $errors,
+        ]);
+    }
+
+    #[Route('/{id}/observaciones/{observationId}/eliminar', name: 'app_incidents_delete_observation', methods: ['POST'])]
+    public function deleteObservation(string $id, string $observationId, Request $request): Response
+    {
+        $report = $this->reports->findById($id);
+        if ($report === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $observation = $this->observations->findById($observationId);
+        if ($observation === null || $observation->getIncidentReport() !== $report) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(IncidentReportObservationVoter::DELETE, $observation);
+
+        if (!$this->isCsrfTokenValid('delete_observation_' . $observationId, $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $this->em->remove($observation);
+        $this->em->flush();
+
+        $this->addFlash('success', $this->t('incident.observation.flash.deleted'));
 
         return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
     }

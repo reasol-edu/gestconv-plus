@@ -88,7 +88,7 @@ En pantallas pequeñas, cada fila del listado se muestra como una tarjeta con la
 
 ### Ver y editar un parte
 
-Pulsa **Ver** en cualquier fila del listado para abrir el detalle completo del parte. Cualquier docente o administrador con acceso al parte puede añadir **observaciones**: anotaciones con fecha/hora, el docente que las registra y un texto que admite formato enriquecido. Se muestran en orden cronológico inverso, justo antes del historial de comunicaciones. Al final de la página aparece el **historial de comunicaciones** con la familia: cada intento registrado, con su fecha, método, docente, resultado y observaciones.
+Pulsa **Ver** en cualquier fila del listado para abrir el detalle completo del parte. Cualquier docente o administrador con acceso al parte puede añadir **observaciones**: anotaciones con fecha/hora, el docente que las registra y un texto que admite formato enriquecido. Se muestran en orden cronológico inverso, justo antes del historial de comunicaciones. Quien la ha registrado puede editarla o eliminarla durante la hora siguiente a su creación; pasado ese plazo, sólo un administrador puede eliminarla. Al final de la página aparece el **historial de comunicaciones** con la familia: cada intento registrado, con su fecha, método, docente, resultado y observaciones.
 
 Desde el detalle puedes **editar** el parte si eres el docente que lo registró o un administrador. El número de parte (`#1`, `#2`…) aparece junto al título y es de solo lectura: identifica el parte dentro del curso académico y no cambia al editar.
 
