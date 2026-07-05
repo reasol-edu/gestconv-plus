@@ -69,6 +69,36 @@ final class IncidentEmailNotifier
         $this->notifyReportEvent($report, 'prescribed', $actor);
     }
 
+    /** Like {@see reportPrescribed()} but for automatic (cron-triggered) prescriptions, with no human actor. */
+    public function reportAutoPrescribed(IncidentReport $report): void
+    {
+        $centre = $this->centreForGroup($report->getGroup());
+        $choice = $this->choiceFor(self::REPORT_EVENT_SETTINGS['prescribed'], $centre);
+        if ($choice === 'none') {
+            return;
+        }
+
+        $recipients = $this->recipientsFor($choice, [$report->getRegisteredBy()], $report->getGroup()->getTutors());
+        if ($recipients === []) {
+            return;
+        }
+
+        $url = $this->urlGenerator->generate('app_incidents_show', ['id' => $report->getId()->toRfc4122()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $params = [
+            '%number%'  => $report->getNumber(),
+            '%student%' => $this->fullName($report->getStudent()),
+            '%group%'   => $report->getGroup()->getName(),
+        ];
+
+        foreach ($recipients as $teacher) {
+            $this->dispatch($teacher, 'report_auto_prescribed', $params, 'email/incident_report_notice.html.twig', [
+                'report'    => $report,
+                'reportUrl' => $url,
+            ]);
+        }
+    }
+
     public function reportSanctioned(IncidentReport $report, Teacher $actor): void
     {
         $this->notifyReportEvent($report, 'sanctioned', $actor);

@@ -19,6 +19,9 @@ emails.report_deleted.intro: '%actor% ha eliminado el parte de convivencia nº %
 emails.report_prescribed.subject: 'Parte de convivencia prescrito: %student%'
 emails.report_prescribed.intro: '%actor% ha marcado como prescrito el parte de convivencia nº %number% de %student% (grupo %group%).'
 
+emails.report_auto_prescribed.subject: 'Parte de convivencia prescrito automáticamente: %student%'
+emails.report_auto_prescribed.intro: 'El parte de convivencia nº %number% de %student% (grupo %group%) ha prescrito automáticamente al no haberse notificado a la familia en el plazo establecido.'
+
 emails.report_sanctioned.subject: 'Parte incorporado a una sanción: %student%'
 emails.report_sanctioned.intro: '%actor% ha incorporado el parte de convivencia nº %number% de %student% (grupo %group%) a una sanción.'
 

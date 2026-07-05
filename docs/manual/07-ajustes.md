@@ -71,12 +71,21 @@ Ninguno de los tres ajustes tiene ámbito de docente: se fijan a nivel global o 
 
 ### Notificaciones a familias
 
-| Ajuste | Ámbito | Opciones | Por defecto |
-|---|---|---|---|
-| Quién notifica los partes de convivencia | Global, centro | El docente del parte / El tutor/a de grupo / Ambos | Ambos |
-| Quién notifica las sanciones | Global, centro | El docente de la sanción / El tutor/a de grupo / Ambos | Ambos |
+| Ajuste | Ámbito | Tipo | Rango | Por defecto |
+|---|---|---|---|---|
+| Quién notifica los partes de convivencia | Global, centro | Opciones (El docente del parte / El tutor/a de grupo / Ambos) | — | Ambos |
+| Quién notifica las sanciones | Global, centro | Opciones (El docente de la sanción / El tutor/a de grupo / Ambos) | — | Ambos |
+| Días para la prescripción automática | Global, centro | Entero (días) | 0-365 | 14 |
 
-Determinan, además de los administradores, qué docentes pueden registrar una comunicación con la familia (ver [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones)). No tienen ámbito de docente: se fijan a nivel global o de centro únicamente.
+Los dos primeros ajustes determinan, además de los administradores, qué docentes pueden registrar
+una comunicación con la familia (ver [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones)).
+
+El tercero controla la [prescripción automática de partes](06-notificaciones-y-email.md) sin
+notificar: una tarea programada diaria marca como prescrito cualquier parte que siga sin
+comunicarse a la familia una vez transcurridos esos días desde que ocurrió el incidente. Un valor de
+0 desactiva la prescripción automática para ese nivel.
+
+Ninguno de los tres tiene ámbito de docente: se fijan a nivel global o de centro únicamente.
 
 ### Avisos por correo
 

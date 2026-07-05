@@ -37,7 +37,9 @@ grupo o a ambos:
 
 - **Parte registrado, notificado a la familia, modificado, eliminado, prescrito o incorporado a una
   sanción**: seis avisos independientes, uno por evento. El de «modificado» cubre cualquier edición
-  del parte salvo marcarlo como prescrito, que tiene su propio aviso.
+  del parte salvo marcarlo como prescrito, que tiene su propio aviso. El de «prescrito» se envía
+  tanto si un administrador marca el parte manualmente como si prescribe de forma automática (ver
+  más abajo).
 - **Sanción notificada a la familia**: se avisa al docente que registró cada uno de los partes
   incorporados a la sanción y/o al tutor/a del grupo.
 - **Parte sancionable**: cuando un parte queda notificado a la familia y todavía no está prescrito
@@ -45,7 +47,17 @@ grupo o a ambos:
   convivencia del centro.
 
 Cada correo enlaza directamente al parte o la sanción correspondiente (salvo el de eliminación, ya
-que el elemento deja de existir) e incluye el nombre de quien realizó la acción.
+que el elemento deja de existir) e incluye el nombre de quien realizó la acción, salvo el de
+prescripción automática, que no tiene un docente asociado.
+
+## Prescripción automática de partes sin notificar
+
+Una tarea programada diaria revisa, para cada centro, los partes que todavía no se han comunicado a
+la familia y marca como prescritos los que llevan más días sin notificar que el valor configurado en
+el ajuste **Días para la prescripción automática** (ver [Ajustes](07-ajustes.md#notificaciones-a-familias),
+14 por defecto, 0 para desactivarla). El plazo se cuenta desde la fecha en la que ocurrió el
+incidente. Si el aviso de «Parte prescrito» está activado, se envía igual que si lo hubiera marcado
+un administrador manualmente, pero sin nombrar a ningún docente como autor de la acción.
 
 ### Usar una cuenta de Gmail
 

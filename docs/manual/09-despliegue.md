@@ -268,8 +268,8 @@ La aplicación queda disponible en `http://localhost` (puerto 80 por defecto).
 
 El stack levanta tres contenedores: `app` (servidor FrankenPHP), `database` (PostgreSQL) y `worker`, que
 procesa el envío asíncrono de los correos y las tareas programadas con Symfony Scheduler, como la
-limpieza semanal del registro de actividad (consulta
-[Notificaciones por email](06-notificaciones-y-email.md#envio-asincrono)).
+limpieza semanal del registro de actividad o la prescripción automática diaria de partes sin
+notificar (consulta [Notificaciones por email](06-notificaciones-y-email.md#envio-asincrono)).
 
 !!! danger "Cambia la contraseña por defecto"
     El usuario inicial `admin` / `admin` se crea solo para el primer acceso. En cuanto entres, ve a
@@ -514,8 +514,9 @@ php bin/console app:setup --no-interaction
 ### 7. Correos y tareas programadas (worker vía cron)
 
 Los correos automáticos (verificación de email) y las tareas programadas (limpieza semanal del
-registro de actividad) los procesa un *worker* de Symfony Messenger. Sin él la aplicación funciona,
-pero **no se envían emails ni se ejecutan las tareas programadas**.
+registro de actividad, prescripción automática diaria de partes sin notificar) los procesa un
+*worker* de Symfony Messenger. Sin él la aplicación funciona, pero **no se envían emails ni se
+ejecutan las tareas programadas**.
 
 !!! info "Configurar el worker en Plesk"
     Ve a **Tareas programadas** en el panel de Plesk y crea una tarea con periodicidad **cada hora**:

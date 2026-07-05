@@ -222,6 +222,41 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         self::assertEmailCount(1);
     }
 
+    // ── report_auto_prescribed ───────────────────────────────────────────────
+
+    public function testReportAutoPrescribedReusesReportPrescribedSetting(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('auto_prescribed.setting');
+        $this->setSetting('notifications.email_report_prescribed', $centre, 'report_teacher');
+
+        $this->notifier->reportAutoPrescribed($report);
+
+        self::assertEmailCount(1);
+        self::assertEmailAddressContains($this->sentMessage(0), 'To', 'creator@ejemplo.local');
+    }
+
+    public function testReportAutoPrescribedSendsToNobodyWhenSettingIsNone(): void
+    {
+        [$report, $centre] = $this->makeScenario('auto_prescribed.none');
+        $this->setSetting('notifications.email_report_prescribed', $centre, 'none');
+
+        $this->notifier->reportAutoPrescribed($report);
+
+        self::assertEmailCount(0);
+    }
+
+    public function testReportAutoPrescribedSubjectHasNoActor(): void
+    {
+        [$report, $centre] = $this->makeScenario('auto_prescribed.subject');
+        $this->setSetting('notifications.email_report_prescribed', $centre, 'report_teacher');
+
+        $this->notifier->reportAutoPrescribed($report);
+
+        self::assertEmailCount(1);
+        self::assertEmailSubjectContains($this->sentMessage(0), 'Ana García');
+        self::assertEmailHtmlBodyContains($this->sentMessage(0), (string) $report->getNumber());
+    }
+
     // ── sanction_notified ─────────────────────────────────────────────────────
 
     public function testSanctionNotifiedNotifiesEachReportTeacherAndGroupTutor(): void

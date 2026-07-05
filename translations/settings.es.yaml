@@ -66,6 +66,9 @@ settings.key.notifications_sanction_notifier.choice.report_teacher: 'El docente 
 settings.key.notifications_sanction_notifier.choice.group_tutor: 'El tutor/a de grupo'
 settings.key.notifications_sanction_notifier.choice.both: 'Ambos'
 
+settings.key.notifications_report_auto_prescribe_days.label: 'Días para la prescripción automática'
+settings.key.notifications_report_auto_prescribe_days.description: 'Días transcurridos desde que ocurrió el incidente a partir de los cuales un parte sin notificar a la familia prescribe automáticamente. Un valor de 0 desactiva la prescripción automática.'
+
 settings.key.notifications_email_report_created.label: 'Parte registrado'
 settings.key.notifications_email_report_created.description: 'Determina quién recibe un correo cuando se registra un nuevo parte de convivencia.'
 settings.key.notifications_email_report_created.choice.none: 'A nadie'

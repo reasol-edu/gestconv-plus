@@ -526,6 +526,71 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertCount(0, $summary);
     }
 
+    // ── findEligibleForAutoPrescription ──────────────────────────────────────
+
+    public function testFindEligibleForAutoPrescriptionExcludesNotifiedReports(): void
+    {
+        $world    = $this->makeWorld('eap1');
+        $admin    = $this->makeTeacher('admin.eap1', admin: true);
+        $old      = new \DateTimeImmutable('-20 days');
+        $eligible = $this->makeReport($world, creator: $admin, occurredAt: $old);
+        $notified = $this->makeReport($world, creator: $admin, occurredAt: $old);
+        $this->persist($admin, $eligible, $notified);
+        $this->notify($notified, $world, $admin);
+
+        $results = $this->repo->findEligibleForAutoPrescription($world['centre'], new \DateTimeImmutable('-14 days'));
+
+        self::assertCount(1, $results);
+        self::assertSame($eligible->getId(), $results[0]->getId());
+    }
+
+    public function testFindEligibleForAutoPrescriptionExcludesAlreadyPrescribedReports(): void
+    {
+        $world       = $this->makeWorld('eap2');
+        $admin       = $this->makeTeacher('admin.eap2', admin: true);
+        $old         = new \DateTimeImmutable('-20 days');
+        $eligible    = $this->makeReport($world, creator: $admin, occurredAt: $old);
+        $prescribed  = $this->makeReport($world, creator: $admin, occurredAt: $old);
+        $this->persist($admin, $eligible, $prescribed);
+        $prescribed->setPrescribedAt(new \DateTimeImmutable());
+        $this->flush();
+
+        $results = $this->repo->findEligibleForAutoPrescription($world['centre'], new \DateTimeImmutable('-14 days'));
+
+        self::assertCount(1, $results);
+        self::assertSame($eligible->getId(), $results[0]->getId());
+    }
+
+    public function testFindEligibleForAutoPrescriptionExcludesReportsOccurredAfterCutoff(): void
+    {
+        $world  = $this->makeWorld('eap3');
+        $admin  = $this->makeTeacher('admin.eap3', admin: true);
+        $old    = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-20 days'));
+        $recent = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-1 day'));
+        $this->persist($admin, $old, $recent);
+
+        $results = $this->repo->findEligibleForAutoPrescription($world['centre'], new \DateTimeImmutable('-14 days'));
+
+        self::assertCount(1, $results);
+        self::assertSame($old->getId(), $results[0]->getId());
+    }
+
+    public function testFindEligibleForAutoPrescriptionIsScopedByCentre(): void
+    {
+        $worldA = $this->makeWorld('eap4a');
+        $worldB = $this->makeWorld('eap4b');
+        $admin  = $this->makeTeacher('admin.eap4', admin: true);
+        $old    = new \DateTimeImmutable('-20 days');
+        $reportA = $this->makeReport($worldA, creator: $admin, occurredAt: $old);
+        $reportB = $this->makeReport($worldB, creator: $admin, occurredAt: $old);
+        $this->persist($admin, $reportA, $reportB);
+
+        $results = $this->repo->findEligibleForAutoPrescription($worldA['centre'], new \DateTimeImmutable('-14 days'));
+
+        self::assertCount(1, $results);
+        self::assertSame($reportA->getId(), $results[0]->getId());
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**
@@ -565,6 +630,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         ?Teacher $creator = null,
         bool $expelled = false,
         bool $serious = false,
+        ?\DateTimeImmutable $occurredAt = null,
     ): IncidentReport {
         if ($creator === null) {
             $creator = $this->makeTeacher('default.' . uniqid('', false));
@@ -594,7 +660,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
             ->setStudent($world['student'])
             ->setGroup($world['group'])
             ->setRegisteredBy($creator)
-            ->setOccurredAt(new \DateTimeImmutable())
+            ->setOccurredAt($occurredAt ?? new \DateTimeImmutable())
             ->setDescription('<p>Test</p>')
             ->setExpelledFromClass($expelled);
         $report->addBehavior($behavior);

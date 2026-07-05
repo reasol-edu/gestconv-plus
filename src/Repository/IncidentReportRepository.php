@@ -494,4 +494,30 @@ class IncidentReportRepository extends ServiceEntityRepository
 
         return $result instanceof IncidentReport ? $result : null;
     }
+
+    /**
+     * Reports of the given centre that are still un-notified, not already prescribed, and whose
+     * incident occurred at or before the cutoff — candidates for automatic prescription.
+     *
+     * @return list<IncidentReport>
+     */
+    public function findEligibleForAutoPrescription(EducationalCentre $centre, \DateTimeImmutable $cutoff): array
+    {
+        /** @var list<IncidentReport> $result */
+        $result = $this->createQueryBuilder('r')
+            ->join('r.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('r.notifiedCommunication IS NULL')
+            ->andWhere('r.prescribedAt IS NULL')
+            ->andWhere('r.occurredAt <= :cutoff')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('cutoff', $cutoff)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
 }
