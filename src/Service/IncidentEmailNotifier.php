@@ -99,6 +99,42 @@ final class IncidentEmailNotifier
         }
     }
 
+    /**
+     * Sends a single daily digest email to a teacher listing the reports nearing automatic
+     * prescription. Eligibility and recipients are already resolved by the caller
+     * ({@see \App\MessageHandler\WarnUpcomingReportPrescriptionsHandler}); this method only
+     * formats and sends, unlike the per-event methods above which resolve their own choice setting.
+     *
+     * @param list<array{report: IncidentReport, daysRemaining: int}> $items
+     */
+    public function reportsNearingPrescription(Teacher $teacher, array $items): void
+    {
+        if ($items === []) {
+            return;
+        }
+
+        $rows = array_map(
+            fn (array $item): array => [
+                'report'        => $item['report'],
+                'daysRemaining' => $item['daysRemaining'],
+                'url'           => $this->urlGenerator->generate(
+                    'app_incidents_show',
+                    ['id' => $item['report']->getId()->toRfc4122()],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                ),
+            ],
+            $items,
+        );
+
+        $this->dispatch(
+            $teacher,
+            'report_prescription_warning',
+            ['%count%' => count($items)],
+            'email/report_prescription_warning.html.twig',
+            ['rows' => $rows],
+        );
+    }
+
     public function reportSanctioned(IncidentReport $report, Teacher $actor): void
     {
         $this->notifyReportEvent($report, 'sanctioned', $actor);

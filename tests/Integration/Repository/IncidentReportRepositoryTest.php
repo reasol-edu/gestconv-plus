@@ -591,6 +591,67 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertSame($reportA->getId(), $results[0]->getId());
     }
 
+    // ── findPendingPrescription ───────────────────────────────────────────────
+
+    public function testFindPendingPrescriptionExcludesNotifiedReports(): void
+    {
+        $world    = $this->makeWorld('fpp1');
+        $admin    = $this->makeTeacher('admin.fpp1', admin: true);
+        $pending  = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-3 days'));
+        $notified = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-3 days'));
+        $this->persist($admin, $pending, $notified);
+        $this->notify($notified, $world, $admin);
+
+        $results = $this->repo->findPendingPrescription($world['centre']);
+
+        self::assertCount(1, $results);
+        self::assertSame($pending->getId(), $results[0]->getId());
+    }
+
+    public function testFindPendingPrescriptionExcludesAlreadyPrescribedReports(): void
+    {
+        $world      = $this->makeWorld('fpp2');
+        $admin      = $this->makeTeacher('admin.fpp2', admin: true);
+        $pending    = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-3 days'));
+        $prescribed = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-3 days'));
+        $this->persist($admin, $pending, $prescribed);
+        $prescribed->setPrescribedAt(new \DateTimeImmutable());
+        $this->flush();
+
+        $results = $this->repo->findPendingPrescription($world['centre']);
+
+        self::assertCount(1, $results);
+        self::assertSame($pending->getId(), $results[0]->getId());
+    }
+
+    public function testFindPendingPrescriptionIncludesRecentReports(): void
+    {
+        $world  = $this->makeWorld('fpp3');
+        $admin  = $this->makeTeacher('admin.fpp3', admin: true);
+        $recent = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-1 day'));
+        $this->persist($admin, $recent);
+
+        $results = $this->repo->findPendingPrescription($world['centre']);
+
+        self::assertCount(1, $results);
+        self::assertSame($recent->getId(), $results[0]->getId());
+    }
+
+    public function testFindPendingPrescriptionIsScopedByCentre(): void
+    {
+        $worldA  = $this->makeWorld('fpp4a');
+        $worldB  = $this->makeWorld('fpp4b');
+        $admin   = $this->makeTeacher('admin.fpp4', admin: true);
+        $reportA = $this->makeReport($worldA, creator: $admin, occurredAt: new \DateTimeImmutable('-3 days'));
+        $reportB = $this->makeReport($worldB, creator: $admin, occurredAt: new \DateTimeImmutable('-3 days'));
+        $this->persist($admin, $reportA, $reportB);
+
+        $results = $this->repo->findPendingPrescription($worldA['centre']);
+
+        self::assertCount(1, $results);
+        self::assertSame($reportA->getId(), $results[0]->getId());
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**

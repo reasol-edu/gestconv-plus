@@ -404,6 +404,168 @@ class AppSettingsTest extends TestCase
         self::assertSame('group_tutor', $service->getForCentre('notifications.report_notifier', $centre));
     }
 
+    // ── getForTeacherInCentre: cascade teacher → centre → global → default ───
+
+    public function testGetForTeacherInCentreUsesTeacherValueFirst(): void
+    {
+        $def     = $this->makeDef('notifications.report_prescription_warning_days', SettingType::Integer, '7');
+        $teacher = $this->createStub(Teacher::class);
+        $centre  = $this->createStub(EducationalCentre::class);
+
+        $teacherRepo = $this->createStub(TeacherSettingValueRepository::class);
+        $teacherRepo->method('findByTeacherIndexedByKey')
+            ->willReturn(['notifications.report_prescription_warning_days' => $this->makeTeacherValue('3')]);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')
+            ->willReturn(['notifications.report_prescription_warning_days' => $this->makeCentreValue('10')]);
+
+        $service = $this->makeServiceWithTeacherAndCentreRepos(
+            defs:        ['notifications.report_prescription_warning_days' => $def],
+            globals:     ['notifications.report_prescription_warning_days' => $this->makeGlobalValue('14')],
+            teacherRepo: $teacherRepo,
+            centreRepo:  $centreRepo,
+        );
+
+        self::assertSame(3, $service->getForTeacherInCentre('notifications.report_prescription_warning_days', $teacher, $centre));
+    }
+
+    public function testGetForTeacherInCentreFallsBackToCentreValue(): void
+    {
+        $def     = $this->makeDef('notifications.report_prescription_warning_days', SettingType::Integer, '7');
+        $teacher = $this->createStub(Teacher::class);
+        $centre  = $this->createStub(EducationalCentre::class);
+
+        $teacherRepo = $this->createStub(TeacherSettingValueRepository::class);
+        $teacherRepo->method('findByTeacherIndexedByKey')->willReturn([]);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')
+            ->willReturn(['notifications.report_prescription_warning_days' => $this->makeCentreValue('10')]);
+
+        $service = $this->makeServiceWithTeacherAndCentreRepos(
+            defs:        ['notifications.report_prescription_warning_days' => $def],
+            globals:     ['notifications.report_prescription_warning_days' => $this->makeGlobalValue('14')],
+            teacherRepo: $teacherRepo,
+            centreRepo:  $centreRepo,
+        );
+
+        self::assertSame(10, $service->getForTeacherInCentre('notifications.report_prescription_warning_days', $teacher, $centre));
+    }
+
+    public function testGetForTeacherInCentreFallsBackToGlobalValue(): void
+    {
+        $def     = $this->makeDef('notifications.report_prescription_warning_days', SettingType::Integer, '7');
+        $teacher = $this->createStub(Teacher::class);
+        $centre  = $this->createStub(EducationalCentre::class);
+
+        $teacherRepo = $this->createStub(TeacherSettingValueRepository::class);
+        $teacherRepo->method('findByTeacherIndexedByKey')->willReturn([]);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')->willReturn([]);
+
+        $service = $this->makeServiceWithTeacherAndCentreRepos(
+            defs:        ['notifications.report_prescription_warning_days' => $def],
+            globals:     ['notifications.report_prescription_warning_days' => $this->makeGlobalValue('14')],
+            teacherRepo: $teacherRepo,
+            centreRepo:  $centreRepo,
+        );
+
+        self::assertSame(14, $service->getForTeacherInCentre('notifications.report_prescription_warning_days', $teacher, $centre));
+    }
+
+    public function testGetForTeacherInCentreFallsBackToDefault(): void
+    {
+        $def     = $this->makeDef('notifications.report_prescription_warning_days', SettingType::Integer, '7');
+        $teacher = $this->createStub(Teacher::class);
+        $centre  = $this->createStub(EducationalCentre::class);
+
+        $teacherRepo = $this->createStub(TeacherSettingValueRepository::class);
+        $teacherRepo->method('findByTeacherIndexedByKey')->willReturn([]);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')->willReturn([]);
+
+        $service = $this->makeServiceWithTeacherAndCentreRepos(
+            defs:        ['notifications.report_prescription_warning_days' => $def],
+            globals:     [],
+            teacherRepo: $teacherRepo,
+            centreRepo:  $centreRepo,
+        );
+
+        self::assertSame(7, $service->getForTeacherInCentre('notifications.report_prescription_warning_days', $teacher, $centre));
+    }
+
+    public function testGetForTeacherInCentreRespectsGlobalLock(): void
+    {
+        $def     = $this->makeDef('notifications.report_prescription_warning_days', SettingType::Integer, '7');
+        $teacher = $this->createStub(Teacher::class);
+        $centre  = $this->createStub(EducationalCentre::class);
+
+        $teacherRepo = $this->createStub(TeacherSettingValueRepository::class);
+        $teacherRepo->method('findByTeacherIndexedByKey')
+            ->willReturn(['notifications.report_prescription_warning_days' => $this->makeTeacherValue('3')]);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')
+            ->willReturn(['notifications.report_prescription_warning_days' => $this->makeCentreValue('10')]);
+
+        $service = $this->makeServiceWithTeacherAndCentreRepos(
+            defs:        ['notifications.report_prescription_warning_days' => $def],
+            globals:     ['notifications.report_prescription_warning_days' => $this->makeGlobalValue('1', locked: true)],
+            teacherRepo: $teacherRepo,
+            centreRepo:  $centreRepo,
+        );
+
+        self::assertSame(1, $service->getForTeacherInCentre('notifications.report_prescription_warning_days', $teacher, $centre));
+    }
+
+    public function testGetForTeacherInCentreRespectsCentreLock(): void
+    {
+        $def     = $this->makeDef('notifications.report_prescription_warning_days', SettingType::Integer, '7');
+        $teacher = $this->createStub(Teacher::class);
+        $centre  = $this->createStub(EducationalCentre::class);
+
+        $teacherRepo = $this->createStub(TeacherSettingValueRepository::class);
+        $teacherRepo->method('findByTeacherIndexedByKey')
+            ->willReturn(['notifications.report_prescription_warning_days' => $this->makeTeacherValue('3')]);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')
+            ->willReturn(['notifications.report_prescription_warning_days' => $this->makeCentreValue('10', locked: true)]);
+
+        $service = $this->makeServiceWithTeacherAndCentreRepos(
+            defs:        ['notifications.report_prescription_warning_days' => $def],
+            globals:     ['notifications.report_prescription_warning_days' => $this->makeGlobalValue('14')],
+            teacherRepo: $teacherRepo,
+            centreRepo:  $centreRepo,
+        );
+
+        self::assertSame(10, $service->getForTeacherInCentre('notifications.report_prescription_warning_days', $teacher, $centre));
+    }
+
+    public function testGetForTeacherInCentreReturnsNullForUnknownKey(): void
+    {
+        $teacher = $this->createStub(Teacher::class);
+        $centre  = $this->createStub(EducationalCentre::class);
+
+        $teacherRepo = $this->createStub(TeacherSettingValueRepository::class);
+        $teacherRepo->method('findByTeacherIndexedByKey')->willReturn([]);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')->willReturn([]);
+
+        $service = $this->makeServiceWithTeacherAndCentreRepos(
+            defs:        [],
+            globals:     [],
+            teacherRepo: $teacherRepo,
+            centreRepo:  $centreRepo,
+        );
+
+        self::assertNull($service->getForTeacherInCentre('nonexistent.key', $teacher, $centre));
+    }
+
     // ── Lock: global locked overrides all ─────────────────────────────────────
 
     public function testGetRespectsGlobalLock(): void
@@ -561,6 +723,31 @@ class AppSettingsTest extends TestCase
         $globalRepo->method('findAllIndexedByKey')->willReturn($globals);
 
         $teacherRepo = $this->createStub(TeacherSettingValueRepository::class);
+
+        $tenant = $this->createStub(TenantContextInterface::class);
+        $tenant->method('getSelectedCentre')->willReturn(null);
+
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn(null);
+
+        return new AppSettings($defsRepo, $globalRepo, $centreRepo, $teacherRepo, $tenant, $security);
+    }
+
+    /**
+     * @param array<string, SettingDefinition>  $defs
+     * @param array<string, GlobalSettingValue> $globals
+     */
+    private function makeServiceWithTeacherAndCentreRepos(
+        array $defs,
+        array $globals,
+        TeacherSettingValueRepository $teacherRepo,
+        CentreSettingValueRepository $centreRepo,
+    ): AppSettings {
+        $defsRepo   = $this->createStub(SettingDefinitionRepository::class);
+        $defsRepo->method('findAllIndexedByKey')->willReturn($defs);
+
+        $globalRepo = $this->createStub(GlobalSettingValueRepository::class);
+        $globalRepo->method('findAllIndexedByKey')->willReturn($globals);
 
         $tenant = $this->createStub(TenantContextInterface::class);
         $tenant->method('getSelectedCentre')->willReturn(null);

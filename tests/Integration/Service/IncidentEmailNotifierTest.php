@@ -257,6 +257,47 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         self::assertEmailHtmlBodyContains($this->sentMessage(0), (string) $report->getNumber());
     }
 
+    // ── report_prescription_warning ───────────────────────────────────────────
+
+    public function testReportsNearingPrescriptionSendsOneEmailWithAllItems(): void
+    {
+        [$report1, , , $creator] = $this->makeScenario('warning.multi.1');
+        [$report2] = $this->makeScenario('warning.multi.2');
+
+        $this->notifier->reportsNearingPrescription($creator, [
+            ['report' => $report1, 'daysRemaining' => 2],
+            ['report' => $report2, 'daysRemaining' => 0],
+        ]);
+
+        self::assertEmailCount(1);
+        self::assertEmailAddressContains($this->sentMessage(0), 'To', 'creator@ejemplo.local');
+        self::assertEmailSubjectContains($this->sentMessage(0), '2');
+        self::assertEmailHtmlBodyContains($this->sentMessage(0), (string) $report1->getNumber());
+        self::assertEmailHtmlBodyContains($this->sentMessage(0), (string) $report2->getNumber());
+    }
+
+    public function testReportsNearingPrescriptionSendsNothingWhenItemsIsEmpty(): void
+    {
+        [, , , $creator] = $this->makeScenario('warning.empty');
+
+        $this->notifier->reportsNearingPrescription($creator, []);
+
+        self::assertEmailCount(0);
+    }
+
+    public function testReportsNearingPrescriptionSkipsRecipientWithoutEmail(): void
+    {
+        [$report] = $this->makeScenario('warning.noemail');
+        $teacherWithoutEmail = $this->makeTeacher('teacher.warning.noemail' . uniqid('', false));
+        $this->persist($teacherWithoutEmail);
+
+        $this->notifier->reportsNearingPrescription($teacherWithoutEmail, [
+            ['report' => $report, 'daysRemaining' => 1],
+        ]);
+
+        self::assertEmailCount(0);
+    }
+
     // ── sanction_notified ─────────────────────────────────────────────────────
 
     public function testSanctionNotifiedNotifiesEachReportTeacherAndGroupTutor(): void

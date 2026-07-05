@@ -22,6 +22,11 @@ emails.report_prescribed.intro: '%actor% ha marcado como prescrito el parte de c
 emails.report_auto_prescribed.subject: 'Parte de convivencia prescrito automáticamente: %student%'
 emails.report_auto_prescribed.intro: 'El parte de convivencia nº %number% de %student% (grupo %group%) ha prescrito automáticamente al no haberse notificado a la familia en el plazo establecido.'
 
+emails.report_prescription_warning.subject: '{1} Un parte próximo a prescribir|]1,Inf[ %count% partes próximos a prescribir'
+emails.report_prescription_warning.intro: '{1} Este parte de convivencia todavía no se ha notificado a la familia y prescribirá automáticamente en breve si no se hace:|]1,Inf[ Estos partes de convivencia todavía no se han notificado a la familia y prescribirán automáticamente en breve si no se hace:'
+emails.report_prescription_warning.row: '%student% (grupo %group%), parte nº %number%'
+emails.report_prescription_warning.row_days: '{0} Prescribe hoy|{1} Prescribe mañana|]1,Inf[ Prescribe en %count% días'
+
 emails.report_sanctioned.subject: 'Parte incorporado a una sanción: %student%'
 emails.report_sanctioned.intro: '%actor% ha incorporado el parte de convivencia nº %number% de %student% (grupo %group%) a una sanción.'
 

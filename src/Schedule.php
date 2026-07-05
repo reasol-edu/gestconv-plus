@@ -6,6 +6,7 @@ namespace App;
 
 use App\Message\AutoPrescribeIncidentReportsMessage;
 use App\Message\PurgeActivityLogMessage;
+use App\Message\WarnUpcomingReportPrescriptionsMessage;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule as SymfonySchedule;
@@ -26,6 +27,7 @@ class Schedule implements ScheduleProviderInterface
             ->add(
                 RecurringMessage::cron('0 3 * * 0', new PurgeActivityLogMessage()),
                 RecurringMessage::cron('0 4 * * *', new AutoPrescribeIncidentReportsMessage()),
+                RecurringMessage::cron('30 4 * * *', new WarnUpcomingReportPrescriptionsMessage()),
             )
             ->stateful($this->cache)
             ->processOnlyLastMissedRun(true)

@@ -59,6 +59,20 @@ el ajuste **Días para la prescripción automática** (ver [Ajustes](07-ajustes.
 incidente. Si el aviso de «Parte prescrito» está activado, se envía igual que si lo hubiera marcado
 un administrador manualmente, pero sin nombrar a ningún docente como autor de la acción.
 
+## Aviso de prescripción próxima
+
+Otra tarea programada diaria, independiente de la anterior, avisa con antelación de los partes que
+están a punto de prescribir automáticamente. Para cada docente que puede notificar partes (según el
+ajuste **Quién notifica los partes de convivencia**), revisa los que le corresponden y todavía no se
+han comunicado a la familia; si alguno prescribirá en el número de días configurado en **Aviso de
+prescripción próxima** (ver [Ajustes](07-ajustes.md#notificaciones-a-familias), 7 por defecto, 0 para
+desactivarlo, con posibilidad de un valor distinto por docente) o menos, le envía un único correo
+con el listado completo de esos partes.
+
+Este aviso no se envía en el momento en que un parte se marca como prescrito (ni manualmente ni por
+la prescripción automática), y nunca incluye partes ya prescritos: solo avisa mientras todavía se
+puede evitar la prescripción notificando a la familia.
+
 ### Usar una cuenta de Gmail
 
 Para pruebas o centros pequeños puede usarse una cuenta de Gmail con una

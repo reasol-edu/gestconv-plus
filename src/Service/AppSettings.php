@@ -101,6 +101,37 @@ final class AppSettings implements AppSettingsInterface
         };
     }
 
+    public function getForTeacherInCentre(string $key, Teacher $teacher, EducationalCentre $centre): mixed
+    {
+        $this->ensureBaseLoaded();
+
+        $definition = $this->allDefinitions[$key] ?? null;
+        if ($definition === null) {
+            return null;
+        }
+
+        $centreMap  = $this->centreValues->findByCentreIndexedByKey($centre);
+        $teacherMap = $this->teacherValues->findByTeacherIndexedByKey($teacher);
+
+        $raw = match (true) {
+            isset($this->globalMap[$key]) && $this->globalMap[$key]->isLocked()
+                => $this->globalMap[$key]->getValue(),
+            isset($centreMap[$key]) && $centreMap[$key]->isLocked()
+                => $centreMap[$key]->getValue(),
+            isset($teacherMap[$key])      => $teacherMap[$key]->getValue(),
+            isset($centreMap[$key])       => $centreMap[$key]->getValue(),
+            isset($this->globalMap[$key]) => $this->globalMap[$key]->getValue(),
+            default                       => $definition->getDefaultValue(),
+        };
+
+        return match ($definition->getType()) {
+            SettingType::Boolean => $raw === 'true',
+            SettingType::Integer => (int) $raw,
+            SettingType::String,
+            SettingType::Choice  => $raw,
+        };
+    }
+
     public function invalidate(): void
     {
         $this->resolved       = null;

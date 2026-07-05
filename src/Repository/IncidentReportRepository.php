@@ -520,4 +520,30 @@ class IncidentReportRepository extends ServiceEntityRepository
 
         return $result;
     }
+
+    /**
+     * All reports of the centre still un-notified and not prescribed, regardless of how close they
+     * are to the centre's auto-prescription cutoff — used to compute upcoming-prescription warnings,
+     * where the remaining days depend on each recipient's personal warning threshold.
+     *
+     * @return list<IncidentReport>
+     */
+    public function findPendingPrescription(EducationalCentre $centre): array
+    {
+        /** @var list<IncidentReport> $result */
+        $result = $this->createQueryBuilder('r')
+            ->addSelect('g')
+            ->join('r.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('r.notifiedCommunication IS NULL')
+            ->andWhere('r.prescribedAt IS NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
 }
