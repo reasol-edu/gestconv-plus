@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Al registrar una comunicación sobre un parte o una sanción se muestran ahora los datos de contacto completos del alumno (tutores legales, teléfonos y observaciones), con las mismas reglas de visibilidad que en su ficha: equipo directivo, comisión de convivencia, orientación y tutores/as del grupo.
+- Al registrar una comunicación sobre un parte o una sanción se muestran ahora los datos de contacto completos del alumno (tutores legales, teléfonos y observaciones): los ve quien tenga esa visibilidad en la ficha del alumno (equipo directivo, comisión de convivencia, orientación y tutores/as del grupo) y, además, siempre el propio docente que registró el parte o la sanción.
 - El detalle de un parte y el de una sanción muestran ahora, al final de la página, el historial completo de comunicaciones con la familia (fecha, método, docente, resultado y observaciones), el mismo que ya se veía al registrar una notificación.
 - Las listas de conductas (formularios de parte) y de medidas (formularios de sanción) incorporan un filtro de texto local que oculta al instante las casillas que no coinciden (sin distinguir mayúsculas ni tildes) y un contador de elementos seleccionados junto al título de la sección. Además, los bloques de conductas graves se destacan con un recuadro rojo para localizarlos de un vistazo.
 - La paleta de búsqueda (Ctrl+K / ⌘K) incluye ahora un grupo de **Acciones** con accesos directos a «Nuevo parte», «Ir a notificaciones» y «Cambiar de curso». Las acciones aparecen al abrir la paleta y se filtran al escribir, sin distinguir mayúsculas ni tildes.

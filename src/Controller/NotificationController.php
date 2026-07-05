@@ -93,7 +93,8 @@ class NotificationController extends AbstractController
             'report'        => $report,
             'history'       => $this->communications->findByIncidentReport($report),
             'methods'       => $this->methods->findActiveByCentreOrdered($centre),
-            'canSeeContact' => $this->contactVisibility->isVisibleTo($user, $centre, $report->getStudent()),
+            'canSeeContact' => $report->getRegisteredBy() === $user
+                || $this->contactVisibility->isVisibleTo($user, $centre, $report->getStudent()),
         ]);
     }
 
@@ -131,7 +132,8 @@ class NotificationController extends AbstractController
             'sanction'      => $sanction,
             'history'       => $this->communications->findBySanction($sanction),
             'methods'       => $this->methods->findActiveByCentreOrdered($centre),
-            'canSeeContact' => $this->contactVisibility->isVisibleTo($user, $centre, $sanction->getStudent()),
+            'canSeeContact' => $sanction->getRegisteredBy() === $user
+                || $this->contactVisibility->isVisibleTo($user, $centre, $sanction->getStudent()),
         ]);
     }
 

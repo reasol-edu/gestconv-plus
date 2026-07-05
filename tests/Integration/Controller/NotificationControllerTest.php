@@ -116,7 +116,7 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertSelectorTextContains('body', 'María Tutora');
     }
 
-    public function testRegisterForReportHidesContactDataFromPlainTeacher(): void
+    public function testRegisterForReportShowsContactDataToRegisteringTeacher(): void
     {
         [$creator, $centre, $group, $student, $behavior] = $this->makeScenario();
         $student->setTutorName1('María Tutora');
@@ -127,8 +127,8 @@ class NotificationControllerTest extends ControllerTestCase
         $this->client->request('GET', '/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextNotContains('body', 'Datos de contacto');
-        self::assertSelectorTextNotContains('body', 'María Tutora');
+        self::assertSelectorTextContains('body', 'Datos de contacto');
+        self::assertSelectorTextContains('body', 'María Tutora');
     }
 
     public function testRegisterForReportPostWithNotifiedResultSetsNotifiedCommunication(): void
@@ -246,7 +246,7 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertSelectorTextContains('body', 'María Tutora');
     }
 
-    public function testRegisterForSanctionHidesContactDataFromPlainTeacher(): void
+    public function testRegisterForSanctionShowsContactDataToRegisteringTeacher(): void
     {
         [$creator, $centre, $group, $student] = $this->makeScenario();
         $student->setTutorName1('María Tutora');
@@ -257,8 +257,8 @@ class NotificationControllerTest extends ControllerTestCase
         $this->client->request('GET', '/notificaciones/sanciones/' . $sanction->getId()->toRfc4122() . '/registrar');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextNotContains('body', 'Datos de contacto');
-        self::assertSelectorTextNotContains('body', 'María Tutora');
+        self::assertSelectorTextContains('body', 'Datos de contacto');
+        self::assertSelectorTextContains('body', 'María Tutora');
     }
 
     public function testRegisterForSanctionPostWithNotifiedResultSetsNotifiedCommunication(): void
