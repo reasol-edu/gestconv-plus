@@ -73,6 +73,22 @@ Este aviso no se envía en el momento en que un parte se marca como prescrito (n
 la prescripción automática), y nunca incluye partes ya prescritos: solo avisa mientras todavía se
 puede evitar la prescripción notificando a la familia.
 
+## Registro de avisos por correo
+
+Cada envío de los avisos de partes y sanciones descritos arriba queda registrado —tanto si se
+entrega correctamente como si falla— en un historial visible desde **Centro educativo › Registro de
+avisos por correo**, accesible solo para los administradores del centro. Cada entrada muestra la
+fecha, el destinatario, el tipo de evento, el asunto y el resultado (entregado o fallido, con el
+motivo del error en este último caso). El listado pagina y puede filtrarse por texto libre
+(destinatario o asunto), tipo de evento, resultado y rango de fechas, con accesos rápidos para las
+últimas 24 horas, la última semana o el último mes.
+
+El registro se activa o desactiva con el ajuste **Registrar los avisos por correo**, a nivel global
+o de centro (ver [Ajustes](07-ajustes.md#notificaciones-a-familias)); activado por defecto. Al
+desactivarlo, los avisos se siguen enviando con normalidad, simplemente no se guarda constancia de
+ellos. Este historial no incluye los correos de verificación de email ni de restablecimiento de
+contraseña, que no son configurables y no tienen registro propio.
+
 ### Usar una cuenta de Gmail
 
 Para pruebas o centros pequeños puede usarse una cuenta de Gmail con una

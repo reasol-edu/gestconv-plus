@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Service;
 use App\Entity\AcademicYear;
 use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
+use App\Entity\EmailNotificationLog;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
@@ -17,9 +18,15 @@ use App\Entity\SettingDefinition;
 use App\Entity\SettingType;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Service\AppSettingsInterface;
 use App\Service\IncidentEmailNotifier;
 use App\Tests\Integration\RepositoryTestCase;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Mailer\Exception\TransportException;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\RawMessage;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class IncidentEmailNotifierTest extends RepositoryTestCase
 {
@@ -373,6 +380,64 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         self::assertEmailCount(0);
     }
 
+    // ── registro de avisos (email_notification_log) ─────────────────────────
+
+    public function testLogIsNotPersistedWhenSettingIsAbsent(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('log.absent');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+
+        $this->notifier->reportCreated($report, $creator);
+
+        self::assertEmailCount(1);
+        self::assertCount(0, $this->findLogs($centre));
+    }
+
+    public function testLogIsNotPersistedWhenSettingIsDisabled(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('log.disabled');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+        $this->setBooleanSetting('notifications.email_log_enabled', $centre, false);
+
+        $this->notifier->reportCreated($report, $creator);
+
+        self::assertEmailCount(1);
+        self::assertCount(0, $this->findLogs($centre));
+    }
+
+    public function testSuccessfulSendIsLoggedWhenSettingIsEnabled(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('log.enabled');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+        $this->setBooleanSetting('notifications.email_log_enabled', $centre, true);
+
+        $this->notifier->reportCreated($report, $creator);
+
+        $logs = $this->findLogs($centre);
+        self::assertCount(1, $logs);
+        self::assertSame('report_created', $logs[0]->getEventKey());
+        self::assertTrue($logs[0]->isSuccess());
+        self::assertNull($logs[0]->getErrorMessage());
+        self::assertSame('creator@ejemplo.local', $logs[0]->getRecipient()?->getEmail());
+    }
+
+    public function testFailedSendIsLoggedWithErrorMessage(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('log.failed');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+        $this->setBooleanSetting('notifications.email_log_enabled', $centre, true);
+
+        $mailer = $this->createMock(MailerInterface::class);
+        $mailer->expects(self::once())->method('send')->willThrowException(new TransportException('SMTP caído'));
+
+        $this->makeNotifierWithMailer($mailer)->reportCreated($report, $creator);
+
+        $logs = $this->findLogs($centre);
+        self::assertCount(1, $logs);
+        self::assertFalse($logs[0]->isSuccess());
+        self::assertSame('SMTP caído', $logs[0]->getErrorMessage());
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**
@@ -444,5 +509,47 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
             ->setCentre($centre)
             ->setValue($value);
         $this->persist($centreValue);
+    }
+
+    private function setBooleanSetting(string $key, EducationalCentre $centre, bool $value): void
+    {
+        $definition = (new SettingDefinition())
+            ->setKey($key)
+            ->setType(SettingType::Boolean)
+            ->setDefaultValue('true')
+            ->setGlobalScope(true)
+            ->setCentreScope(true);
+        $this->persist($definition);
+
+        $centreValue = (new CentreSettingValue())
+            ->setDefinition($definition)
+            ->setCentre($centre)
+            ->setValue($value ? 'true' : 'false');
+        $this->persist($centreValue);
+    }
+
+    /** @return list<EmailNotificationLog> */
+    private function findLogs(EducationalCentre $centre): array
+    {
+        return $this->em->getRepository(EmailNotificationLog::class)->findBy(['educationalCentre' => $centre]);
+    }
+
+    /**
+     * Construye una nueva instancia del notificador con un MailerInterface propio (en vez
+     * del reutilizado en self::$notifier), para poder simular fallos de envío sin afectar
+     * al resto de tests: el resto de dependencias son las reales del contenedor de test.
+     */
+    private function makeNotifierWithMailer(MailerInterface $mailer): IncidentEmailNotifier
+    {
+        return new IncidentEmailNotifier(
+            $mailer,
+            self::getContainer()->get(AppSettingsInterface::class),
+            self::getContainer()->get(UrlGeneratorInterface::class),
+            self::getContainer()->get(TranslatorInterface::class),
+            self::getContainer()->get(LoggerInterface::class),
+            $this->em,
+            'no-responder@ejemplo.local',
+            'GestConv+',
+        );
     }
 }

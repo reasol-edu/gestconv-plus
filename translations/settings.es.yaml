@@ -72,6 +72,9 @@ settings.key.notifications_report_auto_prescribe_days.description: 'Días transc
 settings.key.notifications_report_prescription_warning_days.label: 'Aviso de prescripción próxima'
 settings.key.notifications_report_prescription_warning_days.description: 'Días de antelación con los que se avisa por correo de que un parte sin notificar prescribirá automáticamente. Un valor de 0 desactiva este aviso.'
 
+settings.key.notifications_email_log_enabled.label: 'Registrar los avisos por correo'
+settings.key.notifications_email_log_enabled.description: 'Guarda un registro de cada aviso por correo enviado sobre partes y sanciones (destinatario, tipo de evento, asunto y resultado), visible en el hub de centro educativo.'
+
 settings.key.notifications_email_report_created.label: 'Parte registrado'
 settings.key.notifications_email_report_created.description: 'Determina quién recibe un correo cuando se registra un nuevo parte de convivencia.'
 settings.key.notifications_email_report_created.choice.none: 'A nadie'

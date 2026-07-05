@@ -77,6 +77,7 @@ Ninguno de los tres ajustes tiene ámbito de docente: se fijan a nivel global o 
 | Quién notifica las sanciones | Global, centro | Opciones (El docente de la sanción / El tutor/a de grupo / Ambos) | — | Ambos |
 | Días para la prescripción automática | Global, centro | Entero (días) | 0-365 | 14 |
 | Aviso de prescripción próxima | Global, centro, docente | Entero (días) | 0-365 | 7 |
+| Registrar los avisos por correo | Global, centro | Booleano | — | Activado |
 
 Los dos primeros ajustes determinan, además de los administradores, qué docentes pueden registrar
 una comunicación con la familia (ver [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones)).
@@ -91,6 +92,11 @@ programada diaria envía a cada docente que puede notificar (según el primer aj
 con todos los partes sin notificar que vayan a prescribir automáticamente en ese número de días o
 menos. Es el único de los cuatro que también admite un valor de docente, que prevalece sobre el de
 su centro; un valor de 0 desactiva el aviso para ese nivel.
+
+El quinto activa o desactiva el
+[registro de avisos por correo](06-notificaciones-y-email.md#registro-de-avisos-por-correo):
+si está desactivado, los avisos de partes y sanciones se siguen enviando con normalidad, pero no
+queda constancia de ellos en el registro visible desde el hub de **Centro educativo**.
 
 ### Avisos por correo
 

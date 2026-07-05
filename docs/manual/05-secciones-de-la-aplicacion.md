@@ -309,6 +309,13 @@ Ambos perfiles se asignan mediante buscadores de docentes con autocompletado, re
 
 Ninguno de los dos perfiles concede acceso al resto del panel de centro educativo (oferta formativa, estudiantes, conductas, etc.): solo amplían la visibilidad y los permisos sobre partes de convivencia y sanciones.
 
+### Registro de avisos por correo
+
+La tarjeta **Registro de avisos por correo** del panel de centro educativo abre el historial de los
+correos automáticos enviados sobre partes y sanciones, con su resultado (entregado o fallido).
+Detalles del listado, sus filtros y el ajuste que lo activa o desactiva en
+[Notificaciones por email](06-notificaciones-y-email.md#registro-de-avisos-por-correo).
+
 ## Administración
 
 ### Registro de actividad

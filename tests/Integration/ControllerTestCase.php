@@ -61,6 +61,7 @@ abstract class ControllerTestCase extends WebTestCase
             ['board.theme',                            SettingType::Choice,  'light', true,  true,  false, null, null, 'settings.category.board',   30, 30, 'light,dark,system'],
             ['notifications.report_auto_prescribe_days', SettingType::Integer, '14',  true,  true,  false, 0,    365,  'settings.category.notifications', 40, 30, null],
             ['notifications.report_prescription_warning_days', SettingType::Integer, '7', true,  true,  true,  0,    365,  'settings.category.notifications', 40, 40, null],
+            ['notifications.email_log_enabled',                SettingType::Boolean, 'true', true, true,  false, null, null, 'settings.category.notifications', 40, 50, null],
         ];
 
         foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max, $category, $categoryOrder, $position, $choices]) {

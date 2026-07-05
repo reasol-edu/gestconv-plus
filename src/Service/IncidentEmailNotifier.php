@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\EducationalCentre;
+use App\Entity\EmailNotificationLog;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -37,6 +39,7 @@ final class IncidentEmailNotifier
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
+        private readonly EntityManagerInterface $em,
         #[Autowire(env: 'MAILER_FROM')]
         private readonly string $fromAddress,
         #[Autowire('%app.name%')]
@@ -92,7 +95,7 @@ final class IncidentEmailNotifier
         ];
 
         foreach ($recipients as $teacher) {
-            $this->dispatch($teacher, 'report_auto_prescribed', $params, 'email/incident_report_notice.html.twig', [
+            $this->dispatch($centre, $teacher, 'report_auto_prescribed', $params, 'email/incident_report_notice.html.twig', [
                 'report'    => $report,
                 'reportUrl' => $url,
             ]);
@@ -113,6 +116,8 @@ final class IncidentEmailNotifier
             return;
         }
 
+        $centre = $this->centreForGroup($items[0]['report']->getGroup());
+
         $rows = array_map(
             fn (array $item): array => [
                 'report'        => $item['report'],
@@ -127,6 +132,7 @@ final class IncidentEmailNotifier
         );
 
         $this->dispatch(
+            $centre,
             $teacher,
             'report_prescription_warning',
             ['%count%' => count($items)],
@@ -173,7 +179,7 @@ final class IncidentEmailNotifier
         ];
 
         foreach ($recipients as $teacher) {
-            $this->dispatch($teacher, 'sanction_notified', $params, 'email/sanction_notice.html.twig', [
+            $this->dispatch($centre, $teacher, 'sanction_notified', $params, 'email/sanction_notice.html.twig', [
                 'sanction'    => $sanction,
                 'sanctionUrl' => $url,
             ]);
@@ -205,7 +211,7 @@ final class IncidentEmailNotifier
         ];
 
         foreach ($recipients as $teacher) {
-            $this->dispatch($teacher, "report_$event", $params, 'email/incident_report_notice.html.twig', [
+            $this->dispatch($centre, $teacher, "report_$event", $params, 'email/incident_report_notice.html.twig', [
                 'report'    => $report,
                 'reportUrl' => $url,
             ]);
@@ -233,7 +239,7 @@ final class IncidentEmailNotifier
         ];
 
         foreach ($centre->getCommitteeMembers() as $member) {
-            $this->dispatch($member, 'report_sanctionable_committee', $params, 'email/incident_report_notice.html.twig', [
+            $this->dispatch($centre, $member, 'report_sanctionable_committee', $params, 'email/incident_report_notice.html.twig', [
                 'report'    => $report,
                 'reportUrl' => $url,
             ]);
@@ -269,14 +275,14 @@ final class IncidentEmailNotifier
      * @param array<string, string|int> $params
      * @param array<string, mixed> $context
      */
-    private function dispatch(Teacher $teacher, string $eventKey, array $params, string $template, array $context): void
+    private function dispatch(EducationalCentre $centre, Teacher $teacher, string $eventKey, array $params, string $template, array $context): void
     {
         $email = $teacher->getEmail();
         if ($email === null) {
             return;
         }
 
-        $this->send((new TemplatedEmail())
+        $this->send($centre, $teacher, $eventKey, (new TemplatedEmail())
             ->to(new Address($email, $this->fullName($teacher)))
             ->subject($this->translator->trans("emails.$eventKey.subject", $params, 'emails'))
             ->htmlTemplate($template)
@@ -287,18 +293,50 @@ final class IncidentEmailNotifier
             ]));
     }
 
-    private function send(TemplatedEmail $email): void
+    private function send(EducationalCentre $centre, Teacher $recipient, string $eventKey, TemplatedEmail $email): void
     {
         $email->from(new Address($this->fromAddress, $this->appName));
+
+        $success      = true;
+        $errorMessage = null;
 
         try {
             $this->mailer->send($email);
         } catch (TransportExceptionInterface $e) {
+            $success      = false;
+            $errorMessage = $e->getMessage();
             $this->logger->error('No se pudo enviar el email "{subject}": {error}', [
                 'subject' => $email->getSubject(),
                 'error'   => $e->getMessage(),
             ]);
         }
+
+        $this->logNotification($centre, $recipient, $eventKey, (string) $email->getSubject(), $success, $errorMessage);
+    }
+
+    private function logNotification(
+        EducationalCentre $centre,
+        Teacher $recipient,
+        string $eventKey,
+        string $subject,
+        bool $success,
+        ?string $errorMessage,
+    ): void {
+        if (!$this->settings->getForCentre('notifications.email_log_enabled', $centre)) {
+            return;
+        }
+
+        $this->em->persist(new EmailNotificationLog(
+            $centre,
+            $recipient,
+            $this->fullName($recipient),
+            $eventKey,
+            $subject,
+            $success,
+            $errorMessage,
+            new \DateTimeImmutable(),
+        ));
+        $this->em->flush();
     }
 
     private function choiceFor(string $key, EducationalCentre $centre): string
