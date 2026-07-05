@@ -725,6 +725,7 @@ sanction.section.select_student_help: 'Busca al estudiante para el que quieres r
 sanction.section.student: 'Estudiante'
 sanction.section.reports: 'Partes implicados'
 sanction.section.reports_help: 'Selecciona los partes de convivencia que dan lugar a esta sanción.'
+sanction.section.report_details_toggle: 'Ver observaciones e historial de notificaciones'
 sanction.section.measures: 'Medida disciplinaria'
 sanction.section.details: 'Detalle de la sanción'
 

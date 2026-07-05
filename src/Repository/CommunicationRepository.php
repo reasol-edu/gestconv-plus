@@ -42,6 +42,41 @@ class CommunicationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Communications for all given reports, grouped by report UUID (RFC4122). Single query; avoids N+1.
+     *
+     * @param  IncidentReport[] $reports
+     * @return array<string, list<Communication>>
+     */
+    public function findByIncidentReports(array $reports): array
+    {
+        if ($reports === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('c')
+            ->where('c.incidentReport IN (:reports)')
+            ->setParameter('reports', $reports)
+            ->orderBy('c.performedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($reports as $report) {
+            $map[$report->getId()->toRfc4122()] = [];
+        }
+        foreach ($rows as $row) {
+            /** @var Communication $row */
+            $incidentReport = $row->getIncidentReport();
+            if ($incidentReport === null) {
+                continue;
+            }
+            $map[$incidentReport->getId()->toRfc4122()][] = $row;
+        }
+
+        return $map;
+    }
+
+    /**
      * @return list<Communication>
      */
     public function findBySanction(Sanction $sanction): array

@@ -9,6 +9,7 @@ use App\Entity\Sanction;
 use App\Entity\Teacher;
 use App\Repository\CommunicationRepository;
 use App\Repository\GroupRepository;
+use App\Repository\IncidentReportObservationRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionMeasureRepository;
 use App\Repository\SanctionRepository;
@@ -35,6 +36,7 @@ class SanctionController extends AbstractController
         private readonly StudentRepository $students,
         private readonly GroupRepository $groups,
         private readonly CommunicationRepository $communications,
+        private readonly IncidentReportObservationRepository $observations,
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
     ) {}
@@ -215,12 +217,14 @@ class SanctionController extends AbstractController
                 }
 
                 return $this->render('sanction/new.html.twig', [
-                    'centre'             => $centre,
-                    'student'            => $student,
-                    'group'              => $group,
-                    'eligibleReports'    => $eligibleReports,
-                    'measuresByCategory' => $measuresByCategory,
-                    'errors'             => $errors,
+                    'centre'                => $centre,
+                    'student'               => $student,
+                    'group'                 => $group,
+                    'eligibleReports'       => $eligibleReports,
+                    'observationsByReport'  => $this->observations->findByIncidentReports($eligibleReports),
+                    'communicationsByReport' => $this->communications->findByIncidentReports($eligibleReports),
+                    'measuresByCategory'    => $measuresByCategory,
+                    'errors'                => $errors,
                     'formData'           => [
                         'reports'          => array_values(array_filter($reportIds, 'is_string')),
                         'measureIds'       => array_values(array_filter($measureIds, 'is_string')),
@@ -234,13 +238,15 @@ class SanctionController extends AbstractController
             }
 
             return $this->render('sanction/new.html.twig', [
-                'centre'             => $centre,
-                'student'            => $student,
-                'group'              => $group,
-                'eligibleReports'    => $eligibleReports,
-                'measuresByCategory' => $measuresByCategory,
-                'errors'             => [],
-                'formData'           => [],
+                'centre'                => $centre,
+                'student'               => $student,
+                'group'                 => $group,
+                'eligibleReports'       => $eligibleReports,
+                'observationsByReport'  => $this->observations->findByIncidentReports($eligibleReports),
+                'communicationsByReport' => $this->communications->findByIncidentReports($eligibleReports),
+                'measuresByCategory'    => $measuresByCategory,
+                'errors'                => [],
+                'formData'              => [],
             ]);
         }
 
@@ -450,11 +456,13 @@ class SanctionController extends AbstractController
         );
 
         return $this->render('sanction/edit.html.twig', [
-            'centre'             => $centre,
-            'sanction'           => $sanction,
-            'availableReports'   => $availableReports,
-            'measuresByCategory' => $measuresByCategory,
-            'errors'             => $errors,
+            'centre'                => $centre,
+            'sanction'              => $sanction,
+            'availableReports'      => $availableReports,
+            'observationsByReport'  => $this->observations->findByIncidentReports($availableReports),
+            'communicationsByReport' => $this->communications->findByIncidentReports($availableReports),
+            'measuresByCategory'    => $measuresByCategory,
+            'errors'                => $errors,
         ]);
     }
 

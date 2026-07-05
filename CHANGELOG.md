@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nueva sección de **Partes de convivencia** con listado filtrable, vista de detalle y edición.
 - La importación de estudiantes desde el CSV de Séneca rellena también el correo electrónico de los tutores legales, además de teléfonos y observaciones.
 - Los administradores pueden reasignar el docente y el estudiante de un parte ya registrado.
+- Al crear o editar una sanción, cada parte asociado o disponible muestra ahora siempre la fecha y hora, el docente que lo registró y la descripción completa de lo acontecido; un desplegable permite consultar además sus observaciones (si las tiene) y su historial de notificaciones a la familia, en lugar de una descripción truncada a una línea.
 
 ### Changed
 
