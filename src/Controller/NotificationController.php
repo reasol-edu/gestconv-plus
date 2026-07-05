@@ -16,6 +16,7 @@ use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
 use App\Security\Voter\IncidentReportVoter;
 use App\Security\Voter\SanctionVoter;
+use App\Service\StudentContactVisibility;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,6 +35,7 @@ class NotificationController extends AbstractController
         private readonly SanctionRepository $sanctions,
         private readonly CommunicationRepository $communications,
         private readonly CommunicationMethodRepository $methods,
+        private readonly StudentContactVisibility $contactVisibility,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -87,10 +89,11 @@ class NotificationController extends AbstractController
         }
 
         return $this->render('notification/register_report.html.twig', [
-            'centre'  => $centre,
-            'report'  => $report,
-            'history' => $this->communications->findByIncidentReport($report),
-            'methods' => $this->methods->findActiveByCentreOrdered($centre),
+            'centre'        => $centre,
+            'report'        => $report,
+            'history'       => $this->communications->findByIncidentReport($report),
+            'methods'       => $this->methods->findActiveByCentreOrdered($centre),
+            'canSeeContact' => $this->contactVisibility->isVisibleTo($user, $centre, $report->getStudent()),
         ]);
     }
 
@@ -124,10 +127,11 @@ class NotificationController extends AbstractController
         }
 
         return $this->render('notification/register_sanction.html.twig', [
-            'centre'   => $centre,
-            'sanction' => $sanction,
-            'history'  => $this->communications->findBySanction($sanction),
-            'methods'  => $this->methods->findActiveByCentreOrdered($centre),
+            'centre'        => $centre,
+            'sanction'      => $sanction,
+            'history'       => $this->communications->findBySanction($sanction),
+            'methods'       => $this->methods->findActiveByCentreOrdered($centre),
+            'canSeeContact' => $this->contactVisibility->isVisibleTo($user, $centre, $sanction->getStudent()),
         ]);
     }
 

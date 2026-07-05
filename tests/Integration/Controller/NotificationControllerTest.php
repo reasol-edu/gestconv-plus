@@ -97,6 +97,40 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertSelectorExists('select[name="method_id"]');
     }
 
+    public function testRegisterForReportShowsContactDataToGroupTutor(): void
+    {
+        [$creator, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $tutor = $this->makeTeacher('tutor.register.report');
+        $group->addTutor($tutor);
+        $group->addStudent($student);
+        $student->setTutorName1('María Tutora');
+        $this->persist($tutor);
+        $report = $this->makeReport($student, $group, $creator, $behavior);
+        $this->persist($report);
+        $this->loginAs($tutor, $centre);
+
+        $this->client->request('GET', '/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Datos de contacto');
+        self::assertSelectorTextContains('body', 'María Tutora');
+    }
+
+    public function testRegisterForReportHidesContactDataFromPlainTeacher(): void
+    {
+        [$creator, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $student->setTutorName1('María Tutora');
+        $report = $this->makeReport($student, $group, $creator, $behavior);
+        $this->persist($report);
+        $this->loginAs($creator, $centre);
+
+        $this->client->request('GET', '/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextNotContains('body', 'Datos de contacto');
+        self::assertSelectorTextNotContains('body', 'María Tutora');
+    }
+
     public function testRegisterForReportPostWithNotifiedResultSetsNotifiedCommunication(): void
     {
         [$creator, $centre, $group, $student, $behavior, $method] = $this->makeScenario();
@@ -191,6 +225,40 @@ class NotificationControllerTest extends ControllerTestCase
         $this->client->request('GET', '/notificaciones/sanciones/' . $sanction->getId()->toRfc4122() . '/registrar');
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testRegisterForSanctionShowsContactDataToGroupTutor(): void
+    {
+        [$creator, $centre, $group, $student] = $this->makeScenario();
+        $tutor = $this->makeTeacher('tutor.register.sanction');
+        $group->addTutor($tutor);
+        $group->addStudent($student);
+        $student->setTutorName1('María Tutora');
+        $this->persist($tutor);
+        $sanction = $this->makeSanction($student, $group, $creator);
+        $this->persist($sanction);
+        $this->loginAs($tutor, $centre);
+
+        $this->client->request('GET', '/notificaciones/sanciones/' . $sanction->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Datos de contacto');
+        self::assertSelectorTextContains('body', 'María Tutora');
+    }
+
+    public function testRegisterForSanctionHidesContactDataFromPlainTeacher(): void
+    {
+        [$creator, $centre, $group, $student] = $this->makeScenario();
+        $student->setTutorName1('María Tutora');
+        $sanction = $this->makeSanction($student, $group, $creator);
+        $this->persist($sanction);
+        $this->loginAs($creator, $centre);
+
+        $this->client->request('GET', '/notificaciones/sanciones/' . $sanction->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextNotContains('body', 'Datos de contacto');
+        self::assertSelectorTextNotContains('body', 'María Tutora');
     }
 
     public function testRegisterForSanctionPostWithNotifiedResultSetsNotifiedCommunication(): void

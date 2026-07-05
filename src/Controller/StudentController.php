@@ -10,6 +10,7 @@ use App\Entity\Teacher;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\StudentRepository;
+use App\Service\StudentContactVisibility;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +24,7 @@ class StudentController extends AbstractController
         private readonly StudentRepository $students,
         private readonly IncidentReportRepository $reports,
         private readonly SanctionRepository $sanctions,
+        private readonly StudentContactVisibility $contactVisibility,
     ) {}
 
     #[Route('/{id}', name: 'app_students_show', methods: ['GET'])]
@@ -85,21 +87,13 @@ class StudentController extends AbstractController
 
         $activeYear   = $centre->getActiveAcademicYear();
         $activeGroups = [];
-        $isTutor      = false;
         foreach ($student->getGroups() as $group) {
             if ($activeYear !== null && $group->getProgrammeYear()->getProgramme()->getAcademicYear() === $activeYear) {
                 $activeGroups[] = $group;
             }
-            if ($group->getTutors()->contains($viewer)) {
-                $isTutor = true;
-            }
         }
 
-        $canSeeContact = $isTutor
-            || $viewer->isAdmin()
-            || $centre->getAdmins()->contains($viewer)
-            || $centre->getCommitteeMembers()->contains($viewer)
-            || $centre->getCounselors()->contains($viewer);
+        $canSeeContact = $this->contactVisibility->isVisibleTo($viewer, $centre, $student);
 
         return $this->render('student/show.html.twig', [
             'centre'          => $centre,

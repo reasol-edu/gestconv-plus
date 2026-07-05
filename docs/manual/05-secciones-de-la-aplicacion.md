@@ -180,6 +180,8 @@ El botón **Notificar** solo aparece si el docente tiene permiso para registrar 
 
 Pulsa **Notificar** en la fila correspondiente para abrir el formulario de registro, común a partes y sanciones.
 
+Si el docente tiene permiso para verlos, la pantalla muestra también los **datos de contacto** del alumno (tutores legales, teléfonos y observaciones) justo antes del formulario, con las mismas reglas de visibilidad que en la [ficha del alumno](#ficha-del-alumno): equipo directivo, comisión de convivencia, orientación y tutores/as del grupo.
+
 ![Formulario de registro de comunicación](img/notificaciones/notificaciones-registrar-parte.png)
 
 1. **Método utilizado** — uno de los métodos de comunicación activos del centro (ver más abajo).

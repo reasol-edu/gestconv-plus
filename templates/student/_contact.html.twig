@@ -1,0 +1,48 @@
+{% if canSeeContact %}
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+        <div class="border-b border-gray-100 px-6 py-3.5">
+            <h2 class="text-sm font-semibold text-gray-800">{{ 'student.show.contact'|trans({}, 'admin') }}</h2>
+        </div>
+        <div class="px-6 py-4 grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
+            {% if student.tutorName1 %}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'student.show.tutor1'|trans({}, 'admin') }}</p>
+                    <p class="text-gray-900">{{ student.tutorName1 }}</p>
+                    {% if student.tutorEmail1 %}<p class="text-gray-500">{{ student.tutorEmail1 }}</p>{% endif %}
+                </div>
+            {% endif %}
+            {% if student.tutorName2 %}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'student.show.tutor2'|trans({}, 'admin') }}</p>
+                    <p class="text-gray-900">{{ student.tutorName2 }}</p>
+                    {% if student.tutorEmail2 %}<p class="text-gray-500">{{ student.tutorEmail2 }}</p>{% endif %}
+                </div>
+            {% endif %}
+            {% set phones = [
+                {number: student.contactPhone1, notes: student.contactPhone1Notes},
+                {number: student.contactPhone2, notes: student.contactPhone2Notes},
+                {number: student.contactPhone3, notes: student.contactPhone3Notes},
+            ]|filter(p => p.number) %}
+            {% if phones|length > 0 %}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'student.show.phones'|trans({}, 'admin') }}</p>
+                    {% for phone in phones %}
+                        <p class="text-gray-900">
+                            {{ phone.number }}
+                            {% if phone.notes %}<span class="text-gray-500">— {{ phone.notes }}</span>{% endif %}
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if student.details %}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'student.show.details'|trans({}, 'admin') }}</p>
+                    <p class="text-gray-700 whitespace-pre-wrap">{{ student.details }}</p>
+                </div>
+            {% endif %}
+            {% if not student.tutorName1 and not student.tutorName2 and phones|length == 0 and not student.details %}
+                <p class="text-gray-400 text-xs col-span-full">{{ 'student.show.contact_empty'|trans({}, 'admin') }}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
