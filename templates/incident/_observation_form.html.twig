@@ -6,16 +6,6 @@
         <input type="hidden" name="_token" value="{{ csrf_token('add_observation_' ~ report.id) }}">
 
         <div>
-            <label for="observation_registered_at" class="block text-sm font-medium text-gray-700 mb-1.5">
-                {{ 'incident.observation.field.registered_at'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
-            </label>
-            <input type="datetime-local" id="observation_registered_at" name="registered_at" required
-                   value="{{ 'now'|date('Y-m-d\\TH:i') }}"
-                   class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
-                          focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
-        </div>
-
-        <div>
             <twig:Form:RichEditor
                 id="observation_text"
                 name="text"

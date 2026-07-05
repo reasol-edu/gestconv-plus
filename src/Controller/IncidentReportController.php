@@ -386,25 +386,15 @@ class IncidentReportController extends AbstractController
         $user = $this->getUser();
         \assert($user instanceof Teacher);
 
-        $registeredAtRaw = trim($request->request->getString('registered_at'));
-        $text            = trim($request->request->getString('text'));
+        $text = trim($request->request->getString('text'));
 
-        $registeredAt = null;
-        if ($registeredAtRaw !== '') {
-            try {
-                $registeredAt = new \DateTimeImmutable($registeredAtRaw);
-            } catch (\Exception) {
-                $registeredAt = null;
-            }
-        }
-
-        if ($registeredAt === null || $text === '') {
-            $this->addFlash('error', $this->t('incident.observation.error.invalid'));
+        if ($text === '') {
+            $this->addFlash('error', $this->t('incident.observation.error.text_required'));
 
             return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
         }
 
-        $this->em->persist(new IncidentReportObservation($report, $user, $registeredAt, $text));
+        $this->em->persist(new IncidentReportObservation($report, $user, new \DateTimeImmutable(), $text));
         $this->em->flush();
 
         $this->addFlash('success', $this->t('incident.observation.flash.added'));
@@ -432,6 +422,8 @@ class IncidentReportController extends AbstractController
 
         $this->denyAccessUnlessGranted(IncidentReportObservationVoter::EDIT, $observation);
 
+        $canEditDate = $this->isGranted(IncidentReportObservationVoter::EDIT_DATE, $observation);
+
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -439,26 +431,31 @@ class IncidentReportController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $registeredAtRaw = trim($request->request->getString('registered_at'));
-            $text            = trim($request->request->getString('text'));
+            $text = trim($request->request->getString('text'));
 
-            $registeredAt = null;
-            if ($registeredAtRaw !== '') {
-                try {
-                    $registeredAt = new \DateTimeImmutable($registeredAtRaw);
-                } catch (\Exception) {
-                    $registeredAt = null;
+            $registeredAt = $observation->getRegisteredAt();
+            if ($canEditDate) {
+                $registeredAtRaw = trim($request->request->getString('registered_at'));
+
+                $registeredAt = null;
+                if ($registeredAtRaw !== '') {
+                    try {
+                        $registeredAt = new \DateTimeImmutable($registeredAtRaw);
+                    } catch (\Exception) {
+                        $registeredAt = null;
+                    }
+                }
+
+                if ($registeredAt === null) {
+                    $errors['registered_at'] = $this->t('incident.observation.error.invalid');
                 }
             }
 
-            if ($registeredAt === null) {
-                $errors['registered_at'] = $this->t('incident.observation.error.invalid');
-            }
             if ($text === '') {
                 $errors['text'] = $this->t('incident.observation.error.invalid');
             }
 
-            if (empty($errors)) {
+            if (empty($errors) && $registeredAt !== null) {
                 $observation->setRegisteredAt($registeredAt)->setText($text);
                 $this->em->flush();
 
@@ -472,6 +469,7 @@ class IncidentReportController extends AbstractController
             'centre'      => $centre,
             'report'      => $report,
             'observation' => $observation,
+            'canEditDate' => $canEditDate,
             'errors'      => $errors,
         ]);
     }

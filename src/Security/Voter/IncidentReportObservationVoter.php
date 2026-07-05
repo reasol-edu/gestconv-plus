@@ -15,12 +15,13 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class IncidentReportObservationVoter extends Voter
 {
-    public const EDIT   = 'incident_report_observation.edit';
-    public const DELETE = 'incident_report_observation.delete';
+    public const EDIT      = 'incident_report_observation.edit';
+    public const EDIT_DATE = 'incident_report_observation.edit_date';
+    public const DELETE    = 'incident_report_observation.delete';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::EDIT, self::DELETE], true)
+        return in_array($attribute, [self::EDIT, self::EDIT_DATE, self::DELETE], true)
             && $subject instanceof IncidentReportObservation;
     }
 
@@ -45,6 +46,10 @@ final class IncidentReportObservationVoter extends Voter
 
         if ($centre->getAdmins()->contains($user)) {
             return true;
+        }
+
+        if ($attribute === self::EDIT_DATE) {
+            return false;
         }
 
         if ($subject->getRegisteredBy() !== $user) {

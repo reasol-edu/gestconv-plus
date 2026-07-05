@@ -478,9 +478,8 @@ class IncidentReportControllerTest extends ControllerTestCase
         $token    = $crawler->filter('form[action$="/observaciones"] [name="_token"]')->first()->attr('value');
 
         $this->client->request('POST', '/partes/' . $reportId . '/observaciones', [
-            '_token'        => $token,
-            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
-            'text'          => '<p>Nueva observación.</p>',
+            '_token' => $token,
+            'text'   => '<p>Nueva observación.</p>',
         ]);
 
         self::assertResponseRedirects('/partes/' . $reportId);
@@ -490,6 +489,31 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertCount(1, $observations);
         self::assertSame('<p>Nueva observación.</p>', $observations[0]->getText());
         self::assertSame($teacher->getId()->toRfc4122(), $observations[0]->getRegisteredBy()->getId()->toRfc4122());
+        self::assertEqualsWithDelta((new \DateTimeImmutable())->getTimestamp(), $observations[0]->getRegisteredAt()->getTimestamp(), 5);
+    }
+
+    public function testAddObservationIgnoresClientSuppliedRegisteredAt(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $reportId = $report->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId);
+        $token    = $crawler->filter('form[action$="/observaciones"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $reportId . '/observaciones', [
+            '_token'        => $token,
+            'registered_at' => '2000-01-01T00:00',
+            'text'          => '<p>Nueva observación.</p>',
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $reportId);
+
+        $this->em->clear();
+        $observations = $this->em->getRepository(IncidentReportObservation::class)->findAll();
+        self::assertCount(1, $observations);
+        self::assertEqualsWithDelta((new \DateTimeImmutable())->getTimestamp(), $observations[0]->getRegisteredAt()->getTimestamp(), 5);
     }
 
     public function testAddObservationWithEmptyTextShowsError(): void
@@ -503,9 +527,8 @@ class IncidentReportControllerTest extends ControllerTestCase
         $token    = $crawler->filter('form[action$="/observaciones"] [name="_token"]')->first()->attr('value');
 
         $this->client->request('POST', '/partes/' . $reportId . '/observaciones', [
-            '_token'        => $token,
-            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
-            'text'          => '',
+            '_token' => $token,
+            'text'   => '',
         ]);
 
         self::assertResponseRedirects('/partes/' . $reportId);
@@ -523,9 +546,8 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->loginAs($other, $centre);
 
         $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones', [
-            '_token'        => 'any-token',
-            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
-            'text'          => '<p>Intento no autorizado.</p>',
+            '_token' => 'any-token',
+            'text'   => '<p>Intento no autorizado.</p>',
         ]);
 
         self::assertResponseStatusCodeSame(403);
@@ -538,9 +560,8 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->loginAs($teacher, $centre);
 
         $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones', [
-            '_token'        => 'invalid-token',
-            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
-            'text'          => '<p>Test.</p>',
+            '_token' => 'invalid-token',
+            'text'   => '<p>Test.</p>',
         ]);
 
         self::assertResponseStatusCodeSame(403);
@@ -563,8 +584,9 @@ class IncidentReportControllerTest extends ControllerTestCase
     public function testEditObservationPostSavesChanges(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
-        $report      = $this->makeReport($student, $group, $teacher, $behavior);
-        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $report       = $this->makeReport($student, $group, $teacher, $behavior);
+        $registeredAt = new \DateTimeImmutable('-10 minutes');
+        $observation  = new IncidentReportObservation($report, $teacher, $registeredAt, '<p>Observación.</p>');
         $this->persist($observation);
         $this->loginAs($teacher, $centre);
 
@@ -575,7 +597,7 @@ class IncidentReportControllerTest extends ControllerTestCase
 
         $this->client->request('POST', $url, [
             '_token'        => $token,
-            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'registered_at' => (new \DateTimeImmutable('+1 day'))->format('Y-m-d\TH:i'),
             'text'          => '<p>Observación corregida.</p>',
         ]);
 
@@ -585,6 +607,54 @@ class IncidentReportControllerTest extends ControllerTestCase
         $updated = $this->em->find(IncidentReportObservation::class, $observation->getId());
         self::assertNotNull($updated);
         self::assertSame('<p>Observación corregida.</p>', $updated->getText());
+        self::assertSame($registeredAt->format('Y-m-d H:i'), $updated->getRegisteredAt()->format('Y-m-d H:i'));
+    }
+
+    public function testEditObservationGetHidesDateFieldForNonAdmin(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $this->persist($observation);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('input[name="registered_at"]'));
+    }
+
+    public function testEditObservationPostAsCentreAdminCanChangeDate(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin      = $this->makeTeacher('cadmin.edit.observation.date');
+        $report      = $this->makeReport($student, $group, $teacher, $behavior);
+        $createdAt   = new \DateTimeImmutable('-2 hours');
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable('-2 hours'), '<p>Observación antigua.</p>', $createdAt);
+        $this->persist($cadmin, $observation);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $observationId = $observation->getId()->toRfc4122();
+        $url           = '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observationId . '/editar';
+        $crawler       = $this->client->request('GET', $url);
+        self::assertCount(1, $crawler->filter('input[name="registered_at"]'));
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $newRegisteredAt = new \DateTimeImmutable('-1 hour');
+        $this->client->request('POST', $url, [
+            '_token'        => $token,
+            'registered_at' => $newRegisteredAt->format('Y-m-d\TH:i'),
+            'text'          => '<p>Observación corregida por admin.</p>',
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $report->getId()->toRfc4122());
+
+        $this->em->clear();
+        $updated = $this->em->find(IncidentReportObservation::class, $observation->getId());
+        self::assertNotNull($updated);
+        self::assertSame($newRegisteredAt->format('Y-m-d H:i'), $updated->getRegisteredAt()->format('Y-m-d H:i'));
     }
 
     public function testEditObservationIsDeniedToOwnerAfterOneHour(): void

@@ -207,6 +207,56 @@ class IncidentReportObservationVoterTest extends RepositoryTestCase
         );
     }
 
+    // ── Fecha/hora (EDIT_DATE): solo administradores ─────────────────────────
+
+    public function testGlobalAdminIsGrantedEditDate(): void
+    {
+        [$observation] = $this->makeScenario('global.edit.date');
+        $admin         = $this->makeTeacher('global.admin.edit.date', admin: true);
+        $this->persist($admin);
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($admin), $observation, [IncidentReportObservationVoter::EDIT_DATE])
+        );
+    }
+
+    public function testCentreAdminIsGrantedEditDate(): void
+    {
+        [$observation, $centre] = $this->makeScenario('cadmin.edit.date');
+        $cadmin                 = $this->makeTeacher('centre.admin.edit.date');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($cadmin), $observation, [IncidentReportObservationVoter::EDIT_DATE])
+        );
+    }
+
+    public function testRegisteredByTeacherIsDeniedEditDateWithinOneHour(): void
+    {
+        [$observation, , , $registeredBy] = $this->makeScenario('owner.edit.date');
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($registeredBy), $observation, [IncidentReportObservationVoter::EDIT_DATE])
+        );
+    }
+
+    public function testUnrelatedTeacherIsDeniedEditDate(): void
+    {
+        [$observation] = $this->makeScenario('unrelated.edit.date');
+        $other         = $this->makeTeacher('unrelated.edit.date.teacher');
+        $this->persist($other);
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($other), $observation, [IncidentReportObservationVoter::EDIT_DATE])
+        );
+    }
+
     // ── Docente no relacionado ───────────────────────────────────────────────
 
     public function testUnrelatedTeacherIsDeniedEdit(): void
