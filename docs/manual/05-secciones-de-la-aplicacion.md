@@ -166,7 +166,7 @@ Se llega a la ficha desde el buscador global, el listado y el detalle de partes,
 
 ## Notificaciones
 
-La sección **Notificaciones**, accesible desde el menú lateral con un centro seleccionado, es la cola de partes y sanciones cuya familia todavía no ha sido informada.
+La sección **Notificaciones**, accesible desde el menú lateral con un centro seleccionado, tiene dos pestañas: **Notificaciones pendientes**, la cola de partes y sanciones cuya familia todavía no ha sido informada, e **Historial de notificaciones**, con todas las comunicaciones registradas en el curso académico activo.
 
 ![Cola de notificaciones pendientes](img/notificaciones/notificaciones-pendientes.png)
 
@@ -198,6 +198,14 @@ Cada intento de comunicación queda registrado en el **historial**, se marque o 
 El detalle de un parte o de una sanción muestra un indicador de estado (**Notificado** / **Pendiente de notificar**) enlazado a esta pantalla de registro.
 
 ![Indicador de notificado en el detalle de un parte](img/notificaciones/parte-badge-notificado.png)
+
+### Historial de notificaciones
+
+La pestaña **Historial de notificaciones** reúne, en una única tabla paginada, todas las comunicaciones registradas en el curso académico activo sobre partes y sanciones: fecha, alumno, grupo, tipo de elemento (parte o sanción), método, docente que la registró, resultado y observaciones. Un enlace **Ver** lleva al parte o sanción correspondiente.
+
+Un docente sin permisos especiales solo ve las comunicaciones de los partes y sanciones que él mismo registró o que pertenecen a un grupo del que es tutor. Los administradores, la comisión de convivencia y orientación ven el historial completo del centro, sin restricción por autoría ni tutoría.
+
+Puede filtrarse por texto libre (alumno o grupo), por tipo de elemento y por resultado (*Notificado* / *No notificado*).
 
 ### Quién puede notificar
 

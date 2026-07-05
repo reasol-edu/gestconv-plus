@@ -40,7 +40,7 @@ class NotificationController extends AbstractController
     ) {}
 
     #[Route('', name: 'app_notifications_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $centre = $this->tenantContext->getSelectedCentre();
         if ($centre === null) {
@@ -52,10 +52,13 @@ class NotificationController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
+        $tab = $request->query->getString('tab', 'pending') === 'history' ? 'history' : 'pending';
+
         return $this->render('notification/index.html.twig', [
             'centre'    => $centre,
-            'reports'   => $this->reports->findPendingNotification($centre, $user),
-            'sanctions' => $this->sanctions->findPendingNotification($centre, $user),
+            'tab'       => $tab,
+            'reports'   => $tab === 'pending' ? $this->reports->findPendingNotification($centre, $user) : [],
+            'sanctions' => $tab === 'pending' ? $this->sanctions->findPendingNotification($centre, $user) : [],
         ]);
     }
 

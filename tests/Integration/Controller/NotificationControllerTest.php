@@ -68,6 +68,59 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertStringContainsString('/centro', (string) $this->client->getResponse()->headers->get('Location'));
     }
 
+    // ── index (tabs) ─────────────────────────────────────────────────────────
+
+    public function testIndexDefaultsToPendingTab(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/notificaciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('nav[aria-label="Secciones de notificaciones"] [aria-current="page"]');
+        self::assertSame(
+            'Notificaciones pendientes',
+            trim($crawler->filter('nav[aria-label="Secciones de notificaciones"] [aria-current="page"]')->text()),
+        );
+    }
+
+    public function testIndexHistoryTabRendersHistoryComponent(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior, $method] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->persist($report);
+        $this->notifyReport($report, $method, $teacher);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/notificaciones?tab=history');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            'Historial de notificaciones',
+            trim($crawler->filter('nav[aria-label="Secciones de notificaciones"] [aria-current="page"]')->text()),
+        );
+        self::assertSelectorTextContains('body', $student->getName()->getLastName());
+        self::assertSelectorTextNotContains('body', 'No hay partes pendientes de notificar.');
+    }
+
+    public function testIndexHistoryTabShowsAllCommunicationsToAdmin(): void
+    {
+        [$creator, $centre, $group, $student, $behavior, $method] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $creator, $behavior);
+        $this->persist($report);
+        $this->notifyReport($report, $method, $creator);
+
+        $admin = $this->makeTeacher('admin.notif.history')->setAdmin(true);
+        $this->persist($admin);
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/notificaciones?tab=history');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', $student->getName()->getLastName());
+    }
+
     // ── registerForReport ────────────────────────────────────────────────────
 
     public function testRegisterForReportGetIsDeniedToUnrelatedTeacher(): void

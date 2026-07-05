@@ -1,0 +1,125 @@
+{% import 'components/_pagination_live.html.twig' as pager %}
+<div {{ attributes }}>
+    {% set pagination = this.pagination %}
+
+    {# Barra de filtros #}
+    <div class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
+
+        {# Búsqueda libre #}
+        <div class="relative flex-1 min-w-48">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                {{ ux_icon('heroicons:magnifying-glass', {class: 'h-4 w-4 text-gray-400'}) }}
+            </div>
+            <input type="search"
+                   data-model="norender|search"
+                   data-action="input->live#action"
+                   data-live-action-param="resetPage"
+                   placeholder="{{ 'notification.history_list.search_placeholder'|trans({}, 'notifications') }}"
+                   value="{{ search }}"
+                   class="block w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm
+                          text-gray-900 placeholder-gray-400 focus:border-forest-500 focus:outline-none
+                          focus:ring-3 focus:ring-forest-500/20 transition-colors">
+        </div>
+
+        {# Tipo: parte / sanción #}
+        <select data-model="type"
+                aria-label="{{ 'notification.history_list.col.type'|trans({}, 'notifications')|e('html_attr') }}"
+                class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-xs font-medium text-gray-600
+                       focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0">
+            <option value="">{{ 'notification.history_list.type_all'|trans({}, 'notifications') }}</option>
+            <option value="report">{{ 'notification.history_list.type_report'|trans({}, 'notifications') }}</option>
+            <option value="sanction">{{ 'notification.history_list.type_sanction'|trans({}, 'notifications') }}</option>
+        </select>
+
+        {# Resultado #}
+        <select data-model="result"
+                aria-label="{{ 'notification.history_list.col.result'|trans({}, 'notifications')|e('html_attr') }}"
+                class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-xs font-medium text-gray-600
+                       focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0">
+            <option value="">{{ 'notification.history_list.result_all'|trans({}, 'notifications') }}</option>
+            <option value="notified">{{ 'notification.result.notified'|trans({}, 'notifications') }}</option>
+            <option value="not_notified">{{ 'notification.result.not_notified'|trans({}, 'notifications') }}</option>
+        </select>
+
+        <svg data-loading class="hidden h-4 w-4 text-forest-500 animate-spin shrink-0 ml-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 22 6.477 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+        </svg>
+    </div>
+
+    <div data-loading="addClass(opacity-50 pointer-events-none animate-pulse)" class="transition-opacity">
+    {% if pagination.totalItems == 0 %}
+        <div class="px-6 py-16 text-center">
+            {{ ux_icon('heroicons:clock', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+            <p class="text-sm text-gray-500">
+                {{ (this.hasActiveFilters ? 'notification.history_list.search_empty' : 'notification.history_list.empty')|trans({}, 'notifications') }}
+            </p>
+        </div>
+    {% else %}
+        <div class="overflow-x-auto">
+            <table class="table-cards w-full text-sm">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.history_list.col.date'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.history_list.col.student'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.history_list.col.group'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.history_list.col.type'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.history_list.col.method'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.history_list.col.performed_by'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.history_list.col.result'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.history_list.col.description'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for communication in pagination.items %}
+                        {% set isReport = communication.incidentReport is not null %}
+                        {% set target = isReport ? communication.incidentReport : communication.sanction %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td data-label="{{ 'notification.history_list.col.date'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ communication.performedAt|date('d/m/Y H:i') }}</td>
+                            <td data-label="{{ 'notification.history_list.col.student'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3 text-gray-800">
+                                {{ target.student.name.lastName }}, {{ target.student.name.firstName }}
+                            </td>
+                            <td data-label="{{ 'notification.history_list.col.group'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ target.group.name }}</td>
+                            <td data-label="{{ 'notification.history_list.col.type'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium
+                                             {{ isReport ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-700' }}">
+                                    {{ ux_icon(isReport ? 'heroicons:exclamation-triangle' : 'heroicons:scale', {class: 'h-3 w-3'}) }}
+                                    {{ (isReport ? 'notification.history_list.type_report_badge' : 'notification.history_list.type_sanction_badge')|trans({}, 'notifications') }}
+                                </span>
+                            </td>
+                            <td data-label="{{ 'notification.history_list.col.method'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ communication.method.name }}</td>
+                            <td data-label="{{ 'notification.history_list.col.performed_by'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ communication.performedBy.name.lastName }}, {{ communication.performedBy.name.firstName }}</td>
+                            <td data-label="{{ 'notification.history_list.col.result'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                             {{ communication.result.value == 'notified' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                    {{ ('notification.result.' ~ communication.result.value)|trans({}, 'notifications') }}
+                                </span>
+                            </td>
+                            <td data-label="{{ 'notification.history_list.col.description'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3 text-gray-500 max-w-xs truncate">{{ communication.description ?: '—' }}</td>
+                            <td class="px-6 py-3 text-right">
+                                <a href="{{ path(isReport ? 'app_incidents_show' : 'app_sanctions_show', {id: target.id}) }}"
+                                   class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                          hover:bg-gray-50 transition-colors">
+                                    {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
+                                    {{ 'notification.history_list.view'|trans({}, 'notifications') }}
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {{ pager.nav(pagination) }}
+    {% endif %}
+    </div>
+</div>
