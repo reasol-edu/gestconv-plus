@@ -117,7 +117,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         {% for report in pagination.items %}
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="hover:bg-gray-50 transition-colors {{ report.prescribed ? 'opacity-60' : '' }}">
                                 <td class="px-6 py-4 text-xs font-mono text-gray-400 whitespace-nowrap">#{{ report.number }}</td>
                                 <td data-label="{{ 'incident.col.occurred_at'|trans({}, 'admin')|e('html_attr') }}"
                                     class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('d/m/Y H:i') }}</td>
@@ -149,6 +149,29 @@
                                         {% if report.expelledFromClass %}
                                             <span class="inline-flex items-center rounded-full bg-orange-100 text-orange-700 px-2 py-0.5 text-xs font-medium">
                                                 {{ 'incident.badge.expelled'|trans({}, 'admin') }}
+                                            </span>
+                                        {% endif %}
+                                        {% if report.prescribed %}
+                                            <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-xs font-medium">
+                                                {{ ux_icon('heroicons:shield-check', {class: 'h-3 w-3 mr-0.5'}) }}
+                                                {{ 'incident.badge.prescribed'|trans({}, 'admin') }}
+                                            </span>
+                                        {% endif %}
+                                        {% if report.notified %}
+                                            <span class="inline-flex items-center rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs font-medium">
+                                                {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3 mr-0.5'}) }}
+                                                {{ 'notification.badge.notified'|trans({}, 'notifications') }}
+                                            </span>
+                                        {% elseif is_granted('incident_report.notify', report) %}
+                                            <a href="{{ path('app_notifications_register_report', {id: report.id}) }}"
+                                               class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium hover:bg-amber-200 transition-colors">
+                                                {{ ux_icon('heroicons:bell-alert', {class: 'h-3 w-3 mr-0.5'}) }}
+                                                {{ 'notification.badge.pending'|trans({}, 'notifications') }}
+                                            </a>
+                                        {% else %}
+                                            <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium">
+                                                {{ ux_icon('heroicons:bell-alert', {class: 'h-3 w-3 mr-0.5'}) }}
+                                                {{ 'notification.badge.pending'|trans({}, 'notifications') }}
                                             </span>
                                         {% endif %}
                                     </div>
