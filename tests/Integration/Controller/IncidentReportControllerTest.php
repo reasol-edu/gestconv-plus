@@ -615,12 +615,13 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
-    public function testEditObservationIsDeniedToCentreAdmin(): void
+    public function testEditObservationIsGrantedToCentreAdminRegardlessOfAge(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
         $cadmin      = $this->makeTeacher('cadmin.edit.observation');
         $report      = $this->makeReport($student, $group, $teacher, $behavior);
-        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación.</p>');
+        $createdAt   = new \DateTimeImmutable('-2 hours');
+        $observation = new IncidentReportObservation($report, $teacher, new \DateTimeImmutable(), '<p>Observación antigua.</p>', $createdAt);
         $this->persist($cadmin, $observation);
         $centre->addAdmin($cadmin);
         $this->flush();
@@ -628,7 +629,7 @@ class IncidentReportControllerTest extends ControllerTestCase
 
         $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/editar');
 
-        self::assertResponseStatusCodeSame(403);
+        self::assertResponseIsSuccessful();
     }
 
     public function testDeleteObservationIsGrantedToOwnerWithinOneHour(): void
@@ -736,6 +737,57 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/editar');
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testEditGetIsDeniedToCreatorOnceNotified(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->notifyReport($report, $centre, $teacher);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testEditGetIsAccessibleToCentreAdminOnceNotified(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('cadmin.edit.notified');
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+        $this->notifyReport($report, $centre, $teacher);
+        $this->loginAs($cadmin, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testAddObservationIsAllowedToCreatorOnceReportIsNotified(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->notifyReport($report, $centre, $teacher);
+        $this->loginAs($teacher, $centre);
+
+        $reportId = $report->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/partes/' . $reportId);
+        $token    = $crawler->filter('form[action$="/observaciones"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/partes/' . $reportId . '/observaciones', [
+            '_token'        => $token,
+            'registered_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'text'          => '<p>Observación tras la notificación.</p>',
+        ]);
+
+        self::assertResponseRedirects('/partes/' . $reportId);
+
+        $this->em->clear();
+        self::assertCount(1, $this->em->getRepository(IncidentReportObservation::class)->findAll());
     }
 
     public function testEditPostSavesChanges(): void
@@ -1012,5 +1064,21 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->persist($report);
 
         return $report;
+    }
+
+    private function notifyReport(IncidentReport $report, EducationalCentre $centre, Teacher $teacher): void
+    {
+        $method = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $communication = Communication::forIncidentReport(
+            $report, $method, $teacher, new \DateTimeImmutable(), CommunicationResult::Notified,
+        );
+        $this->persist($method, $communication);
+
+        $report->setNotifiedCommunication($communication);
+        $this->flush();
     }
 }

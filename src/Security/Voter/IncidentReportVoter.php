@@ -65,7 +65,7 @@ final class IncidentReportVoter extends Voter
                                || $subject->getGroup()->getTutors()->contains($user)
                                || $centre->getCommitteeMembers()->contains($user)
                                || $centre->getCounselors()->contains($user),
-            self::EDIT      => $subject->getRegisteredBy() === $user,
+            self::EDIT      => !$subject->isNotified() && $subject->getRegisteredBy() === $user,
             self::NOTIFY    => match ($this->settings->getForCentre('notifications.report_notifier', $centre)) {
                 'report_teacher' => $subject->getRegisteredBy() === $user,
                 'group_tutor'    => $subject->getGroup()->getTutors()->contains($user),

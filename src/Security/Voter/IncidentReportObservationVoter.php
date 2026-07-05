@@ -44,7 +44,7 @@ final class IncidentReportObservationVoter extends Voter
             ->getEducationalCentre();
 
         if ($centre->getAdmins()->contains($user)) {
-            return self::DELETE === $attribute;
+            return true;
         }
 
         if ($subject->getRegisteredBy() !== $user) {

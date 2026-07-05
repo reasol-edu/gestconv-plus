@@ -6,6 +6,9 @@ namespace App\Tests\Integration\Security\Voter;
 
 use App\Entity\AcademicYear;
 use App\Entity\CentreSettingValue;
+use App\Entity\Communication;
+use App\Entity\CommunicationMethod;
+use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -268,6 +271,45 @@ class IncidentReportVoterTest extends RepositoryTestCase
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
             $this->voter->vote($this->token($report->getRegisteredBy()), $report, [IncidentReportVoter::REASSIGN])
+        );
+    }
+
+    public function testCreatorIsDeniedEditOnceNotified(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('notified.creator');
+        $this->notifyReport($report, $centre, $creator);
+
+        self::assertSame(
+            VoterInterface::ACCESS_DENIED,
+            $this->voter->vote($this->token($creator), $report, [IncidentReportVoter::EDIT])
+        );
+    }
+
+    public function testGlobalAdminIsGrantedEditOnceNotified(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('notified.global');
+        $this->notifyReport($report, $centre, $creator);
+        $admin = $this->makeTeacher('global.admin.notified.edit', admin: true);
+        $this->persist($admin);
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($admin), $report, [IncidentReportVoter::EDIT])
+        );
+    }
+
+    public function testCentreAdminIsGrantedEditOnceNotified(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('notified.cadmin');
+        $this->notifyReport($report, $centre, $creator);
+        $cadmin = $this->makeTeacher('centre.admin.notified.edit');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        self::assertSame(
+            VoterInterface::ACCESS_GRANTED,
+            $this->voter->vote($this->token($cadmin), $report, [IncidentReportVoter::EDIT])
         );
     }
 
@@ -534,6 +576,22 @@ class IncidentReportVoterTest extends RepositoryTestCase
             ->setCentre($centre)
             ->setValue($value);
         $this->persist($centreValue);
+    }
+
+    private function notifyReport(IncidentReport $report, EducationalCentre $centre, Teacher $teacher): void
+    {
+        $method = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $communication = Communication::forIncidentReport(
+            $report, $method, $teacher, new \DateTimeImmutable(), CommunicationResult::Notified,
+        );
+        $this->persist($method, $communication);
+
+        $report->setNotifiedCommunication($communication);
+        $this->flush();
     }
 
     private function makeTeacher(string $username, bool $admin = false): Teacher
