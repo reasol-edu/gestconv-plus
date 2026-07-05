@@ -16,11 +16,18 @@ settings.no_settings_for_scope: 'No hay ajustes disponibles para este nivel.'
 settings.hub.help: 'Personaliza los ajustes predeterminados para los docentes del centro.'
 settings.hub.manage: 'Configurar'
 
+# ── Categorías de ajustes ────────────────────────────────────────────────────
+settings.category.display.label: 'Visualización'
+settings.category.email.label: 'Correo electrónico'
+settings.category.board.label: 'Modo tablón'
+settings.category.notifications.label: 'Notificaciones a familias'
+settings.category.email_alerts.label: 'Avisos por correo'
+
 # ── Definiciones de ajustes ───────────────────────────────────────────────────
 settings.key.page_size.label: 'Resultados por página'
 settings.key.page_size.description: 'Número de elementos que se muestran en los listados.'
 
-settings.key.email_notifications.label: 'Notificaciones por email'
+settings.key.email_notifications.label: 'Activar notificaciones automáticas'
 settings.key.email_notifications.description: 'Activa o desactiva todos los correos automáticos de la aplicación.'
 
 settings.key.email_notification_tutor_assigned.label: 'Email al asignar tutoría docente'
@@ -35,11 +42,11 @@ settings.key.email_notification_signature_reminder.description: 'Recuerda a quie
 settings.key.email_notification_signature_reminder_days.label: 'Días de antelación del recordatorio de firma'
 settings.key.email_notification_signature_reminder_days.description: 'Días antes del inicio de la estancia a partir de los cuales se empieza a enviar el recordatorio diario de los puestos registrados sin firmar.'
 
-settings.key.board_current_week_seconds.label: 'Duración de la semana actual (modo tablón)'
-settings.key.board_current_week_seconds.description: 'Segundos que se muestra la semana actual en el modo tablón antes de pasar a la semana siguiente (0-3600). Un valor de 0 en este ajuste o en "Duración de la semana siguiente" desactiva la visualización de la semana siguiente.'
+settings.key.board_current_week_seconds.label: 'Duración de la semana actual'
+settings.key.board_current_week_seconds.description: 'Segundos que se muestra la semana actual antes de pasar a la semana siguiente (0-3600). Un valor de 0 en este ajuste o en "Duración de la semana siguiente" desactiva la visualización de la semana siguiente.'
 
-settings.key.board_next_week_seconds.label: 'Duración de la semana siguiente (modo tablón)'
-settings.key.board_next_week_seconds.description: 'Segundos que se muestra la semana siguiente en el modo tablón antes de volver a la semana actual (0-3600). Un valor de 0 en este ajuste o en "Duración de la semana actual" desactiva la visualización de la semana siguiente.'
+settings.key.board_next_week_seconds.label: 'Duración de la semana siguiente'
+settings.key.board_next_week_seconds.description: 'Segundos que se muestra la semana siguiente antes de volver a la semana actual (0-3600). Un valor de 0 en este ajuste o en "Duración de la semana actual" desactiva la visualización de la semana siguiente.'
 
 settings.key.notifications_report_notifier.label: 'Quién notifica los partes de convivencia'
 settings.key.notifications_report_notifier.description: 'Determina qué docentes pueden registrar la comunicación con la familia de un parte, además de la administración.'

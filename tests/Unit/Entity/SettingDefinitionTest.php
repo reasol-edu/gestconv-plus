@@ -209,6 +209,28 @@ class SettingDefinitionTest extends TestCase
         self::assertSame(100, $def->getMaxValue());
     }
 
+    // ── category / categoryOrder / position ───────────────────────────────────
+
+    public function testCategoryCategoryOrderAndPositionDefaultToEmpty(): void
+    {
+        $def = (new SettingDefinition())->setKey('k')->setType(SettingType::Integer)->setDefaultValue('0');
+
+        self::assertSame('', $def->getCategory());
+        self::assertSame(0, $def->getCategoryOrder());
+        self::assertSame(0, $def->getPosition());
+    }
+
+    public function testSetCategoryCategoryOrderAndPositionStoresValues(): void
+    {
+        $def = (new SettingDefinition())
+            ->setKey('k')->setType(SettingType::Integer)->setDefaultValue('0')
+            ->setCategory('settings.category.board')->setCategoryOrder(30)->setPosition(10);
+
+        self::assertSame('settings.category.board', $def->getCategory());
+        self::assertSame(30, $def->getCategoryOrder());
+        self::assertSame(10, $def->getPosition());
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function makeIntDef(?int $min, ?int $max): SettingDefinition

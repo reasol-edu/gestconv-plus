@@ -97,8 +97,8 @@ Comprueba que el docente:
 1. Comprueba que `MAILER_DSN` está configurado con un transporte real (por defecto es
    `null://null`, que descarta todos los correos silenciosamente sin dar ningún error — ver
    [Notificaciones por email](06-notificaciones-y-email.md)).
-2. Comprueba que el ajuste **Notificaciones por email** no está desactivado a nivel global, de
-   centro o de docente (ver [Ajustes](07-ajustes.md#notificaciones-por-email)).
+2. Comprueba que el ajuste **Activar notificaciones automáticas** no está desactivado a nivel global, de
+   centro o de docente (ver [Ajustes](07-ajustes.md#correo-electronico)).
 3. Salvo el correo de restablecimiento de contraseña (que se envía al momento), los correos se
    **encolan** y los procesa un *worker* en segundo plano. Comprueba que el worker está en marcha
    (el contenedor `worker` en Docker, o el proceso que lanzan los scripts de arranque del binario

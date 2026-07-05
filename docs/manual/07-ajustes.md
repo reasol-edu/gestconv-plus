@@ -25,7 +25,11 @@ inferiores.
 
 ## Ajustes disponibles
 
-### Resultados por página
+La pantalla de ajustes agrupa cada uno en una de las siguientes categorías, mostradas en este
+mismo orden: Visualización, Correo electrónico, Modo tablón, Notificaciones a familias y Avisos
+por correo.
+
+### Visualización
 
 | Ajuste | Ámbito | Tipo | Rango | Por defecto |
 |---|---|---|---|---|
@@ -35,11 +39,11 @@ Número de elementos que se muestran en los listados paginados (partes, sancione
 etc.). Es un ajuste exclusivamente personal: cada docente puede configurar el suyo desde su propio
 perfil, y no admite valor global ni de centro.
 
-### Notificaciones por email
+### Correo electrónico
 
 | Ajuste | Ámbito | Tipo | Por defecto |
 |---|---|---|---|
-| Notificaciones por email | Global, centro, docente | Booleano (sí/no) | Activado |
+| Activar notificaciones automáticas | Global, centro, docente | Booleano (sí/no) | Activado |
 
 Activa o desactiva todos los correos automáticos de la aplicación (ver
 [Notificaciones por email](06-notificaciones-y-email.md)). Es el único ajuste con los tres ámbitos
@@ -58,7 +62,7 @@ del calendario antes de alternar a la otra. Si cualquiera de los dos vale 0, el 
 alternar y muestra solo la semana actual. No tienen ámbito de docente: se fijan a nivel global o de
 centro únicamente.
 
-### Notificaciones
+### Notificaciones a familias
 
 | Ajuste | Ámbito | Opciones | Por defecto |
 |---|---|---|---|

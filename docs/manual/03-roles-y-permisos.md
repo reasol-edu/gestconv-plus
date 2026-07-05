@@ -62,7 +62,7 @@ Solo la comisión de convivencia tiene los mismos permisos que un administrador 
 
 ### Notificaciones a las familias
 
-Registrar una comunicación con la familia (ver [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones)) está controlado por dos ajustes de centro — *Quién notifica los partes* y *Quién notifica las sanciones* — que admiten tres valores: **el docente que registró** el parte o la sanción, **el tutor/a del grupo**, o **ambos** (valor por defecto). Consulta [Ajustes](07-ajustes.md#notificaciones).
+Registrar una comunicación con la familia (ver [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones)) está controlado por dos ajustes de centro — *Quién notifica los partes* y *Quién notifica las sanciones* — que admiten tres valores: **el docente que registró** el parte o la sanción, **el tutor/a del grupo**, o **ambos** (valor por defecto). Consulta [Ajustes](07-ajustes.md#notificaciones-a-familias).
 
 | Acción | Docente autor | Tutor del grupo | Comisión | Orientador/a | Admin de centro | Admin global |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|

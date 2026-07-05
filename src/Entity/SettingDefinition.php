@@ -45,6 +45,15 @@ class SettingDefinition
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $choices = null;
 
+    #[ORM\Column(length: 100)]
+    private string $category = '';
+
+    #[ORM\Column]
+    private int $categoryOrder = 0;
+
+    #[ORM\Column]
+    private int $position = 0;
+
     public function getId(): Uuid
     {
         return $this->id;
@@ -154,6 +163,42 @@ class SettingDefinition
     public function setChoices(?string $choices): static
     {
         $this->choices = $choices;
+
+        return $this;
+    }
+
+    public function getCategory(): string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(string $category): static
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    public function getCategoryOrder(): int
+    {
+        return $this->categoryOrder;
+    }
+
+    public function setCategoryOrder(int $categoryOrder): static
+    {
+        $this->categoryOrder = $categoryOrder;
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): static
+    {
+        $this->position = $position;
 
         return $this;
     }

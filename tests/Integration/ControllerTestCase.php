@@ -49,18 +49,18 @@ abstract class ControllerTestCase extends WebTestCase
 
     private function seedDefaultSettings(): void
     {
-        // [key, type, default, globalScope, centreScope, teacherScope, minValue, maxValue]
+        // [key, type, default, globalScope, centreScope, teacherScope, minValue, maxValue, category, categoryOrder, position]
         $defs = [
-            ['page.size',                             SettingType::Integer, '20',   false, false, true,  5,    100],
-            ['email.notifications',                   SettingType::Boolean, 'true', true,  true,  true,  null, null],
-            ['email.notification.tutor_assigned',     SettingType::Boolean, 'true', true,  true,  true,  null, null],
-            ['email.notification.positions_created',  SettingType::Boolean, 'true', true,  true,  true,  null, null],
-            ['email.notification.signature_reminder', SettingType::Boolean, 'true', true,  true,  true,  null, null],
-            ['board.current_week_seconds',             SettingType::Integer, '15',   true,  true,  false, 0,    3600],
-            ['board.next_week_seconds',                SettingType::Integer, '5',    true,  true,  false, 0,    3600],
+            ['page.size',                             SettingType::Integer, '20',   false, false, true,  5,    100,  'settings.category.display', 10, 10],
+            ['email.notifications',                   SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 10],
+            ['email.notification.tutor_assigned',     SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 20],
+            ['email.notification.positions_created',  SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 30],
+            ['email.notification.signature_reminder', SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 40],
+            ['board.current_week_seconds',             SettingType::Integer, '15',   true,  true,  false, 0,    3600, 'settings.category.board',   30, 10],
+            ['board.next_week_seconds',                SettingType::Integer, '5',    true,  true,  false, 0,    3600, 'settings.category.board',   30, 20],
         ];
 
-        foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max]) {
+        foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max, $category, $categoryOrder, $position]) {
             $def = (new SettingDefinition())
                 ->setKey($key)
                 ->setType($type)
@@ -69,7 +69,10 @@ abstract class ControllerTestCase extends WebTestCase
                 ->setCentreScope($centre)
                 ->setTeacherScope($teacher)
                 ->setMinValue($min)
-                ->setMaxValue($max);
+                ->setMaxValue($max)
+                ->setCategory($category)
+                ->setCategoryOrder($categoryOrder)
+                ->setPosition($position);
             $this->em->persist($def);
         }
 

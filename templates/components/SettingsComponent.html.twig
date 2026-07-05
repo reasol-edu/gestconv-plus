@@ -8,7 +8,7 @@
             <p class="text-sm text-gray-500">{{ 'settings.no_settings_for_scope'|trans({}, 'settings') }}</p>
         </div>
     {% else %}
-        <ul class="divide-y divide-gray-100">
+        {% set currentCategory = null %}
         {% for row in rows %}
             {% set def        = row.definition %}
             {% set key        = def.key %}
@@ -21,6 +21,19 @@
             {% set parentLock   = row.parentLock %}
             {# Cuando hay candado padre, el control muestra el valor heredado de arriba #}
             {% set displayValue = parentLock is not null ? effective : stored %}
+
+            {% if def.category != currentCategory %}
+                {% if currentCategory is not null %}
+                        </ul>
+                    </section>
+                {% endif %}
+                {% set currentCategory = def.category %}
+                <section class="{{ loop.first ? '' : 'border-t border-gray-100' }}">
+                    <h3 class="px-6 pt-5 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                        {{ (def.category ~ '.label')|trans({}, 'settings') }}
+                    </h3>
+                    <ul class="divide-y divide-gray-100">
+            {% endif %}
 
             <li class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:gap-6
                         {{ parentLock is not null ? 'opacity-60' : '' }}">
@@ -173,7 +186,8 @@
                 </div>
             </li>
         {% endfor %}
-        </ul>
+                </ul>
+            </section>
     {% endif %}
 
 </div>

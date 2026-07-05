@@ -100,7 +100,25 @@ class SettingDefinitionRepositoryTest extends RepositoryTestCase
         $this->repo->findByScope('unknown');
     }
 
-    public function testFindByScopeReturnsOrderedByKey(): void
+    public function testFindByScopeOrdersByCategoryOrderThenPosition(): void
+    {
+        $this->persist(
+            $this->makeDefinition('z.setting', SettingType::Boolean, 'true', global: true)
+                ->setCategoryOrder(20)->setPosition(10),
+            $this->makeDefinition('a.setting', SettingType::Boolean, 'false', global: true)
+                ->setCategoryOrder(10)->setPosition(20),
+            $this->makeDefinition('b.setting', SettingType::Boolean, 'false', global: true)
+                ->setCategoryOrder(10)->setPosition(10),
+        );
+
+        $result = $this->repo->findByScope('global');
+
+        self::assertSame('b.setting', $result[0]->getKey());
+        self::assertSame('a.setting', $result[1]->getKey());
+        self::assertSame('z.setting', $result[2]->getKey());
+    }
+
+    public function testFindByScopeOrdersByKeyWhenCategoryAndPositionTie(): void
     {
         $this->persist(
             $this->makeDefinition('z.setting', SettingType::Boolean, 'true', global: true),
