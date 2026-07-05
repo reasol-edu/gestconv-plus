@@ -12,6 +12,7 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -317,7 +318,28 @@ class IncidentReportRepository extends ServiceEntityRepository
      */
     public function findPendingNotification(EducationalCentre $centre, Teacher $viewer): array
     {
+        /** @var list<IncidentReport> $result */
+        $result = $this->buildPendingQueryBuilder($centre, $viewer)->getQuery()->getResult();
+
+        return $result;
+    }
+
+    /**
+     * Pageable version of {@see findPendingNotification()}, for the paginated "Notificaciones
+     * pendientes" list.
+     *
+     * @return Query<null, IncidentReport>
+     */
+    public function createPendingQuery(EducationalCentre $centre, Teacher $viewer): Query
+    {
+        return $this->buildPendingQueryBuilder($centre, $viewer)->getQuery();
+    }
+
+    private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer): QueryBuilder
+    {
         $qb = $this->createQueryBuilder('r')
+            ->addSelect('s', 'g')
+            ->join('r.student', 's')
             ->join('r.group', 'g')
             ->join('g.programmeYear', 'py')
             ->join('py.programme', 'prog')
@@ -339,10 +361,127 @@ class IncidentReportRepository extends ServiceEntityRepository
             )->setParameter('viewer', $viewer->getId(), 'uuid');
         }
 
-        /** @var list<IncidentReport> $result */
-        $result = $qb->getQuery()->getResult();
+        return $qb;
+    }
 
-        return $result;
+    /**
+     * Builds a pageable query for non-notified reports the viewer is actually authorised to
+     * notify, mirroring IncidentReportVoter::NOTIFY (stricter than the plain view-based
+     * visibility of {@see findPendingNotification()}): committee members and counselors are
+     * NOT granted notify rights just by their role, only admins, the report's registrant or
+     * the group's tutor(s), depending on the centre's "notifications.report_notifier" setting.
+     *
+     * @param 'report_teacher'|'group_tutor'|'both'|string $notifierSetting
+     * @return Query<null, IncidentReport>
+     */
+    public function createNotifiableQuery(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        string $notifierSetting,
+        ?Student $student = null,
+    ): Query {
+        $qb = $this->buildNotifiableQueryBuilder($centre, $viewer, $notifierSetting)
+            ->orderBy('r.occurredAt', 'ASC');
+
+        if ($student !== null) {
+            $qb->andWhere('r.student = :student')
+               ->setParameter('student', $student->getId(), 'uuid');
+        }
+
+        return $qb->getQuery();
+    }
+
+    /**
+     * Students with at least one pending report the viewer is authorised to notify, with their
+     * pending count, ordered by count descending then student name ascending.
+     *
+     * Rooted at Student (rather than reusing {@see buildNotifiableQueryBuilder()} directly)
+     * because Doctrine DQL forbids selecting a joined entity as a full object without also
+     * selecting the root entity alias.
+     *
+     * @param 'report_teacher'|'group_tutor'|'both'|string $notifierSetting
+     * @return list<array{student: Student, count: int}>
+     */
+    public function findNotifiableSummaryByStudent(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        string $notifierSetting,
+    ): array {
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->select('st', 'COUNT(r.id) AS reportCount')
+            ->from(Student::class, 'st')
+            ->join(IncidentReport::class, 'r', 'WITH', 'r.student = st')
+            ->join('r.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('r.notifiedCommunication IS NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->groupBy('st.id')
+            ->orderBy('COUNT(r.id)', 'DESC')
+            ->addOrderBy('st.name.lastName', 'ASC')
+            ->addOrderBy('st.name.firstName', 'ASC');
+
+        $this->applyNotifiableRestriction($qb, $centre, $viewer, $notifierSetting);
+
+        /** @var list<array{0: Student, reportCount: int|string}> $rows */
+        $rows = $qb->getQuery()->getResult();
+
+        return array_map(
+            static fn (array $row): array => ['student' => $row[0], 'count' => (int) $row['reportCount']],
+            $rows,
+        );
+    }
+
+    /**
+     * @param 'report_teacher'|'group_tutor'|'both'|string $notifierSetting
+     */
+    private function buildNotifiableQueryBuilder(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        string $notifierSetting,
+    ): QueryBuilder {
+        $qb = $this->createQueryBuilder('r')
+            ->join('r.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('r.notifiedCommunication IS NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid');
+
+        $this->applyNotifiableRestriction($qb, $centre, $viewer, $notifierSetting);
+
+        return $qb;
+    }
+
+    /**
+     * Applies the IncidentReportVoter::NOTIFY restriction to a query builder that already has
+     * 'r' (IncidentReport) and 'g' (Group) aliases joined, regardless of which entity is the
+     * DQL root.
+     *
+     * @param 'report_teacher'|'group_tutor'|'both'|string $notifierSetting
+     */
+    private function applyNotifiableRestriction(
+        QueryBuilder $qb,
+        EducationalCentre $centre,
+        Teacher $viewer,
+        string $notifierSetting,
+    ): void {
+        if ($viewer->isAdmin() || $centre->getAdmins()->contains($viewer)) {
+            return;
+        }
+
+        match ($notifierSetting) {
+            'report_teacher' => $qb->andWhere('r.registeredBy = :viewer')
+                ->setParameter('viewer', $viewer->getId(), 'uuid'),
+            'group_tutor' => $qb->andWhere(':viewer MEMBER OF g.tutors')
+                ->setParameter('viewer', $viewer->getId(), 'uuid'),
+            default => $qb->andWhere(
+                $qb->expr()->orX('r.registeredBy = :viewer', ':viewer MEMBER OF g.tutors')
+            )->setParameter('viewer', $viewer->getId(), 'uuid'),
+        };
     }
 
     public function findById(string $id): ?IncidentReport

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Communication;
+use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\IncidentReport;
@@ -12,10 +13,13 @@ use App\Entity\Sanction;
 use App\Entity\Teacher;
 use App\Repository\CommunicationMethodRepository;
 use App\Repository\CommunicationRepository;
+use App\Repository\IncidentReportObservationRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
+use App\Repository\StudentRepository;
 use App\Security\Voter\IncidentReportVoter;
 use App\Security\Voter\SanctionVoter;
+use App\Service\AppSettingsInterface;
 use App\Service\StudentContactVisibility;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,9 +36,12 @@ class NotificationController extends AbstractController
         private readonly TenantContext $tenantContext,
         private readonly EntityManagerInterface $em,
         private readonly IncidentReportRepository $reports,
+        private readonly IncidentReportObservationRepository $observations,
         private readonly SanctionRepository $sanctions,
         private readonly CommunicationRepository $communications,
         private readonly CommunicationMethodRepository $methods,
+        private readonly StudentRepository $students,
+        private readonly AppSettingsInterface $settings,
         private readonly StudentContactVisibility $contactVisibility,
         private readonly TranslatorInterface $translator,
     ) {}
@@ -55,10 +62,8 @@ class NotificationController extends AbstractController
         $tab = $request->query->getString('tab', 'pending') === 'history' ? 'history' : 'pending';
 
         return $this->render('notification/index.html.twig', [
-            'centre'    => $centre,
-            'tab'       => $tab,
-            'reports'   => $tab === 'pending' ? $this->reports->findPendingNotification($centre, $user) : [],
-            'sanctions' => $tab === 'pending' ? $this->sanctions->findPendingNotification($centre, $user) : [],
+            'centre' => $centre,
+            'tab'    => $tab,
         ]);
     }
 
@@ -94,6 +99,7 @@ class NotificationController extends AbstractController
         return $this->render('notification/register_report.html.twig', [
             'centre'        => $centre,
             'report'        => $report,
+            'observations'  => $this->observations->findByIncidentReport($report),
             'history'       => $this->communications->findByIncidentReport($report),
             'methods'       => $this->methods->findActiveByCentreOrdered($centre),
             'canSeeContact' => $report->getRegisteredBy() === $user
@@ -140,7 +146,124 @@ class NotificationController extends AbstractController
         ]);
     }
 
+    #[Route('/partes/estudiante/{studentId}/registrar', name: 'app_notifications_register_student_reports', methods: ['GET', 'POST'])]
+    public function registerForStudentReports(string $studentId, Request $request): Response
+    {
+        $centre = $this->tenantContext->getSelectedCentre();
+        if ($centre === null) {
+            return $this->redirectToRoute('app_select_centre');
+        }
+
+        $student = $this->students->findById($studentId);
+        if ($student === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $user = $this->getUser();
+        if (!$user instanceof Teacher) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $notifierSetting = $this->reportNotifierSetting($centre);
+        $reports         = $this->reports->createNotifiableQuery($centre, $user, $notifierSetting, $student)->getResult();
+
+        if ($reports === []) {
+            $this->addFlash('error', $this->t('notification.flash.no_notifiable_reports'));
+
+            return $this->redirectToRoute('app_notifications_index');
+        }
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('register_student_reports_' . $studentId, $request->request->getString('_token'))) {
+                throw $this->createAccessDeniedException();
+            }
+
+            /** @var array<string, IncidentReport> $permittedById */
+            $permittedById = [];
+            foreach ($reports as $report) {
+                $permittedById[$report->getId()->toRfc4122()] = $report;
+            }
+
+            $selected = [];
+            foreach ($request->request->all('report_ids') as $id) {
+                if (is_string($id) && isset($permittedById[$id])) {
+                    $selected[] = $permittedById[$id];
+                }
+            }
+
+            $input = $selected !== [] ? $this->parseCommunicationInput($centre, $request) : null;
+
+            if ($selected === [] || $input === null) {
+                $this->addFlash('error', $this->t('notification.flash.invalid'));
+
+                return $this->redirectToRoute('app_notifications_register_student_reports', ['studentId' => $studentId]);
+            }
+
+            foreach ($selected as $report) {
+                $communication = Communication::forIncidentReport(
+                    $report,
+                    $input['method'],
+                    $user,
+                    $input['performedAt'],
+                    $input['result'],
+                    $input['description'],
+                );
+                $this->em->persist($communication);
+
+                if ($input['result'] === CommunicationResult::Notified && !$report->isNotified()) {
+                    $report->setNotifiedCommunication($communication);
+                }
+            }
+
+            $this->em->flush();
+
+            $this->addFlash('success', $this->t('notification.flash.registered'));
+
+            return $this->redirectToRoute('app_notifications_index');
+        }
+
+        return $this->render('notification/register_student_reports.html.twig', [
+            'centre'               => $centre,
+            'student'              => $student,
+            'reports'              => $reports,
+            'observationsByReport' => $this->observations->findByIncidentReports($reports),
+            'methods'              => $this->methods->findActiveByCentreOrdered($centre),
+        ]);
+    }
+
+    private function reportNotifierSetting(EducationalCentre $centre): string
+    {
+        $setting = $this->settings->getForCentre('notifications.report_notifier', $centre);
+
+        return is_string($setting) ? $setting : 'both';
+    }
+
     private function registerCommunication(IncidentReport|Sanction $target, EducationalCentre $centre, Teacher $user, Request $request): bool
+    {
+        $input = $this->parseCommunicationInput($centre, $request);
+        if ($input === null) {
+            return false;
+        }
+
+        $communication = $target instanceof IncidentReport
+            ? Communication::forIncidentReport($target, $input['method'], $user, $input['performedAt'], $input['result'], $input['description'])
+            : Communication::forSanction($target, $input['method'], $user, $input['performedAt'], $input['result'], $input['description']);
+
+        $this->em->persist($communication);
+
+        if ($input['result'] === CommunicationResult::Notified && !$target->isNotified()) {
+            $target->setNotifiedCommunication($communication);
+        }
+
+        $this->em->flush();
+
+        return true;
+    }
+
+    /**
+     * @return array{method: \App\Entity\CommunicationMethod, performedAt: \DateTimeImmutable, result: CommunicationResult, description: ?string}|null
+     */
+    private function parseCommunicationInput(EducationalCentre $centre, Request $request): ?array
     {
         $methodId       = $request->request->getString('method_id');
         $performedAtRaw = trim($request->request->getString('performed_at'));
@@ -149,28 +272,21 @@ class NotificationController extends AbstractController
 
         $method = $methodId !== '' ? $this->methods->findById($methodId) : null;
         if ($method === null || $method->getEducationalCentre() !== $centre || $performedAtRaw === '' || $result === null) {
-            return false;
+            return null;
         }
 
         try {
             $performedAt = new \DateTimeImmutable($performedAtRaw);
         } catch (\Exception) {
-            return false;
+            return null;
         }
 
-        $communication = $target instanceof IncidentReport
-            ? Communication::forIncidentReport($target, $method, $user, $performedAt, $result, $description !== '' ? $description : null)
-            : Communication::forSanction($target, $method, $user, $performedAt, $result, $description !== '' ? $description : null);
-
-        $this->em->persist($communication);
-
-        if ($result === CommunicationResult::Notified && !$target->isNotified()) {
-            $target->setNotifiedCommunication($communication);
-        }
-
-        $this->em->flush();
-
-        return true;
+        return [
+            'method'      => $method,
+            'performedAt' => $performedAt,
+            'result'      => $result,
+            'description' => $description !== '' ? $description : null,
+        ];
     }
 
     private function centreFor(IncidentReport|Sanction $target): EducationalCentre

@@ -432,6 +432,27 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame($own->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
+    // ── createPendingQuery ────────────────────────────────────────────────────
+
+    public function testCreatePendingQueryMatchesFindPendingNotification(): void
+    {
+        $world   = $this->makeWorld();
+        $tutor   = $this->makeTeacher('pending.query.tutor');
+        $creator = $this->makeTeacher('pending.query.creator');
+        $this->persist($tutor, $creator);
+        $world['group']->addTutor($tutor);
+        $this->flush();
+        $pending = $this->makeUnnotifiedSanctionWithReport($world, $creator);
+        $this->makeSanctionWithReport($world, $creator);
+
+        $expected = $this->repo->findPendingNotification($world['centre'], $tutor);
+        $actual   = $this->repo->createPendingQuery($world['centre'], $tutor)->getResult();
+
+        self::assertCount(1, $actual);
+        self::assertCount(count($expected), $actual);
+        self::assertSame($pending->getId()->toRfc4122(), $actual[0]->getId()->toRfc4122());
+    }
+
     // ── findStudentStatsForCentre ────────────────────────────────────────────
 
     public function testFindStudentStatsReturnsEmptyWhenNoCentreActiveYear(): void

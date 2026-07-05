@@ -35,6 +35,36 @@ class IncidentReportObservationRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /**
+     * Observations for all given reports, grouped by report UUID (RFC4122). Single query; avoids N+1.
+     *
+     * @param  IncidentReport[] $reports
+     * @return array<string, list<IncidentReportObservation>>
+     */
+    public function findByIncidentReports(array $reports): array
+    {
+        if ($reports === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('o')
+            ->where('o.incidentReport IN (:reports)')
+            ->setParameter('reports', $reports)
+            ->orderBy('o.registeredAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($reports as $report) {
+            $map[$report->getId()->toRfc4122()] = [];
+        }
+        foreach ($rows as $row) {
+            $map[$row->getIncidentReport()->getId()->toRfc4122()][] = $row;
+        }
+
+        return $map;
+    }
+
     public function findById(string $id): ?IncidentReportObservation
     {
         $result = $this->createQueryBuilder('o')

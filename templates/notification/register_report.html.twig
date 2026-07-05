@@ -34,6 +34,17 @@
 
     {% include 'student/_contact.html.twig' with { student: report.student, canSeeContact: canSeeContact } %}
 
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs divide-y divide-gray-100">
+        {% include 'notification/_report_detail.html.twig' with { report: report } %}
+    </div>
+
+    {% if observations is not empty %}
+        <div>
+            <h2 class="text-base font-semibold text-gray-900 mb-3">{{ 'incident.observation.title'|trans({}, 'admin') }}</h2>
+            {% include 'incident/_observation_list.html.twig' with { observations: observations } %}
+        </div>
+    {% endif %}
+
     {% if methods is empty %}
         <div class="rounded-xl px-4 py-3 text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200">
             {{ 'notification.form.no_methods'|trans({}, 'notifications') }}

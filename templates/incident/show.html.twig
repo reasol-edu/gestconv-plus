@@ -80,62 +80,7 @@
             </div>
         </div>
 
-        {# Behaviors #}
-        <div class="px-6 py-4">
-            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'incident.col.behaviors'|trans({}, 'admin') }}</p>
-            <div class="flex flex-wrap gap-2">
-                {% for beh in report.behaviors %}
-                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                 {{ beh.serious ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700' }}">
-                        {% if beh.serious %}{{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3 w-3 mr-1'}) }}{% endif %}
-                        {{ beh.name }}
-                    </span>
-                {% else %}
-                    <span class="text-xs text-gray-400">—</span>
-                {% endfor %}
-            </div>
-        </div>
-
-        {# Description #}
-        <div class="px-6 py-4">
-            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'incident.field.description'|trans({}, 'admin') }}</p>
-            <div class="prose prose-sm max-w-none text-gray-700">{{ report.description|sanitize_html('app.rich_text') }}</div>
-        </div>
-
-        {# Prescripción #}
-        {% if report.prescribed %}
-            <div class="px-6 py-4 flex items-center gap-3">
-                <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-medium">
-                    {{ ux_icon('heroicons:shield-check', {class: 'h-3 w-3 mr-1'}) }}
-                    {{ 'incident.badge.prescribed'|trans({}, 'admin') }}
-                </span>
-                <span class="text-sm text-gray-500">{{ report.prescribedAt|date('d/m/Y') }}</span>
-            </div>
-        {% endif %}
-
-        {# Expulsion #}
-        {% if report.expelledFromClass %}
-            <div class="px-6 py-4 space-y-3">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center rounded-full bg-orange-100 text-orange-700 px-2.5 py-0.5 text-xs font-medium">
-                        {{ ux_icon('heroicons:no-symbol', {class: 'h-3 w-3 mr-1'}) }}
-                        {{ 'incident.badge.expelled'|trans({}, 'admin') }}
-                    </span>
-                </div>
-                {% if report.assignedTasks %}
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.field.assigned_tasks'|trans({}, 'admin') }}</p>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ report.assignedTasks }}</p>
-                    </div>
-                {% endif %}
-                {% if report.tasksCompleted is not null %}
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.field.tasks_completed'|trans({}, 'admin') }}</p>
-                        <p class="text-sm text-gray-700">{{ ('incident.tasks_completed.' ~ report.tasksCompleted.value)|trans({}, 'admin') }}</p>
-                    </div>
-                {% endif %}
-            </div>
-        {% endif %}
+        {% include 'notification/_report_detail.html.twig' with { report: report } %}
 
     </div>
 

@@ -170,6 +170,8 @@ La sección **Notificaciones**, accesible desde el menú lateral con un centro s
 
 ![Cola de notificaciones pendientes](img/notificaciones/notificaciones-pendientes.png)
 
+Antes de las colas de partes y sanciones, la pestaña muestra un listado de **estudiantes con partes pendientes de notificar** (solo los que el docente puede notificar), con el número de partes de cada uno y ordenados de más a menos. Al pulsar **Notificar partes** en la fila de un estudiante se abre la pantalla de notificación masiva (ver *Notificar varios partes a la vez* más abajo). Este listado, igual que las colas de partes y sanciones pendientes, pagina.
+
 Mientras un parte no tenga registrada una comunicación exitosa con la familia, **no puede incorporarse a una sanción**. De la misma forma, una sanción sin comunicación exitosa **no aparece en el calendario ni en el modo tablón**, aunque tenga fechas de vigencia asignadas: a efectos de visualización, no entra en vigor hasta que se notifica.
 
 Cada elemento de la cola muestra su **antigüedad** (los días transcurridos desde que se registró), destacada en ámbar a partir de tres días y en rojo a partir de siete, para localizar de un vistazo los más atrasados.
@@ -183,6 +185,8 @@ Pulsa **Notificar** en la fila correspondiente para abrir el formulario de regis
 Si el docente tiene permiso para verlos, la pantalla muestra también los **datos de contacto** del alumno (tutores legales, teléfonos y observaciones) justo antes del formulario: los mismos que en la [ficha del alumno](#ficha-del-alumno) (equipo directivo, comisión de convivencia, orientación y tutores/as del grupo) y, además, siempre el propio docente que registró el parte o la sanción, para que pueda contactar con la familia aunque no sea tutor del grupo.
 
 ![Formulario de registro de comunicación](img/notificaciones/notificaciones-registrar-parte.png)
+
+Para un parte, la pantalla incluye también todo su detalle —conductas, descripción, prescripción y expulsión de clase si las tiene— y sus observaciones, para poder comunicar a la familia todo lo acontecido sin tener que consultar el parte por separado.
 
 1. **Método utilizado** — uno de los métodos de comunicación activos del centro (ver más abajo).
 2. **Fecha y hora** — por defecto el momento actual.
@@ -198,6 +202,12 @@ Cada intento de comunicación queda registrado en el **historial**, se marque o 
 El detalle de un parte o de una sanción muestra un indicador de estado (**Notificado** / **Pendiente de notificar**) enlazado a esta pantalla de registro.
 
 ![Indicador de notificado en el detalle de un parte](img/notificaciones/parte-badge-notificado.png)
+
+### Notificar varios partes a la vez
+
+Desde el listado de **estudiantes con partes pendientes de notificar**, la pantalla **Notificar partes** reúne todos los partes de ese estudiante que el docente puede notificar, cada uno con una casilla (marcadas todas por defecto) y sus detalles y observaciones desplegables. Hay que dejar marcado al menos un parte para poder continuar.
+
+Los datos de la comunicación (método, fecha y hora, resultado y observaciones) se rellenan una única vez y se aplican a todos los partes marcados: se crea una comunicación independiente por cada uno, igual que si se notificaran de uno en uno.
 
 ### Historial de notificaciones
 

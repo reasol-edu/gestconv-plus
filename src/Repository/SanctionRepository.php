@@ -14,6 +14,7 @@ use App\Entity\Teacher;
 use Symfony\Component\Uid\Uuid;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -280,7 +281,28 @@ class SanctionRepository extends ServiceEntityRepository
      */
     public function findPendingNotification(EducationalCentre $centre, Teacher $viewer): array
     {
+        /** @var list<Sanction> $result */
+        $result = $this->buildPendingQueryBuilder($centre, $viewer)->getQuery()->getResult();
+
+        return $result;
+    }
+
+    /**
+     * Pageable version of {@see findPendingNotification()}, for the paginated "Notificaciones
+     * pendientes" list.
+     *
+     * @return Query<null, Sanction>
+     */
+    public function createPendingQuery(EducationalCentre $centre, Teacher $viewer): Query
+    {
+        return $this->buildPendingQueryBuilder($centre, $viewer)->getQuery();
+    }
+
+    private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer): QueryBuilder
+    {
         $qb = $this->createQueryBuilder('s')
+            ->addSelect('st', 'g')
+            ->join('s.student', 'st')
             ->join('s.group', 'g')
             ->join('g.programmeYear', 'py')
             ->join('py.programme', 'prog')
@@ -305,10 +327,7 @@ class SanctionRepository extends ServiceEntityRepository
                ->setParameter('viewer', $viewer->getId(), 'uuid');
         }
 
-        /** @var list<Sanction> $result */
-        $result = $qb->getQuery()->getResult();
-
-        return $result;
+        return $qb;
     }
 
     /**

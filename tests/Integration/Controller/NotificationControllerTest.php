@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
@@ -13,10 +14,13 @@ use App\Entity\Group;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
+use App\Entity\IncidentReportObservation;
 use App\Entity\PersonName;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
 use App\Entity\Sanction;
+use App\Entity\SettingDefinition;
+use App\Entity\SettingType;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -182,6 +186,22 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'Datos de contacto');
         self::assertSelectorTextContains('body', 'María Tutora');
+    }
+
+    public function testRegisterForReportShowsReportDetailsAndObservations(): void
+    {
+        [$creator, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $creator, $behavior);
+        $this->persist($report);
+        $observation = new IncidentReportObservation($report, $creator, new \DateTimeImmutable(), '<p>Seguimiento inicial.</p>');
+        $this->persist($observation);
+        $this->loginAs($creator, $centre);
+
+        $this->client->request('GET', '/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', $behavior->getName());
+        self::assertSelectorTextContains('body', 'Seguimiento inicial.');
     }
 
     public function testRegisterForReportPostWithNotifiedResultSetsNotifiedCommunication(): void
@@ -367,7 +387,146 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertFalse($updated->isNotified());
     }
 
+    // ── registerForStudentReports (bulk notify) ─────────────────────────────
+
+    public function testRegisterForStudentReportsGetRedirectsWhenNoNotifiableReports(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/notificaciones/partes/estudiante/' . $student->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseRedirects('/notificaciones');
+    }
+
+    public function testRegisterForStudentReportsGetRendersChecklistWithAllReportsCheckedByDefault(): void
+    {
+        [$creator, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report1 = $this->makeReport($student, $group, $creator, $behavior);
+        $report2 = $this->makeReport($student, $group, $creator, $behavior);
+        $this->persist($report1, $report2);
+        $this->loginAs($creator, $centre);
+
+        $crawler = $this->client->request('GET', '/notificaciones/partes/estudiante/' . $student->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(2, $crawler->filter('input[name="report_ids[]"]'));
+        self::assertCount(2, $crawler->filter('input[name="report_ids[]"][checked]'));
+        self::assertSelectorTextContains('body', $behavior->getName());
+    }
+
+    public function testRegisterForStudentReportsPostRegistersAllSelectedReports(): void
+    {
+        [$creator, $centre, $group, $student, $behavior, $method] = $this->makeScenario();
+        $report1 = $this->makeReport($student, $group, $creator, $behavior);
+        $report2 = $this->makeReport($student, $group, $creator, $behavior);
+        $this->persist($report1, $report2);
+        $this->loginAs($creator, $centre);
+
+        $studentId = $student->getId()->toRfc4122();
+        $crawler   = $this->client->request('GET', '/notificaciones/partes/estudiante/' . $studentId . '/registrar');
+        $token     = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/notificaciones/partes/estudiante/' . $studentId . '/registrar', [
+            '_token'       => $token,
+            'report_ids'   => [$report1->getId()->toRfc4122(), $report2->getId()->toRfc4122()],
+            'method_id'    => $method->getId()->toRfc4122(),
+            'performed_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'result'       => 'notified',
+            'description'  => 'Llamada conjunta a la familia.',
+        ]);
+
+        self::assertResponseRedirects('/notificaciones');
+
+        $this->em->clear();
+        $updated1 = $this->em->find(IncidentReport::class, $report1->getId());
+        $updated2 = $this->em->find(IncidentReport::class, $report2->getId());
+        self::assertTrue($updated1->isNotified());
+        self::assertTrue($updated2->isNotified());
+    }
+
+    public function testRegisterForStudentReportsPostWithoutSelectionShowsError(): void
+    {
+        [$creator, $centre, $group, $student, $behavior, $method] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $creator, $behavior);
+        $this->persist($report);
+        $this->loginAs($creator, $centre);
+
+        $studentId = $student->getId()->toRfc4122();
+        $crawler   = $this->client->request('GET', '/notificaciones/partes/estudiante/' . $studentId . '/registrar');
+        $token     = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/notificaciones/partes/estudiante/' . $studentId . '/registrar', [
+            '_token'       => $token,
+            'method_id'    => $method->getId()->toRfc4122(),
+            'performed_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'result'       => 'notified',
+        ]);
+
+        self::assertResponseRedirects('/notificaciones/partes/estudiante/' . $studentId . '/registrar');
+
+        $this->em->clear();
+        $updated = $this->em->find(IncidentReport::class, $report->getId());
+        self::assertFalse($updated->isNotified());
+    }
+
+    public function testRegisterForStudentReportsPostIgnoresReportOutsideNotifierScope(): void
+    {
+        [$creator, $centre, $group, $student, $behavior, $method] = $this->makeScenario();
+        $this->setReportNotifierSetting($centre, 'report_teacher');
+
+        $viewer = $this->makeTeacher('viewer.bulk.scope');
+        $this->persist($viewer);
+
+        $ownReport   = $this->makeReport($student, $group, $viewer, $behavior);
+        $otherReport = $this->makeReport($student, $group, $creator, $behavior);
+        $this->persist($ownReport, $otherReport);
+        $this->loginAs($viewer, $centre);
+
+        $studentId = $student->getId()->toRfc4122();
+        $crawler   = $this->client->request('GET', '/notificaciones/partes/estudiante/' . $studentId . '/registrar');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('input[name="report_ids[]"]'));
+
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/notificaciones/partes/estudiante/' . $studentId . '/registrar', [
+            '_token'       => $token,
+            'report_ids'   => [$ownReport->getId()->toRfc4122(), $otherReport->getId()->toRfc4122()],
+            'method_id'    => $method->getId()->toRfc4122(),
+            'performed_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'result'       => 'notified',
+        ]);
+
+        self::assertResponseRedirects('/notificaciones');
+
+        $this->em->clear();
+        $updatedOwn   = $this->em->find(IncidentReport::class, $ownReport->getId());
+        $updatedOther = $this->em->find(IncidentReport::class, $otherReport->getId());
+        self::assertTrue($updatedOwn->isNotified());
+        self::assertFalse($updatedOther->isNotified());
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
+
+    private function setReportNotifierSetting(EducationalCentre $centre, string $value): void
+    {
+        $definition = (new SettingDefinition())
+            ->setKey('notifications.report_notifier')
+            ->setType(SettingType::Choice)
+            ->setDefaultValue('both')
+            ->setGlobalScope(true)
+            ->setCentreScope(true)
+            ->setChoices('report_teacher,group_tutor,both');
+        $this->persist($definition);
+
+        $centreValue = (new CentreSettingValue())
+            ->setDefinition($definition)
+            ->setCentre($centre)
+            ->setValue($value);
+        $this->persist($centreValue);
+    }
 
     /**
      * @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: Student, 4: IncidentBehavior, 5: CommunicationMethod}

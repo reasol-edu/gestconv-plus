@@ -1,0 +1,88 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'notification.register_student_reports.title'|trans({}, 'notifications') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            <a href="{{ path('app_notifications_index') }}" class="hover:text-forest-600 transition-colors">{{ 'notification.title'|trans({}, 'notifications') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'notification.register_student_reports.title'|trans({}, 'notifications') }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {{ student.name.lastName }}, {{ student.name.firstName }}
+        </h1>
+        <p class="mt-1 text-sm text-gray-500">
+            {{ 'notification.register_student_reports.count'|trans({'%count%': reports|length}, 'notifications') }}
+        </p>
+    </div>
+
+    <form method="post" action="{{ path('app_notifications_register_student_reports', {studentId: student.id}) }}"
+          data-controller="report-selection form-submit" class="space-y-6">
+        <input type="hidden" name="_token" value="{{ csrf_token('register_student_reports_' ~ student.id) }}">
+
+        <div data-report-selection-target="error" class="hidden rounded-xl px-4 py-3 text-sm font-medium bg-red-50 text-red-800 border border-red-200">
+            {{ 'notification.register_student_reports.select_error'|trans({}, 'notifications') }}
+        </div>
+
+        <div class="space-y-3">
+            {% for report in reports %}
+                <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5">
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" name="report_ids[]" value="{{ report.id.toRfc4122 }}" checked
+                               data-report-selection-target="checkbox"
+                               class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-gray-900">
+                                {{ 'notification.register_report.report_ref'|trans({'%number%': report.number}, 'notifications') }}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                {{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}
+                            </p>
+                            <details class="mt-3">
+                                <summary class="cursor-pointer text-xs font-semibold text-forest-700 hover:text-forest-900 select-none">
+                                    {{ 'notification.register_student_reports.details_toggle'|trans({}, 'notifications') }}
+                                </summary>
+                                <div class="mt-3 rounded-xl border border-gray-100 divide-y divide-gray-100">
+                                    {% include 'notification/_report_detail.html.twig' with { report: report } %}
+                                </div>
+                                {% set reportObservations = observationsByReport[report.id.toRfc4122] ?? [] %}
+                                {% if reportObservations is not empty %}
+                                    <div class="mt-3">
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'incident.observation.title'|trans({}, 'admin') }}</p>
+                                        {% include 'incident/_observation_list.html.twig' with { observations: reportObservations } %}
+                                    </div>
+                                {% endif %}
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if methods is not empty %}
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-5">
+                <h2 class="text-base font-semibold text-gray-900">{{ 'notification.form.title'|trans({}, 'notifications') }}</h2>
+                {% include 'notification/_communication_form_fields.html.twig' with { methods: methods } %}
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                                   hover:bg-forest-700 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                        {{ 'notification.register_student_reports.submit'|trans({}, 'notifications') }}
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    </form>
+
+    {% if methods is empty %}
+        <div class="rounded-xl px-4 py-3 text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200">
+            {{ 'notification.form.no_methods'|trans({}, 'notifications') }}
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
