@@ -20,10 +20,32 @@ MAILER_FROM=no-responder@tucentro.example.org
 
 Configura también `DEFAULT_URI` con la URL pública de la aplicación: es la que se usa para construir los enlaces incluidos en los correos.
 
-Con el correo activo, la aplicación envía actualmente dos tipos de mensaje, ambos transaccionales (no se pueden desactivar individualmente):
+Con el correo activo, la aplicación envía dos tipos de mensaje transaccionales, que no se pueden desactivar:
 
 - **Verificación de email**: cuando un docente añade o cambia su dirección en su perfil, recibe un enlace para confirmarla.
 - **Restablecimiento de contraseña**: enlace de un solo uso con caducidad de 1 hora, solicitado desde la pantalla de acceso.
+
+Además, envía los avisos sobre partes y sanciones descritos a continuación, que sí son configurables.
+
+## Avisos de partes y sanciones
+
+Cada evento relevante de un parte o una sanción puede generar un correo. A diferencia de los dos
+mensajes anteriores, estos avisos están **desactivados por defecto** y se activan uno a uno desde
+[Ajustes](07-ajustes.md#avisos-por-correo), a nivel global o de centro,
+eligiendo en cada caso si se notifica a nadie, al docente que registró el elemento, al tutor/a del
+grupo o a ambos:
+
+- **Parte registrado, notificado a la familia, modificado, eliminado, prescrito o incorporado a una
+  sanción**: seis avisos independientes, uno por evento. El de «modificado» cubre cualquier edición
+  del parte salvo marcarlo como prescrito, que tiene su propio aviso.
+- **Sanción notificada a la familia**: se avisa al docente que registró cada uno de los partes
+  incorporados a la sanción y/o al tutor/a del grupo.
+- **Parte sancionable**: cuando un parte queda notificado a la familia y todavía no está prescrito
+  ni incorporado a una sanción, puede avisarse a todos los docentes con el perfil de comisión de
+  convivencia del centro.
+
+Cada correo enlaza directamente al parte o la sanción correspondiente (salvo el de eliminación, ya
+que el elemento deja de existir) e incluye el nombre de quien realizó la acción.
 
 ### Usar una cuenta de Gmail
 

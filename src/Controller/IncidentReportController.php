@@ -18,6 +18,7 @@ use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Security\Voter\IncidentReportObservationVoter;
 use App\Security\Voter\IncidentReportVoter;
+use App\Service\IncidentEmailNotifier;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,6 +41,7 @@ class IncidentReportController extends AbstractController
         private readonly TeacherRepository $teachers,
         private readonly CommunicationRepository $communications,
         private readonly IncidentReportObservationRepository $observations,
+        private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -234,6 +236,10 @@ class IncidentReportController extends AbstractController
                     $this->addFlash('error', $this->t('incident.error.no_students'));
 
                     return $this->redirectToRoute('app_incidents_new');
+                }
+
+                foreach ($createdReports as $createdReport) {
+                    $this->notifier->reportCreated($createdReport, $user);
                 }
 
                 return $this->redirectToRoute('app_incidents_created', [
@@ -512,6 +518,9 @@ class IncidentReportController extends AbstractController
 
         $this->denyAccessUnlessGranted(IncidentReportVoter::EDIT, $report);
 
+        $user = $this->getUser();
+        \assert($user instanceof Teacher);
+
         $behaviorsByCategory = $this->groupBehaviorsByCategory($this->behaviors->findByCentreActive($centre));
         $errors              = [];
 
@@ -578,6 +587,8 @@ class IncidentReportController extends AbstractController
             }
 
             if (empty($errors)) {
+                $wasPrescribed = $report->isPrescribed();
+
                 if ($occurredAt !== null) {
                     $report->setOccurredAt($occurredAt);
                 }
@@ -619,6 +630,12 @@ class IncidentReportController extends AbstractController
 
                 $this->em->flush();
 
+                if (!$wasPrescribed && $report->isPrescribed()) {
+                    $this->notifier->reportPrescribed($report, $user);
+                } else {
+                    $this->notifier->reportModified($report, $user);
+                }
+
                 $this->addFlash('success', $this->t('incident.flash.updated'));
 
                 return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
@@ -646,6 +663,11 @@ class IncidentReportController extends AbstractController
         if (!$this->isCsrfTokenValid('delete_incident_' . $id, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
         }
+
+        $user = $this->getUser();
+        \assert($user instanceof Teacher);
+
+        $this->notifier->reportDeleted($report, $user);
 
         $this->em->remove($report);
         $this->em->flush();

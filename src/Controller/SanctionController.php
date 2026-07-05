@@ -14,6 +14,7 @@ use App\Repository\SanctionMeasureRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\StudentRepository;
 use App\Security\Voter\SanctionVoter;
+use App\Service\IncidentEmailNotifier;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,6 +35,7 @@ class SanctionController extends AbstractController
         private readonly StudentRepository $students,
         private readonly GroupRepository $groups,
         private readonly CommunicationRepository $communications,
+        private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -183,6 +185,8 @@ class SanctionController extends AbstractController
                     $this->em->persist($sanction);
 
                     // Link selected reports to this sanction
+                    /** @var list<IncidentReport> $linkedReports */
+                    $linkedReports = [];
                     foreach ($reportIds as $rid) {
                         if (!is_string($rid)) {
                             continue;
@@ -196,9 +200,14 @@ class SanctionController extends AbstractController
                             continue;
                         }
                         $report->setSanction($sanction);
+                        $linkedReports[] = $report;
                     }
 
                     $this->em->flush();
+
+                    foreach ($linkedReports as $linkedReport) {
+                        $this->notifier->reportSanctioned($linkedReport, $user);
+                    }
 
                     $this->addFlash('success', $this->t('sanction.flash.created'));
 
@@ -278,6 +287,9 @@ class SanctionController extends AbstractController
 
         $this->denyAccessUnlessGranted(SanctionVoter::EDIT, $sanction);
 
+        $user = $this->getUser();
+        \assert($user instanceof Teacher);
+
         $measuresByCategory = $this->groupMeasuresByCategory(
             $this->measures->findByCentreActive($centre)
         );
@@ -288,6 +300,11 @@ class SanctionController extends AbstractController
             if (!$this->isCsrfTokenValid('edit_sanction_' . $id, $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
             }
+
+            $previouslyLinkedIds = array_map(
+                static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
+                $sanction->getReports()->toArray(),
+            );
 
             $reportIds       = $request->request->all('reports');
             $measureIds      = $request->request->all('measures');
@@ -378,6 +395,9 @@ class SanctionController extends AbstractController
                     $r->setSanction(null);
                 }
 
+                /** @var list<IncidentReport> $newlyLinkedReports */
+                $newlyLinkedReports = [];
+
                 foreach ($reportIds as $rid) {
                     if (!is_string($rid)) {
                         continue;
@@ -391,9 +411,17 @@ class SanctionController extends AbstractController
                         continue;
                     }
                     $report->setSanction($sanction);
+
+                    if (!in_array($report->getId()->toRfc4122(), $previouslyLinkedIds, true)) {
+                        $newlyLinkedReports[] = $report;
+                    }
                 }
 
                 $this->em->flush();
+
+                foreach ($newlyLinkedReports as $newlyLinkedReport) {
+                    $this->notifier->reportSanctioned($newlyLinkedReport, $user);
+                }
 
                 $this->addFlash('success', $this->t('sanction.flash.updated'));
 

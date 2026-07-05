@@ -20,6 +20,7 @@ use App\Repository\StudentRepository;
 use App\Security\Voter\IncidentReportVoter;
 use App\Security\Voter\SanctionVoter;
 use App\Service\AppSettingsInterface;
+use App\Service\IncidentEmailNotifier;
 use App\Service\StudentContactVisibility;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -43,6 +44,7 @@ class NotificationController extends AbstractController
         private readonly StudentRepository $students,
         private readonly AppSettingsInterface $settings,
         private readonly StudentContactVisibility $contactVisibility,
+        private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -199,6 +201,9 @@ class NotificationController extends AbstractController
                 return $this->redirectToRoute('app_notifications_register_student_reports', ['studentId' => $studentId]);
             }
 
+            /** @var list<IncidentReport> $newlyNotified */
+            $newlyNotified = [];
+
             foreach ($selected as $report) {
                 $communication = Communication::forIncidentReport(
                     $report,
@@ -212,10 +217,15 @@ class NotificationController extends AbstractController
 
                 if ($input['result'] === CommunicationResult::Notified && !$report->isNotified()) {
                     $report->setNotifiedCommunication($communication);
+                    $newlyNotified[] = $report;
                 }
             }
 
             $this->em->flush();
+
+            foreach ($newlyNotified as $report) {
+                $this->notifier->reportNotified($report, $user);
+            }
 
             $this->addFlash('success', $this->t('notification.flash.registered'));
 
@@ -251,11 +261,20 @@ class NotificationController extends AbstractController
 
         $this->em->persist($communication);
 
-        if ($input['result'] === CommunicationResult::Notified && !$target->isNotified()) {
+        $newlyNotified = $input['result'] === CommunicationResult::Notified && !$target->isNotified();
+        if ($newlyNotified) {
             $target->setNotifiedCommunication($communication);
         }
 
         $this->em->flush();
+
+        if ($newlyNotified) {
+            if ($target instanceof IncidentReport) {
+                $this->notifier->reportNotified($target, $user);
+            } else {
+                $this->notifier->sanctionNotified($target, $user);
+            }
+        }
 
         return true;
     }

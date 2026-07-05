@@ -1,6 +1,34 @@
 emails.greeting: 'Hola, %name%:'
 emails.signature: 'Este es un mensaje automático de %app%. No respondas a este correo.'
 emails.view_stay: 'Ver estancia'
+emails.view_report: 'Ver parte'
+emails.view_sanction: 'Ver sanción'
+
+emails.report_created.subject: 'Nuevo parte de convivencia: %student%'
+emails.report_created.intro: '%actor% ha registrado el parte de convivencia nº %number% de %student% (grupo %group%).'
+
+emails.report_notified.subject: 'Parte notificado a la familia: %student%'
+emails.report_notified.intro: '%actor% ha comunicado a la familia de %student% el parte de convivencia nº %number% (grupo %group%).'
+
+emails.report_modified.subject: 'Parte de convivencia modificado: %student%'
+emails.report_modified.intro: '%actor% ha modificado el parte de convivencia nº %number% de %student% (grupo %group%).'
+
+emails.report_deleted.subject: 'Parte de convivencia eliminado: %student%'
+emails.report_deleted.intro: '%actor% ha eliminado el parte de convivencia nº %number% de %student% (grupo %group%).'
+
+emails.report_prescribed.subject: 'Parte de convivencia prescrito: %student%'
+emails.report_prescribed.intro: '%actor% ha marcado como prescrito el parte de convivencia nº %number% de %student% (grupo %group%).'
+
+emails.report_sanctioned.subject: 'Parte incorporado a una sanción: %student%'
+emails.report_sanctioned.intro: '%actor% ha incorporado el parte de convivencia nº %number% de %student% (grupo %group%) a una sanción.'
+
+emails.report_sanctionable_committee.subject: 'Parte pendiente de valorar: %student%'
+emails.report_sanctionable_committee.intro: 'La familia de %student% ya conoce el parte de convivencia nº %number% (grupo %group%), que puede ser objeto de sanción.'
+
+emails.sanction_notified.subject: 'Sanción notificada a la familia: %student%'
+emails.sanction_notified.intro: '%actor% ha comunicado a la familia de %student% la sanción registrada (grupo %group%).'
+emails.sanction_notified.reports_heading: 'Partes incluidos en esta sanción'
+emails.sanction_notified.report_item: 'Parte nº %number%'
 
 emails.tutor_assigned.subject: 'Te han asignado como tutor/a dual docente'
 emails.tutor_assigned.intro: 'Te han asignado como tutor/a dual docente de un puesto formativo en la estancia «%stay%».'

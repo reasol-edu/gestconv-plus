@@ -1,0 +1,25 @@
+{% extends 'email/_layout.html.twig' %}
+
+{% block content %}
+<p style="margin: 0 0 16px;">
+    {{ 'emails.greeting'|trans({'%name%': teacher.name.firstName}, 'emails') }}
+</p>
+<p style="margin: 0 0 24px;">
+    {{ (transPrefix ~ '.intro')|trans(params, 'emails') }}
+</p>
+<p style="margin: 0 0 8px; font-weight: 600; color: #374151; font-size: 13px;">
+    {{ 'emails.sanction_notified.reports_heading'|trans({}, 'emails') }}
+</p>
+<ul style="margin: 0 0 24px; padding-left: 20px; color: #374151; font-size: 13px;">
+    {% for report in sanction.reports %}
+    <li>{{ 'emails.sanction_notified.report_item'|trans({'%number%': report.number}, 'emails') }}</li>
+    {% endfor %}
+</ul>
+<p style="margin: 0 0 24px; text-align: center;">
+    <a href="{{ sanctionUrl }}"
+       style="display: inline-block; background-color: #677dae; color: #ffffff; font-size: 14px;
+              font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none;">
+        {{ 'emails.view_sanction'|trans({}, 'emails') }}
+    </a>
+</p>
+{% endblock %}

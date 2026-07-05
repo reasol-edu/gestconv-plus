@@ -66,3 +66,25 @@ centro únicamente.
 | Quién notifica las sanciones | Global, centro | El docente de la sanción / El tutor/a de grupo / Ambos | Ambos |
 
 Determinan, además de los administradores, qué docentes pueden registrar una comunicación con la familia (ver [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones)). No tienen ámbito de docente: se fijan a nivel global o de centro únicamente.
+
+### Avisos por correo
+
+| Ajuste | Opciones | Por defecto |
+|---|---|---|
+| Parte registrado | A nadie / Al docente que lo registra / Al tutor/a de grupo / A ambos | A nadie |
+| Parte notificado a la familia | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
+| Parte modificado | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
+| Parte eliminado | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
+| Parte prescrito | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
+| Parte incorporado a una sanción | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
+| Sanción notificada a la familia | A nadie / A los docentes de los partes / Al tutor/a de grupo / A ambos | A nadie |
+| Parte sancionable (comisión de convivencia) | A nadie / A la comisión de convivencia | A nadie |
+
+Uno por cada evento de un parte o una sanción; determinan si se envía un correo y a quién. Los
+siete primeros ajustes comparten las mismas opciones (docente que registró el elemento, tutor/a
+del grupo, ambos o nadie); el aviso de parte modificado no se dispara al marcar un parte como
+prescrito, que tiene su propio ajuste independiente. El último aviso a la comisión de convivencia
+solo se envía cuando un parte queda notificado a la familia y todavía puede ser sancionado (no está
+prescrito ni incorporado ya a una sanción). Ninguno tiene ámbito de docente: se fijan a nivel global
+o de centro únicamente, y por defecto no se envía ningún correo. Más detalles sobre cada tipo de
+aviso en [Notificaciones por email](06-notificaciones-y-email.md#avisos-de-partes-y-sanciones).
