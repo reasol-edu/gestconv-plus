@@ -198,6 +198,20 @@ class CommunicationRepositoryTest extends RepositoryTestCase
         self::assertCount(0, $this->repo->createFilteredQuery($world['year'], $admin, ['search' => 'nadie'])->getResult());
     }
 
+    public function testCreateFilteredQuerySearchMatchesPerformedByTeacherName(): void
+    {
+        $world   = $this->makeWorld();
+        $admin   = $this->makeTeacher('filter.search.admin.comm', admin: true);
+        $creator = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('filter.search.creator.comm');
+        $this->persist($admin);
+        $this->persist($creator);
+        $this->makeReportCommunication($world, $creator);
+
+        self::assertCount(1, $this->repo->createFilteredQuery($world['year'], $admin, ['search' => 'ruiz'])->getResult());
+        self::assertCount(1, $this->repo->createFilteredQuery($world['year'], $admin, ['search' => 'marta'])->getResult());
+        self::assertCount(0, $this->repo->createFilteredQuery($world['year'], $admin, ['search' => 'nadie'])->getResult());
+    }
+
     public function testCreateFilteredQueryFiltersByType(): void
     {
         $world = $this->makeWorld();

@@ -70,7 +70,7 @@ notification.history.col.performed_by: 'Docente'
 notification.history.col.result: 'Resultado'
 notification.history.col.description: 'Observaciones'
 
-notification.history_list.search_placeholder: 'Buscar por alumno o grupo…'
+notification.history_list.search_placeholder: 'Buscar por alumno, grupo o docente…'
 notification.history_list.type_all: 'Todos los tipos'
 notification.history_list.type_report: 'Partes'
 notification.history_list.type_sanction: 'Sanciones'

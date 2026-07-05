@@ -77,7 +77,7 @@ class CommunicationRepository extends ServiceEntityRepository
      *    linked to a report they registered or to a group they tutor
      *
      * Supported filters:
-     *   search string — student or group name (report's or sanction's)
+     *   search string — student or group name (report's or sanction's), or the teacher who performed the communication
      *   type   string — 'report'|'sanction'|'' (both)
      *   result string — CommunicationResult value or '' (both)
      *
@@ -136,6 +136,8 @@ class CommunicationRepository extends ServiceEntityRepository
                     'LOWER(ss.name.firstName) LIKE LOWER(:search)',
                     'LOWER(ss.name.lastName) LIKE LOWER(:search)',
                     'LOWER(sg.name) LIKE LOWER(:search)',
+                    'LOWER(pb.name.firstName) LIKE LOWER(:search)',
+                    'LOWER(pb.name.lastName) LIKE LOWER(:search)',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
