@@ -53,9 +53,20 @@ class CommunicationRepository extends ServiceEntityRepository
             return [];
         }
 
-        $rows = $this->createQueryBuilder('c')
-            ->where('c.incidentReport IN (:reports)')
-            ->setParameter('reports', $reports)
+        // Cada UUID se vincula individualmente con el tipo 'uuid' explícito: pasar el
+        // array completo como un único parámetro IN (:reports) hace que Doctrine infiera
+        // un ArrayParameterType genérico (string) que ignora la conversión de UuidType
+        // (binaria en MySQL/SQLite, nativa en PostgreSQL), y la consulta no encuentra
+        // ninguna fila aunque los datos existan.
+        $qb           = $this->createQueryBuilder('c');
+        $placeholders = [];
+        foreach ($reports as $i => $report) {
+            $placeholders[] = ":report{$i}";
+            $qb->setParameter("report{$i}", $report->getId(), 'uuid');
+        }
+
+        $rows = $qb
+            ->where('IDENTITY(c.incidentReport) IN (' . implode(', ', $placeholders) . ')')
             ->orderBy('c.performedAt', 'DESC')
             ->getQuery()
             ->getResult();

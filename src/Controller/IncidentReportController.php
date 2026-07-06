@@ -21,6 +21,8 @@ use App\Security\Voter\IncidentReportVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
+use App\Service\PdfHeaderBuilder;
+use App\Service\PdfRenderer;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -60,6 +62,8 @@ class IncidentReportController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
+        private readonly PdfRenderer $pdfRenderer,
+        private readonly PdfHeaderBuilder $pdfHeaderBuilder,
     ) {}
 
     #[Route('', name: 'app_incidents_index')]
@@ -391,6 +395,45 @@ class IncidentReportController extends AbstractController
             'history'      => $this->communications->findByIncidentReport($report),
             'observations' => $this->observations->findByIncidentReport($report),
         ]);
+    }
+
+    #[Route('/{id}/pdf', name: 'app_incidents_pdf', methods: ['GET'])]
+    public function pdf(string $id): Response
+    {
+        $centre = $this->tenantContext->getSelectedCentre();
+        if ($centre === null) {
+            return $this->redirectToRoute('app_select_centre');
+        }
+
+        $report = $this->reports->findById($id);
+        if ($report === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(IncidentReportVoter::VIEW, $report);
+
+        $header = $this->pdfHeaderBuilder->build('incident', $centre, [
+            'title'         => $this->translator->trans('pdf.incident_report.title', [], 'admin'),
+            'report_nr'     => $report->getNumber(),
+            'student_name'  => $report->getStudent()->getName()->full(),
+            'group_name'    => $report->getGroup()->getName(),
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $report->getAcademicYear()->getName(),
+        ]);
+
+        return $this->pdfRenderer->render(
+            'pdf/incident_report.html.twig',
+            [
+                'centre'       => $centre,
+                'report'       => $report,
+                'observations' => $this->observations->findByIncidentReport($report),
+                'history'      => $this->communications->findByIncidentReport($report),
+            ],
+            $this->translator->trans('incident.show_ref', ['%number%' => $report->getNumber()], 'admin'),
+            sprintf('parte-%d.pdf', $report->getNumber()),
+            header: $header,
+            draftWatermark: !$report->isNotified(),
+        );
     }
 
     #[Route('/{id}/observaciones', name: 'app_incidents_add_observation', methods: ['POST'])]

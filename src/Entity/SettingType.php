@@ -6,8 +6,9 @@ namespace App\Entity;
 
 enum SettingType: string
 {
-    case String  = 'string';
-    case Integer = 'integer';
-    case Boolean = 'boolean';
-    case Choice  = 'choice';
+    case String   = 'string';
+    case Integer  = 'integer';
+    case Boolean  = 'boolean';
+    case Choice   = 'choice';
+    case RichText = 'richtext';
 }

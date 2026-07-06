@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\SettingDefinitionRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -24,7 +25,7 @@ class SettingDefinition
     #[ORM\Column(enumType: SettingType::class)]
     private SettingType $type;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT)]
     private string $defaultValue;
 
     #[ORM\Column]
@@ -224,7 +225,8 @@ class SettingDefinition
         return match ($this->type) {
             SettingType::Boolean => in_array($value, ['true', 'false'], true),
             SettingType::Integer => $this->isIntValueValid($value),
-            SettingType::String  => $this->isStringValueValid($value),
+            SettingType::String,
+            SettingType::RichText => $this->isStringValueValid($value),
             SettingType::Choice  => in_array($value, $this->getChoicesArray(), true),
         };
     }
@@ -274,7 +276,8 @@ class SettingDefinition
             SettingType::Boolean => $this->defaultValue === 'true',
             SettingType::Integer => (int) $this->defaultValue,
             SettingType::String,
-            SettingType::Choice  => $this->defaultValue,
+            SettingType::Choice,
+            SettingType::RichText => $this->defaultValue,
         };
     }
 }

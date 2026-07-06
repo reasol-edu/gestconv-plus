@@ -260,6 +260,39 @@ class CommunicationRepositoryTest extends RepositoryTestCase
         self::assertSame($older->getId()->toRfc4122(), $results[1]->getId()->toRfc4122());
     }
 
+    // ── findByIncidentReports ──────────────────────────────────────────────
+
+    public function testFindByIncidentReportsGroupsCommunicationsByReportId(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('find.by.reports.comm');
+        $this->persist($teacher);
+        $comm = $this->makeReportCommunication($world, $teacher);
+        $report = $comm->getIncidentReport();
+        self::assertNotNull($report);
+
+        $otherWorld   = $this->makeWorld('other');
+        $otherTeacher = $this->makeTeacher('find.by.reports.comm.other');
+        $this->persist($otherTeacher);
+        $otherReport = (new IncidentReport())
+            ->setAcademicYear($otherWorld['year'])
+            ->setNumber(++$this->nextReportNumber)
+            ->setStudent($otherWorld['student'])
+            ->setGroup($otherWorld['group'])
+            ->setRegisteredBy($otherTeacher)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Sin comunicaciones</p>')
+            ->setExpelledFromClass(false);
+        $otherReport->addBehavior($otherWorld['behavior']);
+        $this->persist($otherReport);
+
+        $map = $this->repo->findByIncidentReports([$report, $otherReport]);
+
+        self::assertCount(1, $map[$report->getId()->toRfc4122()]);
+        self::assertSame($comm->getId()->toRfc4122(), $map[$report->getId()->toRfc4122()][0]->getId()->toRfc4122());
+        self::assertSame([], $map[$otherReport->getId()->toRfc4122()]);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**

@@ -18,6 +18,8 @@ use App\Security\Voter\SanctionVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
+use App\Service\PdfHeaderBuilder;
+use App\Service\PdfRenderer;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -52,6 +54,8 @@ class SanctionController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
+        private readonly PdfRenderer $pdfRenderer,
+        private readonly PdfHeaderBuilder $pdfHeaderBuilder,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -299,6 +303,48 @@ class SanctionController extends AbstractController
             'sanction' => $sanction,
             'history'  => $this->communications->findBySanction($sanction),
         ]);
+    }
+
+    #[Route('/{id}/pdf', name: 'app_sanctions_pdf', methods: ['GET'])]
+    public function pdf(string $id): Response
+    {
+        $centre = $this->tenantContext->getSelectedCentre();
+        if ($centre === null) {
+            return $this->redirectToRoute('app_select_centre');
+        }
+
+        $sanction = $this->sanctions->findById($id);
+        if ($sanction === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(SanctionVoter::VIEW, $sanction);
+
+        $reports = $sanction->getReports()->toArray();
+
+        $header = $this->pdfHeaderBuilder->build('sanction', $centre, [
+            'title'         => $this->translator->trans('pdf.sanction.title', [], 'admin'),
+            'student_name'  => $sanction->getStudent()->getName()->full(),
+            'group_name'    => $sanction->getGroup()->getName(),
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $sanction->getAcademicYear()->getName(),
+        ]);
+
+        return $this->pdfRenderer->render(
+            'pdf/sanction.html.twig',
+            [
+                'centre'                  => $centre,
+                'sanction'                => $sanction,
+                'history'                 => $this->communications->findBySanction($sanction),
+                'observationsByReport'    => $this->observations->findByIncidentReports($reports),
+                'communicationsByReport'  => $this->communications->findByIncidentReports($reports),
+            ],
+            $this->translator->trans('sanction.show_title', [], 'admin')
+                . ' — ' . $sanction->getStudent()->getName()->getLastName() . ', ' . $sanction->getStudent()->getName()->getFirstName(),
+            sprintf('sancion-%s.pdf', substr($sanction->getId()->toRfc4122(), 0, 8)),
+            header: $header,
+            draftWatermark: !$sanction->isNotified(),
+        );
     }
 
     #[Route('/{id}/editar', name: 'app_sanctions_edit', methods: ['GET', 'POST'])]

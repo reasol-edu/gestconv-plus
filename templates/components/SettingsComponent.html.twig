@@ -35,7 +35,9 @@
                     <ul class="divide-y divide-gray-100">
             {% endif %}
 
-            <li class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:gap-6
+            {# Los ajustes richtext se apilan en vertical: el editor necesita el ancho completo #}
+            {% set isRichText = def.type.value == 'richtext' %}
+            <li class="flex flex-col gap-3 px-6 py-4 {{ isRichText ? '' : 'sm:flex-row sm:items-center sm:gap-6' }}
                         {{ parentLock is not null ? 'opacity-60' : '' }}">
 
                 {# ── Label + description ── #}
@@ -61,7 +63,7 @@
                 </div>
 
                 {# ── Control ── #}
-                <div class="flex items-center gap-3 shrink-0">
+                <div class="flex gap-3 {{ isRichText ? 'w-full items-start' : 'items-center shrink-0' }}">
 
                     {% if def.type.value == 'boolean' %}
                         <select
@@ -129,6 +131,24 @@
                                 </option>
                             {% endfor %}
                         </select>
+
+                    {% elseif def.type.value == 'richtext' %}
+                        {% if parentLock is not null %}
+                            <div class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 prose prose-sm max-w-none text-gray-500">
+                                {{ effective|sanitize_html('app.rich_text') }}
+                            </div>
+                        {% else %}
+                            {# data-live-ignore: Quill genera su propio DOM (barra de herramientas)
+                               y el morphing de LiveComponent lo destrozaría en cada re-render #}
+                            <div id="setting-richtext-{{ keySlug }}" class="w-full min-w-0" data-live-ignore data-controller="rich-editor">
+                                <div data-rich-editor-target="editor" class="bg-white text-sm"></div>
+                                <textarea data-rich-editor-target="input"
+                                          class="hidden"
+                                          data-controller="setting-save"
+                                          data-action="change->setting-save#save"
+                                          data-setting-key="{{ key }}">{{ displayValue ?? '' }}</textarea>
+                            </div>
+                        {% endif %}
 
                     {% else %}
                         <input

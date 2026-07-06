@@ -22,6 +22,7 @@ settings.category.email.label: 'Correo electrónico'
 settings.category.board.label: 'Modo tablón'
 settings.category.notifications.label: 'Notificaciones a familias'
 settings.category.email_alerts.label: 'Avisos por correo'
+settings.category.reports.label: 'Personalización de informes'
 
 # ── Definiciones de ajustes ───────────────────────────────────────────────────
 settings.key.page_size.label: 'Resultados por página'
@@ -131,6 +132,24 @@ settings.key.notifications_email_report_sanctionable_committee.label: 'Parte san
 settings.key.notifications_email_report_sanctionable_committee.description: 'Determina si la comisión de convivencia recibe un correo cuando un parte queda notificado a la familia y puede ser sancionado (no prescrito y sin sanción todavía).'
 settings.key.notifications_email_report_sanctionable_committee.choice.none: 'A nadie'
 settings.key.notifications_email_report_sanctionable_committee.choice.committee: 'A la comisión de convivencia'
+
+settings.key.reports_incident_header_left.label: 'Encabezado de informe de partes (izquierda)'
+settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Placeholders disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+
+settings.key.reports_incident_header_right.label: 'Encabezado de informe de partes (derecha)'
+settings.key.reports_incident_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Placeholders disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+
+settings.key.reports_incident_header_margin.label: 'Margen para encabezado de partes'
+settings.key.reports_incident_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
+
+settings.key.reports_sanction_header_left.label: 'Encabezado de informe de sanciones (izquierda)'
+settings.key.reports_sanction_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de una sanción. Placeholders disponibles: {title}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+
+settings.key.reports_sanction_header_right.label: 'Encabezado de informe de sanciones (derecha)'
+settings.key.reports_sanction_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Placeholders disponibles: {title}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+
+settings.key.reports_sanction_header_margin.label: 'Margen para encabezado de sanciones'
+settings.key.reports_sanction_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
 
 # ── Errores de validación ──────────────────────────────────────────────────────
 settings.error.integer_range: 'Debe ser un número entre %min% y %max%'

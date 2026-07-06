@@ -1,0 +1,31 @@
+{# Expects: history #}
+{% if history is empty %}
+    <p class="cell-sub">{{ 'notification.history.empty'|trans({}, 'notifications') }}</p>
+{% else %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>{{ 'notification.history.col.performed_at'|trans({}, 'notifications') }}</th>
+                <th>{{ 'notification.history.col.method'|trans({}, 'notifications') }}</th>
+                <th>{{ 'notification.history.col.performed_by'|trans({}, 'notifications') }}</th>
+                <th>{{ 'notification.history.col.result'|trans({}, 'notifications') }}</th>
+                <th>{{ 'notification.history.col.description'|trans({}, 'notifications') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for communication in history %}
+                <tr>
+                    <td>{{ communication.performedAt|date('d/m/Y H:i') }}</td>
+                    <td>{{ communication.method.name }}</td>
+                    <td>{{ communication.performedBy.name.lastName }}, {{ communication.performedBy.name.firstName }}</td>
+                    <td>
+                        <span class="badge {{ communication.result.value == 'notified' ? 'badge-green' : 'badge-red' }}">
+                            {{ ('notification.result.' ~ communication.result.value)|trans({}, 'notifications') }}
+                        </span>
+                    </td>
+                    <td>{{ communication.description ?: '—' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

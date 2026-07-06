@@ -323,6 +323,62 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    public function testPdfIsAccessibleToCentreAdminAndReturnsAPdfDocument(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringContainsString('inline', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPdfIsDeniedToUnrelatedTeacher(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $other    = $this->makeTeacher('unrelated.pdf');
+        $this->persist($other);
+        $this->loginAs($other, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testPdfStillGeneratesOnceSanctionIsNotified(): void
+    {
+        // Once notified to the family, the PDF drops the "draft" watermark
+        // (see PdfRenderer::render's $draftWatermark param); this just guards
+        // that the render itself keeps working on that code path.
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $method   = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $communication = Communication::forSanction(
+            $sanction, $method, $admin, new \DateTimeImmutable(), CommunicationResult::Notified,
+        );
+        $this->persist($method, $communication);
+        $sanction->setNotifiedCommunication($communication);
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
     public function testShowIsAccessibleToReportCreator(): void
     {
         [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();

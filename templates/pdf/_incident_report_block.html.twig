@@ -1,0 +1,72 @@
+{# Expects: report, reportObservations, reportHistory #}
+<div style="page-break-inside: avoid;">
+    <p class="section-title">{{ 'incident.show_ref'|trans({'%number%': report.number}, 'admin') }}</p>
+
+    <table class="data-table">
+        <tbody>
+            <tr>
+                <td><span class="cell-sub">{{ 'incident.col.student'|trans({}, 'admin') }}</span><br>{{ report.student.name.lastName }}, {{ report.student.name.firstName }}</td>
+                <td><span class="cell-sub">{{ 'incident.col.group'|trans({}, 'admin') }}</span><br>{{ report.group.name }}</td>
+            </tr>
+            <tr>
+                <td><span class="cell-sub">{{ 'incident.col.teacher'|trans({}, 'admin') }}</span><br>{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</td>
+                <td><span class="cell-sub">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</span><br>{{ report.occurredAt|date('d/m/Y H:i') }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        <span class="badge {{ report.notified ? 'badge-green' : 'badge-amber' }}">
+            {{ (report.notified ? 'notification.badge.notified' : 'notification.badge.pending')|trans({}, 'notifications') }}
+        </span>
+        {% if report.prescribed %}
+            <span class="badge badge-amber">{{ 'incident.badge.prescribed'|trans({}, 'admin') }} · {{ report.prescribedAt|date('d/m/Y') }}</span>
+        {% endif %}
+        {% if report.expelledFromClass %}
+            <span class="badge badge-gray">{{ 'incident.badge.expelled'|trans({}, 'admin') }}</span>
+        {% endif %}
+    </p>
+
+    <p class="subsection-title">{{ 'incident.col.behaviors'|trans({}, 'admin') }}</p>
+    {% include 'pdf/_behavior_badges.html.twig' with { behaviors: report.behaviors } %}
+
+    <p class="subsection-title">{{ 'incident.field.description'|trans({}, 'admin') }}</p>
+    <div class="prose-block">{{ report.description|sanitize_html('app.rich_text') }}</div>
+
+    {% if report.expelledFromClass and (report.assignedTasks or report.tasksCompleted is not null) %}
+        <p class="subsection-title">{{ 'incident.section.expulsion'|trans({}, 'admin') }}</p>
+        {% if report.assignedTasks %}
+            <p><span class="cell-sub">{{ 'incident.field.assigned_tasks'|trans({}, 'admin') }}</span><br>{{ report.assignedTasks }}</p>
+        {% endif %}
+        {% if report.tasksCompleted is not null %}
+            <p><span class="cell-sub">{{ 'incident.field.tasks_completed'|trans({}, 'admin') }}</span><br>{{ ('incident.tasks_completed.' ~ report.tasksCompleted.value)|trans({}, 'admin') }}</p>
+        {% endif %}
+    {% endif %}
+
+    <p class="subsection-title">{{ 'incident.observation.title'|trans({}, 'admin') }}</p>
+    {% if reportObservations is empty %}
+        <p class="cell-sub">{{ 'incident.observation.empty'|trans({}, 'admin') }}</p>
+    {% else %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'incident.observation.field.registered_at'|trans({}, 'admin') }}</th>
+                    <th>{{ 'incident.col.teacher'|trans({}, 'admin') }}</th>
+                    <th>{{ 'incident.observation.field.text'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for observation in reportObservations %}
+                    <tr>
+                        <td>{{ observation.registeredAt|date('d/m/Y H:i') }}</td>
+                        <td>{{ observation.registeredBy.name.lastName }}, {{ observation.registeredBy.name.firstName }}</td>
+                        <td>{{ observation.text|sanitize_html('app.rich_text') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <p class="subsection-title">{{ 'notification.history.title'|trans({}, 'notifications') }}</p>
+    {% include 'pdf/_communication_history.html.twig' with { history: reportHistory } %}
+</div>

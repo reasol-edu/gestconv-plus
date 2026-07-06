@@ -299,6 +299,36 @@ class GroupRepositoryTest extends RepositoryTestCase
         self::assertCount(0, $this->repo->findByActiveYearOfCentreWithProgramme($centre));
     }
 
+    // ── countByLevel ────────────────────────────────────────────────────────
+
+    public function testCountByLevelReturnsGroupCountsKeyedByLevelId(): void
+    {
+        [, , $prog, $pyA] = $this->makeChain('41000021');
+        $pyB = (new ProgrammeYear())->setName('2.º DAM')->setProgramme($prog);
+        $this->persist($pyB);
+
+        $this->persist($this->makeGroup($pyA, 'DAM1A'), $this->makeGroup($pyA, 'DAM1B'), $this->makeGroup($pyB, 'DAM2A'));
+
+        $counts = $this->repo->countByLevel([$pyA, $pyB]);
+
+        self::assertSame(2, $counts[$pyA->getId()->toRfc4122()]);
+        self::assertSame(1, $counts[$pyB->getId()->toRfc4122()]);
+    }
+
+    public function testCountByLevelOmitsLevelsWithNoGroups(): void
+    {
+        [, , , $py] = $this->makeChain('41000022');
+
+        $counts = $this->repo->countByLevel([$py]);
+
+        self::assertArrayNotHasKey($py->getId()->toRfc4122(), $counts);
+    }
+
+    public function testCountByLevelReturnsEmptyForEmptyInput(): void
+    {
+        self::assertSame([], $this->repo->countByLevel([]));
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**

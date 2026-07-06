@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\GlobalSettingValueRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -22,7 +23,7 @@ class GlobalSettingValue
     #[ORM\JoinColumn(nullable: false)]
     private SettingDefinition $definition;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT)]
     private string $value;
 
     #[ORM\Column]

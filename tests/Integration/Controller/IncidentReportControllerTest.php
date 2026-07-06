@@ -9,6 +9,7 @@ use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
+use App\Entity\GlobalSettingValue;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentReport;
@@ -16,6 +17,7 @@ use App\Entity\IncidentReportObservation;
 use App\Entity\PersonName;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
+use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -417,6 +419,73 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testPdfIsAccessibleToCreatorAndReturnsAPdfDocument(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringContainsString('inline', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPdfUsesCustomisedHeaderSettings(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+
+        $defs = $this->em->getRepository(SettingDefinition::class);
+        $this->persist(
+            (new GlobalSettingValue())
+                ->setDefinition($defs->findOneBy(['key' => 'reports.incident_header_left']))
+                ->setValue('<p><em>{student_name} — nº {report_nr}</em></p>'),
+            (new GlobalSettingValue())
+                ->setDefinition($defs->findOneBy(['key' => 'reports.incident_header_margin']))
+                ->setValue('40'),
+        );
+
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPdfIsDeniedToUnrelatedTeacher(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $other  = $this->makeTeacher('other.teacher');
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->persist($other);
+        $this->loginAs($other, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testPdfStillGeneratesOnceReportIsNotified(): void
+    {
+        // Once notified to the family, the PDF drops the "draft" watermark
+        // (see PdfRenderer::render's $draftWatermark param); this just guards
+        // that the render itself keeps working on that code path.
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->notifyReport($report, $centre, $teacher);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
     }
 
     public function testShowIsAccessibleToCentreAdmin(): void

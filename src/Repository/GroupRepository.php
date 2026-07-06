@@ -50,11 +50,22 @@ class GroupRepository extends ServiceEntityRepository
             return [];
         }
 
+        // Cada UUID se vincula individualmente con el tipo 'uuid' explícito: pasar el
+        // array completo como un único parámetro IN (:levels) hace que Doctrine infiera
+        // un ArrayParameterType genérico (string) que ignora la conversión de UuidType
+        // (binaria en MySQL/SQLite, nativa en PostgreSQL), y la consulta no encuentra
+        // ninguna fila aunque los datos existan.
+        $qb           = $this->createQueryBuilder('g')
+            ->select('IDENTITY(g.programmeYear) AS lid', 'COUNT(g.id) AS cnt');
+        $placeholders = [];
+        foreach ($levels as $i => $level) {
+            $placeholders[] = ":level{$i}";
+            $qb->setParameter("level{$i}", $level->getId(), 'uuid');
+        }
+
         /** @var list<array<string, int|string>> $rows */
-        $rows = $this->createQueryBuilder('g')
-            ->select('IDENTITY(g.programmeYear) AS lid', 'COUNT(g.id) AS cnt')
-            ->where('g.programmeYear IN (:levels)')
-            ->setParameter('levels', $levels)
+        $rows = $qb
+            ->where('g.programmeYear IN (' . implode(', ', $placeholders) . ')')
             ->groupBy('g.programmeYear')
             ->getQuery()
             ->getScalarResult();

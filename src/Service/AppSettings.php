@@ -70,7 +70,8 @@ final class AppSettings implements AppSettingsInterface
             SettingType::Boolean => $raw === 'true',
             SettingType::Integer => (int) $raw,
             SettingType::String,
-            SettingType::Choice  => $raw,
+            SettingType::Choice,
+            SettingType::RichText => $raw,
         };
     }
 
@@ -97,7 +98,8 @@ final class AppSettings implements AppSettingsInterface
             SettingType::Boolean => $raw === 'true',
             SettingType::Integer => (int) $raw,
             SettingType::String,
-            SettingType::Choice  => $raw,
+            SettingType::Choice,
+            SettingType::RichText => $raw,
         };
     }
 
@@ -116,7 +118,8 @@ final class AppSettings implements AppSettingsInterface
             SettingType::Boolean => $raw === 'true',
             SettingType::Integer => (int) $raw,
             SettingType::String,
-            SettingType::Choice  => $raw,
+            SettingType::Choice,
+            SettingType::RichText => $raw,
         };
     }
 
@@ -147,7 +150,8 @@ final class AppSettings implements AppSettingsInterface
             SettingType::Boolean => $raw === 'true',
             SettingType::Integer => (int) $raw,
             SettingType::String,
-            SettingType::Choice  => $raw,
+            SettingType::Choice,
+            SettingType::RichText => $raw,
         };
     }
 
@@ -187,7 +191,8 @@ final class AppSettings implements AppSettingsInterface
                 SettingType::Boolean => $raw === 'true',
                 SettingType::Integer => (int) $raw,
                 SettingType::String,
-                SettingType::Choice  => $raw,
+                SettingType::Choice,
+                SettingType::RichText => $raw,
             };
         }
     }

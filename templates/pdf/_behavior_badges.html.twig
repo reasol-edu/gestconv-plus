@@ -1,0 +1,10 @@
+{# Expects: behaviors #}
+{% if behaviors is empty %}
+    <p class="cell-sub">&mdash;</p>
+{% else %}
+    <p>
+        {% for behavior in behaviors %}
+            <span class="badge {{ behavior.serious ? 'badge-red' : 'badge-gray' }}">{{ behavior.name }}{% if behavior.serious %} ({{ 'incident.badge.serious'|trans({}, 'admin') }}){% endif %}</span>
+        {% endfor %}
+    </p>
+{% endif %}

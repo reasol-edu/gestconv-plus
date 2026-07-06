@@ -1,0 +1,5 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+    {% include 'pdf/_incident_report_block.html.twig' with { report: report, reportObservations: observations, reportHistory: history } %}
+{% endblock %}

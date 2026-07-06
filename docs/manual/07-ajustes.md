@@ -26,8 +26,8 @@ inferiores.
 ## Ajustes disponibles
 
 La pantalla de ajustes agrupa cada uno en una de las siguientes categorías, mostradas en este
-mismo orden: Visualización, Correo electrónico, Modo tablón, Notificaciones a familias y Avisos
-por correo.
+mismo orden: Visualización, Correo electrónico, Modo tablón, Notificaciones a familias, Avisos
+por correo y Personalización de informes.
 
 ### Visualización
 
@@ -128,3 +128,36 @@ solo se envía cuando un parte queda notificado a la familia y todavía puede se
 prescrito ni incorporado ya a una sanción). Ninguno tiene ámbito de docente: se fijan a nivel global
 o de centro únicamente, y por defecto no se envía ningún correo. Más detalles sobre cada tipo de
 aviso en [Notificaciones por email](06-notificaciones-y-email.md#avisos-de-partes-y-sanciones).
+
+### Personalización de informes
+
+| Ajuste | Ámbito | Tipo | Rango | Por defecto |
+|---|---|---|---|---|
+| Encabezado izquierdo (informe de parte) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (informe de parte) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (informe de parte) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Encabezado izquierdo (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (informe de sanción) | Global, centro | Entero (mm) | 10-80 | 22 |
+
+Controlan el encabezado que se repite en cada página de los PDF de partes y sanciones. Cada tipo
+de informe tiene dos zonas —izquierda y derecha, en la misma línea— que se editan con un editor de
+texto enriquecido (negrita, cursiva, subrayado, títulos, listas, citas y enlaces). El margen
+superior determina, en milímetros, a qué altura empieza el cuerpo del documento en cada página:
+conviene aumentarlo si el encabezado personalizado ocupa más líneas que el original.
+
+Dentro del texto se pueden escribir **marcadores** que se sustituyen por los datos reales del
+informe al generar el PDF:
+
+| Marcador | Se sustituye por | Disponible en |
+|---|---|---|
+| `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia») | Ambos |
+| `{report_nr}` | Número del parte | Solo partes |
+| `{student_name}` | Nombre completo del alumno | Ambos |
+| `{group_name}` | Nombre del grupo | Ambos |
+| `{centre_name}` | Nombre del centro educativo | Ambos |
+| `{academic_year}` | Nombre del curso académico | Ambos |
+
+Un marcador desconocido (por ejemplo, uno con una errata) no rompe el informe: se muestra tal
+cual en el PDF, lo que facilita detectar el error. Ninguno de los seis ajustes tiene ámbito de
+docente: se fijan a nivel global o de centro únicamente.

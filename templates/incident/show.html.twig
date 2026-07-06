@@ -43,6 +43,12 @@
             </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ path('app_incidents_pdf', {id: report.id}) }}" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:document-arrow-down', {class: 'h-4 w-4'}) }}
+                {{ 'incident.pdf.download'|trans({}, 'admin') }}
+            </a>
             {% if not report.isNotified and not report.prescribed and is_granted('incident_report.notify', report) %}
                 <a href="{{ path('app_notifications_register_report', {id: report.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-medium text-white

@@ -1,0 +1,61 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+    <p class="section-title">{{ 'sanction.show_title'|trans({}, 'admin') }}</p>
+
+    <table class="data-table">
+        <tbody>
+            <tr>
+                <td><span class="cell-sub">{{ 'incident.col.student'|trans({}, 'admin') }}</span><br>{{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}</td>
+                <td><span class="cell-sub">{{ 'incident.col.group'|trans({}, 'admin') }}</span><br>{{ sanction.group.name }}</td>
+            </tr>
+            <tr>
+                <td><span class="cell-sub">{{ 'sanction.col.registered_by'|trans({}, 'admin') }}</span><br>{{ sanction.registeredBy.name.lastName }}, {{ sanction.registeredBy.name.firstName }}</td>
+                <td><span class="cell-sub">{{ 'sanction.col.created_at'|trans({}, 'admin') }}</span><br>{{ sanction.createdAt|date('d/m/Y H:i') }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        <span class="badge {{ sanction.notified ? 'badge-green' : 'badge-amber' }}">
+            {{ (sanction.notified ? 'notification.badge.notified' : 'notification.badge.pending')|trans({}, 'notifications') }}
+        </span>
+    </p>
+
+    <p class="subsection-title">{{ 'sanction.section.measures'|trans({}, 'admin') }}</p>
+    {% if sanction.noMeasureApplied %}
+        <p><span class="badge badge-gray">{{ 'sanction.badge.no_measure'|trans({}, 'admin') }}</span></p>
+        {% if sanction.noMeasureReason %}
+            <p class="cell-sub">{{ 'sanction.field.no_measure_reason'|trans({}, 'admin') }}</p>
+            <div class="prose-block">{{ sanction.noMeasureReason|sanitize_html('app.rich_text') }}</div>
+        {% endif %}
+    {% else %}
+        <p>
+            {% for measure in sanction.measures %}
+                <span class="badge badge-blue">{{ measure.name }}</span>
+            {% else %}
+                <span class="cell-sub">&mdash;</span>
+            {% endfor %}
+        </p>
+    {% endif %}
+
+    {% if sanction.effectiveFrom and sanction.effectiveTo %}
+        <p class="subsection-title">{{ 'sanction.field.effective_from'|trans({}, 'admin') }} — {{ 'sanction.field.effective_to'|trans({}, 'admin') }}</p>
+        <p>{{ sanction.effectiveFrom|date('d/m/Y') }} &rarr; {{ sanction.effectiveTo|date('d/m/Y') }}</p>
+    {% endif %}
+
+    <p class="subsection-title">{{ 'sanction.field.details'|trans({}, 'admin') }}</p>
+    <div class="prose-block">{{ sanction.details|sanitize_html('app.rich_text') }}</div>
+
+    <p class="subsection-title">{{ 'notification.history.title'|trans({}, 'notifications') }}</p>
+    {% include 'pdf/_communication_history.html.twig' with { history: history } %}
+
+    <p class="section-title">{{ 'sanction.section.reports'|trans({}, 'admin') }}</p>
+    {% for report in sanction.reports %}
+        {% include 'pdf/_incident_report_block.html.twig' with {
+            report: report,
+            reportObservations: observationsByReport[report.id.toRfc4122] ?? [],
+            reportHistory: communicationsByReport[report.id.toRfc4122] ?? [],
+        } %}
+    {% endfor %}
+{% endblock %}
