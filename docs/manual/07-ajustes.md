@@ -12,6 +12,8 @@ Un administrador global o de centro puede **bloquear** el valor de un ajuste con
 candado, junto al campo. El bloqueo invierte el orden de prioridad habitual para forzar un valor
 concreto en todos los niveles inferiores:
 
+![Pantalla de ajustes con candados junto a los campos](img/ajustes/ajustes-candados.png)
+
 - Un ajuste **global bloqueado** se aplica siempre, sin excepción: ignora cualquier valor de centro
   o de docente, aunque existan.
 - Un ajuste **de centro bloqueado** se aplica a todos los docentes de ese centro, ignorando
@@ -145,6 +147,8 @@ de informe tiene dos zonas —izquierda y derecha, en la misma línea— que se 
 texto enriquecido (negrita, cursiva, subrayado, títulos, listas, citas y enlaces). El margen
 superior determina, en milímetros, a qué altura empieza el cuerpo del documento en cada página:
 conviene aumentarlo si el encabezado personalizado ocupa más líneas que el original.
+
+![Ajustes de personalización de informes](img/ajustes/ajustes-informes.png)
 
 Dentro del texto se pueden escribir **marcadores** que se sustituyen por los datos reales del
 informe al generar el PDF:

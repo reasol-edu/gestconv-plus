@@ -35,6 +35,8 @@ recomendada es la importación desde Séneca, disponible en
 También se puede añadir un docente de forma manual, uno a uno, desde el mismo apartado, sin
 necesidad de fichero CSV — útil para altas puntuales durante el curso.
 
+![Listado de docentes del centro tras la importación](img/centro/centro-docentes.png)
+
 ### Cómo exportar el CSV de Séneca (perfil Dirección)
 
 En Séneca, con el perfil de Dirección: **Personal › Personal del centro › Exportar datos**
@@ -99,6 +101,8 @@ El último paso es importar el alumnado del curso, desde
 aplicación muestra un resumen de los cambios que va a realizar (altas, actualizaciones y grupos no
 encontrados) y, tras confirmar, crea o actualiza los estudiantes y los asigna a sus grupos. Igual
 que en los pasos anteriores, se aceptan ficheros en UTF-8 y en Windows-1252.
+
+![Listado de estudiantes del centro tras la importación](img/centro/centro-estudiantes.png)
 
 ### Cómo exportar el CSV de Séneca (perfil Dirección)
 

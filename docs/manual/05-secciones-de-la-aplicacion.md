@@ -30,6 +30,8 @@ Los administradores de centro y los administradores globales pueden consultar cu
 
 El campo **Buscar…** de la cabecera abre una paleta de búsqueda que también puede invocarse con el atajo de teclado **Ctrl+K** (**⌘K** en Mac) desde cualquier pantalla. Los resultados se agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni tildes:
 
+![Paleta de búsqueda global abierta con resultados filtrados](img/buscar/buscar-global.png)
+
 - **Estudiantes** — abre la [ficha del alumno](#ficha-del-alumno) correspondiente.
 - **Docentes** — solo para administradores.
 - **Acciones** — accesos directos a **Nuevo parte**, **Ir a notificaciones** y **Cambiar de curso** (esta última requiere permisos de administración). Las acciones aparecen nada más abrir la paleta y se filtran igual que el resto de resultados.
@@ -127,6 +129,8 @@ La sección **Sanciones** del menú lateral recoge las sanciones del curso activ
 
 ### Listado de sanciones
 
+![Listado de sanciones](img/sanciones/sanciones-listado.png)
+
 El listado muestra las sanciones accesibles para el docente, con paginación y estas herramientas:
 
 - **Búsqueda por alumno o grupo**, que filtra en vivo mientras se escribe.
@@ -140,11 +144,16 @@ En pantallas pequeñas, cada fila se muestra como una tarjeta con las etiquetas 
 El registro tiene dos pasos:
 
 1. **Seleccionar al estudiante** — pulsa **Nueva sanción**. El buscador filtra en vivo mientras se escribe y la tabla muestra, para cada estudiante, cuántos partes sancionables tiene (ya notificados y sin sanción), cuántos incluyen conductas graves y cuántos han prescrito.
+
+   ![Buscador de alumnado con partes sancionables](img/sanciones/sanciones-buscar-alumno.png)
+
 2. **Completar el formulario**:
    - **Partes a incorporar** — la lista de partes sancionables del estudiante en ese grupo (notificados a la familia, sin otra sanción y no prescritos), del más reciente al más antiguo. Marca los que motivan la sanción. Cada uno muestra siempre la fecha y hora, el docente que lo registró y la descripción completa de lo acontecido; un desplegable «Ver observaciones e historial de notificaciones» permite consultar además sus observaciones (si las tiene) y su historial de comunicaciones con la familia, sin salir del formulario.
    - **Medidas disciplinarias** — marca las medidas aplicadas, con el mismo filtro de texto y contador de seleccionadas que las conductas del parte. Si no se aplica ninguna medida, marca la casilla correspondiente e indica el motivo.
    - **Detalle** — campo de texto enriquecido para describir la sanción.
    - **Fechas de inicio y fin** — determinan el periodo de vigencia y cuándo aparece la sanción en el calendario.
+
+![Formulario de nueva sanción cumplimentado](img/sanciones/sanciones-nueva.png)
 
 ### Ver y editar una sanción
 
@@ -156,11 +165,15 @@ Mientras la sanción esté pendiente de notificar a la familia, quien tenga perm
 
 Los administradores de centro configuran las medidas disponibles en **Centro educativo › Sanciones › Medidas disciplinarias**, organizadas en categorías igual que las conductas contrarias.
 
+![Administración de medidas disciplinarias](img/centro/centro-medidas.png)
+
 Al igual que en las conductas, los botones **Exportar JSON** e **Importar JSON** permiten copiar la configuración de medidas y categorías entre centros, con la misma opción de vaciar las medidas y categorías existentes antes de importar.
 
 ## Ficha del alumno
 
 La ficha del alumno reúne en una sola pantalla toda la información de convivencia de un estudiante:
+
+![Ficha del alumno con su historial de convivencia](img/alumnado/alumnado-ficha.png)
 
 - **Datos básicos** — nombre y grupo.
 - **Contadores** — partes registrados (indicando cuántos incluyen conductas graves y cuántos han prescrito) y sanciones vigentes hoy.
@@ -279,6 +292,8 @@ La tarjeta **Oferta formativa** del panel de centro educativo abre un editor de 
 activo del centro. Seleccionar un elemento de una columna muestra sus elementos dependientes en la
 columna siguiente; las altas, ediciones y bajas se aplican al instante, sin recargar la página.
 
+![Editor de tres columnas de la oferta formativa](img/centro/centro-oferta.png)
+
 - **Enseñanzas** — se crean indicando su familia profesional y su nombre. Desde el panel de detalle
   se les puede asignar un coordinador.
 - **Niveles** — cursos dentro de una enseñanza (por ejemplo, 1º y 2º de un ciclo). Admiten uno o
@@ -306,6 +321,8 @@ botones de exportar/importar no están disponibles al consultar un curso académ
 
 La tarjeta **Perfiles** del panel de centro educativo permite a los administradores de centro y globales asignar dos roles especiales a docentes concretos del centro:
 
+![Asignación de los perfiles de comisión de convivencia y orientación](img/centro/centro-perfiles.png)
+
 - **Comisión de convivencia** — acceden a todos los partes del centro y pueden registrar sanciones para cualquier estudiante, con los mismos permisos que un administrador de centro sobre partes y sanciones.
 - **Orientador/a** — acceden a todos los partes y sanciones del centro, pero no pueden crear, editar ni eliminar los que no han registrado ellos mismos.
 
@@ -317,6 +334,9 @@ Ninguno de los dos perfiles concede acceso al resto del panel de centro educativ
 
 La tarjeta **Registro de avisos por correo** del panel de centro educativo abre el historial de los
 correos automáticos enviados sobre partes y sanciones, con su resultado (entregado o fallido).
+
+![Registro de avisos por correo enviados](img/centro/centro-avisos.png)
+
 Detalles del listado, sus filtros y el ajuste que lo activa o desactiva en
 [Notificaciones por email](06-notificaciones-y-email.md#registro-de-avisos-por-correo).
 
@@ -325,6 +345,8 @@ Detalles del listado, sus filtros y el ajuste que lo activa o desactiva en
 ### Registro de actividad
 
 El registro de actividad recoge las acciones relevantes realizadas en la plataforma: accesos, modificaciones de datos, importaciones y exportaciones. Solo es visible para los administradores globales.
+
+![Registro de actividad con el listado de acciones](img/admin/admin-registro-actividad.png)
 
 #### Qué se registra
 
