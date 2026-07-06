@@ -271,6 +271,44 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testShowDisplaysNotifyButtonWhenPendingAndAuthorized(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        // Un enlace es la pastilla de estado y el otro el botón de notificar añadido junto a Editar/Eliminar.
+        self::assertSame(2, $crawler->filter('a[href="/notificaciones/sanciones/' . $sanction->getId()->toRfc4122() . '/registrar"]')->count());
+    }
+
+    public function testShowHidesNotifyButtonWhenAlreadyNotified(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $method   = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $communication = Communication::forSanction(
+            $sanction, $method, $admin, new \DateTimeImmutable(), CommunicationResult::Notified,
+        );
+        $this->persist($method, $communication);
+        $sanction->setNotifiedCommunication($communication);
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(1, $crawler->filter('a[href="/notificaciones/sanciones/' . $sanction->getId()->toRfc4122() . '/registrar"]')->count());
+    }
+
     public function testShowIsDeniedToUnrelatedTeacher(): void
     {
         [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();

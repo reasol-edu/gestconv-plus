@@ -100,6 +100,8 @@ Los campos editables son los mismos que en la creación. Los administradores pue
 
 Un administrador puede **eliminar** el parte definitivamente desde el detalle. Esta acción es irreversible.
 
+Mientras el parte esté pendiente de notificar a la familia y no esté prescrito, quien tenga permiso para notificarlo (ver [Quién puede notificar](#quien-puede-notificar)) ve también un botón **Notificar** junto a los de editar y eliminar, con acceso directo a la pantalla de registro de la comunicación.
+
 ### Conductas contrarias a la convivencia
 
 Los administradores de centro configuran las conductas disponibles en **Centro educativo › Conductas contrarias**.
@@ -147,6 +149,8 @@ El registro tiene dos pasos:
 ### Ver y editar una sanción
 
 Desde el listado, **Ver** abre el detalle de la sanción: los partes incorporados, las medidas, las fechas de vigencia y el estado de la notificación a la familia. Al final de la página aparece el **historial de comunicaciones** con la familia. Quien tiene permiso para registrarla (administradores y comisión de convivencia) también puede editarla o eliminarla, esté o no notificada a la familia.
+
+Mientras la sanción esté pendiente de notificar a la familia, quien tenga permiso para notificarla (ver [Quién puede notificar](#quien-puede-notificar)) ve también un botón **Notificar** junto a los de editar y eliminar, con acceso directo a la pantalla de registro de la comunicación.
 
 ### Medidas disciplinarias
 
@@ -201,7 +205,7 @@ Cada intento de comunicación queda registrado en el **historial**, se marque o 
 
 ![Historial de comunicaciones tras registrar una notificación exitosa](img/notificaciones/notificaciones-registrar-parte-historial.png)
 
-El detalle de un parte o de una sanción muestra un indicador de estado (**Notificado** / **Pendiente de notificar**) enlazado a esta pantalla de registro.
+El detalle de un parte o de una sanción muestra un indicador de estado (**Notificado** / **Pendiente de notificar**) enlazado a esta pantalla de registro. Además, mientras el parte o la sanción esté pendiente de notificar (y el parte no esté prescrito), quien tenga permiso para notificarlo ve también un botón **Notificar** junto a los de editar y eliminar.
 
 ![Indicador de notificado en el detalle de un parte](img/notificaciones/parte-badge-notificado.png)
 

@@ -366,6 +366,46 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testShowDisplaysNotifyButtonWhenPendingAndAuthorized(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        // Un enlace es la pastilla de estado y el otro el botón de notificar añadido junto a Editar/Eliminar.
+        self::assertSame(2, $crawler->filter('a[href="/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar"]')->count());
+    }
+
+    public function testShowHidesNotifyButtonWhenAlreadyNotified(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->notifyReport($report, $centre, $teacher);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(1, $crawler->filter('a[href="/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar"]')->count());
+    }
+
+    public function testShowHidesNotifyButtonWhenPrescribed(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $report->setPrescribedAt(new \DateTimeImmutable());
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(1, $crawler->filter('a[href="/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar"]')->count());
+    }
+
     public function testShowIsDeniedToUnrelatedTeacher(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
