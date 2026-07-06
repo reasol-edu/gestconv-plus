@@ -31,13 +31,13 @@ settings.key.page_size.description: 'Número de elementos que se muestran en los
 settings.key.email_notifications.label: 'Activar notificaciones automáticas'
 settings.key.email_notifications.description: 'Activa o desactiva todos los correos automáticos de la aplicación.'
 
-settings.key.email_notification_tutor_assigned.label: 'Email al asignar tutoría docente'
+settings.key.email_notification_tutor_assigned.label: 'Correo al asignar tutoría docente'
 settings.key.email_notification_tutor_assigned.description: 'Envía un aviso al tutor o tutora dual docente cuando se le asigna un puesto.'
 
-settings.key.email_notification_positions_created.label: 'Email al crear puestos en una estancia'
+settings.key.email_notification_positions_created.label: 'Correo al crear puestos en una estancia'
 settings.key.email_notification_positions_created.description: 'Notifica a los docentes de enlace de la empresa cuando se crean puestos nuevos.'
 
-settings.key.email_notification_signature_reminder.label: 'Email de recordatorio de firma'
+settings.key.email_notification_signature_reminder.label: 'Correo de recordatorio de firma'
 settings.key.email_notification_signature_reminder.description: 'Recuerda a quienes tienen responsabilidad sobre el puesto (tutor o tutora dual docente, coordinación de FP dual y jefatura de familia profesional) los puestos registrados sin firmar cuando la estancia está próxima a comenzar.'
 
 settings.key.email_notification_signature_reminder_days.label: 'Días de antelación del recordatorio de firma'
@@ -134,19 +134,19 @@ settings.key.notifications_email_report_sanctionable_committee.choice.none: 'A n
 settings.key.notifications_email_report_sanctionable_committee.choice.committee: 'A la comisión de convivencia'
 
 settings.key.reports_incident_header_left.label: 'Encabezado de informe de partes (izquierda)'
-settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Placeholders disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Marcadores disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
 
 settings.key.reports_incident_header_right.label: 'Encabezado de informe de partes (derecha)'
-settings.key.reports_incident_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Placeholders disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+settings.key.reports_incident_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Marcadores disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
 
 settings.key.reports_incident_header_margin.label: 'Margen para encabezado de partes'
 settings.key.reports_incident_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
 
 settings.key.reports_sanction_header_left.label: 'Encabezado de informe de sanciones (izquierda)'
-settings.key.reports_sanction_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de una sanción. Placeholders disponibles: {title}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+settings.key.reports_sanction_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de una sanción. Marcadores disponibles: {title}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
 
 settings.key.reports_sanction_header_right.label: 'Encabezado de informe de sanciones (derecha)'
-settings.key.reports_sanction_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Placeholders disponibles: {title}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+settings.key.reports_sanction_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Marcadores disponibles: {title}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
 
 settings.key.reports_sanction_header_margin.label: 'Margen para encabezado de sanciones'
 settings.key.reports_sanction_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'

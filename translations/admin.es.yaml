@@ -900,7 +900,7 @@ activity_log.action.academic_year.created: 'Alta de curso académico'
 activity_log.action.programme_offer.imported: 'Importación de oferta formativa'
 sanction_category.cancel: 'Cancelar'
 
-# Títulos de los informes PDF (placeholder {title} de los encabezados personalizables)
+# Títulos de los informes PDF (marcador {title} de los encabezados personalizables)
 pdf.incident_report.title: 'Informe de parte de convivencia'
 pdf.sanction.title: 'Informe de sanción de convivencia'
 pdf.watermark.draft: 'Borrador'
