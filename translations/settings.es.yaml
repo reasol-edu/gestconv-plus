@@ -75,6 +75,9 @@ settings.key.notifications_report_prescription_warning_days.description: 'Días 
 settings.key.notifications_email_log_enabled.label: 'Registrar los avisos por correo'
 settings.key.notifications_email_log_enabled.description: 'Guarda un registro de cada aviso por correo enviado sobre partes y sanciones (destinatario, tipo de evento, asunto y resultado), visible en el hub de centro educativo.'
 
+settings.key.notifications_log_retention_days.label: 'Retención de los registros'
+settings.key.notifications_log_retention_days.description: 'Días que se conservan las entradas del registro de actividad y del registro de avisos por correo antes de eliminarse automáticamente. Un valor de 0 desactiva esta eliminación automática.'
+
 settings.key.notifications_email_report_created.label: 'Parte registrado'
 settings.key.notifications_email_report_created.description: 'Determina quién recibe un correo cuando se registra un nuevo parte de convivencia.'
 settings.key.notifications_email_report_created.choice.none: 'A nadie'

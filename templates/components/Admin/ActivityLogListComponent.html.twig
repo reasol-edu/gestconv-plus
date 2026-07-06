@@ -226,14 +226,30 @@
                             {% endif %}
                         </td>
 
+                        {% set actionLabelKey = 'activity_log.action.' ~ entry.actionType %}
+                        {% set actionLabel = actionLabelKey|trans({}, 'admin') %}
                         <td data-label="Tipo de acción" class="px-6 py-3 whitespace-nowrap">
                             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-mono font-medium ring-1 ring-inset {{ badgeClass }}">
                                 {{ entry.actionType }}
                             </span>
+                            {% if actionLabel != actionLabelKey %}
+                                <div class="text-xs text-gray-500 mt-0.5">{{ actionLabel }}</div>
+                            {% endif %}
                         </td>
 
                         <td data-label="Datos" class="px-6 py-3">
-                            {% if entry.data is not null %}
+                            {% if entry.data is not null and entry.data.changes is defined %}
+                                <ul class="space-y-0.5 text-xs text-gray-600">
+                                    {% for field, change in entry.data.changes %}
+                                        {% set before = change.before is same as(true) ? 'Sí' : (change.before is same as(false) ? 'No' : (change.before is null ? '—' : change.before)) %}
+                                        {% set after = change.after is same as(true) ? 'Sí' : (change.after is same as(false) ? 'No' : (change.after is null ? '—' : change.after)) %}
+                                        <li>
+                                            <span class="font-mono text-gray-500">{{ field }}:</span>
+                                            {{ before }} → {{ after }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% elseif entry.data is not null %}
                                 <code class="block max-w-xs truncate text-xs text-gray-500 font-mono"
                                       title="{{ entry.data|json_encode }}">
                                     {{ entry.data|json_encode }}

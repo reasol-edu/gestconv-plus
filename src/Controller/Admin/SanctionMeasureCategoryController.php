@@ -8,6 +8,8 @@ use App\Entity\SanctionMeasureCategory;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\SanctionMeasureCategoryRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\ActivityLogService;
+use App\Service\EntityChangeTracker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,11 +20,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centros/{centreId}/sanciones/categorias')]
 class SanctionMeasureCategoryController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_FIELDS = ['name'];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
         private readonly SanctionMeasureCategoryRepository $categories,
         private readonly TranslatorInterface $translator,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('/nueva', name: 'app_admin_sanction_measure_categories_create', methods: ['GET', 'POST'])]
@@ -51,6 +58,11 @@ class SanctionMeasureCategoryController extends AbstractController
 
                 $this->em->persist($category);
                 $this->em->flush();
+
+                $this->activityLog->log('sanction_measure_category.created', [
+                    'entityId' => $category->getId()->toRfc4122(),
+                    'name'     => $category->getName(),
+                ]);
 
                 $this->addFlash('success', $this->t('sanction_category.flash.created'));
 
@@ -86,8 +98,19 @@ class SanctionMeasureCategoryController extends AbstractController
             $name = trim($request->request->getString('name'));
 
             if ($name !== '') {
+                $before = $this->changeTracker->snapshot($category, self::LOGGED_FIELDS);
+
                 $category->setName($name);
                 $this->em->flush();
+
+                $changes = $this->changeTracker->diff($before, $category, self::LOGGED_FIELDS);
+                if ($changes !== []) {
+                    $this->activityLog->log('sanction_measure_category.updated', [
+                        'entityId' => $category->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
+                }
+
                 $this->addFlash('success', $this->t('sanction_category.flash.updated'));
             }
 
@@ -118,6 +141,9 @@ class SanctionMeasureCategoryController extends AbstractController
             throw $this->createNotFoundException();
         }
 
+        $entityId = $category->getId()->toRfc4122();
+        $name     = $category->getName();
+
         $this->em->remove($category);
         $this->em->flush();
 
@@ -125,6 +151,11 @@ class SanctionMeasureCategoryController extends AbstractController
             $cat->setPosition($pos);
         }
         $this->em->flush();
+
+        $this->activityLog->log('sanction_measure_category.deleted', [
+            'entityId' => $entityId,
+            'name'     => $name,
+        ]);
 
         $this->addFlash('success', $this->t('sanction_category.flash.deleted'));
 

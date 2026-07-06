@@ -23,4 +23,10 @@ interface AppSettingsInterface
 
     /** Returns the resolved value for a specific teacher within a specific centre (teacher → centre → global → default). */
     public function getForTeacherInCentre(string $key, Teacher $teacher, EducationalCentre $centre): mixed;
+
+    /**
+     * Returns the resolved value ignoring any centre or teacher context (global → default).
+     * Safe to call outside an HTTP request (console commands, scheduled/queued message handlers).
+     */
+    public function getGlobal(string $key): mixed;
 }

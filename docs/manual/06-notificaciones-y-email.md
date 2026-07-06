@@ -89,6 +89,12 @@ desactivarlo, los avisos se siguen enviando con normalidad, simplemente no se gu
 ellos. Este historial no incluye los correos de verificación de email ni de restablecimiento de
 contraseña, que no son configurables y no tienen registro propio.
 
+Las entradas se purgan automáticamente pasados los días configurados en el ajuste **Retención de
+los registros** (90 por defecto, limpieza semanal los domingos a las 3:00; ver
+[Ajustes](07-ajustes.md#notificaciones-a-familias)). Este mismo ajuste, exclusivamente global,
+controla también la retención del
+[registro de actividad](05-secciones-de-la-aplicacion.md#registro-de-actividad).
+
 ### Usar una cuenta de Gmail
 
 Para pruebas o centros pequeños puede usarse una cuenta de Gmail con una

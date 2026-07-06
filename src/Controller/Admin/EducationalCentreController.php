@@ -11,7 +11,9 @@ use App\Pagination\Paginator;
 use App\Repository\AcademicYearRepository;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\TeacherRepository;
+use App\Service\ActivityLogService;
 use App\Service\CommunicationMethodSeeder;
+use App\Service\EntityChangeTracker;
 use App\Service\IncidentBehaviorSeeder;
 use App\Service\SanctionMeasureSeeder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +29,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_ADMIN')]
 class EducationalCentreController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_FIELDS = ['code', 'name', 'city'];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
@@ -36,6 +41,8 @@ class EducationalCentreController extends AbstractController
         private readonly IncidentBehaviorSeeder $behaviorSeeder,
         private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
         private readonly CommunicationMethodSeeder $communicationMethodSeeder,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('', name: 'app_admin_centres_index')]
@@ -85,6 +92,17 @@ class EducationalCentreController extends AbstractController
                 $this->sanctionMeasureSeeder->seedForCentre($centre);
                 $this->communicationMethodSeeder->seedForCentre($centre);
                 $this->em->flush();
+
+                $this->activityLog->log('educational_centre.created', [
+                    'entityId' => $centre->getId()->toRfc4122(),
+                    'code'     => $centre->getCode(),
+                    'name'     => $centre->getName(),
+                ]);
+                $this->activityLog->log('academic_year.created', [
+                    'entityId' => $academicYear->getId()->toRfc4122(),
+                    'centreId' => $centre->getId()->toRfc4122(),
+                    'name'     => $academicYear->getName(),
+                ]);
 
                 $this->addFlash('success', $this->t('centre.flash.created'));
 
@@ -147,6 +165,8 @@ class EducationalCentreController extends AbstractController
                     }
                 }
             } else {
+                $before = $this->changeTracker->snapshot($centre, self::LOGGED_FIELDS);
+
                 $centre->setCode($values['code'])
                     ->setName($values['name'])
                     ->setCity($values['city']);
@@ -162,6 +182,14 @@ class EducationalCentreController extends AbstractController
                 }
 
                 $this->em->flush();
+
+                $changes = $this->changeTracker->diff($before, $centre, self::LOGGED_FIELDS);
+                if ($changes !== []) {
+                    $this->activityLog->log('educational_centre.updated', [
+                        'entityId' => $centre->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
+                }
 
                 $this->addFlash('success', $this->t('centre.flash.saved'));
 
@@ -228,6 +256,12 @@ class EducationalCentreController extends AbstractController
 
             $this->em->persist($year);
             $this->em->flush();
+
+            $this->activityLog->log('academic_year.created', [
+                'entityId' => $year->getId()->toRfc4122(),
+                'centreId' => $centre->getId()->toRfc4122(),
+                'name'     => $year->getName(),
+            ]);
 
             $this->addFlash('success', $this->t('year.flash.added'));
         }

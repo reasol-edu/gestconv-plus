@@ -8,6 +8,8 @@ use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\TeacherRepository;
+use App\Service\ActivityLogService;
+use App\Service\EntityChangeTracker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -22,11 +24,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_ADMIN')]
 class TeacherController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_FIELDS = ['username', 'email', 'admin', 'active', 'external'];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly TeacherRepository $teachers,
         private readonly UserPasswordHasherInterface $hasher,
         private readonly TranslatorInterface $translator,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('', name: 'app_admin_teachers_index')]
@@ -80,6 +87,11 @@ class TeacherController extends AbstractController
 
                 $this->em->persist($teacher);
                 $this->em->flush();
+
+                $this->activityLog->log('teacher.created', [
+                    'entityId' => $teacher->getId()->toRfc4122(),
+                    'username' => $teacher->getUsername(),
+                ]);
 
                 $this->addFlash('success', $this->t('teacher.flash.created'));
 
@@ -166,6 +178,9 @@ class TeacherController extends AbstractController
             }
 
             if (empty($errors)) {
+                $before     = $this->changeTracker->snapshot($teacher, self::LOGGED_FIELDS);
+                $nameBefore = ['firstName' => $teacher->getName()->getFirstName(), 'lastName' => $teacher->getName()->getLastName()];
+
                 $teacher->setName(new PersonName($values['first_name'], $values['last_name']))
                     ->setUsername($values['username'])
                     ->setEmail($values['email'] !== '' ? $values['email'] : null)
@@ -178,6 +193,20 @@ class TeacherController extends AbstractController
                 }
 
                 $this->em->flush();
+
+                $changes = $this->changeTracker->diff($before, $teacher, self::LOGGED_FIELDS);
+
+                $nameAfter = ['firstName' => $teacher->getName()->getFirstName(), 'lastName' => $teacher->getName()->getLastName()];
+                if ($nameBefore !== $nameAfter) {
+                    $changes['name'] = ['before' => $nameBefore, 'after' => $nameAfter];
+                }
+
+                if ($changes !== []) {
+                    $this->activityLog->log('teacher.updated', [
+                        'entityId' => $teacher->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
+                }
 
                 $this->addFlash('success', $this->t('teacher.flash.saved'));
 
@@ -213,9 +242,18 @@ class TeacherController extends AbstractController
             return $this->redirectToRoute('app_admin_teachers_index');
         }
 
+        $entityId = $teacher->getId()->toRfc4122();
+        $username = $teacher->getUsername();
+
         try {
             $this->em->remove($teacher);
             $this->em->flush();
+
+            $this->activityLog->log('teacher.deleted', [
+                'entityId' => $entityId,
+                'username' => $username,
+            ]);
+
             $this->addFlash('success', $this->t('teacher.flash.deleted'));
         } catch (\Exception) {
             $this->addFlash('error', $this->t('teacher.flash.delete_error'));

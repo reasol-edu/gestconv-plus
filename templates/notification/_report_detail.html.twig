@@ -1,17 +1,7 @@
 {# Behaviors #}
 <div class="px-6 py-4">
     <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'incident.col.behaviors'|trans({}, 'admin') }}</p>
-    <div class="flex flex-wrap gap-2">
-        {% for beh in report.behaviors %}
-            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                         {{ beh.serious ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700' }}">
-                {% if beh.serious %}{{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3 w-3 mr-1'}) }}{% endif %}
-                {{ beh.name }}
-            </span>
-        {% else %}
-            <span class="text-xs text-gray-400">—</span>
-        {% endfor %}
-    </div>
+    {% include 'incident/_behavior_badges.html.twig' with { behaviors: report.behaviors } %}
 </div>
 
 {# Description #}

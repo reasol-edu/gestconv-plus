@@ -354,10 +354,11 @@ class SanctionControllerTest extends ControllerTestCase
         $sanction = $this->makeSanction($admin, $student, $group, [$report]);
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/editar');
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/editar');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
+        self::assertStringContainsString($behavior->getName(), $crawler->text());
     }
 
     public function testEditGetIsDeniedToReportCreator(): void

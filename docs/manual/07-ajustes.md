@@ -78,6 +78,7 @@ Ninguno de los tres ajustes tiene ámbito de docente: se fijan a nivel global o 
 | Días para la prescripción automática | Global, centro | Entero (días) | 0-365 | 14 |
 | Aviso de prescripción próxima | Global, centro, docente | Entero (días) | 0-365 | 7 |
 | Registrar los avisos por correo | Global, centro | Booleano | — | Activado |
+| Retención de los registros | Global | Entero (días) | 0-3650 | 90 |
 
 Los dos primeros ajustes determinan, además de los administradores, qué docentes pueden registrar
 una comunicación con la familia (ver [Notificaciones](05-secciones-de-la-aplicacion.md#notificaciones)).
@@ -97,6 +98,14 @@ El quinto activa o desactiva el
 [registro de avisos por correo](06-notificaciones-y-email.md#registro-de-avisos-por-correo):
 si está desactivado, los avisos de partes y sanciones se siguen enviando con normalidad, pero no
 queda constancia de ellos en el registro visible desde el hub de **Centro educativo**.
+
+El sexto controla cuántos días se conservan las entradas del
+[registro de actividad](05-secciones-de-la-aplicacion.md#registro-de-actividad) y del
+[registro de avisos por correo](06-notificaciones-y-email.md#registro-de-avisos-por-correo) antes de
+que una tarea programada semanal (domingos a las 3:00) las elimine automáticamente. Es el único de
+los seis con ámbito exclusivamente global: no admite valor de centro ni de docente, ya que también
+gobierna la retención del registro de actividad, que no está asociado a ningún centro. Un valor de
+0 desactiva esta eliminación automática.
 
 ### Avisos por correo
 

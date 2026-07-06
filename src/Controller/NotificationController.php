@@ -19,6 +19,7 @@ use App\Repository\SanctionRepository;
 use App\Repository\StudentRepository;
 use App\Security\Voter\IncidentReportVoter;
 use App\Security\Voter\SanctionVoter;
+use App\Service\ActivityLogService;
 use App\Service\AppSettingsInterface;
 use App\Service\IncidentEmailNotifier;
 use App\Service\StudentContactVisibility;
@@ -46,6 +47,7 @@ class NotificationController extends AbstractController
         private readonly StudentContactVisibility $contactVisibility,
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
+        private readonly ActivityLogService $activityLog,
     ) {}
 
     #[Route('', name: 'app_notifications_index')]
@@ -204,6 +206,9 @@ class NotificationController extends AbstractController
             /** @var list<IncidentReport> $newlyNotified */
             $newlyNotified = [];
 
+            /** @var list<array{Communication, IncidentReport}> $createdCommunications */
+            $createdCommunications = [];
+
             foreach ($selected as $report) {
                 $communication = Communication::forIncidentReport(
                     $report,
@@ -214,6 +219,7 @@ class NotificationController extends AbstractController
                     $input['description'],
                 );
                 $this->em->persist($communication);
+                $createdCommunications[] = [$communication, $report];
 
                 if ($input['result'] === CommunicationResult::Notified && !$report->isNotified()) {
                     $report->setNotifiedCommunication($communication);
@@ -225,6 +231,15 @@ class NotificationController extends AbstractController
 
             foreach ($newlyNotified as $report) {
                 $this->notifier->reportNotified($report, $user);
+            }
+
+            foreach ($createdCommunications as [$communication, $report]) {
+                $this->activityLog->log('communication.registered', [
+                    'entityId' => $communication->getId()->toRfc4122(),
+                    'reportId' => $report->getId()->toRfc4122(),
+                    'method'   => $input['method']->getName(),
+                    'result'   => $input['result']->value,
+                ]);
             }
 
             $this->addFlash('success', $this->t('notification.flash.registered'));
@@ -275,6 +290,14 @@ class NotificationController extends AbstractController
                 $this->notifier->sanctionNotified($target, $user);
             }
         }
+
+        $this->activityLog->log('communication.registered', array_filter([
+            'entityId'  => $communication->getId()->toRfc4122(),
+            'reportId'  => $target instanceof IncidentReport ? $target->getId()->toRfc4122() : null,
+            'sanctionId' => $target instanceof Sanction ? $target->getId()->toRfc4122() : null,
+            'method'    => $input['method']->getName(),
+            'result'    => $input['result']->value,
+        ], static fn (mixed $v): bool => $v !== null));
 
         return true;
     }

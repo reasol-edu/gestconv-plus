@@ -1,0 +1,11 @@
+<div class="flex flex-wrap gap-2">
+    {% for beh in behaviors %}
+        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                     {{ beh.serious ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700' }}">
+            {% if beh.serious %}{{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3 w-3 mr-1'}) }}{% endif %}
+            {{ beh.name }}
+        </span>
+    {% else %}
+        <span class="text-xs text-gray-400">—</span>
+    {% endfor %}
+</div>

@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\EducationalCentre;
 use App\Repository\EducationalCentreRepository;
+use App\Service\ActivityLogService;
 use App\Service\ImportOptions;
 use App\Service\ProgrammeOfferExporter;
 use App\Service\ProgrammeOfferImporter;
@@ -28,6 +29,7 @@ class ProgrammeOfferController extends AbstractController
         private readonly ProgrammeOfferExporter $exporter,
         private readonly ProgrammeOfferImporter $importer,
         private readonly TenantContext $tenantContext,
+        private readonly ActivityLogService $activityLog,
     ) {}
 
     #[Route('/export', name: 'app_admin_offer_export', methods: ['GET'])]
@@ -87,6 +89,14 @@ class ProgrammeOfferController extends AbstractController
 
         /** @var array<string, mixed> $decoded */
         $stats = $this->importer->import($decoded, $importYear, $options);
+
+        $this->activityLog->log('programme_offer.imported', [
+            'centreId'   => $centre->getId()->toRfc4122(),
+            'yearId'     => $importYear->getId()->toRfc4122(),
+            'programmes' => $stats['programmes'],
+            'levels'     => $stats['levels'],
+            'groups'     => $stats['groups'],
+        ]);
 
         $summary = $this->translator->trans('offer.import.flash.summary', [
             '%programmes%' => $stats['programmes'],

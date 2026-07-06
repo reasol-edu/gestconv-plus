@@ -6,6 +6,7 @@ namespace App;
 
 use App\Message\AutoPrescribeIncidentReportsMessage;
 use App\Message\PurgeActivityLogMessage;
+use App\Message\PurgeEmailNotificationLogMessage;
 use App\Message\WarnUpcomingReportPrescriptionsMessage;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\RecurringMessage;
@@ -26,6 +27,7 @@ class Schedule implements ScheduleProviderInterface
         return (new SymfonySchedule())
             ->add(
                 RecurringMessage::cron('0 3 * * 0', new PurgeActivityLogMessage()),
+                RecurringMessage::cron('30 3 * * 0', new PurgeEmailNotificationLogMessage()),
                 RecurringMessage::cron('0 4 * * *', new AutoPrescribeIncidentReportsMessage()),
                 RecurringMessage::cron('30 4 * * *', new WarnUpcomingReportPrescriptionsMessage()),
             )

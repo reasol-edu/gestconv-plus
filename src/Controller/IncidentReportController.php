@@ -18,6 +18,8 @@ use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Security\Voter\IncidentReportObservationVoter;
 use App\Security\Voter\IncidentReportVoter;
+use App\Service\ActivityLogService;
+use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +33,19 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/partes')]
 class IncidentReportController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_REPORT_FIELDS = [
+        'description',
+        'occurredAt',
+        'expelledFromClass',
+        'assignedTasks',
+        'tasksCompleted',
+        'prescribedAt',
+    ];
+
+    /** @var list<string> */
+    private const LOGGED_OBSERVATION_FIELDS = ['text', 'registeredAt'];
+
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly EntityManagerInterface $em,
@@ -43,6 +58,8 @@ class IncidentReportController extends AbstractController
         private readonly IncidentReportObservationRepository $observations,
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('', name: 'app_incidents_index')]
@@ -240,6 +257,13 @@ class IncidentReportController extends AbstractController
 
                 foreach ($createdReports as $createdReport) {
                     $this->notifier->reportCreated($createdReport, $user);
+
+                    $this->activityLog->log('incident_report.created', [
+                        'entityId'  => $createdReport->getId()->toRfc4122(),
+                        'studentId' => $createdReport->getStudent()->getId()->toRfc4122(),
+                        'groupId'   => $createdReport->getGroup()->getId()->toRfc4122(),
+                        'number'    => $createdReport->getNumber(),
+                    ]);
                 }
 
                 return $this->redirectToRoute('app_incidents_created', [
@@ -394,8 +418,14 @@ class IncidentReportController extends AbstractController
             return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
         }
 
-        $this->em->persist(new IncidentReportObservation($report, $user, new \DateTimeImmutable(), $text));
+        $observation = new IncidentReportObservation($report, $user, new \DateTimeImmutable(), $text);
+        $this->em->persist($observation);
         $this->em->flush();
+
+        $this->activityLog->log('incident_report_observation.created', [
+            'entityId' => $observation->getId()->toRfc4122(),
+            'reportId' => $report->getId()->toRfc4122(),
+        ]);
 
         $this->addFlash('success', $this->t('incident.observation.flash.added'));
 
@@ -456,8 +486,19 @@ class IncidentReportController extends AbstractController
             }
 
             if (empty($errors) && $registeredAt !== null) {
+                $before = $this->changeTracker->snapshot($observation, self::LOGGED_OBSERVATION_FIELDS);
+
                 $observation->setRegisteredAt($registeredAt)->setText($text);
                 $this->em->flush();
+
+                $changes = $this->changeTracker->diff($before, $observation, self::LOGGED_OBSERVATION_FIELDS);
+                if ($changes !== []) {
+                    $this->activityLog->log('incident_report_observation.updated', [
+                        'entityId' => $observation->getId()->toRfc4122(),
+                        'reportId' => $report->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
+                }
 
                 $this->addFlash('success', $this->t('incident.observation.flash.updated'));
 
@@ -493,8 +534,15 @@ class IncidentReportController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
+        $entityId = $observation->getId()->toRfc4122();
+
         $this->em->remove($observation);
         $this->em->flush();
+
+        $this->activityLog->log('incident_report_observation.deleted', [
+            'entityId' => $entityId,
+            'reportId' => $report->getId()->toRfc4122(),
+        ]);
 
         $this->addFlash('success', $this->t('incident.observation.flash.deleted'));
 
@@ -586,6 +634,7 @@ class IncidentReportController extends AbstractController
 
             if (empty($errors)) {
                 $wasPrescribed = $report->isPrescribed();
+                $before        = $this->changeTracker->snapshot($report, self::LOGGED_REPORT_FIELDS);
 
                 if ($occurredAt !== null) {
                     $report->setOccurredAt($occurredAt);
@@ -630,8 +679,19 @@ class IncidentReportController extends AbstractController
 
                 if (!$wasPrescribed && $report->isPrescribed()) {
                     $this->notifier->reportPrescribed($report, $user);
+                    $this->activityLog->log('incident_report.prescribed', [
+                        'entityId' => $report->getId()->toRfc4122(),
+                    ]);
                 } else {
                     $this->notifier->reportModified($report, $user);
+
+                    $changes = $this->changeTracker->diff($before, $report, self::LOGGED_REPORT_FIELDS);
+                    if ($changes !== []) {
+                        $this->activityLog->log('incident_report.updated', [
+                            'entityId' => $report->getId()->toRfc4122(),
+                            'changes'  => $changes,
+                        ]);
+                    }
                 }
 
                 $this->addFlash('success', $this->t('incident.flash.updated'));
@@ -667,8 +727,18 @@ class IncidentReportController extends AbstractController
 
         $this->notifier->reportDeleted($report, $user);
 
+        $entityId  = $report->getId()->toRfc4122();
+        $studentId = $report->getStudent()->getId()->toRfc4122();
+        $number    = $report->getNumber();
+
         $this->em->remove($report);
         $this->em->flush();
+
+        $this->activityLog->log('incident_report.deleted', [
+            'entityId'  => $entityId,
+            'studentId' => $studentId,
+            'number'    => $number,
+        ]);
 
         $this->addFlash('success', $this->t('incident.flash.deleted'));
 

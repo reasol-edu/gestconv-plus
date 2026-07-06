@@ -9,6 +9,8 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\SanctionMeasureCategoryRepository;
 use App\Repository\SanctionMeasureRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\ActivityLogService;
+use App\Service\EntityChangeTracker;
 use App\Service\SanctionMeasureExporter;
 use App\Service\SanctionMeasureImporter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,6 +25,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centros/{centreId}/sanciones/medidas')]
 class SanctionMeasureController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_FIELDS = ['name', 'hasDateRange', 'active'];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
@@ -31,6 +36,8 @@ class SanctionMeasureController extends AbstractController
         private readonly SanctionMeasureExporter $exporter,
         private readonly SanctionMeasureImporter $importer,
         private readonly TranslatorInterface $translator,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('', name: 'app_admin_sanction_measures_index')]
@@ -154,6 +161,12 @@ class SanctionMeasureController extends AbstractController
         $this->em->persist($measure);
         $this->em->flush();
 
+        $this->activityLog->log('sanction_measure.created', [
+            'entityId'   => $measure->getId()->toRfc4122(),
+            'categoryId' => $category->getId()->toRfc4122(),
+            'name'       => $measure->getName(),
+        ]);
+
         $this->addFlash('success', $this->t('sanction_measure.flash.created'));
 
         return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
@@ -185,11 +198,29 @@ class SanctionMeasureController extends AbstractController
             $category     = $this->categories->findById($categoryId);
 
             if ($name !== '' && $category !== null && $category->getEducationalCentre() === $centre) {
+                $before           = $this->changeTracker->snapshot($measure, self::LOGGED_FIELDS);
+                $categoryIdBefore = $measure->getCategory()->getId()->toRfc4122();
+
                 $measure->setName($name)
                         ->setCategory($category)
                         ->setHasDateRange($hasDateRange)
                         ->setActive($active);
                 $this->em->flush();
+
+                $changes = $this->changeTracker->diff($before, $measure, self::LOGGED_FIELDS);
+
+                $categoryIdAfter = $measure->getCategory()->getId()->toRfc4122();
+                if ($categoryIdBefore !== $categoryIdAfter) {
+                    $changes['categoryId'] = ['before' => $categoryIdBefore, 'after' => $categoryIdAfter];
+                }
+
+                if ($changes !== []) {
+                    $this->activityLog->log('sanction_measure.updated', [
+                        'entityId' => $measure->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
+                }
+
                 $this->addFlash('success', $this->t('sanction_measure.flash.updated'));
             }
 
@@ -224,6 +255,9 @@ class SanctionMeasureController extends AbstractController
         }
 
         $category = $measure->getCategory();
+        $entityId = $measure->getId()->toRfc4122();
+        $name     = $measure->getName();
+
         $this->em->remove($measure);
         $this->em->flush();
 
@@ -231,6 +265,11 @@ class SanctionMeasureController extends AbstractController
             $m->setPosition($pos);
         }
         $this->em->flush();
+
+        $this->activityLog->log('sanction_measure.deleted', [
+            'entityId' => $entityId,
+            'name'     => $name,
+        ]);
 
         $this->addFlash('success', $this->t('sanction_measure.flash.deleted'));
 

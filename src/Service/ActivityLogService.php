@@ -72,6 +72,9 @@ final class ActivityLogService
                 academicYearId: $academicYearId,
                 data:           $data,
             ));
+
+            // Evita que ActivityLogSubscriber registre además la entrada genérica de esta petición
+            $request?->attributes->set('_activity_log_explicit', true);
         } catch (\Throwable) {
             // El log nunca puede romper la funcionalidad principal
         }

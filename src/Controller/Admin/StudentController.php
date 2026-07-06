@@ -11,7 +11,9 @@ use App\Entity\Student;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\GroupRepository;
 use App\Repository\StudentRepository;
+use App\Service\ActivityLogService;
 use App\Service\CsvReader;
+use App\Service\EntityChangeTracker;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,6 +28,15 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centros/{centreId}/estudiantes')]
 class StudentController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_FIELDS = [
+        'studentId', 'details',
+        'tutorName1', 'tutorEmail1', 'tutorName2', 'tutorEmail2',
+        'contactPhone1', 'contactPhone1Notes',
+        'contactPhone2', 'contactPhone2Notes',
+        'contactPhone3', 'contactPhone3Notes',
+    ];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
@@ -34,6 +45,8 @@ class StudentController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly TenantContext $tenantContext,
         private readonly CsvReader $csvReader,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('', name: 'app_admin_students_index')]
@@ -90,6 +103,13 @@ class StudentController extends AbstractController
 
                 $this->em->persist($student);
                 $this->em->flush();
+
+                $this->activityLog->log('student.created', [
+                    'entityId'  => $student->getId()->toRfc4122(),
+                    'studentId' => $student->getStudentId(),
+                    'firstName' => $student->getName()->getFirstName(),
+                    'lastName'  => $student->getName()->getLastName(),
+                ]);
 
                 $this->addFlash('success', $this->t('student.flash.created'));
 
@@ -164,6 +184,9 @@ class StudentController extends AbstractController
             }
 
             if (empty($errors)) {
+                $before     = $this->changeTracker->snapshot($student, self::LOGGED_FIELDS);
+                $nameBefore = ['firstName' => $student->getName()->getFirstName(), 'lastName' => $student->getName()->getLastName()];
+
                 $student->setName(new PersonName($values['firstName'], $values['lastName']))
                         ->setStudentId($values['studentId']);
                 $this->applyValues($student, $values);
@@ -183,6 +206,20 @@ class StudentController extends AbstractController
                 }
 
                 $this->em->flush();
+
+                $changes = $this->changeTracker->diff($before, $student, self::LOGGED_FIELDS);
+
+                $nameAfter = ['firstName' => $student->getName()->getFirstName(), 'lastName' => $student->getName()->getLastName()];
+                if ($nameBefore !== $nameAfter) {
+                    $changes['name'] = ['before' => $nameBefore, 'after' => $nameAfter];
+                }
+
+                if ($changes !== []) {
+                    $this->activityLog->log('student.updated', [
+                        'entityId' => $student->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
+                }
 
                 $this->addFlash('success', $this->t('student.flash.saved'));
 
@@ -245,6 +282,13 @@ class StudentController extends AbstractController
             $rows            = $this->csvReader->parse($content)['rows'];
             $result          = $this->processCsvImport($rows, $groupsByName, dryRun: false, allowedGroupIds: $allowedGroupIds);
             $this->em->flush();
+
+            $this->activityLog->log('student.imported', [
+                'created' => $result['created'],
+                'updated' => $result['updated'],
+                'skipped' => $result['skipped'],
+            ]);
+
             $this->buildImportFlash($result);
 
             return $this->redirectToRoute('app_admin_students_index', ['centreId' => $centre->getId()]);
@@ -479,8 +523,16 @@ class StudentController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
+        $entityId  = $student->getId()->toRfc4122();
+        $studentId = $student->getStudentId();
+
         $this->em->remove($student);
         $this->em->flush();
+
+        $this->activityLog->log('student.deleted', [
+            'entityId'  => $entityId,
+            'studentId' => $studentId,
+        ]);
 
         $this->addFlash('success', $this->t('student.flash.deleted'));
 

@@ -9,6 +9,8 @@ use App\Repository\CommunicationMethodRepository;
 use App\Repository\CommunicationRepository;
 use App\Repository\EducationalCentreRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\ActivityLogService;
+use App\Service\EntityChangeTracker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,12 +21,17 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centros/{centreId}/metodos-comunicacion')]
 class CommunicationMethodController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_FIELDS = ['name', 'active'];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
         private readonly CommunicationMethodRepository $methods,
         private readonly CommunicationRepository $communications,
         private readonly TranslatorInterface $translator,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('', name: 'app_admin_communication_methods_index')]
@@ -72,6 +79,11 @@ class CommunicationMethodController extends AbstractController
         $this->em->persist($method);
         $this->em->flush();
 
+        $this->activityLog->log('communication_method.created', [
+            'entityId' => $method->getId()->toRfc4122(),
+            'name'     => $method->getName(),
+        ]);
+
         $this->addFlash('success', $this->t('communication_method.flash.created'));
 
         return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
@@ -100,8 +112,19 @@ class CommunicationMethodController extends AbstractController
             $active = $request->request->getBoolean('active');
 
             if ($name !== '') {
+                $before = $this->changeTracker->snapshot($method, self::LOGGED_FIELDS);
+
                 $method->setName($name)->setActive($active);
                 $this->em->flush();
+
+                $changes = $this->changeTracker->diff($before, $method, self::LOGGED_FIELDS);
+                if ($changes !== []) {
+                    $this->activityLog->log('communication_method.updated', [
+                        'entityId' => $method->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
+                }
+
                 $this->addFlash('success', $this->t('communication_method.flash.updated'));
             } else {
                 $this->addFlash('error', $this->t('communication_method.flash.invalid'));
@@ -140,6 +163,9 @@ class CommunicationMethodController extends AbstractController
             return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
         }
 
+        $entityId = $method->getId()->toRfc4122();
+        $name     = $method->getName();
+
         $this->em->remove($method);
         $this->em->flush();
 
@@ -147,6 +173,11 @@ class CommunicationMethodController extends AbstractController
             $m->setPosition($pos);
         }
         $this->em->flush();
+
+        $this->activityLog->log('communication_method.deleted', [
+            'entityId' => $entityId,
+            'name'     => $name,
+        ]);
 
         $this->addFlash('success', $this->t('communication_method.flash.deleted'));
 

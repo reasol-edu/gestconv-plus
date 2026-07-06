@@ -15,6 +15,8 @@ use App\Repository\SanctionMeasureRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\StudentRepository;
 use App\Security\Voter\SanctionVoter;
+use App\Service\ActivityLogService;
+use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +29,15 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/sanciones')]
 class SanctionController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_SANCTION_FIELDS = [
+        'details',
+        'noMeasureApplied',
+        'noMeasureReason',
+        'effectiveFrom',
+        'effectiveTo',
+    ];
+
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly EntityManagerInterface $em,
@@ -39,6 +50,8 @@ class SanctionController extends AbstractController
         private readonly IncidentReportObservationRepository $observations,
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -211,6 +224,16 @@ class SanctionController extends AbstractController
                         $this->notifier->reportSanctioned($linkedReport, $user);
                     }
 
+                    $this->activityLog->log('sanction.created', [
+                        'entityId'  => $sanction->getId()->toRfc4122(),
+                        'studentId' => $student->getId()->toRfc4122(),
+                        'groupId'   => $group->getId()->toRfc4122(),
+                        'reportIds' => array_map(
+                            static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
+                            $linkedReports,
+                        ),
+                    ]);
+
                     $this->addFlash('success', $this->t('sanction.flash.created'));
 
                     return $this->redirectToRoute('app_sanctions_show', ['id' => $sanction->getId()->toRfc4122()]);
@@ -381,6 +404,8 @@ class SanctionController extends AbstractController
             }
 
             if (empty($errors)) {
+                $before = $this->changeTracker->snapshot($sanction, self::LOGGED_SANCTION_FIELDS);
+
                 $sanction->setDetails($details)
                          ->setNoMeasureApplied($noMeasure)
                          ->setNoMeasureReason($noMeasure ? ($noMeasureReason ?: null) : null)
@@ -427,6 +452,25 @@ class SanctionController extends AbstractController
 
                 foreach ($newlyLinkedReports as $newlyLinkedReport) {
                     $this->notifier->reportSanctioned($newlyLinkedReport, $user);
+                }
+
+                $changes = $this->changeTracker->diff($before, $sanction, self::LOGGED_SANCTION_FIELDS);
+
+                $currentLinkedIds = array_map(
+                    static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
+                    $sanction->getReports()->toArray(),
+                );
+                sort($previouslyLinkedIds);
+                sort($currentLinkedIds);
+                if ($previouslyLinkedIds !== $currentLinkedIds) {
+                    $changes['reportIds'] = ['before' => $previouslyLinkedIds, 'after' => $currentLinkedIds];
+                }
+
+                if ($changes !== []) {
+                    $this->activityLog->log('sanction.updated', [
+                        'entityId' => $sanction->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
                 }
 
                 $this->addFlash('success', $this->t('sanction.flash.updated'));
@@ -486,8 +530,16 @@ class SanctionController extends AbstractController
             $r->setSanction(null);
         }
 
+        $entityId  = $sanction->getId()->toRfc4122();
+        $studentId = $sanction->getStudent()->getId()->toRfc4122();
+
         $this->em->remove($sanction);
         $this->em->flush();
+
+        $this->activityLog->log('sanction.deleted', [
+            'entityId'  => $entityId,
+            'studentId' => $studentId,
+        ]);
 
         $this->addFlash('success', $this->t('sanction.flash.deleted'));
 

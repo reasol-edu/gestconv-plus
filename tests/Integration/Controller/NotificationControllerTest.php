@@ -202,6 +202,7 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', $behavior->getName());
         self::assertSelectorTextContains('body', 'Seguimiento inicial.');
+        self::assertSelectorTextContains('body', $creator->getName()->getLastName());
     }
 
     public function testRegisterForReportPostWithNotifiedResultSetsNotifiedCommunication(): void

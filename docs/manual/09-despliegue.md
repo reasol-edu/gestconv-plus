@@ -209,7 +209,6 @@ de lanzar el script (tanto en Linux/macOS como en Windows); en Docker se definen
 | `MESSENGER_TRANSPORT_DSN` | Cola de envío asíncrono de correos | `doctrine://default?auto_setup=0` |
 | `LOAD_FIXTURES` | Cargar datos de demostración al arrancar (⚠️ borra datos existentes) | `false` |
 | `APP_LOG` | Activar el [registro de actividad](05-secciones-de-la-aplicacion.md#registro-de-actividad) | `true` (`false` en el binario nativo) |
-| `APP_LOG_RETENTION_DAYS` | Días que se conservan las entradas del registro antes de la limpieza semanal automática | `90` |
 | `SYMFONY_TRUSTED_PROXIES` | IPs del proxy inverso desde el que recibe peticiones la aplicación (p. ej. nginx, Caddy). Necesario para que el registro muestre la IP real del usuario. Déjalo sin definir si no usas proxy | *(sin definir)* |
 
 ## Despliegue con Docker

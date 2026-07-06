@@ -55,6 +55,11 @@ final class ActivityLogSubscriber
                 }
             }
 
+            if ($request->attributes->getBoolean('_activity_log_explicit')) {
+                // Ya se ha registrado una entrada específica para esta petición; no duplicar con la genérica
+                return;
+            }
+
             $method         = $request->getMethod();
             $isWrite        = \in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], strict: true);
             $isSensitiveGet = !$isWrite && $this->isSensitiveRoute($route);

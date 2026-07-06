@@ -94,4 +94,14 @@ class EmailNotificationLogRepository extends ServiceEntityRepository
 
         return array_column($rows, 'eventKey');
     }
+
+    public function deleteOlderThan(\DateTimeImmutable $cutoff): int
+    {
+        return (int) $this->createQueryBuilder('l')
+            ->delete()
+            ->where('l.sentAt < :cutoff')
+            ->setParameter('cutoff', $cutoff)
+            ->getQuery()
+            ->execute();
+    }
 }

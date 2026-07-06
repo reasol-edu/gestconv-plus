@@ -336,6 +336,8 @@ El listado de actividad admite filtrado por usuario, centro educativo, curso aca
 
 Los registros de actividad se purgan automáticamente cada semana mediante una tarea programada
 (no existe un comando de consola para lanzar la purga manualmente): se eliminan los registros
-anteriores al número de días configurado en la variable de entorno `APP_LOG_RETENTION_DAYS` (90
-días por defecto). Consulta el capítulo [Operación y mantenimiento](10-operacion-y-mantenimiento.md)
-para más detalles sobre esta tarea programada.
+anteriores al número de días configurado en el ajuste **Retención de los registros**
+(ver [Ajustes](07-ajustes.md#notificaciones-a-familias)), 90 días por defecto. Este mismo ajuste
+controla también la retención del [registro de avisos por correo](06-notificaciones-y-email.md#registro-de-avisos-por-correo).
+Consulta el capítulo [Operación y mantenimiento](10-operacion-y-mantenimiento.md) para más detalles
+sobre esta tarea programada.

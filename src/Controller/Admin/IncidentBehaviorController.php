@@ -9,6 +9,8 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\IncidentBehaviorCategoryRepository;
 use App\Repository\IncidentBehaviorRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\ActivityLogService;
+use App\Service\EntityChangeTracker;
 use App\Service\IncidentBehaviorExporter;
 use App\Service\IncidentBehaviorImporter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,6 +25,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centros/{centreId}/conductas')]
 class IncidentBehaviorController extends AbstractController
 {
+    /** @var list<string> */
+    private const LOGGED_FIELDS = ['name', 'active'];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
@@ -31,6 +36,8 @@ class IncidentBehaviorController extends AbstractController
         private readonly IncidentBehaviorExporter $exporter,
         private readonly IncidentBehaviorImporter $importer,
         private readonly TranslatorInterface $translator,
+        private readonly ActivityLogService $activityLog,
+        private readonly EntityChangeTracker $changeTracker,
     ) {}
 
     #[Route('', name: 'app_admin_incident_behaviors_index')]
@@ -152,6 +159,12 @@ class IncidentBehaviorController extends AbstractController
         $this->em->persist($behavior);
         $this->em->flush();
 
+        $this->activityLog->log('incident_behavior.created', [
+            'entityId'   => $behavior->getId()->toRfc4122(),
+            'categoryId' => $category->getId()->toRfc4122(),
+            'name'       => $behavior->getName(),
+        ]);
+
         $this->addFlash('success', $this->t('behavior.flash.created'));
 
         return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
@@ -182,8 +195,26 @@ class IncidentBehaviorController extends AbstractController
             $category   = $this->categories->findById($categoryId);
 
             if ($name !== '' && $category !== null && $category->getEducationalCentre() === $centre) {
+                $before          = $this->changeTracker->snapshot($behavior, self::LOGGED_FIELDS);
+                $categoryIdBefore = $behavior->getCategory()->getId()->toRfc4122();
+
                 $behavior->setName($name)->setCategory($category)->setActive($active);
                 $this->em->flush();
+
+                $changes = $this->changeTracker->diff($before, $behavior, self::LOGGED_FIELDS);
+
+                $categoryIdAfter = $behavior->getCategory()->getId()->toRfc4122();
+                if ($categoryIdBefore !== $categoryIdAfter) {
+                    $changes['categoryId'] = ['before' => $categoryIdBefore, 'after' => $categoryIdAfter];
+                }
+
+                if ($changes !== []) {
+                    $this->activityLog->log('incident_behavior.updated', [
+                        'entityId' => $behavior->getId()->toRfc4122(),
+                        'changes'  => $changes,
+                    ]);
+                }
+
                 $this->addFlash('success', $this->t('behavior.flash.updated'));
             }
 
@@ -218,6 +249,9 @@ class IncidentBehaviorController extends AbstractController
         }
 
         $category = $behavior->getCategory();
+        $entityId = $behavior->getId()->toRfc4122();
+        $name     = $behavior->getName();
+
         $this->em->remove($behavior);
         $this->em->flush();
 
@@ -225,6 +259,11 @@ class IncidentBehaviorController extends AbstractController
             $b->setPosition($pos);
         }
         $this->em->flush();
+
+        $this->activityLog->log('incident_behavior.deleted', [
+            'entityId' => $entityId,
+            'name'     => $name,
+        ]);
 
         $this->addFlash('success', $this->t('behavior.flash.deleted'));
 

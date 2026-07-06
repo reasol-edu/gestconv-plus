@@ -136,6 +136,22 @@ class EmailNotificationLogRepositoryTest extends RepositoryTestCase
         self::assertSame(['report_created', 'report_deleted'], $this->repo->findDistinctEventKeys($centreA));
     }
 
+    public function testDeleteOlderThanRemovesOldEntriesAcrossAllCentres(): void
+    {
+        $centreA = $this->makeCentre('a');
+        $centreB = $this->makeCentre('b');
+        $this->makeLog($centreA, sentAt: new \DateTimeImmutable('-100 days'));
+        $this->makeLog($centreB, sentAt: new \DateTimeImmutable('-100 days'));
+        $recent = $this->makeLog($centreA, sentAt: new \DateTimeImmutable('-1 day'));
+
+        $deleted = $this->repo->deleteOlderThan(new \DateTimeImmutable('-90 days'));
+
+        self::assertSame(2, $deleted);
+        $remaining = $this->repo->createFilteredQuery($centreA)->getResult();
+        self::assertCount(1, $remaining);
+        self::assertSame($recent->getId()->toRfc4122(), $remaining[0]->getId()->toRfc4122());
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private function makeCentre(string $suffix = ''): EducationalCentre

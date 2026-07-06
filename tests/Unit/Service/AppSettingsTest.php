@@ -626,6 +626,51 @@ class AppSettingsTest extends TestCase
         self::assertNull($service->get('nonexistent.key'));
     }
 
+    // ── getGlobal: ignores centre/teacher context (global → default) ─────────
+
+    public function testGetGlobalUsesGlobalValue(): void
+    {
+        $def = $this->makeDef('notifications.log_retention_days', SettingType::Integer, '90');
+
+        $service = $this->makeService(
+            defs:    ['notifications.log_retention_days' => $def],
+            globals: ['notifications.log_retention_days' => $this->makeGlobalValue('30')],
+        );
+
+        self::assertSame(30, $service->getGlobal('notifications.log_retention_days'));
+    }
+
+    public function testGetGlobalFallsBackToDefault(): void
+    {
+        $def = $this->makeDef('notifications.log_retention_days', SettingType::Integer, '90');
+
+        $service = $this->makeService(defs: ['notifications.log_retention_days' => $def]);
+
+        self::assertSame(90, $service->getGlobal('notifications.log_retention_days'));
+    }
+
+    public function testGetGlobalIgnoresCentreAndTeacherContext(): void
+    {
+        $def = $this->makeDef('notifications.log_retention_days', SettingType::Integer, '90');
+
+        // Centre/teacher values present but must not affect getGlobal()
+        $service = $this->makeService(
+            defs:     ['notifications.log_retention_days' => $def],
+            globals:  ['notifications.log_retention_days' => $this->makeGlobalValue('30')],
+            centres:  ['notifications.log_retention_days' => $this->makeCentreValue('7')],
+            teachers: ['notifications.log_retention_days' => $this->makeTeacherValue('3')],
+        );
+
+        self::assertSame(30, $service->getGlobal('notifications.log_retention_days'));
+    }
+
+    public function testGetGlobalReturnsNullForUnknownKey(): void
+    {
+        $service = $this->makeService(defs: []);
+
+        self::assertNull($service->getGlobal('nonexistent.key'));
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
