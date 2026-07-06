@@ -133,6 +133,12 @@ settings.key.notifications_email_report_sanctionable_committee.description: 'Det
 settings.key.notifications_email_report_sanctionable_committee.choice.none: 'A nadie'
 settings.key.notifications_email_report_sanctionable_committee.choice.committee: 'A la comisión de convivencia'
 
+settings.key.notifications_email_report_attach_pdf.label: 'Enviar parte adjunto al correo'
+settings.key.notifications_email_report_attach_pdf.description: 'Adjunta el PDF del parte a cualquier aviso por correo sobre ese parte (registrado, notificado, modificado, eliminado, prescrito o incorporado a una sanción). No afecta al registro de avisos.'
+
+settings.key.notifications_email_sanction_attach_pdf.label: 'Enviar sanción adjunta al correo'
+settings.key.notifications_email_sanction_attach_pdf.description: 'Adjunta el PDF de la sanción al aviso por correo de sanción notificada a la familia. No afecta al registro de avisos.'
+
 settings.key.reports_incident_header_left.label: 'Encabezado de informe de partes (izquierda)'
 settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Marcadores disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
 

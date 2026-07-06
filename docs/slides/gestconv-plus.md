@@ -504,6 +504,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 - Los **avisos por correo** (nueva tutoría asignada, puestos creados,
   recordatorio de firma…) se activan o desactivan por centro.
+- Los avisos de parte y de sanción pueden llevar además el **PDF adjunto**,
+  con un ajuste independiente para cada uno.
 - El **modo tablón** del calendario también se configura desde aquí, por si
   el centro prefiere no mostrarlo en pantallas compartidas.
 

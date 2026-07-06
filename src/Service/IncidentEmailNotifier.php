@@ -11,6 +11,8 @@ use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Repository\CommunicationRepository;
+use App\Repository\IncidentReportObservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -18,6 +20,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Part\DataPart;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -40,6 +43,10 @@ final class IncidentEmailNotifier
         private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
         private readonly EntityManagerInterface $em,
+        private readonly PdfRenderer $pdfRenderer,
+        private readonly PdfHeaderBuilder $pdfHeaderBuilder,
+        private readonly IncidentReportObservationRepository $observations,
+        private readonly CommunicationRepository $communications,
         #[Autowire(env: 'MAILER_FROM')]
         private readonly string $fromAddress,
         #[Autowire('%app.name%')]
@@ -94,11 +101,13 @@ final class IncidentEmailNotifier
             '%group%'   => $report->getGroup()->getName(),
         ];
 
+        $attachment = $this->reportPdfAttachment($report, $centre);
+
         foreach ($recipients as $teacher) {
             $this->dispatch($centre, $teacher, 'report_auto_prescribed', $params, 'email/incident_report_notice.html.twig', [
                 'report'    => $report,
                 'reportUrl' => $url,
-            ]);
+            ], $attachment);
         }
     }
 
@@ -178,11 +187,13 @@ final class IncidentEmailNotifier
             '%group%'   => $sanction->getGroup()->getName(),
         ];
 
+        $attachment = $this->sanctionPdfAttachment($sanction, $centre);
+
         foreach ($recipients as $teacher) {
             $this->dispatch($centre, $teacher, 'sanction_notified', $params, 'email/sanction_notice.html.twig', [
                 'sanction'    => $sanction,
                 'sanctionUrl' => $url,
-            ]);
+            ], $attachment);
         }
     }
 
@@ -210,11 +221,13 @@ final class IncidentEmailNotifier
             '%group%'   => $report->getGroup()->getName(),
         ];
 
+        $attachment = $this->reportPdfAttachment($report, $centre);
+
         foreach ($recipients as $teacher) {
             $this->dispatch($centre, $teacher, "report_$event", $params, 'email/incident_report_notice.html.twig', [
                 'report'    => $report,
                 'reportUrl' => $url,
-            ]);
+            ], $attachment);
         }
     }
 
@@ -238,11 +251,13 @@ final class IncidentEmailNotifier
             '%group%'   => $report->getGroup()->getName(),
         ];
 
+        $attachment = $this->reportPdfAttachment($report, $centre);
+
         foreach ($centre->getCommitteeMembers() as $member) {
             $this->dispatch($centre, $member, 'report_sanctionable_committee', $params, 'email/incident_report_notice.html.twig', [
                 'report'    => $report,
                 'reportUrl' => $url,
-            ]);
+            ], $attachment);
         }
     }
 
@@ -275,14 +290,14 @@ final class IncidentEmailNotifier
      * @param array<string, string|int> $params
      * @param array<string, mixed> $context
      */
-    private function dispatch(EducationalCentre $centre, Teacher $teacher, string $eventKey, array $params, string $template, array $context): void
+    private function dispatch(EducationalCentre $centre, Teacher $teacher, string $eventKey, array $params, string $template, array $context, ?DataPart $attachment = null): void
     {
         $email = $teacher->getEmail();
         if ($email === null) {
             return;
         }
 
-        $this->send($centre, $teacher, $eventKey, (new TemplatedEmail())
+        $message = (new TemplatedEmail())
             ->to(new Address($email, $this->fullName($teacher)))
             ->subject($this->translator->trans("emails.$eventKey.subject", $params, 'emails'))
             ->htmlTemplate($template)
@@ -290,7 +305,92 @@ final class IncidentEmailNotifier
                 'teacher'     => $teacher,
                 'params'      => $params,
                 'transPrefix' => "emails.$eventKey",
-            ]));
+            ]);
+
+        if ($attachment !== null) {
+            $message->addPart($attachment);
+        }
+
+        $this->send($centre, $teacher, $eventKey, $message);
+    }
+
+    /** Builds the report's PDF as an email attachment, or null if the setting is disabled. */
+    private function reportPdfAttachment(IncidentReport $report, EducationalCentre $centre): ?DataPart
+    {
+        if ($this->settings->getForCentre('notifications.email_report_attach_pdf', $centre) !== true) {
+            return null;
+        }
+
+        $header = $this->pdfHeaderBuilder->build('incident', $centre, [
+            'title'         => $this->translator->trans('pdf.incident_report.title', [], 'admin'),
+            'report_nr'     => $report->getNumber(),
+            'student_name'  => $this->fullName($report->getStudent()),
+            'group_name'    => $report->getGroup()->getName(),
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $report->getAcademicYear()->getName(),
+        ]);
+
+        $filename = sprintf('parte-%d.pdf', $report->getNumber());
+
+        $response = $this->pdfRenderer->render(
+            'pdf/incident_report.html.twig',
+            [
+                'centre'       => $centre,
+                'report'       => $report,
+                'observations' => $this->observations->findByIncidentReport($report),
+                'history'      => $this->communications->findByIncidentReport($report),
+            ],
+            $this->translator->trans('incident.show_ref', ['%number%' => $report->getNumber()], 'admin'),
+            $filename,
+            header: $header,
+            draftWatermark: !$report->isNotified(),
+        );
+
+        $content = $response->getContent();
+        \assert(is_string($content));
+
+        return new DataPart($content, $filename, 'application/pdf');
+    }
+
+    /** Builds the sanction's PDF as an email attachment, or null if the setting is disabled. */
+    private function sanctionPdfAttachment(Sanction $sanction, EducationalCentre $centre): ?DataPart
+    {
+        if ($this->settings->getForCentre('notifications.email_sanction_attach_pdf', $centre) !== true) {
+            return null;
+        }
+
+        $reports = $sanction->getReports()->toArray();
+
+        $header = $this->pdfHeaderBuilder->build('sanction', $centre, [
+            'title'         => $this->translator->trans('pdf.sanction.title', [], 'admin'),
+            'student_name'  => $this->fullName($sanction->getStudent()),
+            'group_name'    => $sanction->getGroup()->getName(),
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $sanction->getAcademicYear()->getName(),
+        ]);
+
+        $filename = sprintf('sancion-%s.pdf', substr($sanction->getId()->toRfc4122(), 0, 8));
+
+        $response = $this->pdfRenderer->render(
+            'pdf/sanction.html.twig',
+            [
+                'centre'                 => $centre,
+                'sanction'               => $sanction,
+                'history'                => $this->communications->findBySanction($sanction),
+                'observationsByReport'   => $this->observations->findByIncidentReports($reports),
+                'communicationsByReport' => $this->communications->findByIncidentReports($reports),
+            ],
+            $this->translator->trans('sanction.show_title', [], 'admin')
+                . ' — ' . $sanction->getStudent()->getName()->getLastName() . ', ' . $sanction->getStudent()->getName()->getFirstName(),
+            $filename,
+            header: $header,
+            draftWatermark: !$sanction->isNotified(),
+        );
+
+        $content = $response->getContent();
+        \assert(is_string($content));
+
+        return new DataPart($content, $filename, 'application/pdf');
     }
 
     private function send(EducationalCentre $centre, Teacher $recipient, string $eventKey, TemplatedEmail $email): void

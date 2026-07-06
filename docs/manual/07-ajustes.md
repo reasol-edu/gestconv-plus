@@ -121,15 +121,20 @@ gobierna la retención del registro de actividad, que no está asociado a ningú
 | Parte incorporado a una sanción | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
 | Sanción notificada a la familia | A nadie / A los docentes de los partes / Al tutor/a de grupo / A ambos | A nadie |
 | Parte sancionable (comisión de convivencia) | A nadie / A la comisión de convivencia | A nadie |
+| Enviar parte adjunto al correo | Sí / No | No |
+| Enviar sanción adjunta al correo | Sí / No | No |
 
 Uno por cada evento de un parte o una sanción; determinan si se envía un correo y a quién. Los
 siete primeros ajustes comparten las mismas opciones (docente que registró el elemento, tutor/a
 del grupo, ambos o nadie); el aviso de parte modificado no se dispara al marcar un parte como
-prescrito, que tiene su propio ajuste independiente. El último aviso a la comisión de convivencia
+prescrito, que tiene su propio ajuste independiente. El aviso a la comisión de convivencia
 solo se envía cuando un parte queda notificado a la familia y todavía puede ser sancionado (no está
-prescrito ni incorporado ya a una sanción). Ninguno tiene ámbito de docente: se fijan a nivel global
-o de centro únicamente, y por defecto no se envía ningún correo. Más detalles sobre cada tipo de
-aviso en [Notificaciones por email](06-notificaciones-y-email.md#avisos-de-partes-y-sanciones).
+prescrito ni incorporado ya a una sanción). Los dos últimos, de tipo booleano, adjuntan el PDF del
+parte o de la sanción a los correos anteriores (el primero a los seis avisos de parte, el segundo al
+de sanción notificada); no afectan al registro de avisos. Ninguno tiene ámbito de docente: se fijan
+a nivel global o de centro únicamente, y por defecto no se envía ningún correo ni se adjunta ningún
+PDF. Más detalles sobre cada tipo de aviso en
+[Notificaciones por email](06-notificaciones-y-email.md#avisos-de-partes-y-sanciones).
 
 ### Personalización de informes
 

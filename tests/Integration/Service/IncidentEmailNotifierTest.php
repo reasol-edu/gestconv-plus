@@ -18,8 +18,12 @@ use App\Entity\SettingDefinition;
 use App\Entity\SettingType;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Repository\CommunicationRepository;
+use App\Repository\IncidentReportObservationRepository;
 use App\Service\AppSettingsInterface;
 use App\Service\IncidentEmailNotifier;
+use App\Service\PdfHeaderBuilder;
+use App\Service\PdfRenderer;
 use App\Tests\Integration\RepositoryTestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Exception\TransportException;
@@ -380,6 +384,72 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         self::assertEmailCount(0);
     }
 
+    // ── adjuntar PDF (parte/sanción) ─────────────────────────────────────────
+
+    public function testReportAttachPdfSettingAttachesReportPdf(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('attach.report');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+        $this->setBooleanSetting('notifications.email_report_attach_pdf', $centre, true);
+
+        $this->notifier->reportCreated($report, $creator);
+
+        self::assertEmailCount(1);
+        self::assertEmailAttachmentCount($this->sentMessage(0), 1);
+    }
+
+    public function testReportAttachPdfSettingDisabledSendsNoAttachment(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('attach.report.off');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+        $this->setBooleanSetting('notifications.email_report_attach_pdf', $centre, false);
+
+        $this->notifier->reportCreated($report, $creator);
+
+        self::assertEmailCount(1);
+        self::assertEmailAttachmentCount($this->sentMessage(0), 0);
+    }
+
+    public function testSanctionAttachPdfSettingAttachesSanctionPdf(): void
+    {
+        [$report, $centre, $group, $creator] = $this->makeScenario('attach.sanction');
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($report->getAcademicYear())
+            ->setStudent($report->getStudent())
+            ->setGroup($group)
+            ->setRegisteredBy($creator)
+            ->setDetails('Detalle')
+            ->setNoMeasureApplied(true)
+            ->setNoMeasureReason('Sin medida');
+        $this->persist($sanction);
+        $report->setSanction($sanction);
+        $sanction->getReports()->add($report);
+        $this->flush();
+
+        $this->setSetting('notifications.email_sanction_notified', $centre, 'report_teacher');
+        $this->setBooleanSetting('notifications.email_sanction_attach_pdf', $centre, true);
+
+        $this->notifier->sanctionNotified($sanction, $creator);
+
+        self::assertEmailCount(1);
+        self::assertEmailAttachmentCount($this->sentMessage(0), 1);
+    }
+
+    public function testReportAttachPdfSettingDoesNotAffectNotificationLog(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('attach.log');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+        $this->setBooleanSetting('notifications.email_report_attach_pdf', $centre, true);
+        $this->setBooleanSetting('notifications.email_log_enabled', $centre, true);
+
+        $this->notifier->reportCreated($report, $creator);
+
+        $logs = $this->findLogs($centre);
+        self::assertCount(1, $logs);
+        self::assertSame('report_created', $logs[0]->getEventKey());
+    }
+
     // ── registro de avisos (email_notification_log) ─────────────────────────
 
     public function testLogIsNotPersistedWhenSettingIsAbsent(): void
@@ -548,6 +618,10 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
             self::getContainer()->get(TranslatorInterface::class),
             self::getContainer()->get(LoggerInterface::class),
             $this->em,
+            self::getContainer()->get(PdfRenderer::class),
+            self::getContainer()->get(PdfHeaderBuilder::class),
+            self::getContainer()->get(IncidentReportObservationRepository::class),
+            self::getContainer()->get(CommunicationRepository::class),
             'no-responder@ejemplo.local',
             'GestConv+',
         );

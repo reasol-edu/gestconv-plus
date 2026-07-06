@@ -50,6 +50,13 @@ Cada correo enlaza directamente al parte o la sanción correspondiente (salvo el
 que el elemento deja de existir) e incluye el nombre de quien realizó la acción, salvo el de
 prescripción automática, que no tiene un docente asociado.
 
+Dos ajustes adicionales, **Enviar parte adjunto al correo** y **Enviar sanción adjunta al correo**
+(ver [Ajustes](07-ajustes.md#avisos-por-correo), desactivados por defecto), añaden el PDF
+correspondiente como adjunto: el primero a cualquiera de los seis avisos de parte, el segundo al
+aviso de sanción notificada. Solo afectan al correo enviado — no al
+[registro de avisos por correo](#registro-de-avisos-por-correo), que sigue registrando el envío
+igual que sin el adjunto.
+
 ## Prescripción automática de partes sin notificar
 
 Una tarea programada diaria revisa, para cada centro, los partes que todavía no se han comunicado a

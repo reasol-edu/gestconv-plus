@@ -69,6 +69,8 @@ abstract class ControllerTestCase extends WebTestCase
             ['reports.sanction_header_left',   SettingType::RichText, '<p><strong>{title}</strong></p>', true, true, false, 0,  5000, 'settings.category.reports', 60, 40, null],
             ['reports.sanction_header_right',  SettingType::RichText, '<p>{centre_name}</p>',            true, true, false, 0,  5000, 'settings.category.reports', 60, 50, null],
             ['reports.sanction_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 60, null],
+            ['notifications.email_report_attach_pdf',   SettingType::Boolean, 'false', true, true, false, null, null, 'settings.category.email_alerts', 50, 90,  null],
+            ['notifications.email_sanction_attach_pdf', SettingType::Boolean, 'false', true, true, false, null, null, 'settings.category.email_alerts', 50, 100, null],
         ];
 
         foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max, $category, $categoryOrder, $position, $choices]) {
