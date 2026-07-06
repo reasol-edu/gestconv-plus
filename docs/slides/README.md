@@ -1,8 +1,10 @@
 # Presentación de GestConv+
 
-Presentación de introducción a GestConv+ para profesorado de FP, escrita en [Marp]
-(Markdown → diapositivas). Pensada para una audiencia mixta: empieza por el qué y el
-flujo de trabajo por roles y termina con un bloque técnico de configuración y despliegue.
+Guía práctica de GestConv+ para el profesorado, escrita en [Marp]
+(Markdown → diapositivas). Organizada en cuatro bloques según el rol de quien la lee
+—docente normal, tutor/a de grupo, comisión de convivencia y orientación, y
+administradores de centro/equipo directivo—, cada uno añadiendo solo lo que ese perfil
+tiene de más sobre el anterior.
 
 ## Ficheros
 
