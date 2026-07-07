@@ -146,12 +146,17 @@ PDF. Más detalles sobre cada tipo de aviso en
 | Encabezado izquierdo (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de sanción) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
 Controlan el encabezado que se repite en cada página de los PDF de partes y sanciones. Cada tipo
 de informe tiene dos zonas —izquierda y derecha, en la misma línea— que se editan con un editor de
 texto enriquecido (negrita, cursiva, subrayado, títulos, listas, citas y enlaces). El margen
 superior determina, en milímetros, a qué altura empieza el cuerpo del documento en cada página:
 conviene aumentarlo si el encabezado personalizado ocupa más líneas que el original.
+
+La **marca de agua de borrador**, cuando está activada, superpone el texto «BORRADOR» en diagonal
+sobre el PDF de un parte o una sanción mientras no se haya notificado a la familia; desaparece en
+cuanto se registra la notificación. Está desactivada por defecto.
 
 ![Ajustes de personalización de informes](img/ajustes/ajustes-informes.png)
 

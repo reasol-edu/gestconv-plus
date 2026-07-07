@@ -18,6 +18,7 @@ use App\Security\Voter\SanctionVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
+use App\Service\AppSettingsInterface;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\TenantContext;
@@ -56,6 +57,7 @@ class SanctionController extends AbstractController
         private readonly EntityChangeTracker $changeTracker,
         private readonly PdfRenderer $pdfRenderer,
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
+        private readonly AppSettingsInterface $settings,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -343,7 +345,7 @@ class SanctionController extends AbstractController
                 . ' — ' . $sanction->getStudent()->getName()->getLastName() . ', ' . $sanction->getStudent()->getName()->getFirstName(),
             sprintf('sancion-%s.pdf', substr($sanction->getId()->toRfc4122(), 0, 8)),
             header: $header,
-            draftWatermark: !$sanction->isNotified(),
+            draftWatermark: !$sanction->isNotified() && $this->settings->getForCentre('reports.draft_watermark_enabled', $centre) === true,
         );
     }
 

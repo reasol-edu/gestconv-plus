@@ -484,6 +484,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Se pueden usar **marcadores** que la aplicación sustituye automáticamente:
   título del informe, número de parte, nombre del estudiante, grupo, centro
   o curso académico.
+- La marca de agua diagonal **«BORRADOR»** (parte o sanción sin notificar a
+  la familia) es opcional, mediante un ajuste booleano desactivado por
+  defecto.
 - El ajuste admite un valor **global** (para todos los centros) y uno
   **de centro**, que lo sobrescribe si está definido.
 

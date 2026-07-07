@@ -71,6 +71,7 @@ abstract class ControllerTestCase extends WebTestCase
             ['reports.sanction_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 60, null],
             ['notifications.email_report_attach_pdf',   SettingType::Boolean, 'false', true, true, false, null, null, 'settings.category.email_alerts', 50, 90,  null],
             ['notifications.email_sanction_attach_pdf', SettingType::Boolean, 'false', true, true, false, null, null, 'settings.category.email_alerts', 50, 100, null],
+            ['reports.draft_watermark_enabled', SettingType::Boolean, 'false', true, true, false, null, null, 'settings.category.reports', 60, 70, null],
         ];
 
         foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max, $category, $categoryOrder, $position, $choices]) {

@@ -157,6 +157,9 @@ settings.key.reports_sanction_header_right.description: 'Contenido alineado a la
 settings.key.reports_sanction_header_margin.label: 'Margen para encabezado de sanciones'
 settings.key.reports_sanction_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
 
+settings.key.reports_draft_watermark_enabled.label: 'Marca de agua de borrador'
+settings.key.reports_draft_watermark_enabled.description: 'Muestra una marca de agua diagonal con el texto «BORRADOR» en el PDF de un parte o una sanción mientras no se haya notificado a la familia. Desactivada por defecto.'
+
 # ── Errores de validación ──────────────────────────────────────────────────────
 settings.error.integer_range: 'Debe ser un número entre %min% y %max%'
 settings.error.invalid_value: 'Valor no válido'

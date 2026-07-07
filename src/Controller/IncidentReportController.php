@@ -21,6 +21,7 @@ use App\Security\Voter\IncidentReportVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
+use App\Service\AppSettingsInterface;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\TenantContext;
@@ -64,6 +65,7 @@ class IncidentReportController extends AbstractController
         private readonly EntityChangeTracker $changeTracker,
         private readonly PdfRenderer $pdfRenderer,
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
+        private readonly AppSettingsInterface $settings,
     ) {}
 
     #[Route('', name: 'app_incidents_index')]
@@ -432,7 +434,7 @@ class IncidentReportController extends AbstractController
             $this->translator->trans('incident.show_ref', ['%number%' => $report->getNumber()], 'admin'),
             sprintf('parte-%d.pdf', $report->getNumber()),
             header: $header,
-            draftWatermark: !$report->isNotified(),
+            draftWatermark: !$report->isNotified() && $this->settings->getForCentre('reports.draft_watermark_enabled', $centre) === true,
         );
     }
 
