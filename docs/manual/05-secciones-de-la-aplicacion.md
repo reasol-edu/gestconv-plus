@@ -17,10 +17,12 @@ En la parte superior hay cuatro tarjetas:
 
 Debajo de las tarjetas:
 
-- **Accesos rápidos** — **Nuevo parte** (visible para todo el profesorado) e **Importar estudiantes** (solo para quienes administran el centro).
+- **Accesos rápidos** — botones grandes pensados para su uso desde el móvil: **Nuevo parte** (todo el profesorado), **Notificar** (con un contador en rojo si hay partes o sanciones pendientes de comunicar a la familia) y **Nueva sanción** (solo quien puede registrar sanciones en el centro). Junto a ellos, **Importar estudiantes** aparece como enlace secundario para quienes administran el centro.
 - **Últimos partes** — los seis partes más recientes accesibles para el docente, cada uno con su estado (*Notificado* / *Pendiente de notificar*).
 - **Alumnado con partes pendientes de sanción** — visible para administradores, comisión de convivencia y orientación: los estudiantes con más partes ya notificados y todavía sin sanción. Cada nombre enlaza con su [ficha del alumno](#ficha-del-alumno).
 - **Tus grupos** — visible para los tutores/as sin los perfiles anteriores: sus grupos tutorizados y el número de estudiantes de cada uno.
+
+Si el curso activo todavía no tiene estudiantado matriculado, las tarjetas de resumen y estos paneles se sustituyen por un aviso con acceso directo a importar estudiantes (para quienes administran el centro).
 
 ### Cambio de curso académico (administradores)
 

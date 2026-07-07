@@ -33,26 +33,93 @@
     </div>
     {% else %}
 
-    {# ── Accesos rápidos ───────────────────────────────────────────────────── #}
+    {# ── Accesos rápidos: acciones principales, grandes y táctiles ──────────── #}
     {% set can_students_section = is_granted('educational_centre.section', active_centre) %}
+    {% set can_sanction         = is_granted('sanction.create', active_centre) %}
     {% if not viewing_past %}
-        <div class="flex flex-wrap items-center gap-2">
+        <div id="quick-actions" class="grid grid-cols-1 {{ can_sanction ? 'sm:grid-cols-3' : 'sm:grid-cols-2' }} gap-3">
             <a href="{{ path('app_incidents_new') }}"
-               class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-forest-700 transition-colors">
-                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
-                {{ 'incident.new'|trans({}, 'admin') }}
+               class="flex items-center gap-3 rounded-2xl bg-forest-600 px-5 py-5 text-white shadow-xs hover:bg-forest-700 transition-colors">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                    {{ ux_icon('heroicons:document-plus', {class: 'h-6 w-6'}) }}
+                </span>
+                <span class="min-w-0">
+                    <span class="block text-base font-semibold">{{ 'quick_action_new_report'|trans({}, 'dashboard') }}</span>
+                    <span class="block text-xs text-forest-50/90 truncate">{{ 'quick_action_new_report_help'|trans({}, 'dashboard') }}</span>
+                </span>
             </a>
-            {% if can_students_section %}
-                <a href="{{ path('app_admin_students_import', {centreId: active_centre.id}) }}"
-                   class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-xs hover:border-forest-300 hover:text-forest-700 transition-colors">
-                    {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-3.5 w-3.5'}) }}
-                    {{ 'action_import_students'|trans({}, 'dashboard') }}
+
+            {% set has_pending_notify = pendingQueue.total > 0 %}
+            {% if has_pending_notify %}
+                <a href="{{ path('app_notifications_index') }}"
+                   class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
+                    <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                        {{ ux_icon('heroicons:bell-alert', {class: 'h-6 w-6'}) }}
+                        <span class="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-xs">
+                            {{ pendingQueue.total }}
+                        </span>
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_notify'|trans({}, 'dashboard') }}</span>
+                        <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_notify_help'|trans({}, 'dashboard') }}</span>
+                    </span>
                 </a>
+            {% else %}
+                <div class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 opacity-60" aria-disabled="true">
+                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-200 text-gray-400">
+                        {{ ux_icon('heroicons:bell-alert', {class: 'h-6 w-6'}) }}
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block text-base font-semibold text-gray-500">{{ 'quick_action_notify'|trans({}, 'dashboard') }}</span>
+                        <span class="block text-xs text-gray-400 truncate">{{ 'quick_action_notify_none'|trans({}, 'dashboard') }}</span>
+                    </span>
+                </div>
+            {% endif %}
+
+            {% if can_sanction %}
+                {% if sanctionableCount > 0 %}
+                    <a href="{{ path('app_sanctions_new') }}"
+                       class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
+                        <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                            {{ ux_icon('heroicons:scale', {class: 'h-6 w-6'}) }}
+                            <span class="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-xs">
+                                {{ sanctionableCount }}
+                            </span>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_new_sanction'|trans({}, 'dashboard') }}</span>
+                            <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_new_sanction_help'|trans({}, 'dashboard') }}</span>
+                        </span>
+                    </a>
+                {% else %}
+                    <div class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 opacity-60" aria-disabled="true">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-200 text-gray-400">
+                            {{ ux_icon('heroicons:scale', {class: 'h-6 w-6'}) }}
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-base font-semibold text-gray-500">{{ 'quick_action_new_sanction'|trans({}, 'dashboard') }}</span>
+                            <span class="block text-xs text-gray-400 truncate">{{ 'quick_action_new_sanction_none'|trans({}, 'dashboard') }}</span>
+                        </span>
+                    </div>
+                {% endif %}
             {% endif %}
         </div>
     {% endif %}
 
-    {# ── Tarjetas estadísticas ─────────────────────────────────────────────── #}
+    {# ── Tarjetas estadísticas, o aviso si no hay estudiantes matriculados ──── #}
+    {% if studentCount == 0 %}
+        <div class="rounded-2xl border border-gray-200 bg-white px-6 py-12 text-center">
+            {{ ux_icon('heroicons:academic-cap', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+            <p class="text-sm font-medium text-gray-700">{{ 'no_students_registered'|trans({}, 'dashboard') }}</p>
+            {% if can_students_section and not viewing_past %}
+                <a href="{{ path('app_admin_students_import', {centreId: active_centre.id}) }}"
+                   class="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-forest-700 transition-colors">
+                    {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
+                    {{ 'action_import_students'|trans({}, 'dashboard') }}
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {% set students_url = can_students_section ? path('app_admin_students_index', {centreId: active_centre.id}) : null %}
         {% if students_url %}<a href="{{ students_url }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">{% else %}<div class="col-span-1 rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">{% endif %}
@@ -110,11 +177,17 @@
             </p>
         </a>
     </div>
+    {% endif %}
 
-    {# ── Últimos partes + panel condicional por rol ────────────────────────── #}
-    <div class="grid grid-cols-1 gap-6 {{ (hasFullAccess or tutoredGroups|length > 0) ? 'lg:grid-cols-3' : '' }}">
+    {# ── Últimos partes + panel condicional por rol (requieren estudiantado matriculado) ── #}
+    {% set show_recent_reports = studentCount > 0 %}
+    {% set show_top_students   = hasFullAccess and studentCount > 0 %}
+    {% set show_tutored_groups = not hasFullAccess and tutoredGroups|length > 0 %}
+    {% if show_recent_reports or show_top_students or show_tutored_groups %}
+    <div class="grid grid-cols-1 gap-6 {{ (show_recent_reports and (show_top_students or show_tutored_groups)) ? 'lg:grid-cols-3' : '' }}">
 
-        <div class="{{ (hasFullAccess or tutoredGroups|length > 0) ? 'lg:col-span-2' : '' }} rounded-2xl border border-gray-200 bg-white shadow-xs">
+        {% if show_recent_reports %}
+        <div class="{{ (show_top_students or show_tutored_groups) ? 'lg:col-span-2' : '' }} rounded-2xl border border-gray-200 bg-white shadow-xs">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
                 <h2 class="text-sm font-semibold text-gray-800">{{ 'recent_reports_title'|trans({}, 'dashboard') }}</h2>
                 <a href="{{ path('app_incidents_index') }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
@@ -151,8 +224,9 @@
                 </ul>
             {% endif %}
         </div>
+        {% endif %}
 
-        {% if hasFullAccess %}
+        {% if show_top_students %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
             <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
                 <h2 class="text-sm font-semibold text-gray-800">{{ 'top_students_title'|trans({}, 'dashboard') }}</h2>
@@ -184,7 +258,7 @@
                 </ul>
             {% endif %}
         </div>
-        {% elseif tutoredGroups|length > 0 %}
+        {% elseif show_tutored_groups %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
             <div class="border-b border-gray-100 px-5 py-3.5">
                 <h2 class="text-sm font-semibold text-gray-800">{{ 'tutored_groups_title'|trans({}, 'dashboard') }}</h2>
@@ -200,6 +274,7 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}
 
     {% endif %}
 

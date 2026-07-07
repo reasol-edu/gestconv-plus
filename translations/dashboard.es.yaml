@@ -8,6 +8,7 @@ no_academic_year: 'No hay un curso académico activo configurado.'
 
 students: 'Estudiantes'
 students_enrolled: 'matriculados este curso'
+no_students_registered: 'Todavía no hay estudiantes matriculados en el curso académico activo.'
 
 incident_reports: 'Partes de convivencia'
 incidents_last_30_days: 'en los últimos 30 días'
@@ -20,6 +21,15 @@ pending_notifications_help: 'partes y sanciones sin comunicar a la familia'
 pending_notifications_none: 'todo comunicado a las familias'
 
 action_import_students: 'Importar estudiantes'
+
+quick_action_new_report: 'Nuevo parte'
+quick_action_new_report_help: 'Registrar una conducta contraria'
+quick_action_notify: 'Notificar'
+quick_action_notify_help: 'Comunicar partes y sanciones a las familias'
+quick_action_notify_none: 'No hay nada pendiente de notificar'
+quick_action_new_sanction: 'Nueva sanción'
+quick_action_new_sanction_help: 'Aplicar una sanción disciplinaria'
+quick_action_new_sanction_none: 'No hay partes pendientes de sancionar'
 
 recent_reports_title: 'Últimos partes'
 recent_reports_empty: 'No hay partes recientes.'

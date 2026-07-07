@@ -9,6 +9,7 @@ use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\StudentRepository;
+use App\Security\Voter\SanctionVoter;
 use App\Service\PendingNotificationQueue;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -48,6 +49,7 @@ class DashboardController extends AbstractController
                 'hasFullAccess'        => false,
                 'topStudents'          => [],
                 'tutoredGroups'        => [],
+                'sanctionableCount'    => 0,
             ]);
         }
 
@@ -72,6 +74,8 @@ class DashboardController extends AbstractController
             }
         }
 
+        $canSanction = $this->isGranted(SanctionVoter::CREATE, $centre);
+
         return $this->render('dashboard/index.html.twig', [
             'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
             'reportCount30d'       => $this->incidentRepository->countRecentByCentre($centre, $viewer, 30, $year),
@@ -81,6 +85,7 @@ class DashboardController extends AbstractController
             'hasFullAccess'        => $hasFullAccess,
             'topStudents'          => $topStudents,
             'tutoredGroups'        => $tutoredGroups,
+            'sanctionableCount'    => $canSanction ? $this->sanctionRepository->countSanctionableByCentre($centre) : 0,
         ]);
     }
 }
