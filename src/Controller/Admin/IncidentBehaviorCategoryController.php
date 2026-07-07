@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/centros/{centreId}/conductas/categorias')]
+#[Route('/centro/{centreId}/conductas/categorias')]
 class IncidentBehaviorCategoryController extends AbstractController
 {
     /** @var list<string> */
@@ -32,7 +32,7 @@ class IncidentBehaviorCategoryController extends AbstractController
         private readonly EntityChangeTracker $changeTracker,
     ) {}
 
-    #[Route('/nueva', name: 'app_admin_incident_behavior_categories_create', methods: ['GET', 'POST'])]
+    #[Route('/nueva', name: 'app_centre_incident_behavior_categories_create', methods: ['GET', 'POST'])]
     public function create(string $centreId, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -68,7 +68,7 @@ class IncidentBehaviorCategoryController extends AbstractController
 
                 $this->addFlash('success', $this->t('category.flash.created'));
 
-                return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
+                return $this->redirectToRoute('app_centre_incident_behaviors_index', ['centreId' => $centreId]);
             }
         }
 
@@ -78,7 +78,7 @@ class IncidentBehaviorCategoryController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/editar', name: 'app_admin_incident_behavior_categories_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/editar', name: 'app_centre_incident_behavior_categories_edit', methods: ['GET', 'POST'])]
     public function edit(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -117,7 +117,7 @@ class IncidentBehaviorCategoryController extends AbstractController
                 $this->addFlash('success', $this->t('category.flash.updated'));
             }
 
-            return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
+            return $this->redirectToRoute('app_centre_incident_behaviors_index', ['centreId' => $centreId]);
         }
 
         return $this->render('admin/incident_behavior_category/edit.html.twig', [
@@ -126,7 +126,7 @@ class IncidentBehaviorCategoryController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/eliminar', name: 'app_admin_incident_behavior_categories_delete', methods: ['POST'])]
+    #[Route('/{id}/eliminar', name: 'app_centre_incident_behavior_categories_delete', methods: ['POST'])]
     public function delete(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -162,10 +162,10 @@ class IncidentBehaviorCategoryController extends AbstractController
 
         $this->addFlash('success', $this->t('category.flash.deleted'));
 
-        return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_incident_behaviors_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/subir', name: 'app_admin_incident_behavior_categories_move_up', methods: ['POST'])]
+    #[Route('/{id}/subir', name: 'app_centre_incident_behavior_categories_move_up', methods: ['POST'])]
     public function moveUp(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -192,10 +192,10 @@ class IncidentBehaviorCategoryController extends AbstractController
 
         $this->addFlash('success', $this->t('category.flash.moved'));
 
-        return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_incident_behaviors_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/bajar', name: 'app_admin_incident_behavior_categories_move_down', methods: ['POST'])]
+    #[Route('/{id}/bajar', name: 'app_centre_incident_behavior_categories_move_down', methods: ['POST'])]
     public function moveDown(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -223,7 +223,7 @@ class IncidentBehaviorCategoryController extends AbstractController
 
         $this->addFlash('success', $this->t('category.flash.moved'));
 
-        return $this->redirectToRoute('app_admin_incident_behaviors_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_incident_behaviors_index', ['centreId' => $centreId]);
     }
 
     private function t(string $key): string

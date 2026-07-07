@@ -7,7 +7,8 @@
 
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <a href="{{ path('app_admin_sanction_measures_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_sanction_measures_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">
                 {{ 'sanction_measure.title'|trans({}, 'admin') }}
             </a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
@@ -15,7 +16,7 @@
         <h1 class="text-2xl font-bold text-gray-900">{{ 'sanction_measure.edit_title'|trans({}, 'admin') }}</h1>
     </div>
 
-    <form method="post" action="{{ path('app_admin_sanction_measures_edit', {centreId: centre.id, id: measure.id}) }}"
+    <form method="post" action="{{ path('app_centre_sanction_measures_edit', {centreId: centre.id, id: measure.id}) }}"
           class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-5">
         <input type="hidden" name="_token" value="{{ csrf_token('edit_sanction_measure_' ~ measure.id) }}">
 
@@ -57,7 +58,7 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-            <a href="{{ path('app_admin_sanction_measures_index', {centreId: centre.id}) }}"
+            <a href="{{ path('app_centre_sanction_measures_index', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
                       hover:bg-gray-50 transition-colors">
                 {{ 'sanction_measure.cancel'|trans({}, 'admin') }}

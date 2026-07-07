@@ -80,7 +80,7 @@
                             <td data-label="{{ 'students.col.nie'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 font-mono text-xs text-gray-700 font-medium">{{ student.studentId }}</td>
                             <td data-label="{{ 'students.col.name'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
                                 {% if can_write %}
-                                    <a href="{{ path('app_admin_students_edit', {centreId: centre.id, id: student.id}) }}"
+                                    <a href="{{ path('app_centre_students_edit', {centreId: centre.id, id: student.id}) }}"
                                        class="font-medium text-gray-900 hover:text-forest-700 transition-colors">{{ student.name.lastName }}, {{ student.name.firstName }}</a>
                                 {% else %}
                                     <span class="font-medium text-gray-900">{{ student.name.lastName }}, {{ student.name.firstName }}</span>
@@ -100,14 +100,14 @@
                             {% if can_write %}
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ path('app_admin_students_edit', {centreId: centre.id, id: student.id}) }}"
+                                    <a href="{{ path('app_centre_students_edit', {centreId: centre.id, id: student.id}) }}"
                                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium
                                               text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
                                         {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
                                         {{ 'students.action.edit'|trans({}, 'admin') }}
                                     </a>
                                     <form method="post"
-                                          action="{{ path('app_admin_students_delete', {centreId: centre.id, id: student.id}) }}"
+                                          action="{{ path('app_centre_students_delete', {centreId: centre.id, id: student.id}) }}"
                                           class="js-confirm-form"
                                           data-confirm="{{ 'students.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete_student_' ~ student.id) }}">

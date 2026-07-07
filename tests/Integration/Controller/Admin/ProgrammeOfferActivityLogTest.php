@@ -36,7 +36,7 @@ class ProgrammeOfferActivityLogTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/offer/import');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/offer/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $data = [
@@ -58,7 +58,7 @@ class ProgrammeOfferActivityLogTest extends ControllerTestCase
         file_put_contents($tmpFile, json_encode($data, JSON_THROW_ON_ERROR));
         $file = new UploadedFile($tmpFile, 'offer.json', 'application/json', null, true);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/offer/import', [
+        $this->client->request('POST', '/centro/' . $centreId . '/offer/import', [
             '_token' => $token,
         ], ['json' => $file]);
         @unlink($tmpFile);

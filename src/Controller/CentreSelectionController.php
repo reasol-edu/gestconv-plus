@@ -32,7 +32,7 @@ class CentreSelectionController extends AbstractController
         ]);
     }
 
-    #[Route('/centro/{id}', name: 'app_select_centre_choose', methods: ['POST'])]
+    #[Route('/seleccion/centro/{id}', name: 'app_select_centre_choose', methods: ['POST'])]
     public function choose(string $id, Request $request): Response
     {
         $user = $this->getUser();

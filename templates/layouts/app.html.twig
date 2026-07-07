@@ -29,7 +29,8 @@
                   -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
 
         {# Cabecera: logo #}
-        <div class="flex items-center gap-3 px-5 h-16 border-b border-white/8 shrink-0">
+        <a href="{{ path('app_dashboard') }}"
+           class="flex items-center gap-3 px-5 h-16 border-b border-white/8 shrink-0 hover:bg-forest-900 transition-colors duration-150">
             <img src="{{ asset('static/logo.svg') }}" alt="{{ app_name }}"
                  class="h-8 w-8 shrink-0">
             <div class="min-w-0">
@@ -38,7 +39,7 @@
                     <p class="mt-0.5 text-xs text-forest-400">v{{ app_version }}</p>
                 {% endif %}
             </div>
-        </div>
+        </a>
 
         {# Centro y curso activo / visualizado #}
         {% if active_centre %}
@@ -147,14 +148,8 @@
 
             {# Centro educativo — solo para equipo directivo y admins #}
             {% if active_centre and is_granted('educational_centre.section', active_centre) %}
-                {% set centre_active = current_route starts with 'app_educational_centre'
-                    or current_route starts with 'app_admin_centre_teachers'
-                    or current_route starts with 'app_admin_students'
-                    or current_route starts with 'app_admin_families'
-                    or current_route starts with 'app_admin_programmes'
-                    or current_route starts with 'app_admin_levels'
-                    or current_route starts with 'app_admin_groups' %}
-                <a href="{{ path('app_educational_centre_index', {centreId: active_centre.id}) }}"
+                {% set centre_active = current_route starts with 'app_centre_' %}
+                <a href="{{ path('app_centre_index', {centreId: active_centre.id}) }}"
                    class="{{ centre_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:building-library', {class: 'h-5 w-5 shrink-0'}) }}
@@ -242,7 +237,7 @@
                     class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors lg:hidden">
                 {{ ux_icon('heroicons:bars-3', {class: 'h-5 w-5'}) }}
             </button>
-            <span class="text-sm font-semibold text-forest-900 lg:hidden">{{ app_name }}</span>
+            <a href="{{ path('app_dashboard') }}" class="text-sm font-semibold text-forest-900 lg:hidden">{{ app_name }}</a>
 
             <div class="ml-auto flex items-center gap-2">
                 {% if active_centre %}

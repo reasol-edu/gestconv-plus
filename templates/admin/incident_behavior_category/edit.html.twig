@@ -7,7 +7,8 @@
 
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
-            <a href="{{ path('app_admin_incident_behaviors_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'behavior.title'|trans({}, 'admin') }}</a>
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_incident_behaviors_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'behavior.title'|trans({}, 'admin') }}</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
         </div>
         <h1 class="text-2xl font-bold text-gray-900">
@@ -18,8 +19,8 @@
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6">
         <form method="post"
               action="{{ category is not null
-                  ? path('app_admin_incident_behavior_categories_edit', {centreId: centre.id, id: category.id})
-                  : path('app_admin_incident_behavior_categories_create', {centreId: centre.id}) }}"
+                  ? path('app_centre_incident_behavior_categories_edit', {centreId: centre.id, id: category.id})
+                  : path('app_centre_incident_behavior_categories_create', {centreId: centre.id}) }}"
               class="space-y-5">
             <input type="hidden" name="_token"
                    value="{{ category is not null
@@ -63,7 +64,7 @@
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-2">
-                <a href="{{ path('app_admin_incident_behaviors_index', {centreId: centre.id}) }}"
+                <a href="{{ path('app_centre_incident_behaviors_index', {centreId: centre.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
                           hover:bg-gray-50 transition-colors">
                     {{ 'category.cancel'|trans({}, 'admin') }}

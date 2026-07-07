@@ -36,10 +36,10 @@ class CommunicationMethodActivityLogTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion');
         $token    = $crawler->filter('form[action$="metodos-comunicacion/nuevo"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/nuevo', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/nuevo', [
             '_token' => $token,
             'name'   => 'Mensajería Pasen',
         ]);
@@ -60,10 +60,10 @@ class CommunicationMethodActivityLogTest extends ControllerTestCase
 
         $centreId = $centre->getId()->toRfc4122();
         $methodId = $method->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/' . $methodId . '/editar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion/' . $methodId . '/editar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/' . $methodId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/' . $methodId . '/editar', [
             '_token' => $token,
             'name'   => 'Nombre actualizado',
             'active' => '0',
@@ -89,10 +89,10 @@ class CommunicationMethodActivityLogTest extends ControllerTestCase
 
         $centreId = $centre->getId()->toRfc4122();
         $methodId = $method->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion');
         $token    = $crawler->filter('form[action$="' . $methodId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/' . $methodId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/' . $methodId . '/eliminar', [
             '_token' => $token,
         ]);
 

@@ -23,7 +23,7 @@ use App\Security\Voter\EducationalCentreVoter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/centros/{centreId}/docentes-curso')]
+#[Route('/centro/{centreId}/docentes-curso')]
 class CentreTeacherController extends AbstractController
 {
     public function __construct(
@@ -37,7 +37,7 @@ class CentreTeacherController extends AbstractController
         private readonly CsvReader $csvReader,
     ) {}
 
-    #[Route('', name: 'app_admin_centre_teachers_index')]
+    #[Route('', name: 'app_centre_teachers_index')]
     public function index(string $centreId): Response
     {
         $centre = $this->requireCentre($centreId);
@@ -45,7 +45,7 @@ class CentreTeacherController extends AbstractController
         return $this->render('admin/centre_teacher/index.html.twig', ['centre' => $centre]);
     }
 
-    #[Route('/añadir', name: 'app_admin_centre_teachers_add', methods: ['POST'])]
+    #[Route('/añadir', name: 'app_centre_teachers_add', methods: ['POST'])]
     public function add(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
@@ -59,7 +59,7 @@ class CentreTeacherController extends AbstractController
         $teacher  = $username !== '' ? $this->teachers->findByUsername($username) : null;
 
         if ($teacher === null) {
-            return $this->redirectToRoute('app_admin_centre_teachers_register', [
+            return $this->redirectToRoute('app_centre_teachers_register', [
                 'centreId' => $centre->getId(),
                 'username' => $username,
             ]);
@@ -72,10 +72,10 @@ class CentreTeacherController extends AbstractController
             $this->addFlash('success', $this->t('centre_teachers.flash.added'));
         }
 
-        return $this->redirectToRoute('app_admin_centre_teachers_index', ['centreId' => $centre->getId()]);
+        return $this->redirectToRoute('app_centre_teachers_index', ['centreId' => $centre->getId()]);
     }
 
-    #[Route('/importar', name: 'app_admin_centre_teachers_import')]
+    #[Route('/importar', name: 'app_centre_teachers_import')]
     public function import(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
@@ -102,7 +102,7 @@ class CentreTeacherController extends AbstractController
         if ($parsed['headers'] === []) {
             $this->addFlash('error', $this->t('centre_teachers.import.error.empty_file'));
 
-            return $this->redirectToRoute('app_admin_centre_teachers_import', ['centreId' => $centre->getId()]);
+            return $this->redirectToRoute('app_centre_teachers_import', ['centreId' => $centre->getId()]);
         }
 
         $required = ['Empleado/a', 'Usuario IdEA'];
@@ -110,7 +110,7 @@ class CentreTeacherController extends AbstractController
         if ($missing !== null) {
             $this->addFlash('error', $this->t('centre_teachers.import.error.missing_column') . ' «' . $missing . '»');
 
-            return $this->redirectToRoute('app_admin_centre_teachers_import', ['centreId' => $centre->getId()]);
+            return $this->redirectToRoute('app_centre_teachers_import', ['centreId' => $centre->getId()]);
         }
 
         $year    = $centre->getActiveAcademicYear();
@@ -119,7 +119,7 @@ class CentreTeacherController extends AbstractController
         $skipped = 0;
 
         if ($year === null) {
-            return $this->redirectToRoute('app_admin_centre_teachers_import', ['centreId' => $centre->getId()]);
+            return $this->redirectToRoute('app_centre_teachers_import', ['centreId' => $centre->getId()]);
         }
 
         foreach ($parsed['rows'] as $row) {
@@ -157,10 +157,10 @@ class CentreTeacherController extends AbstractController
             '%skipped%' => $skipped,
         ], 'admin'));
 
-        return $this->redirectToRoute('app_admin_centre_teachers_index', ['centreId' => $centre->getId()]);
+        return $this->redirectToRoute('app_centre_teachers_index', ['centreId' => $centre->getId()]);
     }
 
-    #[Route('/importar-asignaciones', name: 'app_admin_centre_teachers_import_assignments')]
+    #[Route('/importar-asignaciones', name: 'app_centre_teachers_import_assignments')]
     public function importAssignments(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
@@ -187,7 +187,7 @@ class CentreTeacherController extends AbstractController
         if ($parsed['headers'] === []) {
             $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.empty_file'));
 
-            return $this->redirectToRoute('app_admin_centre_teachers_import_assignments', ['centreId' => $centre->getId()]);
+            return $this->redirectToRoute('app_centre_teachers_import_assignments', ['centreId' => $centre->getId()]);
         }
 
         $required = ['Unidad', 'Profesor/a'];
@@ -195,7 +195,7 @@ class CentreTeacherController extends AbstractController
         if ($missing !== null) {
             $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.missing_column') . ' «' . $missing . '»');
 
-            return $this->redirectToRoute('app_admin_centre_teachers_import_assignments', ['centreId' => $centre->getId()]);
+            return $this->redirectToRoute('app_centre_teachers_import_assignments', ['centreId' => $centre->getId()]);
         }
 
         /** @var array<string, Group> $groupsByName */
@@ -262,10 +262,10 @@ class CentreTeacherController extends AbstractController
 
         $this->addFlash($unknownTeachers === [] && $unknownGroups === [] ? 'success' : 'error', $summary);
 
-        return $this->redirectToRoute('app_admin_centre_teachers_index', ['centreId' => $centre->getId()]);
+        return $this->redirectToRoute('app_centre_teachers_index', ['centreId' => $centre->getId()]);
     }
 
-    #[Route('/registrar', name: 'app_admin_centre_teachers_register')]
+    #[Route('/registrar', name: 'app_centre_teachers_register')]
     public function register(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
@@ -323,7 +323,7 @@ class CentreTeacherController extends AbstractController
 
                 $this->addFlash('success', $this->t('centre_teachers.flash.registered_and_added'));
 
-                return $this->redirectToRoute('app_admin_centre_teachers_index', ['centreId' => $centre->getId()]);
+                return $this->redirectToRoute('app_centre_teachers_index', ['centreId' => $centre->getId()]);
             }
         }
 
@@ -335,7 +335,7 @@ class CentreTeacherController extends AbstractController
         ]);
     }
 
-    #[Route('/{teacherId}/editar', name: 'app_admin_centre_teachers_edit')]
+    #[Route('/{teacherId}/editar', name: 'app_centre_teachers_edit')]
     public function edit(string $centreId, string $teacherId, Request $request): Response
     {
         $centre  = $this->requireCentreWithActiveYear($centreId);
@@ -378,7 +378,7 @@ class CentreTeacherController extends AbstractController
             $this->em->flush();
             $this->addFlash('success', $this->t('centre_teachers.flash.groups_updated'));
 
-            return $this->redirectToRoute('app_admin_centre_teachers_edit', [
+            return $this->redirectToRoute('app_centre_teachers_edit', [
                 'centreId'  => $centre->getId(),
                 'teacherId' => $teacherId,
             ]);
@@ -392,7 +392,7 @@ class CentreTeacherController extends AbstractController
         ]);
     }
 
-    #[Route('/{teacherId}/quitar', name: 'app_admin_centre_teachers_remove', methods: ['POST'])]
+    #[Route('/{teacherId}/quitar', name: 'app_centre_teachers_remove', methods: ['POST'])]
     public function remove(string $centreId, string $teacherId, Request $request): Response
     {
         $centre  = $this->requireCentreWithActiveYear($centreId);
@@ -415,7 +415,7 @@ class CentreTeacherController extends AbstractController
 
         $this->addFlash('success', $this->t('centre_teachers.flash.removed'));
 
-        return $this->redirectToRoute('app_admin_centre_teachers_index', ['centreId' => $centre->getId()]);
+        return $this->redirectToRoute('app_centre_teachers_index', ['centreId' => $centre->getId()]);
     }
 
     private function requireCentre(string $centreId): EducationalCentre

@@ -7,9 +7,10 @@
 
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
             <a href="{{ path('app_admin_centres_index') }}" class="hover:text-forest-600 transition-colors">Centros educativos</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
-            <a href="{{ path('app_admin_sanction_measures_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'sanction_measure.title'|trans({}, 'admin') }}</a>
+            <a href="{{ path('app_centre_sanction_measures_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'sanction_measure.title'|trans({}, 'admin') }}</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
         </div>
         <h1 class="text-2xl font-bold text-gray-900">{{ 'sanction_measure.import.title'|trans({}, 'admin') }}</h1>
@@ -52,7 +53,7 @@
             </fieldset>
 
             <div class="flex items-center justify-between pt-2">
-                <a href="{{ path('app_admin_sanction_measures_index', {centreId: centre.id}) }}"
+                <a href="{{ path('app_centre_sanction_measures_index', {centreId: centre.id}) }}"
                    class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
                     {{ 'sanction_measure.import.cancel'|trans({}, 'admin') }}
                 </a>

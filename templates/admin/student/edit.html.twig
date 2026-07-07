@@ -7,9 +7,10 @@
 
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
-            <a href="{{ path('app_educational_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
-            <a href="{{ path('app_admin_students_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'students.title'|trans({}, 'admin') }}</a>
+            <a href="{{ path('app_centre_students_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'students.title'|trans({}, 'admin') }}</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
         </div>
         <h1 class="text-2xl font-bold text-gray-900">{{ student.name.lastName }}, {{ student.name.firstName }}</h1>
@@ -138,7 +139,7 @@
         </div>
 
         <div class="flex items-center justify-between">
-            <a href="{{ path('app_admin_students_index', {centreId: centre.id}) }}"
+            <a href="{{ path('app_centre_students_index', {centreId: centre.id}) }}"
                class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
                 {{ 'student.cancel'|trans({}, 'admin') }}
             </a>
@@ -157,7 +158,7 @@
         <div class="px-6 py-5 flex items-center justify-between gap-4">
             <p class="text-sm text-gray-600">{{ 'student.delete_warning'|trans({}, 'admin') }}</p>
             <form method="post"
-                  action="{{ path('app_admin_students_delete', {centreId: centre.id, id: student.id}) }}"
+                  action="{{ path('app_centre_students_delete', {centreId: centre.id, id: student.id}) }}"
                   class="js-confirm-form"
                   data-confirm="{{ 'students.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('delete_student_' ~ student.id) }}">

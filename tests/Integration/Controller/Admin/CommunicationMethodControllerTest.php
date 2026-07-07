@@ -27,7 +27,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         [$cadmin, $centre] = $this->makeScenario();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion');
 
         self::assertResponseIsSuccessful();
     }
@@ -39,7 +39,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -52,7 +52,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->persist($pureCentreAdmin);
         $this->loginAs($pureCentreAdmin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion');
 
         self::assertResponseIsSuccessful();
     }
@@ -65,15 +65,15 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion');
         $token    = $crawler->filter('form[action$="metodos-comunicacion/nuevo"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/nuevo', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/nuevo', [
             '_token' => $token,
             'name'   => 'Mensajería Pasen',
         ]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+        self::assertResponseRedirects('/centro/' . $centreId . '/metodos-comunicacion');
 
         $this->em->clear();
         $methods = $this->em->getRepository(CommunicationMethod::class)->findBy(['educationalCentre' => $centre->getId()]);
@@ -86,7 +86,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         [$cadmin, $centre] = $this->makeScenario();
         $this->loginAs($cadmin);
 
-        $this->client->request('POST', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/nuevo', [
+        $this->client->request('POST', '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/nuevo', [
             '_token' => 'invalid-token',
             'name'   => 'Método inválido',
         ]);
@@ -100,10 +100,10 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion');
         $token    = $crawler->filter('form[action$="metodos-comunicacion/nuevo"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/nuevo', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/nuevo', [
             '_token' => $token,
             'name'   => '',
         ]);
@@ -122,7 +122,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
 
         $this->client->request(
             'GET',
-            '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/' . $method->getId()->toRfc4122() . '/editar'
+            '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/' . $method->getId()->toRfc4122() . '/editar'
         );
 
         self::assertResponseIsSuccessful();
@@ -136,16 +136,16 @@ class CommunicationMethodControllerTest extends ControllerTestCase
 
         $centreId = $centre->getId()->toRfc4122();
         $methodId = $method->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/' . $methodId . '/editar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion/' . $methodId . '/editar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/' . $methodId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/' . $methodId . '/editar', [
             '_token' => $token,
             'name'   => 'Nombre actualizado',
             'active' => '1',
         ]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+        self::assertResponseRedirects('/centro/' . $centreId . '/metodos-comunicacion');
 
         $this->em->clear();
         $updated = $this->em->find(CommunicationMethod::class, $method->getId());
@@ -162,14 +162,14 @@ class CommunicationMethodControllerTest extends ControllerTestCase
 
         $centreId = $centre->getId()->toRfc4122();
         $methodId = $method->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion');
         $token    = $crawler->filter('form[action$="' . $methodId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/' . $methodId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/' . $methodId . '/eliminar', [
             '_token' => $token,
         ]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+        self::assertResponseRedirects('/centro/' . $centreId . '/metodos-comunicacion');
 
         $this->em->clear();
         self::assertNull($this->em->find(CommunicationMethod::class, $method->getId()));
@@ -210,14 +210,14 @@ class CommunicationMethodControllerTest extends ControllerTestCase
 
         $centreId = $centre->getId()->toRfc4122();
         $methodId = $method->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion');
         $token    = $crawler->filter('form[action$="' . $methodId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/' . $methodId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/' . $methodId . '/eliminar', [
             '_token' => $token,
         ]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+        self::assertResponseRedirects('/centro/' . $centreId . '/metodos-comunicacion');
 
         $this->em->clear();
         self::assertNotNull($this->em->find(CommunicationMethod::class, $method->getId()));
@@ -234,14 +234,14 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $centreId = $centre->getId()->toRfc4122();
         $methodId = $method->getId()->toRfc4122();
 
-        $crawler = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion');
+        $crawler = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion');
         self::assertResponseIsSuccessful();
 
         $tokenNodes = $crawler->filter('form[action$="/activar"] [name="_token"]');
         self::assertGreaterThan(0, $tokenNodes->count(), 'Toggle-active form not found in page');
         $token = $tokenNodes->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/' . $methodId . '/activar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/' . $methodId . '/activar', [
             '_token' => $token,
         ]);
 
@@ -264,11 +264,11 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion');
         $tokens   = $crawler->filter('form[action$="/subir"] [name="_token"]');
         $token    = $tokens->count() > 0 ? $tokens->first()->attr('value') : '';
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/' . $m2->getId()->toRfc4122() . '/subir', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/' . $m2->getId()->toRfc4122() . '/subir', [
             '_token' => $token,
         ]);
 
@@ -289,7 +289,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         [$cadmin, $centre, $method] = $this->makeScenarioWithMethod();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/export');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/export');
 
         self::assertResponseIsSuccessful();
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
@@ -304,7 +304,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/export');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/export');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -316,7 +316,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         [$cadmin, $centre] = $this->makeScenario();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/import');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/import');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('input[name="json"]');
@@ -328,7 +328,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/import');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $file = $this->makeJsonUploadFile([
@@ -337,11 +337,11 @@ class CommunicationMethodControllerTest extends ControllerTestCase
             ],
         ]);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/import', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/import', [
             '_token' => $token,
         ], ['json' => $file]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+        self::assertResponseRedirects('/centro/' . $centreId . '/metodos-comunicacion');
 
         $this->em->clear();
         $methods = $this->em->getRepository(CommunicationMethod::class)->findBy(['educationalCentre' => $centre->getId()]);
@@ -355,14 +355,14 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/import');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, 'not json');
         $file = new UploadedFile($tmpFile, 'methods.json', 'application/json', null, true);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/import', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/import', [
             '_token' => $token,
         ], ['json' => $file]);
 
@@ -376,7 +376,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/import');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $file = $this->makeJsonUploadFile([
@@ -385,12 +385,12 @@ class CommunicationMethodControllerTest extends ControllerTestCase
             ],
         ]);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/import', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/import', [
             '_token'           => $token,
             'replace_existing' => '1',
         ], ['json' => $file]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+        self::assertResponseRedirects('/centro/' . $centreId . '/metodos-comunicacion');
 
         $this->em->clear();
         self::assertNull($this->em->find(CommunicationMethod::class, $oldMethod->getId()));
@@ -433,7 +433,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/import');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/metodos-comunicacion/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $file = $this->makeJsonUploadFile([
@@ -442,12 +442,12 @@ class CommunicationMethodControllerTest extends ControllerTestCase
             ],
         ]);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/import', [
+        $this->client->request('POST', '/centro/' . $centreId . '/metodos-comunicacion/import', [
             '_token'           => $token,
             'replace_existing' => '1',
         ], ['json' => $file]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+        self::assertResponseRedirects('/centro/' . $centreId . '/metodos-comunicacion');
 
         $this->em->clear();
         self::assertNotNull($this->em->find(CommunicationMethod::class, $method->getId()), 'El método en uso no debe eliminarse aunque se marque «vaciar antes de importar».');
@@ -460,7 +460,7 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/import');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/import');
 
         self::assertResponseStatusCodeSame(403);
     }

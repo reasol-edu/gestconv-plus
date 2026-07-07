@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/centros/{centreId}/estudiantes')]
+#[Route('/centro/{centreId}/estudiantes')]
 class StudentController extends AbstractController
 {
     /** @var list<string> */
@@ -49,7 +49,7 @@ class StudentController extends AbstractController
         private readonly EntityChangeTracker $changeTracker,
     ) {}
 
-    #[Route('', name: 'app_admin_students_index')]
+    #[Route('', name: 'app_centre_students_index')]
     public function index(string $centreId): Response
     {
         $centre = $this->requireCentre($centreId);
@@ -57,7 +57,7 @@ class StudentController extends AbstractController
         return $this->render('admin/student/index.html.twig', ['centre' => $centre]);
     }
 
-    #[Route('/nuevo', name: 'app_admin_students_new')]
+    #[Route('/nuevo', name: 'app_centre_students_new')]
     public function new(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
@@ -113,7 +113,7 @@ class StudentController extends AbstractController
 
                 $this->addFlash('success', $this->t('student.flash.created'));
 
-                return $this->redirectToRoute('app_admin_students_index', ['centreId' => $centre->getId()]);
+                return $this->redirectToRoute('app_centre_students_index', ['centreId' => $centre->getId()]);
             }
         }
 
@@ -126,7 +126,7 @@ class StudentController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/editar', name: 'app_admin_students_edit')]
+    #[Route('/{id}/editar', name: 'app_centre_students_edit')]
     public function edit(string $centreId, string $id, Request $request): Response
     {
         $centre  = $this->requireCentre($centreId);
@@ -223,7 +223,7 @@ class StudentController extends AbstractController
 
                 $this->addFlash('success', $this->t('student.flash.saved'));
 
-                return $this->redirectToRoute('app_admin_students_index', ['centreId' => $centre->getId()]);
+                return $this->redirectToRoute('app_centre_students_index', ['centreId' => $centre->getId()]);
             }
         }
 
@@ -237,7 +237,7 @@ class StudentController extends AbstractController
         ]);
     }
 
-    #[Route('/importar', name: 'app_admin_students_import')]
+    #[Route('/importar', name: 'app_centre_students_import')]
     public function import(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
@@ -258,13 +258,13 @@ class StudentController extends AbstractController
 
             if ($importId === '' || $importId !== $savedId) {
                 $this->addFlash('error', $this->t('students.import.error.expired'));
-                return $this->redirectToRoute('app_admin_students_import', ['centreId' => $centre->getId()]);
+                return $this->redirectToRoute('app_centre_students_import', ['centreId' => $centre->getId()]);
             }
 
             $path = $this->getTempImportPath($importId);
             if (!file_exists($path)) {
                 $this->addFlash('error', $this->t('students.import.error.expired'));
-                return $this->redirectToRoute('app_admin_students_import', ['centreId' => $centre->getId()]);
+                return $this->redirectToRoute('app_centre_students_import', ['centreId' => $centre->getId()]);
             }
 
             $content = (string) file_get_contents($path);
@@ -291,7 +291,7 @@ class StudentController extends AbstractController
 
             $this->buildImportFlash($result);
 
-            return $this->redirectToRoute('app_admin_students_index', ['centreId' => $centre->getId()]);
+            return $this->redirectToRoute('app_centre_students_index', ['centreId' => $centre->getId()]);
         }
 
         // ── Paso 1: subida del fichero → vista previa ────────────────────────
@@ -512,7 +512,7 @@ class StudentController extends AbstractController
         return $result;
     }
 
-    #[Route('/{id}/eliminar', name: 'app_admin_students_delete', methods: ['POST'])]
+    #[Route('/{id}/eliminar', name: 'app_centre_students_delete', methods: ['POST'])]
     public function delete(string $centreId, string $id, Request $request): Response
     {
         $centre  = $this->requireCentre($centreId);
@@ -536,7 +536,7 @@ class StudentController extends AbstractController
 
         $this->addFlash('success', $this->t('student.flash.deleted'));
 
-        return $this->redirectToRoute('app_admin_students_index', ['centreId' => $centre->getId()]);
+        return $this->redirectToRoute('app_centre_students_index', ['centreId' => $centre->getId()]);
     }
 
     private function requireCentre(string $centreId): EducationalCentre

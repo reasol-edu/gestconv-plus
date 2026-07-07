@@ -21,7 +21,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->persist($admin, $centre, $year);
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/docentes-curso');
 
         self::assertResponseIsSuccessful();
     }
@@ -35,7 +35,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($directivo);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/docentes-curso');
 
         self::assertResponseIsSuccessful();
     }
@@ -47,7 +47,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->persist($admin, $centre, $year, $teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/docentes-curso');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -64,10 +64,10 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/docentes-curso');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/a%C3%B1adir', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/a%C3%B1adir', [
             '_token'   => $token,
             'username' => 'teacher.1',
         ]);
@@ -85,10 +85,10 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/docentes-curso');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/a%C3%B1adir', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/a%C3%B1adir', [
             '_token'   => $token,
             'username' => 'desconocido',
         ]);
@@ -106,7 +106,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/a%C3%B1adir', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/a%C3%B1adir', [
             '_token'   => 'token-invalido',
             'username' => 'teacher.1',
         ]);
@@ -124,7 +124,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso/importar');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/docentes-curso/importar');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -139,14 +139,14 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/docentes-curso/importar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, "\"Empleado/a\",\"Usuario IdEA\"\n\"Garcia, Juan\",\"juan.garcia\"\n");
         $file = new UploadedFile($tmpFile, 'import.csv', 'text/csv', null, true);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/importar', [
             '_token' => $token,
         ], ['csv' => $file]);
 
@@ -165,10 +165,10 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/docentes-curso/importar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/importar', [
             '_token' => $token,
         ]);
 
@@ -184,7 +184,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/importar', [
             '_token' => 'token-invalido',
         ]);
 
@@ -201,7 +201,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso/importar-asignaciones');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/docentes-curso/importar-asignaciones');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -216,14 +216,14 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/docentes-curso/importar-asignaciones');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/importar-asignaciones');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, "\"Unidad\",\"Profesor/a\"\n\"DAW1A\",\"Garcia, Juan\"\n");
         $file = new UploadedFile($tmpFile, 'assignments.csv', 'text/csv', null, true);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/importar-asignaciones', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/importar-asignaciones', [
             '_token' => $token,
         ], ['csv' => $file]);
 
@@ -242,7 +242,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/importar-asignaciones', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/importar-asignaciones', [
             '_token' => 'token-invalido',
         ]);
 
@@ -259,7 +259,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/docentes-curso/registrar');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/docentes-curso/registrar');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -274,10 +274,10 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/docentes-curso/registrar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/registrar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/registrar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/registrar', [
             '_token'      => $token,
             'first_name'  => 'Juan',
             'last_name'   => 'Garcia',
@@ -301,7 +301,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/registrar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/registrar', [
             '_token'     => 'token-invalido',
             'first_name' => 'Juan',
             'last_name'  => 'Garcia',
@@ -320,10 +320,10 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/docentes-curso/registrar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/registrar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/registrar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/registrar', [
             '_token'      => $token,
             'first_name'  => '',
             'last_name'   => 'Garcia',
@@ -349,10 +349,10 @@ class CentreTeacherControllerTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $teacherId = $teacher->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/centros/' . $centreId . '/docentes-curso');
+        $crawler   = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso');
         $token     = $crawler->filter('form[action$="/' . $teacherId . '/quitar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/' . $teacherId . '/quitar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/' . $teacherId . '/quitar', [
             '_token' => $token,
         ]);
 
@@ -372,7 +372,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $teacherId = $teacher->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/docentes-curso/' . $teacherId . '/quitar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/' . $teacherId . '/quitar', [
             '_token' => 'token-invalido',
         ]);
 

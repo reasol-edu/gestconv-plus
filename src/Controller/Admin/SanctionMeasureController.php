@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/centros/{centreId}/sanciones/medidas')]
+#[Route('/centro/{centreId}/sanciones/medidas')]
 class SanctionMeasureController extends AbstractController
 {
     /** @var list<string> */
@@ -40,7 +40,7 @@ class SanctionMeasureController extends AbstractController
         private readonly EntityChangeTracker $changeTracker,
     ) {}
 
-    #[Route('', name: 'app_admin_sanction_measures_index')]
+    #[Route('', name: 'app_centre_sanction_measures_index')]
     public function index(string $centreId): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -62,7 +62,7 @@ class SanctionMeasureController extends AbstractController
         ]);
     }
 
-    #[Route('/export', name: 'app_admin_sanction_measures_export', methods: ['GET'])]
+    #[Route('/export', name: 'app_centre_sanction_measures_export', methods: ['GET'])]
     public function export(string $centreId): JsonResponse
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -80,7 +80,7 @@ class SanctionMeasureController extends AbstractController
         ], true);
     }
 
-    #[Route('/import', name: 'app_admin_sanction_measures_import')]
+    #[Route('/import', name: 'app_centre_sanction_measures_import')]
     public function import(string $centreId, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -121,10 +121,10 @@ class SanctionMeasureController extends AbstractController
             '%measures%'   => $stats['measures'],
         ], 'admin'));
 
-        return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/nueva', name: 'app_admin_sanction_measures_create', methods: ['POST'])]
+    #[Route('/nueva', name: 'app_centre_sanction_measures_create', methods: ['POST'])]
     public function create(string $centreId, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -145,7 +145,7 @@ class SanctionMeasureController extends AbstractController
         if ($name === '' || $category === null || $category->getEducationalCentre() !== $centre) {
             $this->addFlash('error', $this->t('sanction_measure.flash.invalid'));
 
-            return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
+            return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
         }
 
         $position = $this->measures->countByCategory($category);
@@ -169,10 +169,10 @@ class SanctionMeasureController extends AbstractController
 
         $this->addFlash('success', $this->t('sanction_measure.flash.created'));
 
-        return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/editar', name: 'app_admin_sanction_measures_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/editar', name: 'app_centre_sanction_measures_edit', methods: ['GET', 'POST'])]
     public function edit(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -224,7 +224,7 @@ class SanctionMeasureController extends AbstractController
                 $this->addFlash('success', $this->t('sanction_measure.flash.updated'));
             }
 
-            return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
+            return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
         }
 
         $categories = $this->categories->findByCentreOrdered($centre);
@@ -236,7 +236,7 @@ class SanctionMeasureController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/eliminar', name: 'app_admin_sanction_measures_delete', methods: ['POST'])]
+    #[Route('/{id}/eliminar', name: 'app_centre_sanction_measures_delete', methods: ['POST'])]
     public function delete(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -273,10 +273,10 @@ class SanctionMeasureController extends AbstractController
 
         $this->addFlash('success', $this->t('sanction_measure.flash.deleted'));
 
-        return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/subir', name: 'app_admin_sanction_measures_move_up', methods: ['POST'])]
+    #[Route('/{id}/subir', name: 'app_centre_sanction_measures_move_up', methods: ['POST'])]
     public function moveUp(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -308,10 +308,10 @@ class SanctionMeasureController extends AbstractController
 
         $this->addFlash('success', $this->t('sanction_measure.flash.moved'));
 
-        return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/bajar', name: 'app_admin_sanction_measures_move_down', methods: ['POST'])]
+    #[Route('/{id}/bajar', name: 'app_centre_sanction_measures_move_down', methods: ['POST'])]
     public function moveDown(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -344,10 +344,10 @@ class SanctionMeasureController extends AbstractController
 
         $this->addFlash('success', $this->t('sanction_measure.flash.moved'));
 
-        return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/activar', name: 'app_admin_sanction_measures_toggle_active', methods: ['POST'])]
+    #[Route('/{id}/activar', name: 'app_centre_sanction_measures_toggle_active', methods: ['POST'])]
     public function toggleActive(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -370,7 +370,7 @@ class SanctionMeasureController extends AbstractController
 
         $this->addFlash('success', $this->t('sanction_measure.flash.toggled'));
 
-        return $this->redirectToRoute('app_admin_sanction_measures_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
     }
 
     private function t(string $key): string

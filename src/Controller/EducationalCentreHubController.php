@@ -11,14 +11,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/centros/{centreId}')]
+#[Route('/centro/{centreId}')]
 class EducationalCentreHubController extends AbstractController
 {
     public function __construct(
         private readonly EducationalCentreRepository $centres,
     ) {}
 
-    #[Route('', name: 'app_educational_centre_index')]
+    #[Route('', name: 'app_centre_index')]
     public function index(string $centreId): Response
     {
         $centre = $this->requireCentre($centreId);
@@ -28,7 +28,7 @@ class EducationalCentreHubController extends AbstractController
         ]);
     }
 
-    #[Route('/ajustes', name: 'app_educational_centre_settings')]
+    #[Route('/ajustes', name: 'app_centre_settings')]
     public function settings(string $centreId): Response
     {
         $centre = $this->requireCentre($centreId);

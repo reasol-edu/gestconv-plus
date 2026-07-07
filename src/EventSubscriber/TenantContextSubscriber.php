@@ -46,8 +46,9 @@ final class TenantContextSubscriber
             return;
         }
 
-        // Admin section does not require centre selection
-        if (\is_string($route) && \str_starts_with($route, 'app_admin')) {
+        // Admin section and centre-hub routes resolve their centre from the
+        // URL, not from the session, so they do not require centre selection
+        if (\is_string($route) && (\str_starts_with($route, 'app_admin') || \str_starts_with($route, 'app_centre'))) {
             return;
         }
 

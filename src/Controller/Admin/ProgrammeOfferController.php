@@ -20,7 +20,7 @@ use App\Security\Voter\EducationalCentreVoter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/centros/{centreId}/offer')]
+#[Route('/centro/{centreId}/offer')]
 class ProgrammeOfferController extends AbstractController
 {
     public function __construct(
@@ -32,7 +32,7 @@ class ProgrammeOfferController extends AbstractController
         private readonly ActivityLogService $activityLog,
     ) {}
 
-    #[Route('/export', name: 'app_admin_offer_export', methods: ['GET'])]
+    #[Route('/export', name: 'app_centre_offer_export', methods: ['GET'])]
     public function export(string $centreId): JsonResponse
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
@@ -50,7 +50,7 @@ class ProgrammeOfferController extends AbstractController
         ], true);
     }
 
-    #[Route('/import', name: 'app_admin_offer_import')]
+    #[Route('/import', name: 'app_centre_offer_import')]
     public function import(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentreForWrite($centreId);
@@ -115,10 +115,10 @@ class ProgrammeOfferController extends AbstractController
 
         $this->addFlash('success', $summary);
 
-        return $this->redirectToRoute('app_admin_offer_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_offer_index', ['centreId' => $centreId]);
     }
 
-    #[Route('', name: 'app_admin_offer_index')]
+    #[Route('', name: 'app_centre_offer_index')]
     public function index(string $centreId): Response
     {
         $centre = $this->requireCentre($centreId);

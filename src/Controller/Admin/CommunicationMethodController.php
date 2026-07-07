@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/centros/{centreId}/metodos-comunicacion')]
+#[Route('/centro/{centreId}/metodos-comunicacion')]
 class CommunicationMethodController extends AbstractController
 {
     /** @var list<string> */
@@ -40,7 +40,7 @@ class CommunicationMethodController extends AbstractController
         private readonly EntityChangeTracker $changeTracker,
     ) {}
 
-    #[Route('', name: 'app_admin_communication_methods_index')]
+    #[Route('', name: 'app_centre_communication_methods_index')]
     public function index(string $centreId): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -55,7 +55,7 @@ class CommunicationMethodController extends AbstractController
         ]);
     }
 
-    #[Route('/export', name: 'app_admin_communication_methods_export', methods: ['GET'])]
+    #[Route('/export', name: 'app_centre_communication_methods_export', methods: ['GET'])]
     public function export(string $centreId): JsonResponse
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -73,7 +73,7 @@ class CommunicationMethodController extends AbstractController
         ], true);
     }
 
-    #[Route('/import', name: 'app_admin_communication_methods_import')]
+    #[Route('/import', name: 'app_centre_communication_methods_import')]
     public function import(string $centreId, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -113,10 +113,10 @@ class CommunicationMethodController extends AbstractController
             '%methods%' => $stats['methods'],
         ], 'admin'));
 
-        return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/nuevo', name: 'app_admin_communication_methods_create', methods: ['POST'])]
+    #[Route('/nuevo', name: 'app_centre_communication_methods_create', methods: ['POST'])]
     public function create(string $centreId, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -134,7 +134,7 @@ class CommunicationMethodController extends AbstractController
         if ($name === '') {
             $this->addFlash('error', $this->t('communication_method.flash.invalid'));
 
-            return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+            return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
         }
 
         $method = (new CommunicationMethod())
@@ -153,10 +153,10 @@ class CommunicationMethodController extends AbstractController
 
         $this->addFlash('success', $this->t('communication_method.flash.created'));
 
-        return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/editar', name: 'app_admin_communication_methods_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/editar', name: 'app_centre_communication_methods_edit', methods: ['GET', 'POST'])]
     public function edit(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -197,7 +197,7 @@ class CommunicationMethodController extends AbstractController
                 $this->addFlash('error', $this->t('communication_method.flash.invalid'));
             }
 
-            return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+            return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
         }
 
         return $this->render('admin/communication_method/edit.html.twig', [
@@ -206,7 +206,7 @@ class CommunicationMethodController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/eliminar', name: 'app_admin_communication_methods_delete', methods: ['POST'])]
+    #[Route('/{id}/eliminar', name: 'app_centre_communication_methods_delete', methods: ['POST'])]
     public function delete(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -227,7 +227,7 @@ class CommunicationMethodController extends AbstractController
         if ($this->communications->countByMethod($method) > 0) {
             $this->addFlash('error', $this->t('communication_method.flash.in_use'));
 
-            return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+            return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
         }
 
         $entityId = $method->getId()->toRfc4122();
@@ -248,10 +248,10 @@ class CommunicationMethodController extends AbstractController
 
         $this->addFlash('success', $this->t('communication_method.flash.deleted'));
 
-        return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/subir', name: 'app_admin_communication_methods_move_up', methods: ['POST'])]
+    #[Route('/{id}/subir', name: 'app_centre_communication_methods_move_up', methods: ['POST'])]
     public function moveUp(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -283,10 +283,10 @@ class CommunicationMethodController extends AbstractController
 
         $this->addFlash('success', $this->t('communication_method.flash.moved'));
 
-        return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/bajar', name: 'app_admin_communication_methods_move_down', methods: ['POST'])]
+    #[Route('/{id}/bajar', name: 'app_centre_communication_methods_move_down', methods: ['POST'])]
     public function moveDown(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -319,10 +319,10 @@ class CommunicationMethodController extends AbstractController
 
         $this->addFlash('success', $this->t('communication_method.flash.moved'));
 
-        return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
     }
 
-    #[Route('/{id}/activar', name: 'app_admin_communication_methods_toggle_active', methods: ['POST'])]
+    #[Route('/{id}/activar', name: 'app_centre_communication_methods_toggle_active', methods: ['POST'])]
     public function toggleActive(string $centreId, string $id, Request $request): Response
     {
         $centre = $this->centres->findByIdWithActiveYear($centreId);
@@ -345,7 +345,7 @@ class CommunicationMethodController extends AbstractController
 
         $this->addFlash('success', $this->t('communication_method.flash.toggled'));
 
-        return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
+        return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
     }
 
     private function t(string $key): string

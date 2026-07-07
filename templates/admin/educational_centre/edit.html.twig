@@ -39,6 +39,7 @@
     {# Breadcrumb #}
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+            {% include 'components/_breadcrumb_home.html.twig' %}
             <a href="{{ path('app_admin') }}" class="hover:text-forest-600 transition-colors">
                 {{ 'dashboard.title'|trans({}, 'admin') }}
             </a>
@@ -238,7 +239,7 @@
                 <p class="text-sm text-gray-500 mt-0.5">{{ 'offer.centre_link_help'|trans({}, 'admin') }}</p>
             </div>
             {% if centre.activeAcademicYear %}
-                <a href="{{ path('app_admin_offer_index', {centreId: centre.id}) }}"
+                <a href="{{ path('app_centre_offer_index', {centreId: centre.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
                           hover:bg-forest-700 transition-colors shadow-xs shrink-0">
                     {{ ux_icon('heroicons:academic-cap', {class: 'h-4 w-4'}) }}

@@ -37,10 +37,10 @@ class SanctionMeasureActivityLogTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/medidas');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/sanciones/medidas');
         $token    = $crawler->filter('form[action$="medidas/nueva"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/medidas/nueva', [
+        $this->client->request('POST', '/centro/' . $centreId . '/sanciones/medidas/nueva', [
             '_token'      => $token,
             'name'        => 'Medida de prueba',
             'category_id' => $category->getId()->toRfc4122(),
@@ -62,10 +62,10 @@ class SanctionMeasureActivityLogTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $measureId = $measure->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/medidas/' . $measureId . '/editar');
+        $crawler   = $this->client->request('GET', '/centro/' . $centreId . '/sanciones/medidas/' . $measureId . '/editar');
         $token     = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/medidas/' . $measureId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/sanciones/medidas/' . $measureId . '/editar', [
             '_token'         => $token,
             'name'           => 'Medida actualizada',
             'category_id'    => $category->getId()->toRfc4122(),
@@ -93,10 +93,10 @@ class SanctionMeasureActivityLogTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $measureId = $measure->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/medidas');
+        $crawler   = $this->client->request('GET', '/centro/' . $centreId . '/sanciones/medidas');
         $token     = $crawler->filter('form[action$="' . $measureId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/medidas/' . $measureId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/sanciones/medidas/' . $measureId . '/eliminar', [
             '_token' => $token,
         ]);
 
@@ -115,10 +115,10 @@ class SanctionMeasureActivityLogTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/categorias/nueva');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/sanciones/categorias/nueva');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/categorias/nueva', [
+        $this->client->request('POST', '/centro/' . $centreId . '/sanciones/categorias/nueva', [
             '_token' => $token,
             'name'   => 'Categoria de prueba',
         ]);
@@ -139,10 +139,10 @@ class SanctionMeasureActivityLogTest extends ControllerTestCase
 
         $centreId   = $centre->getId()->toRfc4122();
         $categoryId = $category->getId()->toRfc4122();
-        $crawler    = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/categorias/' . $categoryId . '/editar');
+        $crawler    = $this->client->request('GET', '/centro/' . $centreId . '/sanciones/categorias/' . $categoryId . '/editar');
         $token      = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/categorias/' . $categoryId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/sanciones/categorias/' . $categoryId . '/editar', [
             '_token' => $token,
             'name'   => 'Categoria actualizada',
         ]);
@@ -165,10 +165,10 @@ class SanctionMeasureActivityLogTest extends ControllerTestCase
 
         $centreId   = $centre->getId()->toRfc4122();
         $categoryId = $category->getId()->toRfc4122();
-        $crawler    = $this->client->request('GET', '/centros/' . $centreId . '/sanciones/medidas');
+        $crawler    = $this->client->request('GET', '/centro/' . $centreId . '/sanciones/medidas');
         $token      = $crawler->filter('form[action$="categorias/' . $categoryId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/sanciones/categorias/' . $categoryId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/sanciones/categorias/' . $categoryId . '/eliminar', [
             '_token' => $token,
         ]);
 

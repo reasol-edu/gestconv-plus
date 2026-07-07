@@ -7,6 +7,7 @@
 
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+            {% include 'components/_breadcrumb_home.html.twig' %}
             <a href="{{ path('app_dashboard') }}" class="hover:text-forest-600 transition-colors">
                 {{ 'dashboard'|trans({}, 'navigation') }}
             </a>

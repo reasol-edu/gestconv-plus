@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/centros/{centreId}/perfiles')]
+#[Route('/centro/{centreId}/perfiles')]
 class CentreProfileController extends AbstractController
 {
     public function __construct(
@@ -26,7 +26,7 @@ class CentreProfileController extends AbstractController
         private readonly TranslatorInterface $translator,
     ) {}
 
-    #[Route('', name: 'app_admin_centre_profiles_index')]
+    #[Route('', name: 'app_centre_profiles_index')]
     public function index(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentre($centreId);
@@ -68,7 +68,7 @@ class CentreProfileController extends AbstractController
 
             $this->addFlash('success', $this->t('centre_profiles.flash.saved'));
 
-            return $this->redirectToRoute('app_admin_centre_profiles_index', ['centreId' => $centre->getId()]);
+            return $this->redirectToRoute('app_centre_profiles_index', ['centreId' => $centre->getId()]);
         }
 
         return $this->render('admin/centre_profile/index.html.twig', [

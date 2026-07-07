@@ -25,7 +25,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->persist($admin, $centre, $year);
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/estudiantes');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/estudiantes');
 
         self::assertResponseIsSuccessful();
     }
@@ -39,7 +39,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($directivo);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/estudiantes');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/estudiantes');
 
         self::assertResponseIsSuccessful();
     }
@@ -51,7 +51,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->persist($admin, $centre, $year, $teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/estudiantes');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/estudiantes');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -66,7 +66,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/estudiantes/nuevo');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/estudiantes/nuevo');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -81,10 +81,10 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/nuevo');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/nuevo');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/nuevo', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/nuevo', [
             '_token'    => $token,
             'firstName' => 'Ana',
             'lastName'  => 'Martinez',
@@ -105,7 +105,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/nuevo', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/nuevo', [
             '_token'    => 'token-invalido',
             'firstName' => 'Ana',
             'lastName'  => 'Martinez',
@@ -124,10 +124,10 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/nuevo');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/nuevo');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/nuevo', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/nuevo', [
             '_token'    => $token,
             'firstName' => '',
             'lastName'  => 'Martinez',
@@ -147,10 +147,10 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/nuevo');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/nuevo');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/nuevo', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/nuevo', [
             '_token'    => $token,
             'firstName' => 'Otro',
             'lastName'  => 'Alumno',
@@ -172,7 +172,7 @@ class StudentControllerTest extends ControllerTestCase
         $centreId  = $centre->getId()->toRfc4122();
         $studentId = $student->getId()->toRfc4122();
 
-        $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/editar');
+        $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/editar');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -187,10 +187,10 @@ class StudentControllerTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $studentId = $student->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/editar');
+        $crawler   = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/editar');
         $token     = $crawler->filter('form')->first()->filter('[name="_token"]')->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/editar', [
             '_token'    => $token,
             'firstName' => 'Modificado',
             'lastName'  => 'Apellido',
@@ -214,7 +214,7 @@ class StudentControllerTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $studentId = $student->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/editar', [
             '_token'    => 'token-invalido',
             'firstName' => 'Hack',
             'lastName'  => 'Attack',
@@ -238,7 +238,7 @@ class StudentControllerTest extends ControllerTestCase
         $centreId  = $centre->getId()->toRfc4122();
         $studentId = $student->getId()->toRfc4122();
 
-        $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/editar');
+        $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/editar');
 
         self::assertResponseStatusCodeSame(404);
     }
@@ -253,7 +253,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/estudiantes/importar');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/estudiantes/importar');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -268,7 +268,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/importar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv = implode("\n", [
@@ -279,7 +279,7 @@ class StudentControllerTest extends ControllerTestCase
         file_put_contents($tmpFile, $csv);
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             '_token' => $token,
         ], ['csv' => $file]);
 
@@ -299,7 +299,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/importar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv = implode("\n", [
@@ -311,7 +311,7 @@ class StudentControllerTest extends ControllerTestCase
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
         // Step 1: upload → preview
-        $previewCrawler = $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $previewCrawler = $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             '_token' => $token,
         ], ['csv' => $file]);
         @unlink($tmpFile);
@@ -321,7 +321,7 @@ class StudentControllerTest extends ControllerTestCase
         $confirmToken = $previewCrawler->filter('[name="_token"]')->first()->attr('value');
 
         // Step 2: confirm → import
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             'import_confirmed' => '1',
             'import_id'        => $importId,
             '_token'           => $confirmToken,
@@ -347,7 +347,7 @@ class StudentControllerTest extends ControllerTestCase
         $centreId = $centre->getId()->toRfc4122();
 
         // Do step 1 with a valid CSV to obtain a real confirm CSRF token from the preview page
-        $crawler = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/importar');
+        $crawler = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/importar');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv     = implode("\n", [
@@ -358,7 +358,7 @@ class StudentControllerTest extends ControllerTestCase
         file_put_contents($tmpFile, $csv);
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
-        $previewCrawler = $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $previewCrawler = $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             '_token' => $token,
         ], ['csv' => $file]);
         @unlink($tmpFile);
@@ -367,7 +367,7 @@ class StudentControllerTest extends ControllerTestCase
         $confirmToken = $previewCrawler->filter('[name="_token"]')->first()->attr('value');
 
         // Step 2 with a tampered import_id (session has the real one, this won't match)
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             'import_confirmed' => '1',
             'import_id'        => 'non-existent-uuid-that-wont-match',
             '_token'           => $confirmToken,
@@ -386,7 +386,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             'import_confirmed' => '1',
             'import_id'        => 'some-uuid',
             '_token'           => 'token-invalido',
@@ -404,10 +404,10 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/importar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             '_token' => $token,
         ]);
 
@@ -423,7 +423,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             '_token' => 'token-invalido',
         ]);
 
@@ -440,7 +440,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/importar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv     = implode("\n", [
@@ -452,7 +452,7 @@ class StudentControllerTest extends ControllerTestCase
         file_put_contents($tmpFile, $csv);
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
-        $previewCrawler = $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $previewCrawler = $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             '_token' => $token,
         ], ['csv' => $file]);
         @unlink($tmpFile);
@@ -475,7 +475,7 @@ class StudentControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/importar');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         // CSV con un estudiante en cada grupo
@@ -489,7 +489,7 @@ class StudentControllerTest extends ControllerTestCase
         $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
 
         // Step 1: upload → preview
-        $previewCrawler = $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $previewCrawler = $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             '_token' => $token,
         ], ['csv' => $file]);
         @unlink($tmpFile);
@@ -499,7 +499,7 @@ class StudentControllerTest extends ControllerTestCase
         $confirmToken = $previewCrawler->filter('[name="_token"]')->first()->attr('value');
 
         // Step 2: confirmar solo con el grupo DAW1A seleccionado
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/importar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             'import_confirmed' => '1',
             'import_id'        => $importId,
             '_token'           => $confirmToken,
@@ -530,10 +530,10 @@ class StudentControllerTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $studentId = $student->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/editar');
+        $crawler   = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/editar');
         $token     = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/eliminar', [
             '_token' => $token,
         ]);
 
@@ -553,7 +553,7 @@ class StudentControllerTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $studentId = $student->getId()->toRfc4122();
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/eliminar', [
             '_token' => 'token-invalido',
         ]);
 
@@ -576,7 +576,7 @@ class StudentControllerTest extends ControllerTestCase
 
         // El control de pertenencia al centro ocurre antes de validar el CSRF,
         // así que un token cualquiera basta para probar el 404.
-        $this->client->request('POST', '/centros/' . $centreId . '/estudiantes/' . $studentId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/eliminar', [
             '_token' => 'irrelevant',
         ]);
 

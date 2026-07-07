@@ -22,7 +22,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/centros/00000000-0000-0000-0000-000000000000');
+        $this->client->request('GET', '/centro/00000000-0000-0000-0000-000000000000');
 
         self::assertResponseStatusCodeSame(404);
     }
@@ -37,7 +37,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122());
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
     }
@@ -53,7 +53,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122());
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
     }
@@ -68,7 +68,7 @@ class EducationalCentreHubControllerTest extends ControllerTestCase
         $this->flush();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122());
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122());
 
         self::assertResponseStatusCodeSame(403);
     }

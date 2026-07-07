@@ -16,7 +16,7 @@
 
         {# ── Docentes del curso ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ centre.activeAcademicYear ? path('app_admin_centre_teachers_index', {centreId: centre.id}) : '#' }}"
+            <a href="{{ centre.activeAcademicYear ? path('app_centre_teachers_index', {centreId: centre.id}) : '#' }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all
                       {{ centre.activeAcademicYear is null ? 'opacity-60 pointer-events-none' : '' }}">
@@ -45,7 +45,7 @@
 
         {# ── Oferta formativa ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ centre.activeAcademicYear ? path('app_admin_offer_index', {centreId: centre.id}) : '#' }}"
+            <a href="{{ centre.activeAcademicYear ? path('app_centre_offer_index', {centreId: centre.id}) : '#' }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all
                       {{ centre.activeAcademicYear is null ? 'opacity-60 pointer-events-none' : '' }}">
@@ -74,7 +74,7 @@
 
         {# ── Estudiantes ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ centre.activeAcademicYear ? path('app_admin_students_index', {centreId: centre.id}) : '#' }}"
+            <a href="{{ centre.activeAcademicYear ? path('app_centre_students_index', {centreId: centre.id}) : '#' }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all
                       {{ centre.activeAcademicYear is null ? 'opacity-60 pointer-events-none' : '' }}">
@@ -103,7 +103,7 @@
 
         {# ── Conductas contrarias ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ path('app_admin_incident_behaviors_index', {centreId: centre.id}) }}"
+            <a href="{{ path('app_centre_incident_behaviors_index', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
@@ -127,7 +127,7 @@
 
         {# ── Medidas disciplinarias ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ path('app_admin_sanction_measures_index', {centreId: centre.id}) }}"
+            <a href="{{ path('app_centre_sanction_measures_index', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
@@ -151,7 +151,7 @@
 
         {# ── Métodos de comunicación ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ path('app_admin_communication_methods_index', {centreId: centre.id}) }}"
+            <a href="{{ path('app_centre_communication_methods_index', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
@@ -175,7 +175,7 @@
 
         {# ── Perfiles ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ path('app_admin_centre_profiles_index', {centreId: centre.id}) }}"
+            <a href="{{ path('app_centre_profiles_index', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
@@ -199,7 +199,7 @@
 
         {# ── Registro de avisos por correo ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ path('app_admin_email_notification_log_index', {centreId: centre.id}) }}"
+            <a href="{{ path('app_centre_email_notification_log_index', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
@@ -223,7 +223,7 @@
 
         {# ── Ajustes del centro ── equipo directivo y admins #}
         {% if is_granted('educational_centre.section', centre) %}
-            <a href="{{ path('app_educational_centre_settings', {centreId: centre.id}) }}"
+            <a href="{{ path('app_centre_settings', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">

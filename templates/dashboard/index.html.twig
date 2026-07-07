@@ -112,7 +112,7 @@
             {{ ux_icon('heroicons:academic-cap', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
             <p class="text-sm font-medium text-gray-700">{{ 'no_students_registered'|trans({}, 'dashboard') }}</p>
             {% if can_students_section and not viewing_past %}
-                <a href="{{ path('app_admin_students_import', {centreId: active_centre.id}) }}"
+                <a href="{{ path('app_centre_students_import', {centreId: active_centre.id}) }}"
                    class="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-forest-700 transition-colors">
                     {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
                     {{ 'action_import_students'|trans({}, 'dashboard') }}
@@ -121,7 +121,7 @@
         </div>
     {% else %}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {% set students_url = can_students_section ? path('app_admin_students_index', {centreId: active_centre.id}) : null %}
+        {% set students_url = can_students_section ? path('app_centre_students_index', {centreId: active_centre.id}) : null %}
         {% if students_url %}<a href="{{ students_url }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">{% else %}<div class="col-span-1 rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">{% endif %}
             <div class="flex items-center justify-between">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">

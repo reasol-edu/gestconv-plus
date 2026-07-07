@@ -22,7 +22,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         [$cadmin, $centre] = $this->makeScenario();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/conductas');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/conductas');
 
         self::assertResponseIsSuccessful();
     }
@@ -34,7 +34,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/conductas');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/conductas');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -47,7 +47,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->persist($pureCentreAdmin);
         $this->loginAs($pureCentreAdmin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/conductas');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/conductas');
 
         self::assertResponseIsSuccessful();
     }
@@ -59,7 +59,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         [$cadmin, $centre, , $behavior] = $this->makeScenarioWithBehavior();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/conductas/export');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/conductas/export');
 
         self::assertResponseIsSuccessful();
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
@@ -74,7 +74,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/conductas/export');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/conductas/export');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -86,7 +86,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         [$cadmin, $centre] = $this->makeScenario();
         $this->loginAs($cadmin);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/conductas/import');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/conductas/import');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('input[name="json"]');
@@ -98,7 +98,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/conductas/import');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/conductas/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $file = $this->makeJsonUploadFile([
@@ -109,11 +109,11 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
             ],
         ]);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/import', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/import', [
             '_token' => $token,
         ], ['json' => $file]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/conductas');
+        self::assertResponseRedirects('/centro/' . $centreId . '/conductas');
 
         $this->em->clear();
         $behaviors = $this->em->getRepository(IncidentBehavior::class)->findBy(['educationalCentre' => $centre->getId()]);
@@ -127,14 +127,14 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/conductas/import');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/conductas/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, 'not json');
         $file = new UploadedFile($tmpFile, 'behaviors.json', 'application/json', null, true);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/import', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/import', [
             '_token' => $token,
         ], ['json' => $file]);
 
@@ -148,7 +148,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/conductas/import');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/conductas/import');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $file = $this->makeJsonUploadFile([
@@ -159,12 +159,12 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
             ],
         ]);
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/import', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/import', [
             '_token'           => $token,
             'replace_existing' => '1',
         ], ['json' => $file]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/conductas');
+        self::assertResponseRedirects('/centro/' . $centreId . '/conductas');
 
         $this->em->clear();
         self::assertNull($this->em->find(IncidentBehaviorCategory::class, $oldCategory->getId()));
@@ -181,7 +181,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/conductas/import');
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/conductas/import');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -194,16 +194,16 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/conductas');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/conductas');
         $token    = $crawler->filter('form[action$="conductas/nueva"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/nueva', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/nueva', [
             '_token'      => $token,
             'name'        => 'Conducta de prueba',
             'category_id' => $category->getId()->toRfc4122(),
         ]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/conductas');
+        self::assertResponseRedirects('/centro/' . $centreId . '/conductas');
 
         $this->em->clear();
         $behaviors = $this->em->getRepository(IncidentBehavior::class)->findBy(['educationalCentre' => $centre->getId()]);
@@ -216,7 +216,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         [$cadmin, $centre, $category] = $this->makeScenarioWithCategory();
         $this->loginAs($cadmin);
 
-        $this->client->request('POST', '/centros/' . $centre->getId()->toRfc4122() . '/conductas/nueva', [
+        $this->client->request('POST', '/centro/' . $centre->getId()->toRfc4122() . '/conductas/nueva', [
             '_token'      => 'invalid-token',
             'name'        => 'Conducta inválida',
             'category_id' => $category->getId()->toRfc4122(),
@@ -231,10 +231,10 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/conductas');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/conductas');
         $token    = $crawler->filter('form[action$="conductas/nueva"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/nueva', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/nueva', [
             '_token' => $token,
             'name'   => '',
         ]);
@@ -253,7 +253,7 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
         $this->client->request(
             'GET',
-            '/centros/' . $centre->getId()->toRfc4122() . '/conductas/' . $behavior->getId()->toRfc4122() . '/editar'
+            '/centro/' . $centre->getId()->toRfc4122() . '/conductas/' . $behavior->getId()->toRfc4122() . '/editar'
         );
 
         self::assertResponseIsSuccessful();
@@ -267,17 +267,17 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
         $centreId   = $centre->getId()->toRfc4122();
         $behaviorId = $behavior->getId()->toRfc4122();
-        $crawler    = $this->client->request('GET', '/centros/' . $centreId . '/conductas/' . $behaviorId . '/editar');
+        $crawler    = $this->client->request('GET', '/centro/' . $centreId . '/conductas/' . $behaviorId . '/editar');
         $token      = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/' . $behaviorId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/' . $behaviorId . '/editar', [
             '_token'      => $token,
             'name'        => 'Nombre actualizado',
             'category_id' => $category->getId()->toRfc4122(),
             'active'      => '1',
         ]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/conductas');
+        self::assertResponseRedirects('/centro/' . $centreId . '/conductas');
 
         $this->em->clear();
         $updated = $this->em->find(IncidentBehavior::class, $behavior->getId());
@@ -294,14 +294,14 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
 
         $centreId   = $centre->getId()->toRfc4122();
         $behaviorId = $behavior->getId()->toRfc4122();
-        $crawler    = $this->client->request('GET', '/centros/' . $centreId . '/conductas');
+        $crawler    = $this->client->request('GET', '/centro/' . $centreId . '/conductas');
         $token      = $crawler->filter('form[action$="' . $behaviorId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/' . $behaviorId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/' . $behaviorId . '/eliminar', [
             '_token' => $token,
         ]);
 
-        self::assertResponseRedirects('/centros/' . $centreId . '/conductas');
+        self::assertResponseRedirects('/centro/' . $centreId . '/conductas');
 
         $this->em->clear();
         self::assertNull($this->em->find(IncidentBehavior::class, $behavior->getId()));
@@ -318,14 +318,14 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $centreId   = $centre->getId()->toRfc4122();
         $behaviorId = $behavior->getId()->toRfc4122();
 
-        $crawler = $this->client->request('GET', '/centros/' . $centreId . '/conductas');
+        $crawler = $this->client->request('GET', '/centro/' . $centreId . '/conductas');
         self::assertResponseIsSuccessful();
 
         $tokenNodes = $crawler->filter('form[action$="/activar"] [name="_token"]');
         self::assertGreaterThan(0, $tokenNodes->count(), 'Toggle-active form not found in page');
         $token = $tokenNodes->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/' . $behaviorId . '/activar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/' . $behaviorId . '/activar', [
             '_token' => $token,
         ]);
 
@@ -348,11 +348,11 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/conductas');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/conductas');
         $tokens   = $crawler->filter('form[action$="/subir"] [name="_token"]');
         $token    = $tokens->count() > 0 ? $tokens->first()->attr('value') : '';
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/' . $b2->getId()->toRfc4122() . '/subir', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/' . $b2->getId()->toRfc4122() . '/subir', [
             '_token' => $token,
         ]);
 

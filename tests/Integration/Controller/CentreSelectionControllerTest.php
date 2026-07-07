@@ -47,7 +47,7 @@ class CentreSelectionControllerTest extends ControllerTestCase
         $crawler  = $this->client->request('GET', '/seleccion/centro');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centro/' . $centreId, ['_token' => $token]);
+        $this->client->request('POST', '/seleccion/centro/' . $centreId, ['_token' => $token]);
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/', (string) $this->client->getResponse()->headers->get('Location'));
@@ -64,7 +64,7 @@ class CentreSelectionControllerTest extends ControllerTestCase
         $this->loginAs($teacher);
 
         $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/centro/' . $centreId, ['_token' => 'token-invalido']);
+        $this->client->request('POST', '/seleccion/centro/' . $centreId, ['_token' => 'token-invalido']);
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -92,7 +92,7 @@ class CentreSelectionControllerTest extends ControllerTestCase
         $token = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         // Using centreA's token against centreB → CSRF mismatch → 403
-        $this->client->request('POST', '/centro/' . $centreBId, ['_token' => $token]);
+        $this->client->request('POST', '/seleccion/centro/' . $centreBId, ['_token' => $token]);
 
         self::assertResponseStatusCodeSame(403);
     }

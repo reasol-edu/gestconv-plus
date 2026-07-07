@@ -10,14 +10,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/centros/{centreId}/registro-avisos')]
+#[Route('/centro/{centreId}/registro-avisos')]
 class EmailNotificationLogController extends AbstractController
 {
     public function __construct(
         private readonly EducationalCentreRepository $centres,
     ) {}
 
-    #[Route('', name: 'app_admin_email_notification_log_index')]
+    #[Route('', name: 'app_centre_email_notification_log_index')]
     public function index(string $centreId): Response
     {
         $centre = $this->centres->findById($centreId);

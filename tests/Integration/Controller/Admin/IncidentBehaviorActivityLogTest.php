@@ -37,10 +37,10 @@ class IncidentBehaviorActivityLogTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/conductas');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/conductas');
         $token    = $crawler->filter('form[action$="conductas/nueva"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/nueva', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/nueva', [
             '_token'      => $token,
             'name'        => 'Conducta de prueba',
             'category_id' => $category->getId()->toRfc4122(),
@@ -62,10 +62,10 @@ class IncidentBehaviorActivityLogTest extends ControllerTestCase
 
         $centreId   = $centre->getId()->toRfc4122();
         $behaviorId = $behavior->getId()->toRfc4122();
-        $crawler    = $this->client->request('GET', '/centros/' . $centreId . '/conductas/' . $behaviorId . '/editar');
+        $crawler    = $this->client->request('GET', '/centro/' . $centreId . '/conductas/' . $behaviorId . '/editar');
         $token      = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/' . $behaviorId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/' . $behaviorId . '/editar', [
             '_token'      => $token,
             'name'        => 'Nombre actualizado',
             'category_id' => $category->getId()->toRfc4122(),
@@ -90,10 +90,10 @@ class IncidentBehaviorActivityLogTest extends ControllerTestCase
 
         $centreId   = $centre->getId()->toRfc4122();
         $behaviorId = $behavior->getId()->toRfc4122();
-        $crawler    = $this->client->request('GET', '/centros/' . $centreId . '/conductas');
+        $crawler    = $this->client->request('GET', '/centro/' . $centreId . '/conductas');
         $token      = $crawler->filter('form[action$="' . $behaviorId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/' . $behaviorId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/' . $behaviorId . '/eliminar', [
             '_token' => $token,
         ]);
 
@@ -112,10 +112,10 @@ class IncidentBehaviorActivityLogTest extends ControllerTestCase
         $this->loginAs($cadmin);
 
         $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/conductas/categorias/nueva');
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/conductas/categorias/nueva');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/categorias/nueva', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/categorias/nueva', [
             '_token'  => $token,
             'name'    => 'Categoria de prueba',
             'serious' => '',
@@ -137,10 +137,10 @@ class IncidentBehaviorActivityLogTest extends ControllerTestCase
 
         $centreId  = $centre->getId()->toRfc4122();
         $categoryId = $category->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/centros/' . $centreId . '/conductas/categorias/' . $categoryId . '/editar');
+        $crawler   = $this->client->request('GET', '/centro/' . $centreId . '/conductas/categorias/' . $categoryId . '/editar');
         $token     = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/categorias/' . $categoryId . '/editar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/categorias/' . $categoryId . '/editar', [
             '_token'  => $token,
             'name'    => 'Categoria actualizada',
             'serious' => '1',
@@ -166,10 +166,10 @@ class IncidentBehaviorActivityLogTest extends ControllerTestCase
 
         $centreId   = $centre->getId()->toRfc4122();
         $categoryId = $category->getId()->toRfc4122();
-        $crawler    = $this->client->request('GET', '/centros/' . $centreId . '/conductas');
+        $crawler    = $this->client->request('GET', '/centro/' . $centreId . '/conductas');
         $token      = $crawler->filter('form[action$="categorias/' . $categoryId . '/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/centros/' . $centreId . '/conductas/categorias/' . $categoryId . '/eliminar', [
+        $this->client->request('POST', '/centro/' . $centreId . '/conductas/categorias/' . $categoryId . '/eliminar', [
             '_token' => $token,
         ]);
 
