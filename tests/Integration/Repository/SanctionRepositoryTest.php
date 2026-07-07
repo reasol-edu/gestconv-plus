@@ -68,7 +68,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->persist($admin, $creator);
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $admin)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -84,7 +84,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $cadmin)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $cadmin, $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -100,7 +100,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $member)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $member, $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -116,7 +116,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $counselor)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $counselor, $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -133,7 +133,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $this->makeSanctionWithReport($worldA, $creator);
 
-        $results = $this->repo->createFilteredQuery($worldB['centre'], $cadmin)->getResult();
+        $results = $this->repo->createFilteredQuery($worldB['centre'], $cadmin, $worldB['year'])->getResult();
 
         self::assertCount(0, $results);
     }
@@ -147,7 +147,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->persist($teacher);
         $sanction = $this->makeSanctionWithReport($world, $teacher);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $teacher)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $teacher, $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -163,7 +163,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->flush();
         $sanction = $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $tutor)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $tutor, $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -177,7 +177,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->persist($other, $creator);
         $this->makeSanctionWithReport($world, $creator);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $other)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $other, $world['year'])->getResult();
 
         self::assertCount(0, $results);
     }
@@ -191,7 +191,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->makeReport($world, $teacher, $sanction);
         $this->makeReport($world, $teacher, $sanction);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $teacher)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $teacher, $world['year'])->getResult();
 
         self::assertCount(1, $results);
     }
@@ -205,9 +205,9 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->persist($admin);
         $this->makeSanctionWithReport($world, $admin);
 
-        self::assertCount(1, $this->repo->createFilteredQuery($world['centre'], $admin, ['search' => 'garcía'])->getResult());
-        self::assertCount(1, $this->repo->createFilteredQuery($world['centre'], $admin, ['search' => '1ºA'])->getResult());
-        self::assertCount(0, $this->repo->createFilteredQuery($world['centre'], $admin, ['search' => 'nadie'])->getResult());
+        self::assertCount(1, $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'], ['search' => 'garcía'])->getResult());
+        self::assertCount(1, $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'], ['search' => '1ºA'])->getResult());
+        self::assertCount(0, $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'], ['search' => 'nadie'])->getResult());
     }
 
     public function testCreateFilteredQueryPendingOnlyExcludesNotifiedSanctions(): void
@@ -219,7 +219,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $pending = $this->makeUnnotifiedSanctionWithReport($world, $admin);
         $this->flush();
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $admin, ['pendingOnly' => true])->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'], ['pendingOnly' => true])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($pending->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -245,7 +245,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
                    ->setEffectiveTo(new \DateTimeImmutable('+2 days'));
         $this->flush();
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $admin, ['effectiveToday' => true])->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'], ['effectiveToday' => true])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($current->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -262,27 +262,13 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $sanctionA = $this->makeSanctionWithReport($worldA, $admin);
         $sanctionB = $this->makeSanctionWithReport($worldB, $admin);
 
-        $resultsA = $this->repo->createFilteredQuery($worldA['centre'], $admin, [], $worldA['year'])->getResult();
-        $resultsB = $this->repo->createFilteredQuery($worldA['centre'], $admin, [], $worldB['year'])->getResult();
+        $resultsA = $this->repo->createFilteredQuery($worldA['centre'], $admin, $worldA['year'])->getResult();
+        $resultsB = $this->repo->createFilteredQuery($worldA['centre'], $admin, $worldB['year'])->getResult();
 
         self::assertCount(1, $resultsA);
         self::assertSame($sanctionA->getId()->toRfc4122(), $resultsA[0]->getId()->toRfc4122());
         self::assertCount(1, $resultsB);
         self::assertSame($sanctionB->getId()->toRfc4122(), $resultsB[0]->getId()->toRfc4122());
-    }
-
-    public function testCreateFilteredQueryWithoutYearIncludesAllYearsOfCentre(): void
-    {
-        $worldA = $this->makeWorld();
-        $worldB = $this->makeOtherYearInSameCentre($worldA);
-        $admin  = $this->makeTeacher('admin.year.omitted', admin: true);
-        $this->persist($admin);
-        $this->makeSanctionWithReport($worldA, $admin);
-        $this->makeSanctionWithReport($worldB, $admin);
-
-        $results = $this->repo->createFilteredQuery($worldA['centre'], $admin)->getResult();
-
-        self::assertCount(2, $results);
     }
 
     // ── countActiveByCentre ────────────────────────────────────────────────────
@@ -297,7 +283,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
                ->setEffectiveTo(new \DateTimeImmutable('+2 days'));
         $this->flush();
 
-        $count = $this->repo->countActiveByCentre($world['centre'], $admin, new \DateTimeImmutable());
+        $count = $this->repo->countActiveByCentre($world['centre'], $admin, new \DateTimeImmutable(), $world['year']);
 
         self::assertSame(1, $count);
     }
@@ -318,7 +304,6 @@ class SanctionRepositoryTest extends RepositoryTestCase
 
         self::assertSame(1, $this->repo->countActiveByCentre($worldA['centre'], $admin, $today, $worldA['year']));
         self::assertSame(1, $this->repo->countActiveByCentre($worldA['centre'], $admin, $today, $worldB['year']));
-        self::assertSame(2, $this->repo->countActiveByCentre($worldA['centre'], $admin, $today));
     }
 
     // ── findWithDatesForAcademicYear ──────────────────────────────────────────
@@ -481,7 +466,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $pending = $this->makeUnnotifiedSanctionWithReport($world, $admin);
         $this->makeSanctionWithReport($world, $admin);
 
-        $results = $this->repo->findPendingNotification($world['centre'], $admin);
+        $results = $this->repo->findPendingNotification($world['centre'], $admin, $world['year']);
 
         self::assertCount(1, $results);
         self::assertSame($pending->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -496,7 +481,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $own   = $this->makeUnnotifiedSanctionWithReport($world, $t1);
         $this->makeUnnotifiedSanctionWithReport($world, $t2);
 
-        $results = $this->repo->findPendingNotification($world['centre'], $t1);
+        $results = $this->repo->findPendingNotification($world['centre'], $t1, $world['year']);
 
         self::assertCount(1, $results);
         self::assertSame($own->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
@@ -530,8 +515,8 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $pending = $this->makeUnnotifiedSanctionWithReport($world, $creator);
         $this->makeSanctionWithReport($world, $creator);
 
-        $expected = $this->repo->findPendingNotification($world['centre'], $tutor);
-        $actual   = $this->repo->createPendingQuery($world['centre'], $tutor)->getResult();
+        $expected = $this->repo->findPendingNotification($world['centre'], $tutor, $world['year']);
+        $actual   = $this->repo->createPendingQuery($world['centre'], $tutor, $world['year'])->getResult();
 
         self::assertCount(1, $actual);
         self::assertCount(count($expected), $actual);

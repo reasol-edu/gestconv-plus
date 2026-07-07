@@ -47,6 +47,11 @@ class PendingSanctionListComponent extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        return $this->paginate($this->sanctions->createPendingQuery($this->centre, $user, $this->tenantContext->getViewYear($this->centre)));
+        $year = $this->tenantContext->getViewYear($this->centre);
+        if ($year === null) {
+            return Paginator::fromArray([], 0, max(1, $this->page), $this->appSettings->getInt('page.size'));
+        }
+
+        return $this->paginate($this->sanctions->createPendingQuery($this->centre, $user, $year));
     }
 }

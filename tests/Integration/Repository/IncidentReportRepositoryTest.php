@@ -43,7 +43,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $report = $this->makeReport($world);
         $this->persist($admin, $report);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $admin)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'])->getResult();
 
         self::assertCount(1, $results);
     }
@@ -59,7 +59,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['centre']->addAdmin($cadmin);
         $this->flush();
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $cadmin)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $cadmin, $world['year'])->getResult();
 
         self::assertCount(1, $results);
     }
@@ -75,7 +75,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['centre']->addCommitteeMember($member);
         $this->flush();
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $member)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $member, $world['year'])->getResult();
 
         self::assertCount(1, $results);
     }
@@ -89,7 +89,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['centre']->addCounselor($counselor);
         $this->flush();
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $counselor)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $counselor, $world['year'])->getResult();
 
         self::assertCount(1, $results);
     }
@@ -105,7 +105,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $this->flush();
 
         // Query is scoped to centreB, so cadmin (admin of centreA) should see nothing
-        $results = $this->repo->createFilteredQuery($worldB['centre'], $cadmin)->getResult();
+        $results = $this->repo->createFilteredQuery($worldB['centre'], $cadmin, $worldB['year'])->getResult();
 
         self::assertCount(0, $results);
     }
@@ -121,7 +121,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $r2     = $this->makeReport($world, creator: $t2);
         $this->persist($t1, $t2, $r1, $r2);
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $t1)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $t1, $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($r1->getId(), $results[0]->getId());
@@ -138,7 +138,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['group']->addTutor($tutor);
         $this->flush();
 
-        $results = $this->repo->createFilteredQuery($world['centre'], $tutor)->getResult();
+        $results = $this->repo->createFilteredQuery($world['centre'], $tutor, $world['year'])->getResult();
 
         self::assertCount(2, $results);
     }
@@ -157,6 +157,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $results = $this->repo->createFilteredQuery(
             $world['centre'],
             $admin,
+            $world['year'],
             ['ownOnly' => true],
         )->getResult();
 
@@ -177,6 +178,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $results = $this->repo->createFilteredQuery(
             $world['centre'],
             $admin,
+            $world['year'],
             ['expelled' => true],
         )->getResult();
 
@@ -197,6 +199,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $results = $this->repo->createFilteredQuery(
             $world['centre'],
             $admin,
+            $world['year'],
             ['serious' => true],
         )->getResult();
 
@@ -214,7 +217,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $r2    = $this->makeReport($world, creator: $t2);
         $this->persist($t1, $t2, $r1, $r2);
 
-        $count = $this->repo->countRecentByCentre($world['centre'], $t1, 30);
+        $count = $this->repo->countRecentByCentre($world['centre'], $t1, $world['year'], 30);
 
         self::assertSame(1, $count);
     }
@@ -228,7 +231,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $r2    = $this->makeReport($world, creator: $t1);
         $this->persist($admin, $t1, $r1, $r2);
 
-        $count = $this->repo->countRecentByCentre($world['centre'], $admin, 30);
+        $count = $this->repo->countRecentByCentre($world['centre'], $admin, $world['year'], 30);
 
         self::assertSame(2, $count);
     }
@@ -242,9 +245,8 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $rB     = $this->makeReport($worldB, creator: $admin);
         $this->persist($admin, $rA, $rB);
 
-        self::assertSame(1, $this->repo->countRecentByCentre($worldA['centre'], $admin, 30, $worldA['year']));
-        self::assertSame(1, $this->repo->countRecentByCentre($worldA['centre'], $admin, 30, $worldB['year']));
-        self::assertSame(2, $this->repo->countRecentByCentre($worldA['centre'], $admin, 30));
+        self::assertSame(1, $this->repo->countRecentByCentre($worldA['centre'], $admin, $worldA['year'], 30));
+        self::assertSame(1, $this->repo->countRecentByCentre($worldA['centre'], $admin, $worldB['year'], 30));
     }
 
     // ── createFilteredQuery: aislamiento por curso académico ──────────────────
@@ -258,29 +260,13 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $rB     = $this->makeReport($worldB, creator: $admin);
         $this->persist($admin, $rA, $rB);
 
-        $resultsA = $this->repo->createFilteredQuery($worldA['centre'], $admin, [], $worldA['year'])->getResult();
-        $resultsB = $this->repo->createFilteredQuery($worldA['centre'], $admin, [], $worldB['year'])->getResult();
+        $resultsA = $this->repo->createFilteredQuery($worldA['centre'], $admin, $worldA['year'])->getResult();
+        $resultsB = $this->repo->createFilteredQuery($worldA['centre'], $admin, $worldB['year'])->getResult();
 
         self::assertCount(1, $resultsA);
         self::assertSame($rA->getId(), $resultsA[0]->getId());
         self::assertCount(1, $resultsB);
         self::assertSame($rB->getId(), $resultsB[0]->getId());
-    }
-
-    public function testCreateFilteredQueryWithoutYearIncludesAllYearsOfCentre(): void
-    {
-        // Regression guard: StudentController relies on omitting $year to show
-        // a student's full cross-year disciplinary history.
-        $worldA = $this->makeWorld();
-        $worldB = $this->makeOtherYearInSameCentre($worldA);
-        $admin  = $this->makeTeacher('admin.year.omitted', admin: true);
-        $rA     = $this->makeReport($worldA, creator: $admin);
-        $rB     = $this->makeReport($worldB, creator: $admin);
-        $this->persist($admin, $rA, $rB);
-
-        $results = $this->repo->createFilteredQuery($worldA['centre'], $admin)->getResult();
-
-        self::assertCount(2, $results);
     }
 
     // ── searchStudentGroupPairs ───────────────────────────────────────────────
@@ -333,7 +319,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $this->persist($admin, $pending, $notified);
         $this->notify($notified, $world, $admin);
 
-        $results = $this->repo->findPendingNotification($world['centre'], $admin);
+        $results = $this->repo->findPendingNotification($world['centre'], $admin, $world['year']);
 
         self::assertCount(1, $results);
         self::assertSame($pending->getId(), $results[0]->getId());
@@ -348,7 +334,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $rOth  = $this->makeReport($world, creator: $t2);
         $this->persist($t1, $t2, $rOwn, $rOth);
 
-        $results = $this->repo->findPendingNotification($world['centre'], $t1);
+        $results = $this->repo->findPendingNotification($world['centre'], $t1, $world['year']);
 
         self::assertCount(1, $results);
         self::assertSame($rOwn->getId(), $results[0]->getId());
@@ -365,7 +351,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['group']->addTutor($tutor);
         $this->flush();
 
-        $results = $this->repo->findPendingNotification($world['centre'], $tutor);
+        $results = $this->repo->findPendingNotification($world['centre'], $tutor, $world['year']);
 
         self::assertCount(2, $results);
     }
@@ -398,8 +384,8 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['group']->addTutor($tutor);
         $this->flush();
 
-        $expected = $this->repo->findPendingNotification($world['centre'], $tutor);
-        $actual   = $this->repo->createPendingQuery($world['centre'], $tutor)->getResult();
+        $expected = $this->repo->findPendingNotification($world['centre'], $tutor, $world['year']);
+        $actual   = $this->repo->createPendingQuery($world['centre'], $tutor, $world['year'])->getResult();
 
         self::assertCount(2, $actual);
         self::assertCount(count($expected), $actual);
@@ -415,7 +401,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $report = $this->makeReport($world, creator: $other);
         $this->persist($admin, $other, $report);
 
-        $results = $this->repo->createNotifiableQuery($world['centre'], $admin, 'report_teacher')->getResult();
+        $results = $this->repo->createNotifiableQuery($world['centre'], $admin, 'report_teacher', $world['year'])->getResult();
 
         self::assertCount(1, $results);
     }
@@ -431,7 +417,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['group']->addTutor($tutor);
         $this->flush();
 
-        $results = $this->repo->createNotifiableQuery($world['centre'], $tutor, 'report_teacher')->getResult();
+        $results = $this->repo->createNotifiableQuery($world['centre'], $tutor, 'report_teacher', $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($rOwn->getId(), $results[0]->getId());
@@ -448,7 +434,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['group']->addTutor($tutor);
         $this->flush();
 
-        $results = $this->repo->createNotifiableQuery($world['centre'], $other, 'group_tutor')->getResult();
+        $results = $this->repo->createNotifiableQuery($world['centre'], $other, 'group_tutor', $world['year'])->getResult();
 
         self::assertCount(0, $results);
     }
@@ -464,7 +450,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['group']->addTutor($tutor);
         $this->flush();
 
-        $results = $this->repo->createNotifiableQuery($world['centre'], $tutor, 'both')->getResult();
+        $results = $this->repo->createNotifiableQuery($world['centre'], $tutor, 'both', $world['year'])->getResult();
 
         self::assertCount(2, $results);
     }
@@ -479,7 +465,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $world['centre']->addCommitteeMember($member);
         $this->flush();
 
-        $results = $this->repo->createNotifiableQuery($world['centre'], $member, 'both')->getResult();
+        $results = $this->repo->createNotifiableQuery($world['centre'], $member, 'both', $world['year'])->getResult();
 
         self::assertCount(0, $results);
     }
@@ -493,7 +479,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $this->persist($admin, $pending, $notified);
         $this->notify($notified, $world, $admin);
 
-        $results = $this->repo->createNotifiableQuery($world['centre'], $admin, 'both')->getResult();
+        $results = $this->repo->createNotifiableQuery($world['centre'], $admin, 'both', $world['year'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($pending->getId(), $results[0]->getId());
@@ -520,7 +506,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $otherReport->addBehavior($world['behavior']);
         $this->persist($otherReport);
 
-        $results = $this->repo->createNotifiableQuery($world['centre'], $admin, 'both', $world['student'])->getResult();
+        $results = $this->repo->createNotifiableQuery($world['centre'], $admin, 'both', $world['year'], $world['student'])->getResult();
 
         self::assertCount(1, $results);
         self::assertSame($report->getId(), $results[0]->getId());
@@ -535,7 +521,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $rB     = $this->makeReport($worldB, creator: $admin);
         $this->persist($admin, $rA, $rB);
 
-        $resultsA = $this->repo->createNotifiableQuery($worldA['centre'], $admin, 'both', null, $worldA['year'])->getResult();
+        $resultsA = $this->repo->createNotifiableQuery($worldA['centre'], $admin, 'both', $worldA['year'])->getResult();
 
         self::assertCount(1, $resultsA);
         self::assertSame($rA->getId(), $resultsA[0]->getId());
@@ -551,7 +537,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $r2     = $this->makeReport($world, creator: $admin);
         $this->persist($admin, $r1, $r2);
 
-        $summary = $this->repo->findNotifiableSummaryByStudent($world['centre'], $admin, 'both');
+        $summary = $this->repo->findNotifiableSummaryByStudent($world['centre'], $admin, 'both', $world['year']);
 
         self::assertCount(1, $summary);
         self::assertSame($world['student']->getId(), $summary[0]['student']->getId());
@@ -584,7 +570,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
             $this->persist($r);
         }
 
-        $summary = $this->repo->findNotifiableSummaryByStudent($world['centre'], $admin, 'both');
+        $summary = $this->repo->findNotifiableSummaryByStudent($world['centre'], $admin, 'both', $world['year']);
 
         self::assertCount(2, $summary);
         self::assertSame('López', $summary[0]['student']->getName()->getLastName());
@@ -601,7 +587,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $report = $this->makeReport($world, creator: $other);
         $this->persist($tutor, $other, $report);
 
-        $summary = $this->repo->findNotifiableSummaryByStudent($world['centre'], $tutor, 'report_teacher');
+        $summary = $this->repo->findNotifiableSummaryByStudent($world['centre'], $tutor, 'report_teacher', $world['year']);
 
         self::assertCount(0, $summary);
     }
@@ -635,13 +621,11 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
 
         $groupsA = $this->repo->findGroupsWithReports($worldA['centre'], $admin, $worldA['year']);
         $groupsB = $this->repo->findGroupsWithReports($worldA['centre'], $admin, $worldB['year']);
-        $groupsAll = $this->repo->findGroupsWithReports($worldA['centre'], $admin);
 
         self::assertCount(1, $groupsA);
         self::assertSame($worldA['group']->getId(), $groupsA[0]->getId());
         self::assertCount(1, $groupsB);
         self::assertSame($worldB['group']->getId(), $groupsB[0]->getId());
-        self::assertCount(2, $groupsAll);
     }
 
     // ── findEligibleForAutoPrescription ──────────────────────────────────────

@@ -114,6 +114,34 @@ class StudentControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testShowOnlyDisplaysReportsAndSanctionsOfViewedAcademicYear(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('student.cadmin.5');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $currentYearReport = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->flush();
+
+        $pastYear      = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
+        $pastProgramme = (new Programme())->setName('DAW-Y0')->setAcademicYear($pastYear);
+        $pastLevel     = (new ProgrammeYear())->setName('1º')->setProgramme($pastProgramme);
+        $pastGroup     = (new Group())->setName('1ºA-Y0')->setProgrammeYear($pastLevel);
+        $pastGroup->addStudent($student);
+        $this->persist($pastYear, $pastProgramme, $pastLevel, $pastGroup);
+        $pastReport = $this->makeReport($student, $pastGroup, $teacher, $behavior);
+        $this->flush();
+
+        $this->loginAs($cadmin, $centre);
+        $this->viewPastYear($pastYear);
+        $this->client->request('GET', '/alumnado/' . $student->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('/partes/' . $pastReport->getId()->toRfc4122(), $content);
+        self::assertStringNotContainsString('/partes/' . $currentYearReport->getId()->toRfc4122(), $content);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**

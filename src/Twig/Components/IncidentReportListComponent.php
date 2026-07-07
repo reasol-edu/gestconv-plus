@@ -68,11 +68,12 @@ class IncidentReportListComponent extends AbstractController
     public function getGroups(): array
     {
         $user = $this->getUser();
-        if (!$user instanceof Teacher) {
+        $year = $this->tenantContext->getViewYear($this->centre);
+        if (!$user instanceof Teacher || $year === null) {
             return [];
         }
 
-        return $this->reports->findGroupsWithReports($this->centre, $user, $this->tenantContext->getViewYear($this->centre));
+        return $this->reports->findGroupsWithReports($this->centre, $user, $year);
     }
 
     /** @return Paginator<IncidentReport> */
@@ -81,6 +82,11 @@ class IncidentReportListComponent extends AbstractController
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
             throw $this->createAccessDeniedException();
+        }
+
+        $year = $this->tenantContext->getViewYear($this->centre);
+        if ($year === null) {
+            return Paginator::fromArray([], 0, max(1, $this->page), $this->appSettings->getInt('page.size'));
         }
 
         $filters = [
@@ -102,8 +108,8 @@ class IncidentReportListComponent extends AbstractController
         return $this->paginate($this->reports->createFilteredQuery(
             $this->centre,
             $user,
+            $year,
             $filters,
-            $this->tenantContext->getViewYear($this->centre),
         ));
     }
 

@@ -52,17 +52,22 @@ class PendingReportsByStudentComponent extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
+        $pageSize = $this->appSettings->getInt('page.size');
+        $page     = max(1, $this->page);
+        $offset   = ($page - 1) * $pageSize;
+
+        $year = $this->tenantContext->getViewYear($this->centre);
+        if ($year === null) {
+            return Paginator::fromArray([], 0, $page, $pageSize);
+        }
+
         $notifierSetting = $this->appSettings->getForCentre('notifications.report_notifier', $this->centre);
         $summary         = $this->reports->findNotifiableSummaryByStudent(
             $this->centre,
             $user,
             is_string($notifierSetting) ? $notifierSetting : 'both',
-            $this->tenantContext->getViewYear($this->centre),
+            $year,
         );
-
-        $pageSize = $this->appSettings->getInt('page.size');
-        $page     = max(1, $this->page);
-        $offset   = ($page - 1) * $pageSize;
 
         return Paginator::fromArray(
             array_slice($summary, $offset, $pageSize),

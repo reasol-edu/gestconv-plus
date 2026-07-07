@@ -170,7 +170,9 @@ class NotificationController extends AbstractController
 
         $notifierSetting = $this->reportNotifierSetting($centre);
         $year            = $this->tenantContext->getViewYear($centre);
-        $reports         = $this->reports->createNotifiableQuery($centre, $user, $notifierSetting, $student, $year)->getResult();
+        $reports         = $year === null
+            ? []
+            : $this->reports->createNotifiableQuery($centre, $user, $notifierSetting, $year, $student)->getResult();
 
         if ($reports === []) {
             $this->addFlash('error', $this->t('notification.flash.no_notifiable_reports'));

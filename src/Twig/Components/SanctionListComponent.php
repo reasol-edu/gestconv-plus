@@ -57,11 +57,16 @@ class SanctionListComponent extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        return $this->paginate($this->sanctions->createFilteredQuery($this->centre, $user, [
+        $year = $this->tenantContext->getViewYear($this->centre);
+        if ($year === null) {
+            return Paginator::fromArray([], 0, max(1, $this->page), $this->appSettings->getInt('page.size'));
+        }
+
+        return $this->paginate($this->sanctions->createFilteredQuery($this->centre, $user, $year, [
             'search'         => $this->search,
             'effectiveToday' => $this->effectiveToday,
             'pendingOnly'    => $this->pendingOnly,
-        ], $this->tenantContext->getViewYear($this->centre)));
+        ]));
     }
 
     public function hasActiveFilters(): bool

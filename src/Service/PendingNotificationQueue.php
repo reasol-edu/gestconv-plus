@@ -28,7 +28,7 @@ final class PendingNotificationQueue
     ) {}
 
     /** @return array{reports: list<IncidentReport>, sanctions: list<Sanction>, total: int} */
-    public function forViewer(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): array
+    public function forViewer(EducationalCentre $centre, Teacher $viewer, AcademicYear $year): array
     {
         $reports = array_values(array_filter(
             $this->reports->findPendingNotification($centre, $viewer, $year),

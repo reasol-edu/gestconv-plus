@@ -45,10 +45,16 @@ class StudentController extends AbstractController
             throw $this->createNotFoundException();
         }
 
+        $year = $this->tenantContext->getViewYear($centre);
+
         /** @var list<IncidentReport> $reports */
-        $reports = $this->reports->createFilteredQuery($centre, $viewer, ['studentId' => $id])->getResult();
+        $reports = $year === null
+            ? []
+            : $this->reports->createFilteredQuery($centre, $viewer, $year, ['studentId' => $id])->getResult();
         /** @var list<Sanction> $sanctions */
-        $sanctions = $this->sanctions->createFilteredQuery($centre, $viewer, ['studentId' => $id])->getResult();
+        $sanctions = $year === null
+            ? []
+            : $this->sanctions->createFilteredQuery($centre, $viewer, $year, ['studentId' => $id])->getResult();
 
         $seriousCount    = 0;
         $prescribedCount = 0;
@@ -85,10 +91,9 @@ class StudentController extends AbstractController
         }
         usort($timeline, static fn (array $a, array $b): int => $b['date'] <=> $a['date']);
 
-        $activeYear   = $centre->getActiveAcademicYear();
         $activeGroups = [];
         foreach ($student->getGroups() as $group) {
-            if ($activeYear !== null && $group->getProgrammeYear()->getProgramme()->getAcademicYear() === $activeYear) {
+            if ($year !== null && $group->getProgrammeYear()->getProgramme()->getAcademicYear() === $year) {
                 $activeGroups[] = $group;
             }
         }
