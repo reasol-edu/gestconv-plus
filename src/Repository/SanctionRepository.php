@@ -202,6 +202,7 @@ class SanctionRepository extends ServiceEntityRepository
                 SELECT r0.id FROM App\Entity\IncidentReport r0
                 WHERE r0.student = s AND r0.group = g
                 AND r0.prescribedAt IS NULL AND r0.sanction IS NULL
+                AND r0.notifiedCommunication IS NOT NULL
             )
         ';
 

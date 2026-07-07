@@ -501,6 +501,22 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame(1, $result['rows'][0]['sanctionableCount']);
     }
 
+    public function testFindStudentStatsExcludesStudentsWithOnlyUnnotifiedReports(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('stats.only.unnotified');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $this->makeUnnotifiedReport($world, $teacher);
+
+        $result = $this->repo->findStudentStatsForCentre($world['centre']);
+
+        self::assertSame(0, $result['total']);
+        self::assertCount(0, $result['rows']);
+    }
+
     public function testFindStudentStatsCountsSeriousReports(): void
     {
         $world       = $this->makeWorld();
@@ -664,6 +680,7 @@ class SanctionRepositoryTest extends RepositoryTestCase
                 ->setExpelledFromClass(false);
             $r->addBehavior($world['behavior']);
             $this->persist($r);
+            $this->notify($r, $world, $teacher);
         }
 
         $page1 = $this->repo->findStudentStatsForCentre($world['centre'], '', 1, 3);
