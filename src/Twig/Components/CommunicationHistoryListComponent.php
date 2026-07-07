@@ -10,6 +10,7 @@ use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\CommunicationRepository;
 use App\Service\AppSettings;
+use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -36,6 +37,7 @@ class CommunicationHistoryListComponent extends AbstractController
     public function __construct(
         private readonly CommunicationRepository $communications,
         private readonly AppSettings $appSettings,
+        private readonly TenantContext $tenantContext,
     ) {}
 
     public function mount(EducationalCentre $centre): void
@@ -54,7 +56,7 @@ class CommunicationHistoryListComponent extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $year = $this->centre->getActiveAcademicYear();
+        $year = $this->tenantContext->getViewYear($this->centre);
         if ($year === null) {
             return Paginator::fromArray([], 0, max(1, $this->page), $this->appSettings->getInt('page.size'));
         }

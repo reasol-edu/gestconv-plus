@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
@@ -27,14 +28,14 @@ final class PendingNotificationQueue
     ) {}
 
     /** @return array{reports: list<IncidentReport>, sanctions: list<Sanction>, total: int} */
-    public function forViewer(EducationalCentre $centre, Teacher $viewer): array
+    public function forViewer(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): array
     {
         $reports = array_values(array_filter(
-            $this->reports->findPendingNotification($centre, $viewer),
+            $this->reports->findPendingNotification($centre, $viewer, $year),
             fn (IncidentReport $r): bool => $this->authChecker->isGranted(IncidentReportVoter::NOTIFY, $r),
         ));
         $sanctions = array_values(array_filter(
-            $this->sanctions->findPendingNotification($centre, $viewer),
+            $this->sanctions->findPendingNotification($centre, $viewer, $year),
             fn (Sanction $s): bool => $this->authChecker->isGranted(SanctionVoter::NOTIFY, $s),
         ));
 

@@ -11,6 +11,7 @@ use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\IncidentReportRepository;
 use App\Service\AppSettings;
+use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
@@ -52,6 +53,7 @@ class IncidentReportListComponent extends AbstractController
     public function __construct(
         private readonly IncidentReportRepository $reports,
         private readonly AppSettings $appSettings,
+        private readonly TenantContext $tenantContext,
     ) {}
 
     public function mount(EducationalCentre $centre): void
@@ -70,7 +72,7 @@ class IncidentReportListComponent extends AbstractController
             return [];
         }
 
-        return $this->reports->findGroupsWithReports($this->centre, $user);
+        return $this->reports->findGroupsWithReports($this->centre, $user, $this->tenantContext->getViewYear($this->centre));
     }
 
     /** @return Paginator<IncidentReport> */
@@ -97,7 +99,12 @@ class IncidentReportListComponent extends AbstractController
             $filters['expelled'] = $this->expelled === '1';
         }
 
-        return $this->paginate($this->reports->createFilteredQuery($this->centre, $user, $filters));
+        return $this->paginate($this->reports->createFilteredQuery(
+            $this->centre,
+            $user,
+            $filters,
+            $this->tenantContext->getViewYear($this->centre),
+        ));
     }
 
     public function hasActiveFilters(): bool

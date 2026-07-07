@@ -10,6 +10,7 @@ use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\IncidentReportRepository;
 use App\Service\AppSettings;
+use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -32,6 +33,7 @@ class PendingReportsByStudentComponent extends AbstractController
     public function __construct(
         private readonly IncidentReportRepository $reports,
         private readonly AppSettings $appSettings,
+        private readonly TenantContext $tenantContext,
     ) {}
 
     public function mount(EducationalCentre $centre): void
@@ -55,6 +57,7 @@ class PendingReportsByStudentComponent extends AbstractController
             $this->centre,
             $user,
             is_string($notifierSetting) ? $notifierSetting : 'both',
+            $this->tenantContext->getViewYear($this->centre),
         );
 
         $pageSize = $this->appSettings->getInt('page.size');

@@ -48,6 +48,10 @@ class SanctionRepository extends ServiceEntityRepository
      *   effectiveToday bool   — only sanctions in effect today (notified, within date range)
      *   pendingOnly    bool   — only sanctions without a successful communication
      *
+     * Pass $year to restrict results to a single academic year (each academic year is meant to
+     * be sealed off from the others); omit it only for genuinely cross-year views, such as a
+     * student's full disciplinary history in {@see \App\Controller\StudentController}.
+     *
      * @param array<string, mixed> $filters
      * @return Query<null, Sanction>
      */
@@ -55,6 +59,7 @@ class SanctionRepository extends ServiceEntityRepository
         EducationalCentre $centre,
         Teacher $viewer,
         array $filters = [],
+        ?AcademicYear $year = null,
     ): Query {
         $qb = $this->createQueryBuilder('s')
             ->addSelect('st', 'g')
@@ -66,6 +71,10 @@ class SanctionRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->orderBy('s.createdAt', 'DESC');
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -117,7 +126,7 @@ class SanctionRepository extends ServiceEntityRepository
      * Counts sanctions currently in effect today (notified and within their effective date range)
      * that are visible to the viewer.
      */
-    public function countActiveByCentre(EducationalCentre $centre, Teacher $viewer, \DateTimeImmutable $today): int
+    public function countActiveByCentre(EducationalCentre $centre, Teacher $viewer, \DateTimeImmutable $today, ?AcademicYear $year = null): int
     {
         $qb = $this->createQueryBuilder('s')
             ->select('COUNT(DISTINCT s.id)')
@@ -131,6 +140,10 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('s.effectiveTo IS NULL OR s.effectiveTo >= :today')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('today', $today);
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -147,6 +160,32 @@ class SanctionRepository extends ServiceEntityRepository
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Counts incident reports of the centre's active academic year that are pending sanction:
+     * notified to the family, not prescribed, and not yet part of a sanction.
+     */
+    public function countSanctionableByCentre(EducationalCentre $centre): int
+    {
+        $activeYear = $centre->getActiveAcademicYear();
+        if (!$activeYear instanceof AcademicYear) {
+            return 0;
+        }
+
+        return (int) $this->getEntityManager()->createQueryBuilder()
+            ->select('COUNT(r.id)')
+            ->from(IncidentReport::class, 'r')
+            ->join('r.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->where('prog.academicYear = :activeYear')
+            ->andWhere('r.prescribedAt IS NULL')
+            ->andWhere('r.sanction IS NULL')
+            ->andWhere('r.notifiedCommunication IS NOT NULL')
+            ->setParameter('activeYear', $activeYear->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**
@@ -280,10 +319,10 @@ class SanctionRepository extends ServiceEntityRepository
      *
      * @return list<Sanction>
      */
-    public function findPendingNotification(EducationalCentre $centre, Teacher $viewer): array
+    public function findPendingNotification(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): array
     {
         /** @var list<Sanction> $result */
-        $result = $this->buildPendingQueryBuilder($centre, $viewer)->getQuery()->getResult();
+        $result = $this->buildPendingQueryBuilder($centre, $viewer, $year)->getQuery()->getResult();
 
         return $result;
     }
@@ -294,12 +333,12 @@ class SanctionRepository extends ServiceEntityRepository
      *
      * @return Query<null, Sanction>
      */
-    public function createPendingQuery(EducationalCentre $centre, Teacher $viewer): Query
+    public function createPendingQuery(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): Query
     {
-        return $this->buildPendingQueryBuilder($centre, $viewer)->getQuery();
+        return $this->buildPendingQueryBuilder($centre, $viewer, $year)->getQuery();
     }
 
-    private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer): QueryBuilder
+    private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('s')
             ->addSelect('st', 'g')
@@ -312,6 +351,10 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('s.notifiedCommunication IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->orderBy('s.createdAt', 'ASC');
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)

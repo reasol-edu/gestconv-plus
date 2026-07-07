@@ -10,6 +10,7 @@ use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\IncidentReportRepository;
 use App\Service\AppSettings;
+use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -27,6 +28,7 @@ class PendingReportListComponent extends AbstractController
     public function __construct(
         private readonly IncidentReportRepository $reports,
         private readonly AppSettings $appSettings,
+        private readonly TenantContext $tenantContext,
     ) {}
 
     public function mount(EducationalCentre $centre): void
@@ -45,6 +47,6 @@ class PendingReportListComponent extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        return $this->paginate($this->reports->createPendingQuery($this->centre, $user));
+        return $this->paginate($this->reports->createPendingQuery($this->centre, $user, $this->tenantContext->getViewYear($this->centre)));
     }
 }

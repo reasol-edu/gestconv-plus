@@ -34,7 +34,7 @@ class NotificationBellComponent extends AbstractController
             return [];
         }
 
-        $queue = $this->pendingNotificationQueue->forViewer($centre, $user);
+        $queue = $this->pendingNotificationQueue->forViewer($centre, $user, $this->tenantContext->getViewYear($centre));
 
         $items = [];
         foreach ($queue['reports'] as $report) {

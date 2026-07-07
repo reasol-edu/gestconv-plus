@@ -74,10 +74,10 @@ class DashboardController extends AbstractController
 
         return $this->render('dashboard/index.html.twig', [
             'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
-            'reportCount30d'       => $this->incidentRepository->countRecentByCentre($centre, $viewer),
-            'activeSanctionsCount' => $this->sanctionRepository->countActiveByCentre($centre, $viewer, new \DateTimeImmutable()),
-            'pendingQueue'         => $this->pendingNotificationQueue->forViewer($centre, $viewer),
-            'recentReports'        => $this->incidentRepository->createFilteredQuery($centre, $viewer)->setMaxResults(6)->getResult(),
+            'reportCount30d'       => $this->incidentRepository->countRecentByCentre($centre, $viewer, 30, $year),
+            'activeSanctionsCount' => $this->sanctionRepository->countActiveByCentre($centre, $viewer, new \DateTimeImmutable(), $year),
+            'pendingQueue'         => $this->pendingNotificationQueue->forViewer($centre, $viewer, $year),
+            'recentReports'        => $this->incidentRepository->createFilteredQuery($centre, $viewer, [], $year)->setMaxResults(6)->getResult(),
             'hasFullAccess'        => $hasFullAccess,
             'topStudents'          => $topStudents,
             'tutoredGroups'        => $tutoredGroups,

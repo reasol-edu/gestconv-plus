@@ -251,6 +251,76 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame($current->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
+    // ── createFilteredQuery: aislamiento por curso académico ──────────────────
+
+    public function testCreateFilteredQueryRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld();
+        $worldB = $this->makeOtherYearInSameCentre($worldA);
+        $admin  = $this->makeTeacher('admin.year.isolation', admin: true);
+        $this->persist($admin);
+        $sanctionA = $this->makeSanctionWithReport($worldA, $admin);
+        $sanctionB = $this->makeSanctionWithReport($worldB, $admin);
+
+        $resultsA = $this->repo->createFilteredQuery($worldA['centre'], $admin, [], $worldA['year'])->getResult();
+        $resultsB = $this->repo->createFilteredQuery($worldA['centre'], $admin, [], $worldB['year'])->getResult();
+
+        self::assertCount(1, $resultsA);
+        self::assertSame($sanctionA->getId()->toRfc4122(), $resultsA[0]->getId()->toRfc4122());
+        self::assertCount(1, $resultsB);
+        self::assertSame($sanctionB->getId()->toRfc4122(), $resultsB[0]->getId()->toRfc4122());
+    }
+
+    public function testCreateFilteredQueryWithoutYearIncludesAllYearsOfCentre(): void
+    {
+        $worldA = $this->makeWorld();
+        $worldB = $this->makeOtherYearInSameCentre($worldA);
+        $admin  = $this->makeTeacher('admin.year.omitted', admin: true);
+        $this->persist($admin);
+        $this->makeSanctionWithReport($worldA, $admin);
+        $this->makeSanctionWithReport($worldB, $admin);
+
+        $results = $this->repo->createFilteredQuery($worldA['centre'], $admin)->getResult();
+
+        self::assertCount(2, $results);
+    }
+
+    // ── countActiveByCentre ────────────────────────────────────────────────────
+
+    public function testCountActiveByCentreCountsNotifiedSanctionsInEffectToday(): void
+    {
+        $world  = $this->makeWorld();
+        $admin  = $this->makeTeacher('admin.active.count', admin: true);
+        $this->persist($admin);
+        $active = $this->makeSanctionWithReport($world, $admin);
+        $active->setEffectiveFrom(new \DateTimeImmutable('-2 days'))
+               ->setEffectiveTo(new \DateTimeImmutable('+2 days'));
+        $this->flush();
+
+        $count = $this->repo->countActiveByCentre($world['centre'], $admin, new \DateTimeImmutable());
+
+        self::assertSame(1, $count);
+    }
+
+    public function testCountActiveByCentreRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld();
+        $worldB = $this->makeOtherYearInSameCentre($worldA);
+        $admin  = $this->makeTeacher('admin.active.year', admin: true);
+        $this->persist($admin);
+        $sanctionA = $this->makeSanctionWithReport($worldA, $admin);
+        $sanctionA->setEffectiveFrom(new \DateTimeImmutable('-2 days'))->setEffectiveTo(new \DateTimeImmutable('+2 days'));
+        $sanctionB = $this->makeSanctionWithReport($worldB, $admin);
+        $sanctionB->setEffectiveFrom(new \DateTimeImmutable('-2 days'))->setEffectiveTo(new \DateTimeImmutable('+2 days'));
+        $this->flush();
+
+        $today = new \DateTimeImmutable();
+
+        self::assertSame(1, $this->repo->countActiveByCentre($worldA['centre'], $admin, $today, $worldA['year']));
+        self::assertSame(1, $this->repo->countActiveByCentre($worldA['centre'], $admin, $today, $worldB['year']));
+        self::assertSame(2, $this->repo->countActiveByCentre($worldA['centre'], $admin, $today));
+    }
+
     // ── findWithDatesForAcademicYear ──────────────────────────────────────────
 
     public function testFindWithDatesForAcademicYearExcludesSanctionsWithoutDates(): void
@@ -432,6 +502,21 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame($own->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
+    public function testFindPendingNotificationRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld();
+        $worldB = $this->makeOtherYearInSameCentre($worldA);
+        $admin  = $this->makeTeacher('pending.admin.year', admin: true);
+        $this->persist($admin);
+        $pendingA = $this->makeUnnotifiedSanctionWithReport($worldA, $admin);
+        $this->makeUnnotifiedSanctionWithReport($worldB, $admin);
+
+        $results = $this->repo->findPendingNotification($worldA['centre'], $admin, $worldA['year']);
+
+        self::assertCount(1, $results);
+        self::assertSame($pendingA->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
     // ── createPendingQuery ────────────────────────────────────────────────────
 
     public function testCreatePendingQueryMatchesFindPendingNotification(): void
@@ -464,6 +549,28 @@ class SanctionRepositoryTest extends RepositoryTestCase
 
         self::assertSame(0, $result['total']);
         self::assertCount(0, $result['rows']);
+    }
+
+    public function testCountSanctionableByCentreReturnsZeroWhenNoCentreActiveYear(): void
+    {
+        $centre = (new EducationalCentre())->setCode('41000998')->setName('IES No Year')->setCity('Sevilla');
+        $this->persist($centre);
+
+        self::assertSame(0, $this->repo->countSanctionableByCentre($centre));
+    }
+
+    public function testCountSanctionableByCentreCountsNotifiedUnprescribedUnsanctionedReports(): void
+    {
+        $world   = $this->makeWorld();
+        $teacher = $this->makeTeacher('count.sanctionable');
+        $this->persist($teacher);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+        $this->makeReport($world, $teacher);
+        $this->makeReport($world, $teacher);
+        $this->makeUnnotifiedReport($world, $teacher);
+
+        self::assertSame(2, $this->repo->countSanctionableByCentre($world['centre']));
     }
 
     public function testFindStudentStatsCountsSanctionableReports(): void
@@ -725,6 +832,28 @@ class SanctionRepositoryTest extends RepositoryTestCase
         $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior, $method);
 
         return compact('centre', 'year', 'group', 'student', 'behavior', 'method');
+    }
+
+    /**
+     * Builds a second academic year for the SAME centre as $world, with its own
+     * programme/group/student, to test that per-year listings are sealed off
+     * from other years of the same centre (and not just from other centres).
+     *
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod} $world
+     * @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, method: CommunicationMethod}
+     */
+    private function makeOtherYearInSameCentre(array $world, string $suffix = ''): array
+    {
+        $centre    = $world['centre'];
+        $year      = (new AcademicYear())->setName('2026-2027')->setEducationalCentre($centre);
+        $programme = (new Programme())->setName('DAW-Y2' . $suffix)->setAcademicYear($year);
+        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
+        $group     = (new Group())->setName('1ºB' . $suffix)->setProgrammeYear($level);
+        $student   = (new Student(new PersonName('Bea', 'Ruiz')))->setStudentId('NIE-Y2-' . $suffix . uniqid('', false));
+
+        $this->persist($year, $programme, $level, $group, $student);
+
+        return ['centre' => $centre, 'year' => $year, 'group' => $group, 'student' => $student, 'behavior' => $world['behavior'], 'method' => $world['method']];
     }
 
     /**

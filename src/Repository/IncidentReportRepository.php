@@ -46,6 +46,10 @@ class IncidentReportRepository extends ServiceEntityRepository
      *   sort     string   — column key
      *   sortDir  string   — 'asc'|'desc'
      *
+     * Pass $year to restrict results to a single academic year (each academic year is meant to
+     * be sealed off from the others); omit it only for genuinely cross-year views, such as a
+     * student's full disciplinary history in {@see \App\Controller\StudentController}.
+     *
      * @param array<string, mixed> $filters
      * @return Query<null, IncidentReport>
      */
@@ -53,6 +57,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         EducationalCentre $centre,
         Teacher $viewer,
         array $filters = [],
+        ?AcademicYear $year = null,
     ): Query {
         $qb = $this->createQueryBuilder('r')
             ->addSelect('g', 's', 't', 'beh', 'bc')
@@ -66,6 +71,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->leftJoin('beh.category', 'bc')
             ->where('ay.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid');
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         // Visibility restriction for non-admins
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
@@ -173,9 +182,9 @@ class IncidentReportRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count reports in the last $days days that the viewer can see.
+     * Count reports in the last $days days that the viewer can see, restricted to $year.
      */
-    public function countRecentByCentre(EducationalCentre $centre, Teacher $viewer, int $days = 30): int
+    public function countRecentByCentre(EducationalCentre $centre, Teacher $viewer, int $days = 30, ?AcademicYear $year = null): int
     {
         $since = new \DateTimeImmutable('-' . $days . ' days');
 
@@ -189,6 +198,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->andWhere('r.occurredAt >= :since')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('since', $since);
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -211,7 +224,7 @@ class IncidentReportRepository extends ServiceEntityRepository
      *
      * @return Group[]
      */
-    public function findGroupsWithReports(EducationalCentre $centre, Teacher $viewer): array
+    public function findGroupsWithReports(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): array
     {
         $qb = $this->getEntityManager()->createQueryBuilder()
             ->select('g')
@@ -224,6 +237,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->orderBy('g.name', 'ASC');
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -316,10 +333,10 @@ class IncidentReportRepository extends ServiceEntityRepository
      *
      * @return list<IncidentReport>
      */
-    public function findPendingNotification(EducationalCentre $centre, Teacher $viewer): array
+    public function findPendingNotification(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): array
     {
         /** @var list<IncidentReport> $result */
-        $result = $this->buildPendingQueryBuilder($centre, $viewer)->getQuery()->getResult();
+        $result = $this->buildPendingQueryBuilder($centre, $viewer, $year)->getQuery()->getResult();
 
         return $result;
     }
@@ -330,12 +347,12 @@ class IncidentReportRepository extends ServiceEntityRepository
      *
      * @return Query<null, IncidentReport>
      */
-    public function createPendingQuery(EducationalCentre $centre, Teacher $viewer): Query
+    public function createPendingQuery(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): Query
     {
-        return $this->buildPendingQueryBuilder($centre, $viewer)->getQuery();
+        return $this->buildPendingQueryBuilder($centre, $viewer, $year)->getQuery();
     }
 
-    private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer): QueryBuilder
+    private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer, ?AcademicYear $year = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('r')
             ->addSelect('s', 'g')
@@ -348,6 +365,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->andWhere('r.notifiedCommunication IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->orderBy('r.occurredAt', 'ASC');
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -379,8 +400,9 @@ class IncidentReportRepository extends ServiceEntityRepository
         Teacher $viewer,
         string $notifierSetting,
         ?Student $student = null,
+        ?AcademicYear $year = null,
     ): Query {
-        $qb = $this->buildNotifiableQueryBuilder($centre, $viewer, $notifierSetting)
+        $qb = $this->buildNotifiableQueryBuilder($centre, $viewer, $notifierSetting, $year)
             ->orderBy('r.occurredAt', 'ASC');
 
         if ($student !== null) {
@@ -406,6 +428,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         EducationalCentre $centre,
         Teacher $viewer,
         string $notifierSetting,
+        ?AcademicYear $year = null,
     ): array {
         $qb = $this->getEntityManager()->createQueryBuilder()
             ->select('st', 'COUNT(r.id) AS reportCount')
@@ -422,6 +445,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->orderBy('COUNT(r.id)', 'DESC')
             ->addOrderBy('st.name.lastName', 'ASC')
             ->addOrderBy('st.name.firstName', 'ASC');
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         $this->applyNotifiableRestriction($qb, $centre, $viewer, $notifierSetting);
 
@@ -441,6 +468,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         EducationalCentre $centre,
         Teacher $viewer,
         string $notifierSetting,
+        ?AcademicYear $year = null,
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('r')
             ->join('r.group', 'g')
@@ -450,6 +478,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->andWhere('r.notifiedCommunication IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid');
+
+        if ($year !== null) {
+            $qb->andWhere('ay = :year')->setParameter('year', $year->getId(), 'uuid');
+        }
 
         $this->applyNotifiableRestriction($qb, $centre, $viewer, $notifierSetting);
 

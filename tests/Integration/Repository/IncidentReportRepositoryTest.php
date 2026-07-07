@@ -233,6 +233,56 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertSame(2, $count);
     }
 
+    public function testCountRecentByCentreRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld();
+        $worldB = $this->makeOtherYearInSameCentre($worldA);
+        $admin  = $this->makeTeacher('admin.count.year', admin: true);
+        $rA     = $this->makeReport($worldA, creator: $admin);
+        $rB     = $this->makeReport($worldB, creator: $admin);
+        $this->persist($admin, $rA, $rB);
+
+        self::assertSame(1, $this->repo->countRecentByCentre($worldA['centre'], $admin, 30, $worldA['year']));
+        self::assertSame(1, $this->repo->countRecentByCentre($worldA['centre'], $admin, 30, $worldB['year']));
+        self::assertSame(2, $this->repo->countRecentByCentre($worldA['centre'], $admin, 30));
+    }
+
+    // ── createFilteredQuery: aislamiento por curso académico ──────────────────
+
+    public function testCreateFilteredQueryRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld();
+        $worldB = $this->makeOtherYearInSameCentre($worldA);
+        $admin  = $this->makeTeacher('admin.year.isolation', admin: true);
+        $rA     = $this->makeReport($worldA, creator: $admin);
+        $rB     = $this->makeReport($worldB, creator: $admin);
+        $this->persist($admin, $rA, $rB);
+
+        $resultsA = $this->repo->createFilteredQuery($worldA['centre'], $admin, [], $worldA['year'])->getResult();
+        $resultsB = $this->repo->createFilteredQuery($worldA['centre'], $admin, [], $worldB['year'])->getResult();
+
+        self::assertCount(1, $resultsA);
+        self::assertSame($rA->getId(), $resultsA[0]->getId());
+        self::assertCount(1, $resultsB);
+        self::assertSame($rB->getId(), $resultsB[0]->getId());
+    }
+
+    public function testCreateFilteredQueryWithoutYearIncludesAllYearsOfCentre(): void
+    {
+        // Regression guard: StudentController relies on omitting $year to show
+        // a student's full cross-year disciplinary history.
+        $worldA = $this->makeWorld();
+        $worldB = $this->makeOtherYearInSameCentre($worldA);
+        $admin  = $this->makeTeacher('admin.year.omitted', admin: true);
+        $rA     = $this->makeReport($worldA, creator: $admin);
+        $rB     = $this->makeReport($worldB, creator: $admin);
+        $this->persist($admin, $rA, $rB);
+
+        $results = $this->repo->createFilteredQuery($worldA['centre'], $admin)->getResult();
+
+        self::assertCount(2, $results);
+    }
+
     // ── searchStudentGroupPairs ───────────────────────────────────────────────
 
     public function testSearchStudentGroupPairsFindsStudentByLastName(): void
@@ -318,6 +368,21 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $results = $this->repo->findPendingNotification($world['centre'], $tutor);
 
         self::assertCount(2, $results);
+    }
+
+    public function testFindPendingNotificationRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld('pn4');
+        $worldB = $this->makeOtherYearInSameCentre($worldA, 'pn4b');
+        $admin  = $this->makeTeacher('admin.pending.year', admin: true);
+        $rA     = $this->makeReport($worldA, creator: $admin);
+        $rB     = $this->makeReport($worldB, creator: $admin);
+        $this->persist($admin, $rA, $rB);
+
+        $resultsA = $this->repo->findPendingNotification($worldA['centre'], $admin, $worldA['year']);
+
+        self::assertCount(1, $resultsA);
+        self::assertSame($rA->getId(), $resultsA[0]->getId());
     }
 
     // ── createPendingQuery ────────────────────────────────────────────────────
@@ -461,6 +526,21 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertSame($report->getId(), $results[0]->getId());
     }
 
+    public function testCreateNotifiableQueryRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld('cnq8');
+        $worldB = $this->makeOtherYearInSameCentre($worldA, 'cnq8b');
+        $admin  = $this->makeTeacher('admin.cnq8', admin: true);
+        $rA     = $this->makeReport($worldA, creator: $admin);
+        $rB     = $this->makeReport($worldB, creator: $admin);
+        $this->persist($admin, $rA, $rB);
+
+        $resultsA = $this->repo->createNotifiableQuery($worldA['centre'], $admin, 'both', null, $worldA['year'])->getResult();
+
+        self::assertCount(1, $resultsA);
+        self::assertSame($rA->getId(), $resultsA[0]->getId());
+    }
+
     // ── findNotifiableSummaryByStudent ────────────────────────────────────────
 
     public function testFindNotifiableSummaryByStudentGroupsAndCountsPerStudent(): void
@@ -524,6 +604,44 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $summary = $this->repo->findNotifiableSummaryByStudent($world['centre'], $tutor, 'report_teacher');
 
         self::assertCount(0, $summary);
+    }
+
+    public function testFindNotifiableSummaryByStudentRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld('sum4');
+        $worldB = $this->makeOtherYearInSameCentre($worldA, 'sum4b');
+        $admin  = $this->makeTeacher('admin.sum4', admin: true);
+        $rA     = $this->makeReport($worldA, creator: $admin);
+        $rB     = $this->makeReport($worldB, creator: $admin);
+        $this->persist($admin, $rA, $rB);
+
+        $summary = $this->repo->findNotifiableSummaryByStudent($worldA['centre'], $admin, 'both', $worldA['year']);
+
+        self::assertCount(1, $summary);
+        self::assertSame($worldA['student']->getId(), $summary[0]['student']->getId());
+        self::assertSame(1, $summary[0]['count']);
+    }
+
+    // ── findGroupsWithReports ─────────────────────────────────────────────────
+
+    public function testFindGroupsWithReportsRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld('fgwr1');
+        $worldB = $this->makeOtherYearInSameCentre($worldA, 'fgwr1b');
+        $admin  = $this->makeTeacher('admin.fgwr1', admin: true);
+        $rA     = $this->makeReport($worldA, creator: $admin);
+        $rB     = $this->makeReport($worldB, creator: $admin);
+        $this->persist($admin, $rA, $rB);
+
+        $groupsA = $this->repo->findGroupsWithReports($worldA['centre'], $admin, $worldA['year']);
+        $groupsB = $this->repo->findGroupsWithReports($worldA['centre'], $admin, $worldB['year']);
+        $groupsAll = $this->repo->findGroupsWithReports($worldA['centre'], $admin);
+
+        self::assertCount(1, $groupsA);
+        self::assertSame($worldA['group']->getId(), $groupsA[0]->getId());
+        self::assertCount(1, $groupsB);
+        self::assertSame($worldB['group']->getId(), $groupsB[0]->getId());
+        self::assertCount(2, $groupsAll);
     }
 
     // ── findEligibleForAutoPrescription ──────────────────────────────────────
@@ -681,6 +799,28 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior);
 
         return compact('centre', 'year', 'group', 'student', 'behavior');
+    }
+
+    /**
+     * Builds a second academic year for the SAME centre as $world, with its own
+     * programme/group/student, to test that per-year listings are sealed off
+     * from other years of the same centre (and not just from other centres).
+     *
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior} $world
+     * @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior}
+     */
+    private function makeOtherYearInSameCentre(array $world, string $suffix = ''): array
+    {
+        $centre    = $world['centre'];
+        $year      = (new AcademicYear())->setName('2026-2027')->setEducationalCentre($centre);
+        $programme = (new Programme())->setName('DAW-Y2' . $suffix)->setAcademicYear($year);
+        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
+        $group     = (new Group())->setName('1ºB' . $suffix)->setProgrammeYear($level);
+        $student   = (new Student(new PersonName('Bea', 'Ruiz')))->setStudentId('NIE-Y2-' . $suffix . uniqid('', false));
+
+        $this->persist($year, $programme, $level, $group, $student);
+
+        return ['centre' => $centre, 'year' => $year, 'group' => $group, 'student' => $student, 'behavior' => $world['behavior']];
     }
 
     /**

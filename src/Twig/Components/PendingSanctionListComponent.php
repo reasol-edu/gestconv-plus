@@ -10,6 +10,7 @@ use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\SanctionRepository;
 use App\Service\AppSettings;
+use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -27,6 +28,7 @@ class PendingSanctionListComponent extends AbstractController
     public function __construct(
         private readonly SanctionRepository $sanctions,
         private readonly AppSettings $appSettings,
+        private readonly TenantContext $tenantContext,
     ) {}
 
     public function mount(EducationalCentre $centre): void
@@ -45,6 +47,6 @@ class PendingSanctionListComponent extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        return $this->paginate($this->sanctions->createPendingQuery($this->centre, $user));
+        return $this->paginate($this->sanctions->createPendingQuery($this->centre, $user, $this->tenantContext->getViewYear($this->centre)));
     }
 }

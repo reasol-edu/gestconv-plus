@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - El acceso rápido «Nuevo parte» del inicio solo aparecía al equipo directivo; ahora lo ve todo el profesorado, como describe el manual.
 - SQLite ahora aplica las restricciones de clave ajena (`PRAGMA foreign_keys = ON`), por lo que los borrados en cascada (por ejemplo, al eliminar una categoría) ya no dejan registros huérfanos en despliegues con SQLite.
 - El inicio y la pantalla de «Nueva sanción» ya no muestran alumnado con 0 partes pendientes de sanción: un parte solo cuenta como pendiente de sanción cuando la familia ya ha sido notificada, y ese mismo criterio se aplicaba al recuento pero no al filtro que decidía qué alumnado aparecía en la lista.
+- El inicio, el listado de partes y sanciones, y la sección de notificaciones (pendientes e historial) mostraban datos de otros cursos académicos del mismo centro además del curso que se está viendo; ahora cada curso académico queda completamente aislado de los demás en estas pantallas.
 
 ### Security
 
