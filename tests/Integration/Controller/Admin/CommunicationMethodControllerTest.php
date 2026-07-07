@@ -16,6 +16,7 @@ use App\Entity\PersonName;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class CommunicationMethodControllerTest extends ControllerTestCase
 {
@@ -281,6 +282,189 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         self::assertGreaterThan($refreshedM2->getPosition(), $refreshedM1->getPosition());
     }
 
+    // ── export ────────────────────────────────────────────────────────────────
+
+    public function testExportReturnsJsonWithMethods(): void
+    {
+        [$cadmin, $centre, $method] = $this->makeScenarioWithMethod();
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/export');
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+        self::assertSame($centre->getName(), $data['centre']);
+        self::assertSame($method->getName(), $data['methods'][0]['name']);
+    }
+
+    public function testExportIsDeniedToNonAdmin(): void
+    {
+        [, $centre] = $this->makeScenario();
+        $teacher = $this->makeTeacher('teacher.no.priv.export');
+        $this->persist($teacher);
+        $this->loginAs($teacher);
+
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/export');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    // ── import ────────────────────────────────────────────────────────────────
+
+    public function testImportGetRendersForm(): void
+    {
+        [$cadmin, $centre] = $this->makeScenario();
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/import');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('input[name="json"]');
+    }
+
+    public function testImportPostWithValidJsonCreatesMethodsAndRedirects(): void
+    {
+        [$cadmin, $centre] = $this->makeScenario();
+        $this->loginAs($cadmin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/import');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $file = $this->makeJsonUploadFile([
+            'methods' => [
+                ['name' => 'Mensajería Pasen', 'active' => true],
+            ],
+        ]);
+
+        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/import', [
+            '_token' => $token,
+        ], ['json' => $file]);
+
+        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+
+        $this->em->clear();
+        $methods = $this->em->getRepository(CommunicationMethod::class)->findBy(['educationalCentre' => $centre->getId()]);
+        self::assertCount(1, $methods);
+        self::assertSame('Mensajería Pasen', $methods[0]->getName());
+    }
+
+    public function testImportPostWithInvalidJsonShowsError(): void
+    {
+        [$cadmin, $centre] = $this->makeScenario();
+        $this->loginAs($cadmin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/import');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
+        file_put_contents($tmpFile, 'not json');
+        $file = new UploadedFile($tmpFile, 'methods.json', 'application/json', null, true);
+
+        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/import', [
+            '_token' => $token,
+        ], ['json' => $file]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('div', 'JSON válido');
+    }
+
+    public function testImportPostWithReplaceExistingRemovesPreviousMethod(): void
+    {
+        [$cadmin, $centre, $oldMethod] = $this->makeScenarioWithMethod();
+        $this->loginAs($cadmin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/import');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $file = $this->makeJsonUploadFile([
+            'methods' => [
+                ['name' => 'Método nuevo', 'active' => true],
+            ],
+        ]);
+
+        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/import', [
+            '_token'           => $token,
+            'replace_existing' => '1',
+        ], ['json' => $file]);
+
+        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+
+        $this->em->clear();
+        self::assertNull($this->em->find(CommunicationMethod::class, $oldMethod->getId()));
+        $methods = $this->em->getRepository(CommunicationMethod::class)->findBy(['educationalCentre' => $centre->getId()]);
+        self::assertCount(1, $methods);
+        self::assertSame('Método nuevo', $methods[0]->getName());
+    }
+
+    public function testImportPostWithReplaceExistingKeepsMethodInUse(): void
+    {
+        [$cadmin, $centre, $method] = $this->makeScenarioWithMethod();
+
+        $teacher  = $this->makeTeacher('reporter.' . uniqid('', false));
+        $year     = $centre->getActiveAcademicYear();
+        $category = (new IncidentBehaviorCategory())->setEducationalCentre($centre)->setName('Contrarias')->setSerious(false)->setPosition(0);
+        $behavior = (new IncidentBehavior())->setEducationalCentre($centre)->setCategory($category)->setName('Perturbación')->setPosition(0)->setActive(true);
+        $group    = (new \App\Entity\Group())->setName('1ºA')->setProgrammeYear(
+            (new \App\Entity\ProgrammeYear())->setName('1º')->setProgramme(
+                (new \App\Entity\Programme())->setName('DAW')->setAcademicYear($year)
+            )
+        );
+        $student = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . uniqid('', false));
+        $this->persist($teacher, $category, $behavior, $group->getProgrammeYear()->getProgramme(), $group->getProgrammeYear(), $group, $student);
+
+        $report = (new IncidentReport())
+            ->setAcademicYear($year)
+            ->setNumber(1)
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setRegisteredBy($teacher)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Test</p>')
+            ->setExpelledFromClass(false);
+        $report->addBehavior($behavior);
+        $this->persist($report);
+
+        $communication = Communication::forIncidentReport($report, $method, $teacher, new \DateTimeImmutable(), CommunicationResult::Notified);
+        $this->persist($communication);
+
+        $this->loginAs($cadmin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centros/' . $centreId . '/metodos-comunicacion/import');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $file = $this->makeJsonUploadFile([
+            'methods' => [
+                ['name' => 'Método nuevo', 'active' => true],
+            ],
+        ]);
+
+        $this->client->request('POST', '/centros/' . $centreId . '/metodos-comunicacion/import', [
+            '_token'           => $token,
+            'replace_existing' => '1',
+        ], ['json' => $file]);
+
+        self::assertResponseRedirects('/centros/' . $centreId . '/metodos-comunicacion');
+
+        $this->em->clear();
+        self::assertNotNull($this->em->find(CommunicationMethod::class, $method->getId()), 'El método en uso no debe eliminarse aunque se marque «vaciar antes de importar».');
+    }
+
+    public function testImportIsDeniedToNonAdmin(): void
+    {
+        [, $centre] = $this->makeScenario();
+        $teacher = $this->makeTeacher('teacher.no.priv.import');
+        $this->persist($teacher);
+        $this->loginAs($teacher);
+
+        $this->client->request('GET', '/centros/' . $centre->getId()->toRfc4122() . '/metodos-comunicacion/import');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /** @return array{0: Teacher, 1: EducationalCentre} */
@@ -319,5 +503,14 @@ class CommunicationMethodControllerTest extends ControllerTestCase
     private function makeTeacher(string $username): Teacher
     {
         return (new Teacher(new PersonName('Test', 'Teacher')))->setUsername($username);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function makeJsonUploadFile(array $data): UploadedFile
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
+        file_put_contents($tmpFile, (string) json_encode($data));
+
+        return new UploadedFile($tmpFile, 'methods.json', 'application/json', null, true);
     }
 }

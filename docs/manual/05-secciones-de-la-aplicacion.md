@@ -254,6 +254,8 @@ Los administradores de centro configuran los métodos disponibles en **Centro ed
 
 Al crear un centro nuevo se configuran automáticamente **6 métodos por defecto**: Llamada telefónica, Mensajería Pasen, Correo electrónico, SMS, WhatsApp y Otros. Un método que ya se ha usado en alguna comunicación no se puede eliminar (aparece un aviso); en ese caso, desactívalo en su lugar.
 
+Al igual que en las conductas y las medidas, los botones **Exportar JSON** e **Importar JSON** permiten copiar la configuración de métodos de comunicación entre centros, con la misma opción de vaciar los métodos existentes antes de importar; los métodos que ya se han usado en alguna comunicación se conservan aunque se marque esta opción.
+
 ## Calendario
 
 La sección **Calendario**, accesible desde el menú lateral, muestra en una vista mensual las sanciones del curso académico activo que tienen fecha asignada (campo *Fecha de inicio*, y opcionalmente *Fecha de fin*, del parte de sanción).

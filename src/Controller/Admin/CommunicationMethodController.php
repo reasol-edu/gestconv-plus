@@ -10,9 +10,13 @@ use App\Repository\CommunicationRepository;
 use App\Repository\EducationalCentreRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
+use App\Service\CommunicationMethodExporter;
+use App\Service\CommunicationMethodImporter;
 use App\Service\EntityChangeTracker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -29,6 +33,8 @@ class CommunicationMethodController extends AbstractController
         private readonly EducationalCentreRepository $centres,
         private readonly CommunicationMethodRepository $methods,
         private readonly CommunicationRepository $communications,
+        private readonly CommunicationMethodExporter $exporter,
+        private readonly CommunicationMethodImporter $importer,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
@@ -47,6 +53,67 @@ class CommunicationMethodController extends AbstractController
             'centre'  => $centre,
             'methods' => $this->methods->findByCentreOrdered($centre),
         ]);
+    }
+
+    #[Route('/export', name: 'app_admin_communication_methods_export', methods: ['GET'])]
+    public function export(string $centreId): JsonResponse
+    {
+        $centre = $this->centres->findByIdWithActiveYear($centreId);
+        if ($centre === null) {
+            throw $this->createNotFoundException();
+        }
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
+
+        $data     = $this->exporter->export($centre);
+        $filename = 'metodos-comunicacion-' . $centre->getCode() . '.json';
+        $json     = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return new JsonResponse($json, Response::HTTP_OK, [
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ], true);
+    }
+
+    #[Route('/import', name: 'app_admin_communication_methods_import')]
+    public function import(string $centreId, Request $request): Response
+    {
+        $centre = $this->centres->findByIdWithActiveYear($centreId);
+        if ($centre === null) {
+            throw $this->createNotFoundException();
+        }
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
+
+        if (!$request->isMethod('POST')) {
+            return $this->render('admin/communication_method/import.html.twig', ['centre' => $centre]);
+        }
+
+        if (!$this->isCsrfTokenValid('import_communication_methods', $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $file = $request->files->get('json');
+        if (!$file instanceof UploadedFile || !$file->isValid()) {
+            $this->addFlash('error', $this->t('communication_method.import.error.no_file'));
+
+            return $this->render('admin/communication_method/import.html.twig', ['centre' => $centre]);
+        }
+
+        $content = (string) file_get_contents($file->getPathname());
+        $decoded = json_decode($content, true);
+
+        if (!is_array($decoded)) {
+            $this->addFlash('error', $this->t('communication_method.import.error.invalid_json'));
+
+            return $this->render('admin/communication_method/import.html.twig', ['centre' => $centre]);
+        }
+
+        /** @var array<string, mixed> $decoded */
+        $stats = $this->importer->import($decoded, $centre, $request->request->has('replace_existing'));
+
+        $this->addFlash('success', $this->translator->trans('communication_method.import.flash.summary', [
+            '%methods%' => $stats['methods'],
+        ], 'admin'));
+
+        return $this->redirectToRoute('app_admin_communication_methods_index', ['centreId' => $centreId]);
     }
 
     #[Route('/nuevo', name: 'app_admin_communication_methods_create', methods: ['POST'])]

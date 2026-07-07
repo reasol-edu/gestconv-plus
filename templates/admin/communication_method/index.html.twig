@@ -15,6 +15,20 @@
             </div>
             <h1 class="text-2xl font-bold text-gray-900">{{ 'communication_method.title'|trans({}, 'admin') }}</h1>
         </div>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ path('app_admin_communication_methods_import', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
+                {{ 'communication_method.import.button'|trans({}, 'admin') }}
+            </a>
+            <a href="{{ path('app_admin_communication_methods_export', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-4 w-4'}) }}
+                {{ 'communication_method.export.button'|trans({}, 'admin') }}
+            </a>
+        </div>
     </div>
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">

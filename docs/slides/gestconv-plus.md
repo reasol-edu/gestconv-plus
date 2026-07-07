@@ -497,9 +497,12 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 - Cada ajuste puede **bloquearse** a nivel global para impedir que un centro
   lo modifique, o dejarse libre para que cada centro lo personalice.
-- El **catálogo de conductas** y el de **medidas disciplinarias** también se
-  gestionan desde aquí, adaptándolos a las normas de convivencia propias del
-  centro.
+- El **catálogo de conductas**, el de **medidas disciplinarias** y el de
+  **métodos de comunicación** también se gestionan desde aquí, adaptándolos a
+  las normas de convivencia propias del centro.
+- Los tres catálogos se pueden **exportar e importar en JSON** para copiar la
+  configuración entre centros, con la opción de vaciar lo existente antes de
+  importar.
 
 ---
 
