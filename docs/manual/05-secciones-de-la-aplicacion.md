@@ -28,6 +28,24 @@ Si el curso activo todavía no tiene estudiantado matriculado, las tarjetas de r
 
 Los administradores de centro y los administradores globales pueden consultar cursos académicos anteriores sin modificar el curso activo. El selector de curso aparece en la cabecera del menú lateral. Al visualizar un curso histórico, la aplicación muestra un aviso en ámbar y bloquea las operaciones de escritura.
 
+### Añadir la aplicación al teléfono móvil
+
+GestConv+ funciona como una aplicación web progresiva: se puede añadir a la pantalla de inicio del móvil como si fuera una app nativa, con su propio icono y sin la barra de direcciones del navegador. No requiere descargarla de ninguna tienda de aplicaciones ni instalar nada aparte.
+
+**Android (Chrome)**
+
+1. Abre la aplicación con Chrome desde el móvil.
+2. Toca el menú ⋮ (arriba a la derecha) y selecciona **Instalar aplicación** (o **Añadir a pantalla de inicio**, según la versión de Chrome). En muchos casos Chrome ofrece directamente un aviso para instalarla, sin necesidad de abrir el menú.
+3. Confirma tocando **Instalar**.
+
+**iPhone / iPad (Safari)**
+
+1. Abre la aplicación con Safari; es imprescindible usar Safari, ya que en iOS ningún otro navegador puede añadir aplicaciones a la pantalla de inicio.
+2. Toca el icono de compartir (el cuadrado con una flecha hacia arriba) en la barra inferior.
+3. Selecciona **Añadir a pantalla de inicio** y confirma con **Añadir**.
+
+En ambos casos queda un icono de GestConv+ en la pantalla de inicio del dispositivo que abre la aplicación a pantalla completa, igual que el resto de aplicaciones instaladas.
+
 ## Búsqueda global y paleta de comandos
 
 El campo **Buscar…** de la cabecera abre una paleta de búsqueda que también puede invocarse con el atajo de teclado **Ctrl+K** (**⌘K** en Mac) desde cualquier pantalla. Los resultados se agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni tildes:

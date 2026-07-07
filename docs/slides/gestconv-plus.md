@@ -565,6 +565,19 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 ---
 
+## Añadir la aplicación al móvil
+
+- GestConv+ es una **aplicación web progresiva**: se puede añadir a la
+  pantalla de inicio del móvil como una app nativa, sin tienda de
+  aplicaciones ni instalación aparte.
+- **Android (Chrome)**: menú ⋮ → **Instalar aplicación** / **Añadir a
+  pantalla de inicio** (o el aviso que ofrece Chrome directamente).
+- **iPhone/iPad (Safari)**: icono de compartir → **Añadir a pantalla de
+  inicio**. Imprescindible usar Safari; ningún otro navegador puede hacerlo
+  en iOS.
+
+---
+
 ## Recursos y soporte
 
 - El **manual de usuario completo** detalla cada pantalla y cada opción de
