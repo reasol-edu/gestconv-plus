@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Los PDF de partes y sanciones tienen un aspecto más formal: los datos principales (alumno, grupo, docente, fecha y estado) se muestran en una única tabla al comienzo, y las conductas contrarias marcadas se agrupan por categoría en columnas, con el nombre de la categoría como cabecera y las conductas concretas debajo en una lista.
 - La pantalla de ajustes agrupa ahora cada ajuste en secciones por categoría (Visualización, Correo electrónico, Modo tablón, Notificaciones a familias y Avisos por correo), en lugar de mostrarlos todos en un único listado alfabético.
 - El modo tablón del calendario incorpora un tema claro, además del oscuro existente, y un nuevo ajuste (global y de centro) para elegir entre claro, oscuro o según el sistema; este último sigue en todo momento la preferencia de color del navegador o sistema operativo, incluidos los cambios mientras la pantalla permanece abierta. El tema claro es ahora el valor por defecto.
 - Una vez notificado a la familia, un parte solo puede ser modificado por un administrador; el docente que lo registró conserva la posibilidad de añadir y gestionar sus propias observaciones, pero ya no puede editar los datos del parte. Las sanciones ya funcionaban así: su edición y eliminación han sido siempre exclusivas de administradores y comisión de convivencia.

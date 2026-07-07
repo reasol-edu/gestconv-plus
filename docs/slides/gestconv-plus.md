@@ -361,6 +361,9 @@ el centro**, no solo de sus propios grupos:
 
 - Cada parte y cada sanción se puede **exportar a PDF** con un formato
   homogéneo, listo para archivar o entregar.
+- Los datos principales (alumno, grupo, docente, fecha, estado) aparecen en
+  una tabla al comienzo, y las conductas marcadas se agrupan por categoría en
+  columnas.
 - El centro puede **personalizar el encabezado** de estos informes (título,
   marcadores como el nombre del centro o del estudiante, y el margen
   superior) desde los ajustes de centro.

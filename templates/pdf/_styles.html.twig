@@ -114,6 +114,41 @@
         font-size: 7.5pt;
     }
 
+    /* ── Conductas contrarias, agrupadas por categoría ── */
+    table.behavior-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+    }
+    table.behavior-table td.behavior-cell {
+        width: 33.33%;
+        vertical-align: top;
+        background-color: #f7f7fb;
+        border: 1px solid #e5e6ee;
+        padding: 6px 8px;
+    }
+    .behavior-category {
+        font-size: 7.5pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.3pt;
+        color: #3e4a6e;
+        margin-bottom: 4px;
+        padding-bottom: 3px;
+        border-bottom: 1px solid #c9cad9;
+    }
+    .behavior-category-serious {
+        color: #b91c1c;
+    }
+    table.behavior-table ul {
+        margin: 0;
+        padding-left: 13px;
+    }
+    table.behavior-table li {
+        font-size: 8pt;
+        margin-bottom: 2px;
+    }
+
     /* ── Badges ──
        mPDF no aplica border-radius a elementos inline, así que las píldoras
        quedan rectangulares (varias en la misma línea); se compensa con más

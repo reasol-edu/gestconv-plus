@@ -13,14 +13,16 @@
                 <td><span class="cell-sub">{{ 'sanction.col.registered_by'|trans({}, 'admin') }}</span><br>{{ sanction.registeredBy.name.lastName }}, {{ sanction.registeredBy.name.firstName }}</td>
                 <td><span class="cell-sub">{{ 'sanction.col.created_at'|trans({}, 'admin') }}</span><br>{{ sanction.createdAt|date('d/m/Y H:i') }}</td>
             </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="cell-sub">{{ 'incident.col.status'|trans({}, 'admin') }}</span><br>
+                    <span class="badge {{ sanction.notified ? 'badge-green' : 'badge-amber' }}">
+                        {{ (sanction.notified ? 'notification.badge.notified' : 'notification.badge.pending')|trans({}, 'notifications') }}
+                    </span>
+                </td>
+            </tr>
         </tbody>
     </table>
-
-    <p>
-        <span class="badge {{ sanction.notified ? 'badge-green' : 'badge-amber' }}">
-            {{ (sanction.notified ? 'notification.badge.notified' : 'notification.badge.pending')|trans({}, 'notifications') }}
-        </span>
-    </p>
 
     <p class="subsection-title">{{ 'sanction.section.measures'|trans({}, 'admin') }}</p>
     {% if sanction.noMeasureApplied %}

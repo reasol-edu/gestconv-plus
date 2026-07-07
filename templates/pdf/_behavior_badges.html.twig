@@ -2,9 +2,24 @@
 {% if behaviors is empty %}
     <p class="cell-sub">&mdash;</p>
 {% else %}
-    <p>
-        {% for behavior in behaviors %}
-            <span class="badge {{ behavior.serious ? 'badge-red' : 'badge-gray' }}">{{ behavior.name }}{% if behavior.serious %} ({{ 'incident.badge.serious'|trans({}, 'admin') }}){% endif %}</span>
-        {% endfor %}
-    </p>
+    <table class="behavior-table">
+        <tbody>
+            {% for row in behaviors|group_by_category|batch(3) %}
+                <tr>
+                    {% for group in row %}
+                        <td class="behavior-cell">
+                            <p class="behavior-category {{ group.category.serious ? 'behavior-category-serious' : '' }}">
+                                {{ group.category.name }}
+                            </p>
+                            <ul>
+                                {% for behavior in group.behaviors %}
+                                    <li>{{ behavior.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endif %}
