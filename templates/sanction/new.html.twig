@@ -67,6 +67,9 @@
                         <div class="flex-1 min-w-0">
                             <span class="text-sm text-gray-800 font-mono">#{{ report.number }}</span>
                             <span class="text-xs text-gray-500 ml-2">{{ report.occurredAt|date('d/m/Y H:i') }}</span>
+                            {% if report.location %}
+                                <span class="text-xs text-gray-500 ml-2">{{ report.location.name }}</span>
+                            {% endif %}
                             <span class="text-xs text-gray-500 ml-2">{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</span>
                             <div class="prose prose-sm max-w-none text-gray-700 mt-1">{{ report.description|sanitize_html('app.rich_text') }}</div>
                             {% set reportObservations = observationsByReport[report.id.toRfc4122] ?? [] %}

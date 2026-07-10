@@ -42,6 +42,12 @@
                         {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
                         {{ 'incident.view'|trans({}, 'admin') }}
                     </a>
+                    <a href="{{ path('app_incidents_pdf', {id: report.id}) }}" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700
+                              hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                        {{ ux_icon('heroicons:document-arrow-down', {class: 'h-3.5 w-3.5'}) }}
+                        {{ 'incident.pdf.download'|trans({}, 'admin') }}
+                    </a>
                     {% if report.isNotified %}
                         <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-1 text-xs font-medium">
                             {{ ux_icon('heroicons:check-circle', {class: 'h-3.5 w-3.5'}) }}

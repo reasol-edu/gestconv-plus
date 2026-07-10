@@ -13,6 +13,7 @@ use App\Repository\GroupRepository;
 use App\Repository\IncidentBehaviorRepository;
 use App\Repository\IncidentReportObservationRepository;
 use App\Repository\IncidentReportRepository;
+use App\Repository\LocationOptionRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
@@ -54,6 +55,7 @@ class IncidentReportController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly IncidentReportRepository $reports,
         private readonly IncidentBehaviorRepository $behaviors,
+        private readonly LocationOptionRepository $locations,
         private readonly GroupRepository $groups,
         private readonly StudentRepository $students,
         private readonly TeacherRepository $teachers,
@@ -114,6 +116,30 @@ class IncidentReportController extends AbstractController
         return $this->json($results);
     }
 
+    #[Route('/buscar-ubicaciones', name: 'app_incidents_search_locations', methods: ['GET'])]
+    public function searchLocations(Request $request): JsonResponse
+    {
+        $centre = $this->tenantContext->getSelectedCentre();
+        if ($centre === null || !$this->getUser() instanceof Teacher) {
+            return $this->json([]);
+        }
+
+        $q       = trim($request->query->getString('q'));
+        $options = $this->locations->searchActiveByCentre($centre, $q, 200);
+        $results = [];
+
+        foreach ($options as $option) {
+            $results[] = [
+                'value'     => $option->getId()->toRfc4122(),
+                'label'     => $option->getName(),
+                'secondary' => $option->getCategory()->getName(),
+                'category'  => $option->getCategory()->getId()->toRfc4122(),
+            ];
+        }
+
+        return $this->json($results);
+    }
+
     #[Route('/nuevo', name: 'app_incidents_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
@@ -131,6 +157,7 @@ class IncidentReportController extends AbstractController
         $errors              = [];
         $formData            = [];
         $preloadedStudents   = [];
+        $preloadedLocation   = null;
         $canChooseTeacher    = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
         $registeredBy        = $user;
 
@@ -155,13 +182,26 @@ class IncidentReportController extends AbstractController
             $studentPairs      = $request->request->all('students');
             $behaviorIds       = $request->request->all('behaviors');
             $occurredAtRaw     = trim($request->request->getString('occurred_at'));
+            $locationId        = trim($request->request->getString('location_id'));
             $description       = trim($request->request->getString('description'));
             $expelled          = $request->request->getBoolean('expelled_from_class');
             $assignedTasks     = trim($request->request->getString('assigned_tasks')) ?: null;
             $tasksCompletedRaw = $request->request->getString('tasks_completed');
 
+            $location = null;
+            if ($locationId !== '') {
+                $location = $this->locations->findById($locationId);
+                if ($location === null || $location->getEducationalCentre() !== $centre) {
+                    $location = null;
+                }
+            }
+
             if (empty($studentPairs)) {
                 $errors['students'] = $this->t('incident.error.no_students');
+            }
+
+            if ($location === null) {
+                $errors['location'] = $this->t('incident.error.no_location');
             }
 
             if (empty($behaviorIds)) {
@@ -240,6 +280,7 @@ class IncidentReportController extends AbstractController
                            ->setGroup($group)
                            ->setRegisteredBy($registeredBy)
                            ->setOccurredAt($occurredAt)
+                           ->setLocation($location)
                            ->setDescription($description)
                            ->setExpelledFromClass($expelled)
                            ->setAssignedTasks($expelled ? $assignedTasks : null)
@@ -285,11 +326,21 @@ class IncidentReportController extends AbstractController
                 'students'       => $studentPairs,
                 'behaviorIds'    => array_values(array_filter($behaviorIds, 'is_string')),
                 'occurredAt'     => $occurredAtRaw,
+                'locationId'     => $locationId,
                 'description'    => $description,
                 'expelled'       => $expelled,
                 'assignedTasks'  => $assignedTasks ?? '',
                 'tasksCompleted' => $tasksCompletedRaw !== '' ? $tasksCompletedRaw : 'unknown',
             ];
+
+            if ($location !== null) {
+                $preloadedLocation = [
+                    'value'     => $location->getId()->toRfc4122(),
+                    'label'     => $location->getName(),
+                    'secondary' => $location->getCategory()->getName(),
+                    'category'  => $location->getCategory()->getId()->toRfc4122(),
+                ];
+            }
 
             foreach ($studentPairs as $pair) {
                 if (!is_string($pair)) {
@@ -335,6 +386,7 @@ class IncidentReportController extends AbstractController
             'errors'              => $errors,
             'formData'            => $formData,
             'preloadedStudents'   => $preloadedStudents,
+            'preloadedLocation'   => $preloadedLocation,
             'canChooseTeacher'    => $canChooseTeacher,
             'selectedTeacher'     => $registeredBy,
         ]);
@@ -626,6 +678,7 @@ class IncidentReportController extends AbstractController
 
             $behaviorIds       = $request->request->all('behaviors');
             $occurredAtRaw     = trim($request->request->getString('occurred_at'));
+            $locationIdRaw     = trim($request->request->getString('location_id'));
             $description       = trim($request->request->getString('description'));
             $expelled          = $request->request->getBoolean('expelled_from_class');
             $assignedTasks     = trim($request->request->getString('assigned_tasks')) ?: null;
@@ -633,6 +686,14 @@ class IncidentReportController extends AbstractController
             $prescribedAtRaw   = $this->isGranted(IncidentReportVoter::PRESCRIBE, $report)
                 ? trim($request->request->getString('prescribed_at'))
                 : null;
+
+            $location = null;
+            if ($locationIdRaw !== '') {
+                $location = $this->locations->findById($locationIdRaw);
+                if ($location === null || $location->getEducationalCentre() !== $centre) {
+                    $location = null;
+                }
+            }
 
             $canReassign  = $this->isGranted(IncidentReportVoter::REASSIGN, $report);
             $registeredBy = $report->getRegisteredBy();
@@ -668,6 +729,10 @@ class IncidentReportController extends AbstractController
                 $errors['behaviors'] = $this->t('incident.error.no_behaviors');
             }
 
+            if ($location === null) {
+                $errors['location'] = $this->t('incident.error.no_location');
+            }
+
             if ($description === '') {
                 $errors['description'] = $this->t('incident.error.description_required');
             }
@@ -682,12 +747,14 @@ class IncidentReportController extends AbstractController
             }
 
             if (empty($errors)) {
-                $wasPrescribed = $report->isPrescribed();
-                $before        = $this->changeTracker->snapshot($report, self::LOGGED_REPORT_FIELDS);
+                $wasPrescribed    = $report->isPrescribed();
+                $before           = $this->changeTracker->snapshot($report, self::LOGGED_REPORT_FIELDS);
+                $locationIdBefore = $report->getLocation()?->getId()->toRfc4122();
 
                 if ($occurredAt !== null) {
                     $report->setOccurredAt($occurredAt);
                 }
+                $report->setLocation($location);
                 if ($canReassign && $registeredBy !== null && $student !== null && $group !== null) {
                     $report->setRegisteredBy($registeredBy)
                            ->setStudent($student)
@@ -735,6 +802,12 @@ class IncidentReportController extends AbstractController
                     $this->notifier->reportModified($report, $user);
 
                     $changes = $this->changeTracker->diff($before, $report, self::LOGGED_REPORT_FIELDS);
+
+                    $locationIdAfter = $report->getLocation()?->getId()->toRfc4122();
+                    if ($locationIdBefore !== $locationIdAfter) {
+                        $changes['locationId'] = ['before' => $locationIdBefore, 'after' => $locationIdAfter];
+                    }
+
                     if ($changes !== []) {
                         $this->activityLog->log('incident_report.updated', [
                             'entityId' => $report->getId()->toRfc4122(),

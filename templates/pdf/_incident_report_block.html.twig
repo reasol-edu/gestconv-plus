@@ -12,6 +12,11 @@
                 <td><span class="cell-sub">{{ 'incident.col.teacher'|trans({}, 'admin') }}</span><br>{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</td>
                 <td><span class="cell-sub">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</span><br>{{ report.occurredAt|date('d/m/Y H:i') }}</td>
             </tr>
+            {% if report.location %}
+                <tr>
+                    <td colspan="2"><span class="cell-sub">{{ 'incident.field.location'|trans({}, 'admin') }}</span><br>{{ report.location.name }}</td>
+                </tr>
+            {% endif %}
             <tr>
                 <td colspan="2">
                     <span class="cell-sub">{{ 'incident.col.status'|trans({}, 'admin') }}</span><br>

@@ -18,6 +18,7 @@
         <p class="mt-1 text-sm text-gray-500">
             {{ 'notification.register_report.report_ref'|trans({'%number%': report.number}, 'notifications') }}
             · {{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}
+            {% if report.location %}· {{ report.location.name }}{% endif %}
             · {{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}
         </p>
         <p class="mt-2">

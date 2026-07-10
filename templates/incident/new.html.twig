@@ -89,21 +89,6 @@
                 {{ 'incident.section.student'|trans({}, 'admin') }}
             </h2>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                    {{ 'incident.field.students'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
-                </label>
-                <select id="students-select" name="students[]" multiple aria-required="true"
-                        {% if errors.students is defined %}aria-invalid="true"{% endif %}
-                        placeholder="{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}"
-                        class="w-full">
-                </select>
-                {% if errors.students is defined %}
-                    <p class="mt-1 text-xs text-red-600">{{ errors.students }}</p>
-                {% endif %}
-                <p class="mt-1 text-xs text-gray-400">{{ 'incident.field.students_help'|trans({}, 'admin') }}</p>
-            </div>
-
             {% if canChooseTeacher and centre.activeAcademicYear is not null %}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -126,6 +111,21 @@
                     {% endif %}
                 </div>
             {% endif %}
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'incident.field.students'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+                </label>
+                <select id="students-select" name="students[]" multiple aria-required="true"
+                        {% if errors.students is defined %}aria-invalid="true"{% endif %}
+                        placeholder="{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}"
+                        class="w-full">
+                </select>
+                {% if errors.students is defined %}
+                    <p class="mt-1 text-xs text-red-600">{{ errors.students }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-400">{{ 'incident.field.students_help'|trans({}, 'admin') }}</p>
+            </div>
         </div>
 
         {# ── Datos del incidente ────────────────────────────────────────── #}
@@ -145,6 +145,19 @@
                               focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                 {% if errors.occurred_at is defined %}
                     <p class="mt-1 text-xs text-red-600">{{ errors.occurred_at }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="location-select" class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'incident.field.location'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+                </label>
+                <select id="location-select" name="location_id" aria-required="true"
+                        {% if errors.location is defined %}aria-invalid="true"{% endif %}>
+                    <option value=""></option>
+                </select>
+                {% if errors.location is defined %}
+                    <p class="mt-1 text-xs text-red-600">{{ errors.location }}</p>
                 {% endif %}
             </div>
 
@@ -308,5 +321,48 @@ const select = new TomSelect('#students-select', {
     },
     shouldLoad: (q) => q.length >= 2,
 });
+
+const preloadedLocation = {{ preloadedLocation ? preloadedLocation|json_encode|raw : 'null' }};
+
+fetch('{{ path('app_incidents_search_locations') }}')
+    .then(r => r.json())
+    .then(function (locations) {
+        if (preloadedLocation && !locations.some(o => o.value === preloadedLocation.value)) {
+            locations = locations.concat([preloadedLocation]);
+        }
+
+        const optgroups = [];
+        const seenCategories = new Set();
+        locations.forEach(function (o) {
+            if (!seenCategories.has(o.category)) {
+                seenCategories.add(o.category);
+                optgroups.push({ value: o.category, label: o.secondary });
+            }
+        });
+
+        new TomSelect('#location-select', {
+            valueField: 'value',
+            labelField: 'label',
+            searchField: ['label'],
+            maxItems: 1,
+            options: locations,
+            items: preloadedLocation ? [preloadedLocation.value] : [],
+            optgroups: optgroups,
+            optgroupField: 'category',
+            optgroupValueField: 'value',
+            optgroupLabelField: 'label',
+            render: {
+                option: function(data) {
+                    return `<div>${data.label}</div>`;
+                },
+                item: function(data) {
+                    return `<span>${data.label}</span>`;
+                },
+                no_results: function() {
+                    return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;
+                },
+            },
+        });
+    });
 </script>
 {% endblock %}

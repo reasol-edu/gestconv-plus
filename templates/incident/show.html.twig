@@ -93,6 +93,12 @@
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</p>
                 <p class="text-gray-900">{{ report.occurredAt|date('d/m/Y H:i') }}</p>
             </div>
+            {% if report.location %}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.field.location'|trans({}, 'admin') }}</p>
+                    <p class="text-gray-900">{{ report.location.name }}</p>
+                </div>
+            {% endif %}
         </div>
 
         {% include 'notification/_report_detail.html.twig' with { report: report } %}

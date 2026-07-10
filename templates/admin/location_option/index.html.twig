@@ -1,0 +1,205 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'location.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-5xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+                {% include 'components/_breadcrumb_home.html.twig' %}
+                <a href="{{ path('app_admin_centres_index') }}" class="hover:text-forest-600 transition-colors">{{ 'Centros educativos' }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+                <a href="{{ path('app_admin_centres_edit', {id: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ centre.name }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ 'location.title'|trans({}, 'admin') }}</h1>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ path('app_centre_location_options_import', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
+                {{ 'location.import.button'|trans({}, 'admin') }}
+            </a>
+            <a href="{{ path('app_centre_location_options_export', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-4 w-4'}) }}
+                {{ 'location.export.button'|trans({}, 'admin') }}
+            </a>
+            <a href="{{ path('app_centre_location_option_categories_create', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'location_category.new'|trans({}, 'admin') }}
+            </a>
+        </div>
+    </div>
+
+    {% if categories is empty %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-16 text-center">
+            {{ ux_icon('heroicons:no-symbol', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+            <p class="text-sm text-gray-500 mb-4">No hay categorías configuradas.</p>
+            <a href="{{ path('app_centre_location_option_categories_create', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'location_category.new'|trans({}, 'admin') }}
+            </a>
+        </div>
+    {% else %}
+        {% for cat in categories %}
+            {% set catId = cat.id.toRfc4122 %}
+            {% set catOptions = optionsByCategory[catId] ?? [] %}
+
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+
+                {# ── Cabecera de categoría ──────────────────────────────────── #}
+                <div class="flex items-center justify-between gap-3 px-5 py-3.5 bg-gray-50 border-b border-gray-200">
+                    <div class="flex items-center gap-3 min-w-0">
+                        {# Move category up/down #}
+                        <div class="flex flex-col gap-0.5 shrink-0">
+                            {% if not loop.first %}
+                                <form method="post" action="{{ path('app_centre_location_option_categories_move_up', {centreId: centre.id, id: cat.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('move_location_category_' ~ cat.id) }}">
+                                    <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors" title="Subir categoría">
+                                        {{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="p-0.5 text-transparent">{{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}</span>
+                            {% endif %}
+                            {% if not loop.last %}
+                                <form method="post" action="{{ path('app_centre_location_option_categories_move_down', {centreId: centre.id, id: cat.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('move_location_category_' ~ cat.id) }}">
+                                    <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors" title="Bajar categoría">
+                                        {{ ux_icon('heroicons:chevron-down', {class: 'h-3.5 w-3.5'}) }}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+
+                        <h2 class="text-sm font-semibold text-gray-800 truncate">{{ cat.name }}</h2>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        <a href="{{ path('app_centre_location_option_categories_edit', {centreId: centre.id, id: cat.id}) }}"
+                           class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                  hover:bg-white hover:border-gray-300 transition-colors">
+                            {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
+                            {{ 'location_category.edit'|trans({}, 'admin') }}
+                        </a>
+                        <form method="post" action="{{ path('app_centre_location_option_categories_delete', {centreId: centre.id, id: cat.id}) }}"
+                              class="js-confirm-form"
+                              data-confirm="{{ 'location_category.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_location_category_' ~ cat.id) }}">
+                            <button type="submit"
+                                    class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium
+                                           text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors">
+                                {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {# ── Ubicaciones de esta categoría ──────────────────────────── #}
+                {% if catOptions is empty %}
+                    <div class="px-6 py-8 text-center">
+                        <p class="text-sm text-gray-400">{{ 'location.empty'|trans({}, 'admin') }}</p>
+                    </div>
+                {% else %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-gray-100">
+                                {% for i, opt in catOptions %}
+                                    <tr class="hover:bg-gray-50 transition-colors {{ not opt.active ? 'opacity-50' : '' }}">
+                                        <td class="px-4 py-3 w-10">
+                                            <div class="flex flex-col gap-0.5">
+                                                {% if i > 0 %}
+                                                    <form method="post" action="{{ path('app_centre_location_options_move_up', {centreId: centre.id, id: opt.id}) }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('move_location_' ~ opt.id) }}">
+                                                        <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Subir">
+                                                            {{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    <span class="p-0.5 text-transparent">{{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}</span>
+                                                {% endif %}
+                                                {% if i < catOptions|length - 1 %}
+                                                    <form method="post" action="{{ path('app_centre_location_options_move_down', {centreId: centre.id, id: opt.id}) }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('move_location_' ~ opt.id) }}">
+                                                        <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Bajar">
+                                                            {{ ux_icon('heroicons:chevron-down', {class: 'h-3.5 w-3.5'}) }}
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-800 flex-1">{{ opt.name }}</td>
+                                        <td class="px-4 py-3 w-28">
+                                            <form method="post" action="{{ path('app_centre_location_options_toggle_active', {centreId: centre.id, id: opt.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_location_' ~ opt.id) }}">
+                                                <button type="submit"
+                                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-colors
+                                                               {{ opt.active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                                                    {{ opt.active ? 'location.badge.active'|trans({}, 'admin') : 'location.badge.inactive'|trans({}, 'admin') }}
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td class="px-4 py-3 w-32">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <a href="{{ path('app_centre_location_options_edit', {centreId: centre.id, id: opt.id}) }}"
+                                                   class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                                          hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                                    {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
+                                                    Editar
+                                                </a>
+                                                <form method="post" action="{{ path('app_centre_location_options_delete', {centreId: centre.id, id: opt.id}) }}"
+                                                      class="js-confirm-form"
+                                                      data-confirm="{{ 'location.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_location_' ~ opt.id) }}">
+                                                    <button type="submit"
+                                                            class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium
+                                                                   text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors">
+                                                        {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {# ── Formulario para nueva ubicación en esta categoría ──────── #}
+                <div class="border-t border-gray-100 px-5 py-4 bg-gray-50/60">
+                    <form method="post" action="{{ path('app_centre_location_options_create', {centreId: centre.id}) }}"
+                          class="flex flex-wrap items-end gap-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('new_location_' ~ centre.id) }}">
+                        <input type="hidden" name="category_id" value="{{ cat.id }}">
+                        <div class="flex-1 min-w-48">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">{{ 'location.field.name'|trans({}, 'admin') }}</label>
+                            <input type="text" name="name" required maxlength="200"
+                                   class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900
+                                          focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                        </div>
+                        <div class="shrink-0">
+                            <button type="submit"
+                                    class="inline-flex items-center gap-1.5 rounded-xl bg-forest-600 px-3.5 py-2 text-sm font-semibold text-white
+                                           hover:bg-forest-700 transition-colors shadow-xs">
+                                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                                {{ 'location.new'|trans({}, 'admin') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+{% endblock %}

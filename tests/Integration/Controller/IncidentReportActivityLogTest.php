@@ -10,6 +10,8 @@ use App\Entity\Group;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
+use App\Entity\LocationOption;
+use App\Entity\LocationOptionCategory;
 use App\Entity\PersonName;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -38,6 +40,7 @@ class IncidentReportActivityLogTest extends ControllerTestCase
     public function testCreatingReportLogsIncidentReportCreated(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $location = $this->makeLocation($centre);
         $this->loginAs($teacher, $centre);
 
         $crawler = $this->client->request('GET', '/partes/nuevo');
@@ -49,6 +52,7 @@ class IncidentReportActivityLogTest extends ControllerTestCase
             '_token'              => $token,
             'students'            => [$studentPair],
             'behaviors'           => [$behavior->getId()->toRfc4122()],
+            'location_id'         => $location->getId()->toRfc4122(),
             'occurred_at'         => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description'         => '<p>Incidente de prueba.</p>',
             'expelled_from_class' => '0',
@@ -66,7 +70,8 @@ class IncidentReportActivityLogTest extends ControllerTestCase
     public function testEditingReportLogsIncidentReportUpdatedWithDiff(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
-        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $report   = $this->makeReport($student, $group, $teacher, $behavior);
+        $location = $this->makeLocation($centre);
         $this->loginAs($teacher, $centre);
 
         $reportId = $report->getId()->toRfc4122();
@@ -76,6 +81,7 @@ class IncidentReportActivityLogTest extends ControllerTestCase
         $this->client->request('POST', '/partes/' . $reportId . '/editar', [
             '_token'              => $token,
             'behaviors'           => [$behavior->getId()->toRfc4122()],
+            'location_id'         => $location->getId()->toRfc4122(),
             'occurred_at'         => $report->getOccurredAt()->format('Y-m-d\TH:i'),
             'description'         => '<p>Descripción modificada.</p>',
             'expelled_from_class' => '0',
@@ -223,6 +229,25 @@ class IncidentReportActivityLogTest extends ControllerTestCase
         $this->persist($teacher, $centre, $year, $programme, $level, $group, $student, $category, $behavior);
 
         return [$teacher, $centre, $group, $student, $behavior];
+    }
+
+    private function makeLocation(EducationalCentre $centre, string $name = 'Aula'): LocationOption
+    {
+        $category = (new LocationOptionCategory())
+            ->setEducationalCentre($centre)
+            ->setName('General')
+            ->setPosition(0);
+        $this->persist($category);
+
+        $location = (new LocationOption())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName($name)
+            ->setPosition(0)
+            ->setActive(true);
+        $this->persist($location);
+
+        return $location;
     }
 
     private function makeReport(

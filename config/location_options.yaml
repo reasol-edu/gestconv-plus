@@ -1,0 +1,9 @@
+categories:
+  - name: 'General'
+    options:
+      - 'En clase'
+      - 'En el intercambio de clases'
+      - 'Entrada/Salida'
+      - 'Recreo'
+      - 'Durante las actividades extraescolares'
+      - 'Otros'

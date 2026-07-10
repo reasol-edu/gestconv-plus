@@ -439,8 +439,8 @@ summary:focus-visible {
 }
 
 :root .ts-dropdown .optgroup-header {
-    color: var(--color-forest-500);
-    background: var(--color-forest-50);
+    color: var(--color-gray-500);
+    background: var(--color-gray-100);
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.05em;

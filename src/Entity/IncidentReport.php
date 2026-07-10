@@ -43,6 +43,10 @@ class IncidentReport
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $occurredAt;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?LocationOption $location = null;
+
     /** @var Collection<int, IncidentBehavior> */
     #[ORM\ManyToMany(targetEntity: IncidentBehavior::class)]
     #[ORM\JoinTable(name: 'incident_report_behavior')]
@@ -159,6 +163,18 @@ class IncidentReport
     public function setOccurredAt(\DateTimeImmutable $occurredAt): static
     {
         $this->occurredAt = $occurredAt;
+
+        return $this;
+    }
+
+    public function getLocation(): ?LocationOption
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?LocationOption $location): static
+    {
+        $this->location = $location;
 
         return $this;
     }

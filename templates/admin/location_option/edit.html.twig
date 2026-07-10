@@ -1,0 +1,87 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'location.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-2xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_location_options_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'location.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'location.edit_title'|trans({}, 'admin') }}</h1>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6">
+        <form method="post" action="{{ path('app_centre_location_options_edit', {centreId: centre.id, id: option.id}) }}" class="space-y-5">
+            <input type="hidden" name="_token" value="{{ csrf_token('edit_location_' ~ option.id) }}">
+
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'location.field.name'|trans({}, 'admin') }}</label>
+                <input type="text" id="name" name="name" required maxlength="200"
+                       value="{{ option.name }}"
+                       class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                              focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+
+            <div>
+                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'location.field.category'|trans({}, 'admin') }}</label>
+                <select id="category_id" name="category_id"
+                        class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                               focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {{ cat.id == option.category.id ? 'selected' : '' }}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <p class="block text-sm font-medium text-gray-700 mb-2">{{ 'location.field.active'|trans({}, 'admin') }}</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-start gap-3 cursor-pointer rounded-xl border-2 px-4 py-3.5 transition-all
+                                  border-gray-200 bg-white hover:border-gray-300
+                                  has-[:checked]:border-forest-500 has-[:checked]:bg-forest-50">
+                        <input type="radio" name="active" value="1"
+                               {{ option.active ? 'checked' : '' }}
+                               class="mt-0.5 h-4 w-4 shrink-0 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <div>
+                            <span class="block text-sm font-semibold text-gray-900">{{ 'location.badge.active'|trans({}, 'admin') }}</span>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ 'location.field.active_on'|trans({}, 'admin') }}</p>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer rounded-xl border-2 px-4 py-3.5 transition-all
+                                  border-gray-200 bg-white hover:border-gray-300
+                                  has-[:checked]:border-gray-400 has-[:checked]:bg-gray-50">
+                        <input type="radio" name="active" value="0"
+                               {{ not option.active ? 'checked' : '' }}
+                               class="mt-0.5 h-4 w-4 shrink-0 border-gray-300 text-gray-500 focus:ring-gray-400">
+                        <div>
+                            <span class="block text-sm font-semibold text-gray-900">{{ 'location.badge.inactive'|trans({}, 'admin') }}</span>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ 'location.field.active_off'|trans({}, 'admin') }}</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <a href="{{ path('app_centre_location_options_index', {centreId: centre.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 transition-colors">
+                    {{ 'location.cancel'|trans({}, 'admin') }}
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                               hover:bg-forest-700 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                    {{ 'location.save'|trans({}, 'admin') }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

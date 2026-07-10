@@ -14,6 +14,8 @@ use App\Entity\Group;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
+use App\Entity\LocationOption;
+use App\Entity\LocationOptionCategory;
 use App\Entity\PersonName;
 use App\Entity\Programme;
 use App\Entity\ProgrammeYear;
@@ -75,6 +77,7 @@ class IncidentReportControllerTest extends ControllerTestCase
     public function testNewPostCreatesOneReportPerStudent(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $location = $this->makeLocation($centre);
         $this->loginAs($teacher, $centre);
 
         $crawler = $this->client->request('GET', '/partes/nuevo');
@@ -86,14 +89,15 @@ class IncidentReportControllerTest extends ControllerTestCase
             '_token'             => $token,
             'students'           => [$studentPair],
             'behaviors'          => [$behavior->getId()->toRfc4122()],
+            'location_id'        => $location->getId()->toRfc4122(),
             'occurred_at'        => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description'        => '<p>Incidente de prueba.</p>',
             'expelled_from_class' => '0',
         ]);
 
         self::assertResponseRedirects();
-        $location = (string) $this->client->getResponse()->headers->get('Location');
-        self::assertStringStartsWith('/partes/creados?ids=', $location);
+        $redirectLocation = (string) $this->client->getResponse()->headers->get('Location');
+        self::assertStringStartsWith('/partes/creados?ids=', $redirectLocation);
 
         $this->em->clear();
         $reports = $this->em->getRepository(IncidentReport::class)->findAll();
@@ -106,6 +110,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
         $student2 = (new Student(new PersonName('Pedro', 'López')))->setStudentId('NIE-002');
         $this->persist($student2);
+        $locationOpt = $this->makeLocation($centre);
         $this->loginAs($teacher, $centre);
 
         $crawler = $this->client->request('GET', '/partes/nuevo');
@@ -118,6 +123,7 @@ class IncidentReportControllerTest extends ControllerTestCase
             '_token'      => $token,
             'students'    => [$pair1, $pair2],
             'behaviors'   => [$behavior->getId()->toRfc4122()],
+            'location_id' => $locationOpt->getId()->toRfc4122(),
             'occurred_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description' => '<p>Incidente múltiple.</p>',
         ]);
@@ -198,6 +204,7 @@ class IncidentReportControllerTest extends ControllerTestCase
     {
         [$teacher, $centre, , , $behavior] = $this->makeScenario();
         [, , $otherGroup, $otherStudent] = $this->makeScenario();
+        $location = $this->makeLocation($centre);
         $this->loginAs($teacher, $centre);
 
         $crawler = $this->client->request('GET', '/partes/nuevo');
@@ -209,6 +216,7 @@ class IncidentReportControllerTest extends ControllerTestCase
             '_token'              => $token,
             'students'            => [$pair],
             'behaviors'           => [$behavior->getId()->toRfc4122()],
+            'location_id'         => $location->getId()->toRfc4122(),
             'description'         => '<p>Test.</p>',
             'expelled_from_class' => '0',
         ]);
@@ -270,6 +278,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->persist($cadmin, $newTeacher);
         $centre->addAdmin($cadmin);
         $year->addTeacher($newTeacher);
+        $location = $this->makeLocation($centre);
         $this->flush();
         $this->loginAs($cadmin, $centre);
 
@@ -282,6 +291,7 @@ class IncidentReportControllerTest extends ControllerTestCase
             '_token'        => $token,
             'students'      => [$studentPair],
             'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'location_id'   => $location->getId()->toRfc4122(),
             'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description'   => '<p>Registrado por otro docente.</p>',
             'registered_by' => $newTeacher->getId()->toRfc4122(),
@@ -302,6 +312,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $otherTeacher = $this->makeTeacher('other.new.assign');
         $this->persist($otherTeacher);
         $group->getProgrammeYear()->getProgramme()->getAcademicYear()->addTeacher($otherTeacher);
+        $location = $this->makeLocation($centre);
         $this->flush();
         $this->loginAs($teacher, $centre);
 
@@ -314,6 +325,7 @@ class IncidentReportControllerTest extends ControllerTestCase
             '_token'        => $token,
             'students'      => [$studentPair],
             'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'location_id'   => $location->getId()->toRfc4122(),
             'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description'   => '<p>Intento de asignación.</p>',
             'registered_by' => $otherTeacher->getId()->toRfc4122(),
@@ -366,6 +378,21 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
+    }
+
+    public function testShowDisplaysLocation(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $location = $this->makeLocation($centre, 'Patio');
+        $report   = $this->makeReport($student, $group, $teacher, $behavior);
+        $report->setLocation($location);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Patio');
     }
 
     public function testShowDisplaysNotifyButtonWhenPendingAndAuthorized(): void
@@ -993,7 +1020,8 @@ class IncidentReportControllerTest extends ControllerTestCase
     public function testEditPostSavesChanges(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
-        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $report   = $this->makeReport($student, $group, $teacher, $behavior);
+        $location = $this->makeLocation($centre);
         $this->loginAs($teacher, $centre);
 
         $reportId = $report->getId()->toRfc4122();
@@ -1003,6 +1031,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->client->request('POST', '/partes/' . $reportId . '/editar', [
             '_token'      => $token,
             'behaviors'   => [$behavior->getId()->toRfc4122()],
+            'location_id' => $location->getId()->toRfc4122(),
             'occurred_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description' => '<p>Descripción actualizada.</p>',
         ]);
@@ -1060,6 +1089,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->flush();
 
         $report   = $this->makeReport($student, $group, $teacher, $behavior);
+        $location = $this->makeLocation($centre);
         $this->loginAs($cadmin, $centre);
 
         $reportId = $report->getId()->toRfc4122();
@@ -1069,6 +1099,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->client->request('POST', '/partes/' . $reportId . '/editar', [
             '_token'        => $token,
             'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'location_id'   => $location->getId()->toRfc4122(),
             'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description'   => '<p>Reasignado.</p>',
             'registered_by' => $newTeacher->getId()->toRfc4122(),
@@ -1093,6 +1124,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->flush();
 
         $report   = $this->makeReport($student, $group, $teacher, $behavior);
+        $location = $this->makeLocation($centre);
         $this->loginAs($teacher, $centre);
 
         $reportId = $report->getId()->toRfc4122();
@@ -1102,6 +1134,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->client->request('POST', '/partes/' . $reportId . '/editar', [
             '_token'        => $token,
             'behaviors'     => [$behavior->getId()->toRfc4122()],
+            'location_id'   => $location->getId()->toRfc4122(),
             'occurred_at'   => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
             'description'   => '<p>Intento de reasignación.</p>',
             'registered_by' => $otherTeacher->getId()->toRfc4122(),
@@ -1240,6 +1273,25 @@ class IncidentReportControllerTest extends ControllerTestCase
     private function makeTeacher(string $username): Teacher
     {
         return (new Teacher(new PersonName('Test', 'Teacher')))->setUsername($username);
+    }
+
+    private function makeLocation(EducationalCentre $centre, string $name = 'Aula'): LocationOption
+    {
+        $category = (new LocationOptionCategory())
+            ->setEducationalCentre($centre)
+            ->setName('General')
+            ->setPosition(0);
+        $this->persist($category);
+
+        $location = (new LocationOption())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName($name)
+            ->setPosition(0)
+            ->setActive(true);
+        $this->persist($location);
+
+        return $location;
     }
 
     private function makeReport(
