@@ -279,9 +279,9 @@
 import TomSelect from 'tom-select';
 
 const preload = {
-    value: {{ (report.student.id.toRfc4122 ~ '::' ~ report.group.id.toRfc4122)|json_encode|raw }},
-    label: {{ (report.student.name.lastName ~ ', ' ~ report.student.name.firstName)|json_encode|raw }},
-    secondary: {{ report.group.name|json_encode|raw }},
+    value: {{ (report.student.id.toRfc4122 ~ '::' ~ report.group.id.toRfc4122)|json_encode(constant('JSON_HEX_TAG'))|raw }},
+    label: {{ (report.student.name.lastName ~ ', ' ~ report.student.name.firstName)|json_encode(constant('JSON_HEX_TAG'))|raw }},
+    secondary: {{ report.group.name|json_encode(constant('JSON_HEX_TAG'))|raw }},
 };
 
 new TomSelect('#student-select', {
@@ -299,12 +299,12 @@ new TomSelect('#student-select', {
             .catch(() => callback());
     },
     render: {
-        option: function(data) {
-            return `<div><span class="font-medium">${data.label}</span> <span class="text-xs text-gray-400 ml-1">${data.secondary || ''}</span></div>`;
+        option: (data, esc) => {
+            return `<div><span class="font-medium">${esc(data.label)}</span> <span class="text-xs text-gray-400 ml-1">${esc(data.secondary || '')}</span></div>`;
         },
-        item: function(data) {
-            const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${data.secondary}</span>` : '';
-            return `<span>${data.label}${secondary}</span>`;
+        item: (data, esc) => {
+            const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${esc(data.secondary)}</span>` : '';
+            return `<span>${esc(data.label)}${secondary}</span>`;
         },
         no_results: function() {
             return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;
@@ -320,10 +320,10 @@ import TomSelect from 'tom-select';
 
 {% if report.location %}
 const preloadedLocation = {
-    value: {{ report.location.id.toRfc4122|json_encode|raw }},
-    label: {{ report.location.name|json_encode|raw }},
-    secondary: {{ report.location.category.name|json_encode|raw }},
-    category: {{ report.location.category.id.toRfc4122|json_encode|raw }},
+    value: {{ report.location.id.toRfc4122|json_encode(constant('JSON_HEX_TAG'))|raw }},
+    label: {{ report.location.name|json_encode(constant('JSON_HEX_TAG'))|raw }},
+    secondary: {{ report.location.category.name|json_encode(constant('JSON_HEX_TAG'))|raw }},
+    category: {{ report.location.category.id.toRfc4122|json_encode(constant('JSON_HEX_TAG'))|raw }},
 };
 {% else %}
 const preloadedLocation = null;
@@ -357,11 +357,11 @@ fetch('{{ path('app_incidents_search_locations') }}')
             optgroupValueField: 'value',
             optgroupLabelField: 'label',
             render: {
-                option: function(data) {
-                    return `<div>${data.label}</div>`;
+                option: (data, esc) => {
+                    return `<div>${esc(data.label)}</div>`;
                 },
-                item: function(data) {
-                    return `<span>${data.label}</span>`;
+                item: (data, esc) => {
+                    return `<span>${esc(data.label)}</span>`;
                 },
                 no_results: function() {
                     return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;

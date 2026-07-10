@@ -290,7 +290,7 @@
 <script type="module">
 import TomSelect from 'tom-select';
 
-const preloaded = {{ preloadedStudents|json_encode|raw }};
+const preloaded = {{ preloadedStudents|json_encode(constant('JSON_HEX_TAG'))|raw }};
 
 const select = new TomSelect('#students-select', {
     plugins: ['remove_button'],
@@ -307,13 +307,13 @@ const select = new TomSelect('#students-select', {
             .catch(() => callback());
     },
     render: {
-        option: function(data) {
-            return `<div><span class="font-medium">${data.label}</span> <span class="text-xs text-gray-400 ml-1">${data.secondary || ''}</span></div>`;
+        option: (data, esc) => {
+            return `<div><span class="font-medium">${esc(data.label)}</span> <span class="text-xs text-gray-400 ml-1">${esc(data.secondary || '')}</span></div>`;
         },
-        item: function(data) {
+        item: (data, esc) => {
             const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" style="width:.875rem;height:.875rem;opacity:.55;flex-shrink:0"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z"/></svg>`;
-            const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${data.secondary}</span>` : '';
-            return `<span style="display:inline-flex;align-items:center;gap:.25rem">${icon}${data.label}${secondary}</span>`;
+            const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${esc(data.secondary)}</span>` : '';
+            return `<span style="display:inline-flex;align-items:center;gap:.25rem">${icon}${esc(data.label)}${secondary}</span>`;
         },
         no_results: function() {
             return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;
@@ -322,7 +322,7 @@ const select = new TomSelect('#students-select', {
     shouldLoad: (q) => q.length >= 2,
 });
 
-const preloadedLocation = {{ preloadedLocation ? preloadedLocation|json_encode|raw : 'null' }};
+const preloadedLocation = {{ preloadedLocation ? preloadedLocation|json_encode(constant('JSON_HEX_TAG'))|raw : 'null' }};
 
 fetch('{{ path('app_incidents_search_locations') }}')
     .then(r => r.json())
@@ -352,11 +352,11 @@ fetch('{{ path('app_incidents_search_locations') }}')
             optgroupValueField: 'value',
             optgroupLabelField: 'label',
             render: {
-                option: function(data) {
-                    return `<div>${data.label}</div>`;
+                option: (data, esc) => {
+                    return `<div>${esc(data.label)}</div>`;
                 },
-                item: function(data) {
-                    return `<span>${data.label}</span>`;
+                item: (data, esc) => {
+                    return `<span>${esc(data.label)}</span>`;
                 },
                 no_results: function() {
                     return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;
