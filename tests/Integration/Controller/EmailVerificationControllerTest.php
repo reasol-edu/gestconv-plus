@@ -38,7 +38,7 @@ class EmailVerificationControllerTest extends ControllerTestCase
         $fresh = $this->em->find(Teacher::class, $teacherId);
         self::assertSame('antiguo@ejemplo.local', $fresh?->getEmail());
         self::assertSame('nuevo@ejemplo.local', $fresh?->getPendingEmail());
-        self::assertSame('realtoken7890123', $fresh?->getEmailVerificationToken());
+        self::assertSame(Teacher::hashToken('realtoken7890123'), $fresh?->getEmailVerificationToken());
     }
 
     public function testExpiredTokenClearsPendingButKeepsCurrentEmail(): void

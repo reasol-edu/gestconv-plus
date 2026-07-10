@@ -208,6 +208,16 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Hash determinista (no de contraseñas) para poder localizar por igualdad
+     * en BD el registro cuyo token en claro llega por URL, sin guardar nunca
+     * el token utilizable en claro.
+     */
+    public static function hashToken(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
     public function getEmailVerificationToken(): ?string
     {
         return $this->emailVerificationToken;
@@ -215,7 +225,7 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmailVerificationToken(?string $token): static
     {
-        $this->emailVerificationToken = $token;
+        $this->emailVerificationToken = $token !== null ? self::hashToken($token) : null;
 
         return $this;
     }
@@ -245,7 +255,7 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setPasswordResetToken(?string $token): static
     {
-        $this->passwordResetToken = $token;
+        $this->passwordResetToken = $token !== null ? self::hashToken($token) : null;
 
         return $this;
     }

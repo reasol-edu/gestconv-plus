@@ -150,7 +150,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
 
     public function findByEmailVerificationToken(string $token): ?Teacher
     {
-        return $this->findOneBy(['emailVerificationToken' => $token]);
+        return $this->findOneBy(['emailVerificationToken' => Teacher::hashToken($token)]);
     }
 
     /**
@@ -174,7 +174,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
 
     public function findByPasswordResetToken(string $token): ?Teacher
     {
-        return $this->findOneBy(['passwordResetToken' => $token]);
+        return $this->findOneBy(['passwordResetToken' => Teacher::hashToken($token)]);
     }
 
     public function findByFullName(string $firstName, string $lastName): ?Teacher

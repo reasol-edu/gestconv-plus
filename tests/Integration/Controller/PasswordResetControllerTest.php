@@ -62,6 +62,34 @@ class PasswordResetControllerTest extends ControllerTestCase
         self::assertNotNull($fresh?->getPasswordResetTokenExpiresAt());
     }
 
+    public function testGeneratedTokenIsStoredHashedNotPlain(): void
+    {
+        $teacher   = $this->makeTeacher('hashed.token', email: 'hashed@example.com');
+        $teacherId = $teacher->getId();
+        $csrfToken = $this->getCsrfTokenFromPage('/contrasena/recuperar');
+
+        $this->client->request('POST', '/contrasena/recuperar', [
+            'username'    => 'hashed.token',
+            '_csrf_token' => $csrfToken,
+        ]);
+
+        self::assertResponseRedirects();
+
+        self::assertEmailCount(1);
+        $email = self::getMailerMessage(0);
+        self::assertInstanceOf(\Symfony\Component\Mime\Email::class, $email);
+        preg_match('#/contrasena/restablecer/([a-f0-9]{64})#', (string) $email->getHtmlBody(), $matches);
+        $plainToken = $matches[1] ?? null;
+        self::assertNotNull($plainToken, 'No se encontró el enlace de restablecimiento en el correo.');
+
+        $this->em->clear();
+        $fresh       = $this->em->find(Teacher::class, $teacherId);
+        $storedToken = $fresh?->getPasswordResetToken();
+        self::assertNotNull($storedToken);
+        self::assertNotSame($plainToken, $storedToken, 'El token guardado en BD no debe coincidir con el token en claro enviado por correo.');
+        self::assertSame(Teacher::hashToken($plainToken), $storedToken);
+    }
+
     public function testRequestDoesNotGenerateTokenForExternalTeacher(): void
     {
         $teacher   = $this->makeTeacher('external.user', email: 'ext@example.com', external: true);
