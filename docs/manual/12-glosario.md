@@ -46,7 +46,7 @@ Periodo lectivo (por ejemplo, 2025-2026) dentro de un centro. Puede haber varios
 **Oferta formativa**
 Conjunto de programas de estudio (enseñanzas) disponibles en el centro para un curso académico.
 
-**Nivel / ProgrammeYear**
+**Nivel**
 Cada curso dentro de una enseñanza (por ejemplo, *1º* y *2º* de un ciclo formativo).
 
 **Grupo**

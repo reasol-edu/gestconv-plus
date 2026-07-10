@@ -146,6 +146,8 @@ Los botones **Exportar JSON** e **Importar JSON** permiten copiar la configuraci
 
 Los administradores de centro configuran en **Centro educativo › Ubicaciones** el catálogo de lugares donde puede haber ocurrido un incidente (por ejemplo *En clase*, *Recreo* o *Entrada/Salida*), organizadas en categorías igual que las conductas contrarias. Este catálogo es el que se ofrece, agrupado por categoría, en el campo obligatorio **Dónde sucedió** al registrar o editar un parte (ver [Registrar un nuevo parte](#registrar-un-nuevo-parte)).
 
+![Administración de ubicaciones](img/partes/admin-ubicaciones.png)
+
 Para cada ubicación se puede:
 
 - Activarla o desactivarla (solo las activas se pueden seleccionar al registrar un parte).
@@ -400,6 +402,8 @@ Detalles del listado, sus filtros y el ajuste que lo activa o desactiva en
 ### Docentes
 
 La tarjeta **Docentes** del panel de administración global permite crear y editar cualquier cuenta de docente del servidor, con independencia del centro al que pertenezca. Solo la ven los administradores globales.
+
+![Formulario de alta de un docente](img/admin/admin-docente-formulario.png)
 
 El formulario de alta y edición incluye, además del nombre, apellidos, usuario y correo electrónico, tres opciones presentadas como pares de botones de radio en cajas:
 
