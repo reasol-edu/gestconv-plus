@@ -137,9 +137,10 @@ necesidad de ser tutor/a ni de pertenecer a la comisión de convivencia.
 
 1. Desde el listado de partes, pulsa **"Nuevo parte"**.
 2. Selecciona el **grupo** y, dentro de él, el o los **estudiantes** implicados.
-3. Elige la **conducta** del catálogo del centro (o varias, si aplica).
-4. Redacta la **descripción de los hechos** en el editor de texto.
-5. Guarda el parte: queda visible de inmediato para quien deba notificarlo.
+3. Indica **dónde sucedió**, del catálogo de ubicaciones del centro.
+4. Elige la **conducta** del catálogo del centro (o varias, si aplica).
+5. Redacta la **descripción de los hechos** en el editor de texto.
+6. Guarda el parte: queda visible de inmediato para quien deba notificarlo.
 
 Un mismo parte puede implicar a **varios estudiantes** a la vez si el
 incidente los afecta conjuntamente.
@@ -522,12 +523,13 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 - Cada ajuste puede **bloquearse** a nivel global para impedir que un centro
   lo modifique, o dejarse libre para que cada centro lo personalice.
-- El **catálogo de conductas**, el de **medidas disciplinarias** y el de
-  **métodos de comunicación** también se gestionan desde aquí, adaptándolos a
-  las normas de convivencia propias del centro.
-- Los tres catálogos se pueden **exportar e importar en JSON** para copiar la
-  configuración entre centros, con la opción de vaciar lo existente antes de
-  importar.
+- El **catálogo de conductas**, el de **medidas disciplinarias**, el de
+  **ubicaciones** (dónde sucedió) y el de **métodos de comunicación** también
+  se gestionan desde aquí, adaptándolos a las normas de convivencia propias
+  del centro.
+- Los cuatro catálogos se pueden **exportar e importar en JSON** para copiar
+  la configuración entre centros, con la opción de vaciar lo existente antes
+  de importar.
 
 ---
 

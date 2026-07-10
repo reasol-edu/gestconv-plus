@@ -81,12 +81,13 @@ La sección **Partes** está accesible desde el menú lateral para cualquier doc
    ![Selector de alumnado con un alumno seleccionado](img/partes/nuevo-parte-selector-alumnado.png)
 
 3. **Fecha y hora del suceso** — por defecto se rellena con el momento actual; modifícala si el parte se registra con posterioridad al incidente.
-4. **Conductas** — marca al menos una conducta de las definidas para el centro. Las conductas están agrupadas en *Contrarias a la convivencia* y *Conductas graves*; los bloques de conductas graves se destacan con un recuadro rojo. Un campo de filtro sobre la lista oculta al instante las conductas que no coinciden con el texto escrito (sin distinguir mayúsculas ni tildes) y, junto al título de la sección, un contador indica cuántas conductas hay seleccionadas. Solo aparecen las conductas activas.
-5. **Descripción de lo acontecido** — campo de texto enriquecido obligatorio. Describe los hechos con detalle.
-6. **Expulsión del aula** — activa el interruptor si el alumno fue expulsado. Aparecerán entonces dos campos adicionales:
+4. **Dónde sucedió** — campo obligatorio con el catálogo de ubicaciones del centro (ver [Ubicaciones](#ubicaciones) más abajo), agrupadas por categoría en el desplegable.
+5. **Conductas** — marca al menos una conducta de las definidas para el centro. Las conductas están agrupadas en *Contrarias a la convivencia* y *Conductas graves*; los bloques de conductas graves se destacan con un recuadro rojo. Un campo de filtro sobre la lista oculta al instante las conductas que no coinciden con el texto escrito (sin distinguir mayúsculas ni tildes) y, junto al título de la sección, un contador indica cuántas conductas hay seleccionadas. Solo aparecen las conductas activas.
+6. **Descripción de lo acontecido** — campo de texto enriquecido obligatorio. Describe los hechos con detalle.
+7. **Expulsión del aula** — activa el interruptor si el alumno fue expulsado. Aparecerán entonces dos campos adicionales:
    - *Tareas encargadas durante la expulsión*
    - *¿Realizó las tareas?* (opciones: No se sabe / Sí / No)
-7. Pulsa **Guardar parte**. Una pantalla de confirmación muestra los partes creados (uno por alumno) con accesos directos para **notificar a la familia**, **crear otro parte** o **volver al listado**.
+8. Pulsa **Guardar parte**. Una pantalla de confirmación muestra los partes creados (uno por alumno) con accesos directos para **notificar a la familia**, **crear otro parte** o **volver al listado**.
 
 Los campos obligatorios están marcados con un asterisco; si falta alguno al guardar, cada error se muestra junto al campo afectado.
 
@@ -140,6 +141,20 @@ Para cada conducta pueden:
 Al crear un centro nuevo se configuran automáticamente **19 conductas por defecto** basadas en la normativa de convivencia escolar de Andalucía, ordenadas de contrarias a graves.
 
 Los botones **Exportar JSON** e **Importar JSON** permiten copiar la configuración de conductas y categorías entre centros: la exportación descarga un fichero con las categorías y sus conductas, y la importación lo vuelve a cargar, creando lo que no exista y actualizando el resto por nombre (sin distinguir mayúsculas). La importación ofrece además la opción de **vaciar las conductas y categorías existentes** antes de incorporar las del fichero; esta acción elimina también las categorías actuales y no se puede deshacer.
+
+### Ubicaciones
+
+Los administradores de centro configuran en **Centro educativo › Ubicaciones** el catálogo de lugares donde puede haber ocurrido un incidente (por ejemplo *En clase*, *Recreo* o *Entrada/Salida*), organizadas en categorías igual que las conductas contrarias. Este catálogo es el que se ofrece, agrupado por categoría, en el campo obligatorio **Dónde sucedió** al registrar o editar un parte (ver [Registrar un nuevo parte](#registrar-un-nuevo-parte)).
+
+Para cada ubicación se puede:
+
+- Activarla o desactivarla (solo las activas se pueden seleccionar al registrar un parte).
+- Cambiar su orden, y el de sus categorías, mediante las flechas.
+- Editarla o eliminarla.
+
+Al crear un centro nuevo se configura automáticamente un catálogo por defecto con las ubicaciones más habituales (*En clase*, *En el intercambio de clases*, *Entrada/Salida*, *Recreo*, *Durante las actividades extraescolares* y *Otros*).
+
+Igual que en conductas y medidas disciplinarias, los botones **Exportar JSON** e **Importar JSON** permiten copiar el catálogo de ubicaciones entre centros, con la misma opción de vaciar las existentes antes de importar.
 
 ## Sanciones
 
