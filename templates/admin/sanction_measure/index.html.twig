@@ -61,7 +61,7 @@
                             {% if not loop.first %}
                                 <form method="post" action="{{ path('app_centre_sanction_measure_categories_move_up', {centreId: centre.id, id: cat.id}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('move_sanction_category_' ~ cat.id) }}">
-                                    <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors" title="Subir categoría">
+                                    <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors" title="{{ 'ui.move_up_category'|trans }}">
                                         {{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}
                                     </button>
                                 </form>
@@ -71,7 +71,7 @@
                             {% if not loop.last %}
                                 <form method="post" action="{{ path('app_centre_sanction_measure_categories_move_down', {centreId: centre.id, id: cat.id}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('move_sanction_category_' ~ cat.id) }}">
-                                    <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors" title="Bajar categoría">
+                                    <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors" title="{{ 'ui.move_down_category'|trans }}">
                                         {{ ux_icon('heroicons:chevron-down', {class: 'h-3.5 w-3.5'}) }}
                                     </button>
                                 </form>
@@ -115,7 +115,7 @@
                                                 {% if i > 0 %}
                                                     <form method="post" action="{{ path('app_centre_sanction_measures_move_up', {centreId: centre.id, id: measure.id}) }}">
                                                         <input type="hidden" name="_token" value="{{ csrf_token('move_sanction_measure_' ~ measure.id) }}">
-                                                        <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Subir">
+                                                        <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="{{ 'ui.move_up'|trans }}">
                                                             {{ ux_icon('heroicons:chevron-up', {class: 'h-3.5 w-3.5'}) }}
                                                         </button>
                                                     </form>
@@ -125,7 +125,7 @@
                                                 {% if i < catMeasures|length - 1 %}
                                                     <form method="post" action="{{ path('app_centre_sanction_measures_move_down', {centreId: centre.id, id: measure.id}) }}">
                                                         <input type="hidden" name="_token" value="{{ csrf_token('move_sanction_measure_' ~ measure.id) }}">
-                                                        <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Bajar">
+                                                        <button type="submit" class="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="{{ 'ui.move_down'|trans }}">
                                                             {{ ux_icon('heroicons:chevron-down', {class: 'h-3.5 w-3.5'}) }}
                                                         </button>
                                                     </form>
@@ -157,7 +157,7 @@
                                                    class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
                                                           hover:bg-gray-50 hover:border-gray-300 transition-colors">
                                                     {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
-                                                    Editar
+                                                    {{ 'ui.edit'|trans }}
                                                 </a>
                                                 <form method="post" action="{{ path('app_centre_sanction_measures_delete', {centreId: centre.id, id: measure.id}) }}"
                                                       class="js-confirm-form"

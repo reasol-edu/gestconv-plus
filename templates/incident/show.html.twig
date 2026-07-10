@@ -63,7 +63,7 @@
                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
                           hover:bg-gray-50 transition-colors shadow-xs">
                     {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
-                    Editar
+                    {{ 'ui.edit'|trans }}
                 </a>
             {% endif %}
             {% if is_granted('incident_report.delete', report) %}
@@ -74,7 +74,7 @@
                     <button type="submit" class="js-confirm-trigger inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600
                                                  hover:bg-red-50 transition-colors shadow-xs">
                         {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}
-                        Eliminar
+                        {{ 'ui.delete'|trans }}
                     </button>
                 </form>
             {% endif %}

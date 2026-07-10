@@ -7,6 +7,12 @@ ui.close: 'Cerrar'
 ui.confirm_delete: 'Sí, eliminar'
 ui.yes: 'Sí'
 ui.export_started: 'Generando el archivo Excel…'
+ui.edit: 'Editar'
+ui.delete: 'Eliminar'
+ui.move_up: 'Subir'
+ui.move_down: 'Bajar'
+ui.move_up_category: 'Subir categoría'
+ui.move_down_category: 'Bajar categoría'
 
 # Perfil del usuario
 profile.title: 'Mi perfil'
