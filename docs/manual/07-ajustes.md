@@ -143,20 +143,30 @@ PDF. Más detalles sobre cada tipo de aviso en
 | Encabezado izquierdo (informe de parte) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (informe de parte) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de parte) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Pie de contenido (informe de parte) | Global, centro | Texto enriquecido | 0-5000 caracteres | `En {city} a {current_day} de {current_month_name} de {current_year}` |
 | Encabezado izquierdo (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de sanción) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Pie de contenido (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `En {city} a {current_day} de {current_month_name} de {current_year}` |
 | Encabezado izquierdo (estadísticas por grupo) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (estadísticas por grupo) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (estadísticas por grupo) | Global, centro | Entero (mm) | 10-80 | 22 |
 | Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
-Controlan el encabezado que se repite en cada página de los PDF de partes, sanciones y del informe
-de estadísticas por grupo (ver [Informes](05-secciones-de-la-aplicacion.md#informes)). Cada tipo
-de informe tiene dos zonas —izquierda y derecha, en la misma línea— que se editan con un editor de
-texto enriquecido (negrita, cursiva, subrayado, títulos, listas, citas y enlaces). El margen
-superior determina, en milímetros, a qué altura empieza el cuerpo del documento en cada página:
-conviene aumentarlo si el encabezado personalizado ocupa más líneas que el original.
+Los ajustes de **encabezado** controlan el contenido que se repite en cada página de los PDF de
+partes, sanciones y del informe de estadísticas por grupo (ver
+[Informes](05-secciones-de-la-aplicacion.md#informes)). Cada tipo de informe tiene dos zonas
+—izquierda y derecha, en la misma línea— que se editan con un editor de texto enriquecido (negrita,
+cursiva, subrayado, títulos, listas, citas y enlaces). El margen superior determina, en milímetros,
+a qué altura empieza el cuerpo del documento en cada página: conviene aumentarlo si el encabezado
+personalizado ocupa más líneas que el original.
+
+Los ajustes de **pie de contenido** (uno para partes y otro para sanciones, sin equivalente en
+estadísticas por grupo) añaden un bloque de texto enriquecido al final del documento, una sola vez,
+a diferencia del encabezado, que se repite en cada página. Por defecto muestran la fecha y localidad
+de generación del PDF («En {city} a {current_day} de {current_month_name} de {current_year}»,
+por ejemplo «En Sevilla a 10 de julio de 2026»); se puede sustituir por cualquier otro texto, o
+vaciar por completo si no se desea ningún pie de página.
 
 La **marca de agua de borrador**, cuando está activada, superpone el texto «BORRADOR» en diagonal
 sobre el PDF de un parte o una sanción mientras no se haya notificado a la familia; desaparece en
@@ -176,7 +186,17 @@ informe al generar el PDF:
 | `{centre_name}` | Nombre del centro educativo | Todos |
 | `{academic_year}` | Nombre del curso académico | Todos |
 | `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado | Solo estadísticas por grupo |
+| `{city}` | Ciudad del centro educativo | Todos |
+| `{current_date}` | Fecha de generación del PDF (dd/mm/aaaa) | Todos |
+| `{current_time}` | Hora de generación del PDF (hh:mm) | Todos |
+| `{current_day}` | Día del mes de generación del PDF, sin ceros a la izquierda | Todos |
+| `{current_month_name}` | Nombre del mes de generación del PDF, en minúscula (p. ej. «julio») | Todos |
+| `{current_year}` | Año de generación del PDF | Todos |
 
 Un marcador desconocido (por ejemplo, uno con una errata) no rompe el informe: se muestra tal
-cual en el PDF, lo que facilita detectar el error. Ninguno de los nueve ajustes tiene ámbito de
+cual en el PDF, lo que facilita detectar el error. Ninguno de los once ajustes tiene ámbito de
 docente: se fijan a nivel global o de centro únicamente.
+
+Esta misma tabla está disponible sin salir de la pantalla de ajustes: cada campo de texto
+enriquecido de esta categoría tiene junto a su nombre un icono ⓘ que, al pulsarlo, despliega
+un popover con la lista completa de marcadores.

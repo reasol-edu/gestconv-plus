@@ -2,4 +2,8 @@
 
 {% block content %}
     {% include 'pdf/_incident_report_block.html.twig' with { report: report, reportObservations: observations, reportHistory: history } %}
+
+    {% if footerHtml %}
+        <div class="prose-block">{{ footerHtml|raw }}</div>
+    {% endif %}
 {% endblock %}

@@ -10,9 +10,17 @@ use App\Service\PdfHeaderBuilder;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PdfHeaderBuilderTest extends TestCase
 {
+    /** Nombres de mes tal y como aparecen en translations/calendar.es.yaml (claves month.1..month.12) */
+    private const MONTH_NAMES_ES = [
+        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+    ];
+
     public function testSubstitutesPlaceholdersOnBothSidesAndReadsMargin(): void
     {
         $builder = $this->makeBuilder([
@@ -21,7 +29,7 @@ class PdfHeaderBuilderTest extends TestCase
             'reports.incident_header_margin' => 30,
         ]);
 
-        $header = $builder->build('incident', new EducationalCentre(), [
+        $header = $builder->build('incident', $this->makeCentre(), [
             'title'       => 'Informe de parte de convivencia',
             'centre_name' => 'IES Azahar',
         ]);
@@ -37,7 +45,7 @@ class PdfHeaderBuilderTest extends TestCase
             'reports.incident_header_left' => '<p>{student_name}</p>',
         ]);
 
-        $header = $builder->build('incident', new EducationalCentre(), [
+        $header = $builder->build('incident', $this->makeCentre(), [
             'student_name' => 'Ana <script>alert(1)</script> & Cía',
         ]);
 
@@ -50,7 +58,7 @@ class PdfHeaderBuilderTest extends TestCase
             'reports.sanction_header_left' => '<p>{title} {unknown_token}</p>',
         ]);
 
-        $header = $builder->build('sanction', new EducationalCentre(), ['title' => 'Sanción']);
+        $header = $builder->build('sanction', $this->makeCentre(), ['title' => 'Sanción']);
 
         self::assertSame('<p>Sanción {unknown_token}</p>', $header->leftHtml);
     }
@@ -61,7 +69,7 @@ class PdfHeaderBuilderTest extends TestCase
             'reports.incident_header_left' => '<script>alert(1)</script><p onclick="x()">{title}</p>',
         ]);
 
-        $header = $builder->build('incident', new EducationalCentre(), ['title' => 'Informe']);
+        $header = $builder->build('incident', $this->makeCentre(), ['title' => 'Informe']);
 
         self::assertSame('<p>Informe</p>', $header->leftHtml);
     }
@@ -74,11 +82,95 @@ class PdfHeaderBuilderTest extends TestCase
             'reports.incident_header_margin' => null,
         ]);
 
-        $header = $builder->build('incident', new EducationalCentre(), []);
+        $header = $builder->build('incident', $this->makeCentre(), []);
 
         self::assertSame('', $header->leftHtml);
         self::assertSame('', $header->rightHtml);
         self::assertSame(22, $header->marginTopMm);
+    }
+
+    public function testBuildFooterSubstitutesPlaceholders(): void
+    {
+        $builder = $this->makeBuilder([
+            'reports.incident_footer' => '<p>{title} — {student_name}</p>',
+        ]);
+
+        $footer = $builder->buildFooter('incident', $this->makeCentre(), [
+            'title'        => 'Informe de parte',
+            'student_name' => 'Ana López',
+        ]);
+
+        self::assertSame('<p>Informe de parte — Ana López</p>', $footer);
+    }
+
+    public function testBuildFooterFallsBackToEmptyString(): void
+    {
+        $builder = $this->makeBuilder([
+            'reports.sanction_footer' => null,
+        ]);
+
+        $footer = $builder->buildFooter('sanction', $this->makeCentre(), []);
+
+        self::assertSame('', $footer);
+    }
+
+    public function testCityAndCurrentDatePlaceholdersAreAlwaysAvailable(): void
+    {
+        $builder = $this->makeBuilder([
+            'reports.incident_header_left' => '<p>{city} — {current_date}</p>',
+        ]);
+
+        $header = $builder->build('incident', $this->makeCentre('Sevilla'), []);
+
+        self::assertSame('<p>Sevilla — ' . (new \DateTimeImmutable())->format('d/m/Y') . '</p>', $header->leftHtml);
+    }
+
+    public function testCurrentDayMonthNameYearAndTimePlaceholdersAreAlwaysAvailable(): void
+    {
+        $builder = $this->makeBuilder([
+            'reports.incident_footer' => '<p>{current_day} {current_month_name} {current_year} {current_time}</p>',
+        ]);
+
+        $footer = $builder->buildFooter('incident', $this->makeCentre(), []);
+
+        $now = new \DateTimeImmutable();
+
+        self::assertSame(
+            \sprintf(
+                '<p>%s %s %s %s</p>',
+                $now->format('j'),
+                mb_strtolower(self::MONTH_NAMES_ES[(int) $now->format('n')]),
+                $now->format('Y'),
+                $now->format('H:i'),
+            ),
+            $footer,
+        );
+    }
+
+    public function testDefaultDatelineFooterResolvesPlaceholders(): void
+    {
+        $builder = $this->makeBuilder([
+            'reports.sanction_footer' => '<p>En {city} a {current_day} de {current_month_name} de {current_year}</p>',
+        ]);
+
+        $footer = $builder->buildFooter('sanction', $this->makeCentre('Cádiz'), []);
+
+        $now = new \DateTimeImmutable();
+
+        self::assertSame(
+            \sprintf(
+                '<p>En Cádiz a %s de %s de %s</p>',
+                $now->format('j'),
+                mb_strtolower(self::MONTH_NAMES_ES[(int) $now->format('n')]),
+                $now->format('Y'),
+            ),
+            $footer,
+        );
+    }
+
+    private function makeCentre(string $city = 'Sevilla'): EducationalCentre
+    {
+        return (new EducationalCentre())->setCity($city);
     }
 
     /** @param array<string, mixed> $values valores por clave de ajuste */
@@ -98,6 +190,13 @@ class PdfHeaderBuilderTest extends TestCase
                 ->allowElement('u'),
         );
 
-        return new PdfHeaderBuilder($settings, $sanitizer);
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(
+            static fn (string $id, array $parameters = [], ?string $domain = null): string => $domain === 'calendar' && str_starts_with($id, 'month.')
+                ? self::MONTH_NAMES_ES[(int) substr($id, 6)]
+                : $id,
+        );
+
+        return new PdfHeaderBuilder($settings, $sanitizer, $translator);
     }
 }

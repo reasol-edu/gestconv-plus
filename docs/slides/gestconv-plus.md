@@ -500,9 +500,12 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   **estadísticas por grupo** son configurables de forma independiente, con
   texto enriquecido a la izquierda y a la derecha, y un margen superior en
   milímetros.
+- Los informes de **partes** y **sanciones** admiten además un **pie de
+  contenido**: texto enriquecido añadido una sola vez al final del
+  documento, vacío por defecto.
 - Se pueden usar **marcadores** que la aplicación sustituye automáticamente:
-  título del informe, número de parte, nombre del estudiante, grupo, centro
-  o curso académico.
+  título del informe, número de parte, nombre del estudiante, grupo, centro,
+  curso académico, **ciudad** del centro o **fecha de generación** del PDF.
 - La marca de agua diagonal **«BORRADOR»** (parte o sanción sin notificar a
   la familia) es opcional, mediante un ajuste booleano desactivado por
   defecto.

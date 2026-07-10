@@ -9,6 +9,7 @@ use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
+use App\Entity\GlobalSettingValue;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
@@ -19,6 +20,7 @@ use App\Entity\ProgrammeYear;
 use App\Entity\Sanction;
 use App\Entity\SanctionMeasure;
 use App\Entity\SanctionMeasureCategory;
+use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -335,6 +337,28 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
         self::assertStringContainsString('inline', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPdfUsesCustomFooterSetting(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+
+        $defs = $this->em->getRepository(SettingDefinition::class);
+        $this->persist(
+            (new GlobalSettingValue())
+                ->setDefinition($defs->findOneBy(['key' => 'reports.sanction_footer']))
+                ->setValue('<p>Generado en {city} el {current_date}</p>'),
+        );
+
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
         self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
     }
 

@@ -324,13 +324,16 @@ class SanctionController extends AbstractController
 
         $reports = $sanction->getReports()->toArray();
 
-        $header = $this->pdfHeaderBuilder->build('sanction', $centre, [
+        $placeholders = [
             'title'         => $this->translator->trans('pdf.sanction.title', [], 'admin'),
             'student_name'  => $sanction->getStudent()->getName()->full(),
             'group_name'    => $sanction->getGroup()->getName(),
             'centre_name'   => $centre->getName(),
             'academic_year' => $sanction->getAcademicYear()->getName(),
-        ]);
+        ];
+
+        $header = $this->pdfHeaderBuilder->build('sanction', $centre, $placeholders);
+        $footer = $this->pdfHeaderBuilder->buildFooter('sanction', $centre, $placeholders);
 
         return $this->pdfRenderer->render(
             'pdf/sanction.html.twig',
@@ -340,6 +343,7 @@ class SanctionController extends AbstractController
                 'history'                 => $this->communications->findBySanction($sanction),
                 'observationsByReport'    => $this->observations->findByIncidentReports($reports),
                 'communicationsByReport'  => $this->communications->findByIncidentReports($reports),
+                'footerHtml'              => $footer,
             ],
             $this->translator->trans('sanction.show_title', [], 'admin')
                 . ' — ' . $sanction->getStudent()->getName()->getLastName() . ', ' . $sanction->getStudent()->getName()->getFirstName(),

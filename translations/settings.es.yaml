@@ -140,34 +140,68 @@ settings.key.notifications_email_sanction_attach_pdf.label: 'Enviar sanción adj
 settings.key.notifications_email_sanction_attach_pdf.description: 'Adjunta el PDF de la sanción al aviso por correo de sanción notificada a la familia. No afecta al registro de avisos.'
 
 settings.key.reports_incident_header_left.label: 'Encabezado de informe de partes (izquierda)'
-settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Marcadores disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
 settings.key.reports_incident_header_right.label: 'Encabezado de informe de partes (derecha)'
-settings.key.reports_incident_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Marcadores disponibles: {title}, {report_nr}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+settings.key.reports_incident_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
 settings.key.reports_incident_header_margin.label: 'Margen para encabezado de partes'
 settings.key.reports_incident_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
 
+settings.key.reports_incident_footer.label: 'Pie de contenido de informe de partes'
+settings.key.reports_incident_footer.description: 'Texto que se añade al final del contenido del PDF de un parte, una sola vez (no se repite en cada página). Admite marcadores de sustitución (consulta la lista completa con el icono de información). Si no se personaliza, se usa por defecto «En {city} a {current_day} de {current_month_name} de {current_year}».'
+
 settings.key.reports_sanction_header_left.label: 'Encabezado de informe de sanciones (izquierda)'
-settings.key.reports_sanction_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de una sanción. Marcadores disponibles: {title}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+settings.key.reports_sanction_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de una sanción. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
 settings.key.reports_sanction_header_right.label: 'Encabezado de informe de sanciones (derecha)'
-settings.key.reports_sanction_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Marcadores disponibles: {title}, {student_name}, {group_name}, {centre_name}, {academic_year}.'
+settings.key.reports_sanction_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
 settings.key.reports_sanction_header_margin.label: 'Margen para encabezado de sanciones'
 settings.key.reports_sanction_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
+
+settings.key.reports_sanction_footer.label: 'Pie de contenido de informe de sanciones'
+settings.key.reports_sanction_footer.description: 'Texto que se añade al final del contenido del PDF de una sanción, una sola vez (no se repite en cada página). Admite marcadores de sustitución (consulta la lista completa con el icono de información). Si no se personaliza, se usa por defecto «En {city} a {current_day} de {current_month_name} de {current_year}».'
 
 settings.key.reports_draft_watermark_enabled.label: 'Marca de agua de borrador'
 settings.key.reports_draft_watermark_enabled.description: 'Muestra una marca de agua diagonal con el texto «BORRADOR» en el PDF de un parte o una sanción mientras no se haya notificado a la familia. Desactivada por defecto.'
 
 settings.key.reports_group_stats_header_left.label: 'Encabezado de estadísticas por grupo (izquierda)'
-settings.key.reports_group_stats_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de estadísticas por grupo. Marcadores disponibles: {title}, {centre_name}, {academic_year}, {date_from}, {date_to}.'
+settings.key.reports_group_stats_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de estadísticas por grupo. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
 settings.key.reports_group_stats_header_right.label: 'Encabezado de estadísticas por grupo (derecha)'
-settings.key.reports_group_stats_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Marcadores disponibles: {title}, {centre_name}, {academic_year}, {date_from}, {date_to}.'
+settings.key.reports_group_stats_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
 settings.key.reports_group_stats_header_margin.label: 'Margen para encabezado de estadísticas por grupo'
 settings.key.reports_group_stats_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
+
+# ── Ayuda de marcadores de informes ─────────────────────────────────────────
+settings.placeholder_help.title: 'Marcadores disponibles'
+settings.placeholder_help.intro: 'Puedes usar estos marcadores en el texto; se sustituyen por su valor real al generar el PDF. Un marcador desconocido (por ejemplo, uno con una errata) no rompe el informe: se muestra tal cual, lo que facilita detectar el error.'
+settings.placeholder_help.column.marker: 'Marcador'
+settings.placeholder_help.column.description: 'Se sustituye por'
+settings.placeholder_help.column.scope: 'Disponible en'
+
+settings.placeholder_help.scope.all: 'Todos'
+settings.placeholder_help.scope.reports_only: 'Solo partes'
+settings.placeholder_help.scope.reports_and_sanctions: 'Partes y sanciones'
+settings.placeholder_help.scope.group_stats_only: 'Solo estadísticas por grupo'
+
+settings.placeholder_help.marker.title: 'Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo»)'
+settings.placeholder_help.marker.report_nr: 'Número del parte'
+settings.placeholder_help.marker.student_name: 'Nombre completo del alumno'
+settings.placeholder_help.marker.group_name: 'Nombre del grupo'
+settings.placeholder_help.marker.centre_name: 'Nombre del centro educativo'
+settings.placeholder_help.marker.academic_year: 'Nombre del curso académico'
+settings.placeholder_help.marker.date_range: 'Fechas de inicio y fin del rango consultado ({date_from} / {date_to})'
+settings.placeholder_help.marker.city: 'Ciudad del centro educativo'
+settings.placeholder_help.marker.current_date: 'Fecha de generación del PDF (dd/mm/aaaa)'
+settings.placeholder_help.marker.current_time: 'Hora de generación del PDF (hh:mm)'
+settings.placeholder_help.marker.current_day: 'Día del mes de generación del PDF, sin ceros a la izquierda'
+settings.placeholder_help.marker.current_month_name: 'Nombre del mes de generación del PDF, en minúscula (p. ej. «julio»)'
+settings.placeholder_help.marker.current_year: 'Año de generación del PDF'
+
+settings.placeholder_help.footer_default_note: 'Si no se personaliza, el pie de contenido de partes y sanciones usa por defecto el texto «En {city} a {current_day} de {current_month_name} de {current_year}».'
 
 # ── Errores de validación ──────────────────────────────────────────────────────
 settings.error.integer_range: 'Debe ser un número entre %min% y %max%'

@@ -42,9 +42,25 @@
 
                 {# ── Label + description ── #}
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900">
-                        {{ ('settings.key.' ~ keySlug ~ '.label')|trans({}, 'settings') }}
-                    </p>
+                    <div class="flex items-center gap-1.5">
+                        <p class="text-sm font-medium text-gray-900">
+                            {{ ('settings.key.' ~ keySlug ~ '.label')|trans({}, 'settings') }}
+                        </p>
+                        {% if isRichText %}
+                            <div class="relative" data-controller="dropdown">
+                                <button type="button"
+                                        data-action="dropdown#toggle"
+                                        class="text-gray-300 hover:text-forest-600 transition-colors"
+                                        title="{{ 'settings.placeholder_help.title'|trans({}, 'settings') }}">
+                                    {{ ux_icon('heroicons:information-circle', {class: 'h-4 w-4'}) }}
+                                </button>
+                                <div data-dropdown-target="menu"
+                                     class="hidden absolute left-0 z-40 mt-1 rounded-xl border border-gray-200 bg-white shadow-lg">
+                                    {{ include('components/_settings_placeholder_help.html.twig') }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
                     {% set descKey = 'settings.key.' ~ keySlug ~ '.description' %}
                     {% set descVal = descKey|trans({}, 'settings') %}
                     {% if descVal != descKey %}

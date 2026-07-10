@@ -414,14 +414,17 @@ class IncidentReportController extends AbstractController
 
         $this->denyAccessUnlessGranted(IncidentReportVoter::VIEW, $report);
 
-        $header = $this->pdfHeaderBuilder->build('incident', $centre, [
+        $placeholders = [
             'title'         => $this->translator->trans('pdf.incident_report.title', [], 'admin'),
             'report_nr'     => $report->getNumber(),
             'student_name'  => $report->getStudent()->getName()->full(),
             'group_name'    => $report->getGroup()->getName(),
             'centre_name'   => $centre->getName(),
             'academic_year' => $report->getAcademicYear()->getName(),
-        ]);
+        ];
+
+        $header = $this->pdfHeaderBuilder->build('incident', $centre, $placeholders);
+        $footer = $this->pdfHeaderBuilder->buildFooter('incident', $centre, $placeholders);
 
         return $this->pdfRenderer->render(
             'pdf/incident_report.html.twig',
@@ -430,6 +433,7 @@ class IncidentReportController extends AbstractController
                 'report'       => $report,
                 'observations' => $this->observations->findByIncidentReport($report),
                 'history'      => $this->communications->findByIncidentReport($report),
+                'footerHtml'   => $footer,
             ],
             $this->translator->trans('incident.show_ref', ['%number%' => $report->getNumber()], 'admin'),
             sprintf('parte-%d.pdf', $report->getNumber()),

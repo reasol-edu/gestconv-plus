@@ -60,4 +60,8 @@
             reportHistory: communicationsByReport[report.id.toRfc4122] ?? [],
         } %}
     {% endfor %}
+
+    {% if footerHtml %}
+        <div class="prose-block">{{ footerHtml|raw }}</div>
+    {% endif %}
 {% endblock %}

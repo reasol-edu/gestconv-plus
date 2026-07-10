@@ -459,6 +459,27 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
     }
 
+    public function testPdfUsesCustomFooterSetting(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+
+        $defs = $this->em->getRepository(SettingDefinition::class);
+        $this->persist(
+            (new GlobalSettingValue())
+                ->setDefinition($defs->findOneBy(['key' => 'reports.incident_footer']))
+                ->setValue('<p>Generado en {city} el {current_date}</p>'),
+        );
+
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
     public function testPdfIsDeniedToUnrelatedTeacher(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();

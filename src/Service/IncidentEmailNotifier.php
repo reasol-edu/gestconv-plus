@@ -321,14 +321,17 @@ final class IncidentEmailNotifier
             return null;
         }
 
-        $header = $this->pdfHeaderBuilder->build('incident', $centre, [
+        $placeholders = [
             'title'         => $this->translator->trans('pdf.incident_report.title', [], 'admin'),
             'report_nr'     => $report->getNumber(),
             'student_name'  => $this->fullName($report->getStudent()),
             'group_name'    => $report->getGroup()->getName(),
             'centre_name'   => $centre->getName(),
             'academic_year' => $report->getAcademicYear()->getName(),
-        ]);
+        ];
+
+        $header = $this->pdfHeaderBuilder->build('incident', $centre, $placeholders);
+        $footer = $this->pdfHeaderBuilder->buildFooter('incident', $centre, $placeholders);
 
         $filename = sprintf('parte-%d.pdf', $report->getNumber());
 
@@ -339,6 +342,7 @@ final class IncidentEmailNotifier
                 'report'       => $report,
                 'observations' => $this->observations->findByIncidentReport($report),
                 'history'      => $this->communications->findByIncidentReport($report),
+                'footerHtml'   => $footer,
             ],
             $this->translator->trans('incident.show_ref', ['%number%' => $report->getNumber()], 'admin'),
             $filename,
@@ -361,13 +365,16 @@ final class IncidentEmailNotifier
 
         $reports = $sanction->getReports()->toArray();
 
-        $header = $this->pdfHeaderBuilder->build('sanction', $centre, [
+        $placeholders = [
             'title'         => $this->translator->trans('pdf.sanction.title', [], 'admin'),
             'student_name'  => $this->fullName($sanction->getStudent()),
             'group_name'    => $sanction->getGroup()->getName(),
             'centre_name'   => $centre->getName(),
             'academic_year' => $sanction->getAcademicYear()->getName(),
-        ]);
+        ];
+
+        $header = $this->pdfHeaderBuilder->build('sanction', $centre, $placeholders);
+        $footer = $this->pdfHeaderBuilder->buildFooter('sanction', $centre, $placeholders);
 
         $filename = sprintf('sancion-%s.pdf', substr($sanction->getId()->toRfc4122(), 0, 8));
 
@@ -379,6 +386,7 @@ final class IncidentEmailNotifier
                 'history'                => $this->communications->findBySanction($sanction),
                 'observationsByReport'   => $this->observations->findByIncidentReports($reports),
                 'communicationsByReport' => $this->communications->findByIncidentReports($reports),
+                'footerHtml'             => $footer,
             ],
             $this->translator->trans('sanction.show_title', [], 'admin')
                 . ' — ' . $sanction->getStudent()->getName()->getLastName() . ', ' . $sanction->getStudent()->getName()->getFirstName(),
