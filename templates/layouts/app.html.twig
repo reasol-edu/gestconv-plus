@@ -51,7 +51,7 @@
                         <p class="mt-1 truncate text-xs {{ viewing_past ? 'text-amber-400' : 'text-forest-400' }}">
                             {{ vy.name }}
                             {% if viewing_past %}
-                                <span class="sr-only">{{ '(curso histórico)'|trans({}, 'navigation') }}</span>
+                                <span class="sr-only">({{ 'year_selection.historical'|trans({}, 'navigation') }})</span>
                             {% endif %}
                         </p>
                     {% endif %}
