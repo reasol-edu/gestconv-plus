@@ -42,6 +42,9 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $active = true;
 
+    #[ORM\Column]
+    private bool $forcePasswordChange = false;
+
     #[ORM\Column(length: 180, nullable: true)]
     #[Assert\Email]
     private ?string $email = null;
@@ -165,6 +168,18 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
     public function setActive(bool $active): static
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    public function isForcePasswordChange(): bool
+    {
+        return $this->forcePasswordChange;
+    }
+
+    public function setForcePasswordChange(bool $forcePasswordChange): static
+    {
+        $this->forcePasswordChange = $forcePasswordChange;
 
         return $this;
     }

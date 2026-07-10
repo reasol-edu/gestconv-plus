@@ -12,6 +12,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -36,7 +37,13 @@ class CreateAdminCommand extends Command
         $this
             ->setDescription($t('create_admin.description'))
             ->addArgument('username', InputArgument::REQUIRED, $t('create_admin.argument.username'))
-            ->addArgument('password', InputArgument::OPTIONAL, $t('create_admin.argument.password'));
+            ->addArgument('password', InputArgument::OPTIONAL, $t('create_admin.argument.password'))
+            ->addOption(
+                'no-force-password-change',
+                null,
+                InputOption::VALUE_NONE,
+                $t('create_admin.option.no_force_password_change'),
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -72,6 +79,7 @@ class CreateAdminCommand extends Command
         $teacher->setUsername($username);
         $teacher->setPassword($this->passwordHasher->hashPassword($teacher, $password));
         $teacher->setAdmin(true);
+        $teacher->setForcePasswordChange(!$input->getOption('no-force-password-change'));
 
         $this->em->persist($teacher);
         $this->em->flush();

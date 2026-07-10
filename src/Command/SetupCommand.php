@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -32,7 +33,14 @@ class SetupCommand extends Command
 
     protected function configure(): void
     {
-        $this->setDescription($this->translator->trans('setup.description', domain: 'command'));
+        $this
+            ->setDescription($this->translator->trans('setup.description', domain: 'command'))
+            ->addOption(
+                'no-force-password-change',
+                null,
+                InputOption::VALUE_NONE,
+                $this->translator->trans('setup.option.no_force_password_change', domain: 'command'),
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -55,6 +63,7 @@ class SetupCommand extends Command
         $teacher->setUsername('admin');
         $teacher->setPassword($this->passwordHasher->hashPassword($teacher, 'admin'));
         $teacher->setAdmin(true);
+        $teacher->setForcePasswordChange(!$input->getOption('no-force-password-change'));
 
         $this->em->persist($teacher);
         $this->em->flush();

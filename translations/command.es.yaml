@@ -3,6 +3,7 @@ create_admin.argument.username: 'Nombre de usuario'
 create_admin.argument.password: 'Contraseña'
 create_admin.error.existing_user: 'Ya existe un docente con el nombre de usuario "%username%".'
 create_admin.success: 'Administrador "%username%" creado correctamente.'
+create_admin.option.no_force_password_change: 'No forzar el cambio de contraseña en el primer acceso'
 
 create_centre.description: 'Crea un nuevo centro educativo'
 create_centre.argument.code: 'Código de centro (ej: 23700281)'
@@ -20,6 +21,7 @@ send_reminders.error.days_invalid: 'El número de días debe ser un entero mayor
 send_reminders.success: '{0} Ningún recordatorio que enviar.|{1} Recordatorio enviado a 1 destinatario/a.|]1,Inf[ Recordatorios enviados a %count% destinatarios/as.'
 
 setup.description: 'Inicializa la aplicación con datos por defecto si la base de datos está vacía.'
+setup.option.no_force_password_change: 'No forzar el cambio de contraseña del usuario "admin" en el primer acceso'
 setup.skipped: 'La base de datos ya contiene datos. Se omite la inicialización.'
 setup.success: 'Aplicación inicializada: usuario "admin" y centro "IES Test" (23999999, Linares) creados.'
 

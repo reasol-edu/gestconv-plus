@@ -25,6 +25,7 @@ final class TenantContextSubscriber
         'app_profile',
         'app_profile_settings',
         'app_profile_verify_email',
+        'app_force_password_change',
     ];
 
     public function __construct(

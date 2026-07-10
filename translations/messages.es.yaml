@@ -70,6 +70,14 @@ password_reset.error.password_required: 'Introduce una nueva contraseña.'
 password_reset.error.too_many_requests: 'Demasiadas solicitudes. Inténtalo de nuevo en unos minutos.'
 ui.error.invalid_csrf: 'La sesión ha caducado. Vuelve a intentarlo.'
 
+# Cambio de contraseña obligatorio
+force_password_change.title: 'Cambio de contraseña obligatorio'
+force_password_change.hero: 'Por seguridad, un administrador ha solicitado que cambies tu contraseña antes de continuar.'
+force_password_change.intro: 'Un administrador ha activado el cambio obligatorio de contraseña en tu cuenta. Debes establecer una nueva contraseña para poder seguir usando la aplicación.'
+force_password_change.submit: 'Cambiar contraseña'
+force_password_change.logout: '¿Prefieres no cambiarla ahora? Cerrar sesión'
+force_password_change.flash.success: 'Contraseña actualizada correctamente.'
+
 # Paginación
 pagination.summary: 'Mostrando %from%–%to% de %total%'
 pagination.previous: 'Página anterior'

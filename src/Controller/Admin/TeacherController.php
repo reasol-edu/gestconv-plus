@@ -25,7 +25,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class TeacherController extends AbstractController
 {
     /** @var list<string> */
-    private const LOGGED_FIELDS = ['username', 'email', 'admin', 'active', 'external'];
+    private const LOGGED_FIELDS = ['username', 'email', 'admin', 'active', 'external', 'forcePasswordChange'];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -47,7 +47,7 @@ class TeacherController extends AbstractController
     {
         $errors = [];
         $values = ['first_name' => '', 'last_name' => '', 'username' => '', 'email' => '', 'password' => ''];
-        $flags  = ['admin' => false, 'active' => true, 'external' => false];
+        $flags  = ['admin' => false, 'active' => true, 'external' => false, 'force_password_change' => false];
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_teacher', $request->request->getString('_token'))) {
@@ -66,6 +66,8 @@ class TeacherController extends AbstractController
                 'active'   => $request->request->has('active'),
                 'external' => $request->request->getString('auth_method') === 'external',
             ];
+            $flags['force_password_change'] = !$flags['external']
+                && $request->request->getString('force_password_change') === 'yes';
 
             $errors = $this->validateTeacher($values, !$flags['external']);
 
@@ -79,7 +81,8 @@ class TeacherController extends AbstractController
                     ->setEmail($values['email'] !== '' ? $values['email'] : null)
                     ->setAdmin($flags['admin'])
                     ->setActive($flags['active'])
-                    ->setExternal($flags['external']);
+                    ->setExternal($flags['external'])
+                    ->setForcePasswordChange($flags['force_password_change']);
 
                 if (!$flags['external']) {
                     $teacher->setPassword($this->hasher->hashPassword($teacher, $values['password']));
@@ -129,6 +132,7 @@ class TeacherController extends AbstractController
             'admin'    => $teacher->isAdmin(),
             'active'   => $teacher->isActive(),
             'external' => $teacher->isExternal(),
+            'force_password_change' => $teacher->isForcePasswordChange(),
         ];
 
         if ($request->isMethod('POST')) {
@@ -148,6 +152,8 @@ class TeacherController extends AbstractController
                 'active'   => $request->request->has('active'),
                 'external' => $request->request->getString('auth_method') === 'external',
             ];
+            $flags['force_password_change'] = !$flags['external']
+                && $request->request->getString('force_password_change') === 'yes';
 
             if ($isCurrentUser) {
                 $selfProtectionErrors = [];
@@ -186,7 +192,8 @@ class TeacherController extends AbstractController
                     ->setEmail($values['email'] !== '' ? $values['email'] : null)
                     ->setAdmin($flags['admin'])
                     ->setActive($flags['active'])
-                    ->setExternal($flags['external']);
+                    ->setExternal($flags['external'])
+                    ->setForcePasswordChange($flags['force_password_change']);
 
                 if ($values['password'] !== '') {
                     $teacher->setPassword($this->hasher->hashPassword($teacher, $values['password']));

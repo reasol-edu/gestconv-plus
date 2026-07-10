@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Entity\Teacher;
-use App\Service\KioskMode;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -13,18 +12,22 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 5)]
-final class KioskModeSubscriber
+/**
+ * Prioridad más baja que TenantContextSubscriber (4) y KioskModeSubscriber (5)
+ * para que se ejecute la última entre los listeners de kernel.request: como
+ * Symfony no detiene la propagación al llamar setResponse(), la redirección
+ * de cambio de contraseña obligatorio debe prevalecer sobre cualquier otra.
+ */
+#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 1)]
+final class ForcePasswordChangeSubscriber
 {
     private const ALLOWED_ROUTES = [
-        'app_calendar_board',
-        'app_logout',
-        'app_login',
         'app_force_password_change',
+        'app_login',
+        'app_logout',
     ];
 
     public function __construct(
-        private readonly KioskMode $kioskMode,
         private readonly Security $security,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {}
@@ -41,16 +44,17 @@ final class KioskModeSubscriber
             return;
         }
 
-        if (!$this->security->getUser() instanceof Teacher) {
+        $user = $this->security->getUser();
+        if (!$user instanceof Teacher) {
             return;
         }
 
-        if (!$this->kioskMode->isActive()) {
+        if ($user->isExternal() || !$user->isForcePasswordChange()) {
             return;
         }
 
         $event->setResponse(new RedirectResponse(
-            $this->urlGenerator->generate('app_calendar_board')
+            $this->urlGenerator->generate('app_force_password_change')
         ));
     }
 }
