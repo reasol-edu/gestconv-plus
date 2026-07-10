@@ -54,9 +54,19 @@
                                         title="{{ 'settings.placeholder_help.title'|trans({}, 'settings') }}">
                                     {{ ux_icon('heroicons:information-circle', {class: 'h-4 w-4'}) }}
                                 </button>
-                                <div data-dropdown-target="menu"
-                                     class="hidden absolute left-0 z-40 mt-1 rounded-xl border border-gray-200 bg-white shadow-lg">
-                                    {{ include('components/_settings_placeholder_help.html.twig') }}
+                                <div data-dropdown-target="menu" class="hidden">
+                                    {# En móvil el popover se centra como panel fijo con fondo atenuado, en vez
+                                       de posicionarse relativo al icono: así nunca se sale de la pantalla si el
+                                       icono está cerca del borde. En pantallas más anchas mantiene el
+                                       desplegable pegado al icono, como antes. #}
+                                    <div class="fixed inset-0 z-40 bg-black/40 sm:hidden"
+                                         data-action="click->dropdown#close"></div>
+                                    <div class="fixed inset-x-4 top-1/2 z-50 -translate-y-1/2 max-h-[80vh] overflow-y-auto
+                                                rounded-xl border border-gray-200 bg-white shadow-lg
+                                                sm:absolute sm:inset-x-auto sm:top-auto sm:left-0 sm:z-40 sm:mt-1
+                                                sm:translate-y-0 sm:max-h-none sm:overflow-visible">
+                                        {{ include('components/_settings_placeholder_help.html.twig') }}
+                                    </div>
                                 </div>
                             </div>
                         {% endif %}
