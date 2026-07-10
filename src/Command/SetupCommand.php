@@ -40,6 +40,12 @@ class SetupCommand extends Command
                 null,
                 InputOption::VALUE_NONE,
                 $this->translator->trans('setup.option.no_force_password_change', domain: 'command'),
+            )
+            ->addOption(
+                'demo-data',
+                null,
+                InputOption::VALUE_NONE,
+                $this->translator->trans('setup.option.demo_data', domain: 'command'),
             );
     }
 
@@ -54,10 +60,14 @@ class SetupCommand extends Command
             return Command::SUCCESS;
         }
 
-        $year     = (int) (new \DateTimeImmutable())->format('Y');
-        $yearName = $year . '-' . ($year + 1);
+        $demoData = (bool) $input->getOption('demo-data');
 
-        $this->centreProvisioner->provision('23999999', 'IES Test', 'Linares', $yearName);
+        if ($demoData) {
+            $year     = (int) (new \DateTimeImmutable())->format('Y');
+            $yearName = $year . '-' . ($year + 1);
+
+            $this->centreProvisioner->provision('23999999', 'IES Test', 'Linares', $yearName);
+        }
 
         $teacher = new Teacher(new PersonName('Admin', 'User'));
         $teacher->setUsername('admin');
@@ -68,7 +78,7 @@ class SetupCommand extends Command
         $this->em->persist($teacher);
         $this->em->flush();
 
-        $io->success($t('setup.success'));
+        $io->success($t($demoData ? 'setup.success_demo_data' : 'setup.success'));
 
         return Command::SUCCESS;
     }

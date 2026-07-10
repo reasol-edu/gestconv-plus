@@ -135,11 +135,12 @@ La primera vez que se inicia, el script realiza automáticamente:
 1. Genera un `APP_SECRET` aleatorio y lo guarda en `data/.secret`.
 2. Crea la base de datos SQLite en `data/gestconv-plus.db`.
 3. Ejecuta las migraciones.
-4. Crea el usuario administrador inicial (`admin` / `admin`), el centro de prueba `IES Test` y los
-   catálogos por defecto (conductas, medidas disciplinarias y métodos de comunicación).
+4. Crea el usuario administrador inicial (`admin` / `admin`), sin ningún centro educativo.
 5. Precalienta la caché de Symfony y lanza el *worker* de envío de correos en segundo plano.
 
-La aplicación queda disponible en `http://localhost:8080` (o el puerto indicado).
+La aplicación queda disponible en `http://localhost:8080` (o el puerto indicado). Al entrar con
+`admin` / `admin`, la pantalla de selección de centro ofrece un enlace directo para dar de alta el
+centro real desde **Administración › Centros › Nuevo centro**.
 
 !!! danger "Cambia la contraseña por defecto"
     El usuario inicial `admin` / `admin` se crea solo para el primer acceso. En cuanto entres, ve a
@@ -260,11 +261,12 @@ docker compose up -d
 La primera vez que se inicia, el contenedor realiza automáticamente lo siguiente:
 
 1. Ejecuta las migraciones de base de datos.
-2. Crea el usuario administrador inicial (`admin` / `admin`), el centro de prueba `IES Test` y los
-   catálogos por defecto (conductas, medidas disciplinarias y métodos de comunicación).
+2. Crea el usuario administrador inicial (`admin` / `admin`), sin ningún centro educativo.
 3. Inicializa la caché de Symfony.
 
-La aplicación queda disponible en `http://localhost` (puerto 80 por defecto).
+La aplicación queda disponible en `http://localhost` (puerto 80 por defecto). Al entrar con
+`admin` / `admin`, la pantalla de selección de centro ofrece un enlace directo para dar de alta el
+centro real desde **Administración › Centros › Nuevo centro**.
 
 El stack levanta tres contenedores: `app` (servidor FrankenPHP), `database` (PostgreSQL) y `worker`, que
 procesa el envío asíncrono de los correos y las tareas programadas con Symfony Scheduler, como la
@@ -506,6 +508,11 @@ php bin/console asset-map:compile
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console app:setup --no-interaction
 ```
+
+`app:setup` crea únicamente el usuario `admin`, sin ningún centro educativo: tras iniciar sesión,
+la pantalla de selección de centro ofrece un enlace directo para dar de alta el centro real desde
+**Administración › Centros › Nuevo centro** (ver
+[Comandos de consola](08-comandos-de-consola.md#appsetup)).
 
 !!! danger "Cambia la contraseña por defecto"
     `app:setup` crea el usuario `admin` con contraseña `admin`, con el cambio de contraseña

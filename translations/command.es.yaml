@@ -22,7 +22,9 @@ send_reminders.success: '{0} Ningún recordatorio que enviar.|{1} Recordatorio e
 
 setup.description: 'Inicializa la aplicación con datos por defecto si la base de datos está vacía.'
 setup.option.no_force_password_change: 'No forzar el cambio de contraseña del usuario "admin" en el primer acceso'
+setup.option.demo_data: 'Crear también el centro educativo de demostración "IES Test"'
 setup.skipped: 'La base de datos ya contiene datos. Se omite la inicialización.'
-setup.success: 'Aplicación inicializada: usuario "admin" y centro "IES Test" (23999999, Linares) creados.'
+setup.success: 'Aplicación inicializada: usuario "admin" creado. No se ha creado ningún centro educativo de demostración.'
+setup.success_demo_data: 'Aplicación inicializada: usuario "admin" y centro "IES Test" (23999999, Linares) creados.'
 
 field.required: 'Este campo es obligatorio.'

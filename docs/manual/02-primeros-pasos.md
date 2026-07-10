@@ -7,9 +7,11 @@ lo hace un administrador, normalmente una única vez por centro y luego una vez 
 curso nuevo:
 
 - **Primer arranque del servidor**: el comando `app:setup` (ver
-  [Comandos de consola](08-comandos-de-consola.md)) crea automáticamente un centro de demostración
-  con su curso académico activo si todavía no existe ningún docente en la base de datos. Es la vía
-  habitual para probar la aplicación o para el primer despliegue.
+  [Comandos de consola](08-comandos-de-consola.md)) crea el usuario `admin` si todavía no existe
+  ningún docente en la base de datos, pero **no crea ningún centro educativo por defecto**. Tras
+  iniciar sesión sin ningún centro todavía, la pantalla de selección de centro ofrece un enlace
+  directo a **Administración › Centros › Nuevo centro**. Para probar la aplicación con un centro de
+  demostración ya creado, usa `app:setup --demo-data`.
 - **Nuevo centro**: un administrador global lo da de alta con
   `app:create-educational-centre <código> <nombre> <ciudad>` (o de forma interactiva, sin
   argumentos) o bien desde **Administración › Centros › Nuevo centro** en la propia aplicación.

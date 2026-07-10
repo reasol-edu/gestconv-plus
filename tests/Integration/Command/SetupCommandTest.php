@@ -56,9 +56,25 @@ class SetupCommandTest extends RepositoryTestCase
         self::assertTrue($hasher->isPasswordValid($admin, 'admin'));
     }
 
-    public function testCreatesCentreWithActiveAcademicYear(): void
+    public function testDoesNotCreateCentreByDefault(): void
     {
-        $this->tester->execute([]);
+        $status = $this->tester->execute([]);
+        $this->em->clear();
+
+        self::assertSame(Command::SUCCESS, $status);
+
+        $admin = $this->teachers->findByUsername('admin');
+        self::assertNotNull($admin);
+        self::assertTrue($admin->isAdmin());
+
+        /** @var EducationalCentreRepository $centresRepo */
+        $centresRepo = self::getContainer()->get(EducationalCentreRepository::class);
+        self::assertCount(0, $centresRepo->findAllOrderedByName());
+    }
+
+    public function testDemoDataOptionCreatesCentreWithActiveAcademicYear(): void
+    {
+        $this->tester->execute(['--demo-data' => true]);
         $this->em->clear();
 
         /** @var EducationalCentreRepository $centresRepo */

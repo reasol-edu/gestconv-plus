@@ -31,6 +31,30 @@ class CentreSelectionControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testEmptyCentreListOffersCreationLinkToAdmin(): void
+    {
+        $admin = $this->makeTeacher('admin.1')->setAdmin(true);
+        $this->persist($admin);
+        $this->loginAs($admin);
+
+        $crawler = $this->client->request('GET', '/seleccion/centro');
+
+        self::assertResponseIsSuccessful();
+        self::assertGreaterThan(0, $crawler->filter('a[href="/admin/centros/nuevo"]')->count());
+    }
+
+    public function testEmptyCentreListDoesNotOfferCreationLinkToNonAdmin(): void
+    {
+        $teacher = $this->makeTeacher('teacher.1');
+        $this->persist($teacher);
+        $this->loginAs($teacher);
+
+        $crawler = $this->client->request('GET', '/seleccion/centro');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('a[href="/admin/centros/nuevo"]'));
+    }
+
     // ── selección ─────────────────────────────────────────────────────────────
 
     public function testChooseCentreSelectsCentreAndRedirectsToDashboard(): void
