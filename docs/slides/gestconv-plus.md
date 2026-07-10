@@ -476,11 +476,30 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 ---
 
+<!-- _class: tight -->
+
+## Informes: estadísticas por grupo
+
+![width:420px](../manual/img/informes/informes-estadisticas-grupo.png)
+
+- Nueva sección **Informes** en el menú lateral, tras Calendario, reservada
+  al equipo directivo y a los administradores.
+- El informe **Estadísticas por grupo** resume, para un rango de fechas
+  elegido, los partes de cada grupo del curso —alumnos únicos, partes
+  registrados/notificados/sancionados/prescritos (normales y graves) y
+  sanciones distintas—, agrupados por enseñanza con subtotales y un total
+  general.
+- Se puede **exportar a PDF** (con el mismo encabezado personalizable que
+  partes y sanciones) o a una **hoja de cálculo Excel**.
+
+---
+
 ## Personalización de informes PDF
 
-- Los encabezados de los informes de **partes** y **sanciones** son
-  configurables de forma independiente, con texto enriquecido a la izquierda
-  y a la derecha, y un margen superior en milímetros.
+- Los encabezados de los informes de **partes**, **sanciones** y
+  **estadísticas por grupo** son configurables de forma independiente, con
+  texto enriquecido a la izquierda y a la derecha, y un margen superior en
+  milímetros.
 - Se pueden usar **marcadores** que la aplicación sustituye automáticamente:
   título del informe, número de parte, nombre del estudiante, grupo, centro
   o curso académico.

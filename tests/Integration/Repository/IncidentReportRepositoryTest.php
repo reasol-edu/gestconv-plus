@@ -628,6 +628,68 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertSame($worldB['group']->getId(), $groupsB[0]->getId());
     }
 
+    // ── findForGroupStats ─────────────────────────────────────────────────────
+
+    public function testFindForGroupStatsReturnsReportsWithinRange(): void
+    {
+        $world   = $this->makeWorld('fgs1');
+        $admin   = $this->makeTeacher('admin.fgs1', admin: true);
+        $inRange = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('2026-03-10'));
+        $before  = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('2026-01-01'));
+        $after   = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('2026-06-01'));
+        $this->persist($admin, $inRange, $before, $after);
+
+        $results = $this->repo->findForGroupStats(
+            $world['centre'],
+            $world['year'],
+            new \DateTimeImmutable('2026-02-01'),
+            new \DateTimeImmutable('2026-04-01'),
+        );
+
+        self::assertCount(1, $results);
+        self::assertSame($inRange->getId(), $results[0]->getId());
+    }
+
+    public function testFindForGroupStatsRestrictsToGivenAcademicYear(): void
+    {
+        $worldA = $this->makeWorld('fgs2');
+        $worldB = $this->makeOtherYearInSameCentre($worldA, 'fgs2b');
+        $admin  = $this->makeTeacher('admin.fgs2', admin: true);
+        $rA     = $this->makeReport($worldA, creator: $admin, occurredAt: new \DateTimeImmutable('2026-03-10'));
+        $rB     = $this->makeReport($worldB, creator: $admin, occurredAt: new \DateTimeImmutable('2026-03-10'));
+        $this->persist($admin, $rA, $rB);
+
+        $results = $this->repo->findForGroupStats(
+            $worldA['centre'],
+            $worldA['year'],
+            new \DateTimeImmutable('2026-01-01'),
+            new \DateTimeImmutable('2026-12-31'),
+        );
+
+        self::assertCount(1, $results);
+        self::assertSame($rA->getId(), $results[0]->getId());
+    }
+
+    public function testFindForGroupStatsIsScopedByCentre(): void
+    {
+        $worldA  = $this->makeWorld('fgs3a');
+        $worldB  = $this->makeWorld('fgs3b');
+        $admin   = $this->makeTeacher('admin.fgs3', admin: true);
+        $reportA = $this->makeReport($worldA, creator: $admin, occurredAt: new \DateTimeImmutable('2026-03-10'));
+        $reportB = $this->makeReport($worldB, creator: $admin, occurredAt: new \DateTimeImmutable('2026-03-10'));
+        $this->persist($admin, $reportA, $reportB);
+
+        $results = $this->repo->findForGroupStats(
+            $worldA['centre'],
+            $worldA['year'],
+            new \DateTimeImmutable('2026-01-01'),
+            new \DateTimeImmutable('2026-12-31'),
+        );
+
+        self::assertCount(1, $results);
+        self::assertSame($reportA->getId(), $results[0]->getId());
+    }
+
     // ── findEligibleForAutoPrescription ──────────────────────────────────────
 
     public function testFindEligibleForAutoPrescriptionExcludesNotifiedReports(): void

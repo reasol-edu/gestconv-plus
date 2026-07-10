@@ -146,9 +146,13 @@ PDF. Más detalles sobre cada tipo de aviso en
 | Encabezado izquierdo (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (informe de sanción) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de sanción) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Encabezado izquierdo (estadísticas por grupo) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (estadísticas por grupo) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (estadísticas por grupo) | Global, centro | Entero (mm) | 10-80 | 22 |
 | Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
-Controlan el encabezado que se repite en cada página de los PDF de partes y sanciones. Cada tipo
+Controlan el encabezado que se repite en cada página de los PDF de partes, sanciones y del informe
+de estadísticas por grupo (ver [Informes](05-secciones-de-la-aplicacion.md#informes)). Cada tipo
 de informe tiene dos zonas —izquierda y derecha, en la misma línea— que se editan con un editor de
 texto enriquecido (negrita, cursiva, subrayado, títulos, listas, citas y enlaces). El margen
 superior determina, en milímetros, a qué altura empieza el cuerpo del documento en cada página:
@@ -165,13 +169,14 @@ informe al generar el PDF:
 
 | Marcador | Se sustituye por | Disponible en |
 |---|---|---|
-| `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia») | Ambos |
+| `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo») | Todos |
 | `{report_nr}` | Número del parte | Solo partes |
-| `{student_name}` | Nombre completo del alumno | Ambos |
-| `{group_name}` | Nombre del grupo | Ambos |
-| `{centre_name}` | Nombre del centro educativo | Ambos |
-| `{academic_year}` | Nombre del curso académico | Ambos |
+| `{student_name}` | Nombre completo del alumno | Partes y sanciones |
+| `{group_name}` | Nombre del grupo | Partes y sanciones |
+| `{centre_name}` | Nombre del centro educativo | Todos |
+| `{academic_year}` | Nombre del curso académico | Todos |
+| `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado | Solo estadísticas por grupo |
 
 Un marcador desconocido (por ejemplo, uno con una errata) no rompe el informe: se muestra tal
-cual en el PDF, lo que facilita detectar el error. Ninguno de los seis ajustes tiene ámbito de
+cual en el PDF, lo que facilita detectar el error. Ninguno de los nueve ajustes tiene ámbito de
 docente: se fijan a nivel global o de centro únicamente.

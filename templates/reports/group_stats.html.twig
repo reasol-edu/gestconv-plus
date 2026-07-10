@@ -1,0 +1,135 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'group_stats.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-6xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_reports_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'reports'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'group_stats.title'|trans({}, 'admin') }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'group_stats.title'|trans({}, 'admin') }}</h1>
+        {% if year %}
+            <p class="mt-1 text-sm text-gray-500">{{ year.name }}</p>
+        {% endif %}
+    </div>
+
+    {% if year is null %}
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {{ 'group_stats.no_active_year'|trans({}, 'admin') }}
+        </div>
+    {% else %}
+        <form method="get" class="flex flex-wrap items-end gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-xs">
+            <div>
+                <label for="group-stats-from" class="block text-xs font-medium text-gray-500 mb-1">{{ 'group_stats.field.from'|trans({}, 'admin') }}</label>
+                <input type="date" id="group-stats-from" name="from" value="{{ from ? from|date('Y-m-d') : '' }}" required
+                       class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                              focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+            <div>
+                <label for="group-stats-to" class="block text-xs font-medium text-gray-500 mb-1">{{ 'group_stats.field.to'|trans({}, 'admin') }}</label>
+                <input type="date" id="group-stats-to" name="to" value="{{ to ? to|date('Y-m-d') : '' }}" required
+                       class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                              focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-medium text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:chart-bar', {class: 'h-4 w-4'}) }}
+                {{ 'group_stats.generate'|trans({}, 'admin') }}
+            </button>
+
+            {% if report %}
+                <div class="ml-auto flex items-center gap-2">
+                    <a href="{{ path('app_reports_group_stats_pdf', {centreId: centre.id, from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}"
+                       target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                              hover:bg-gray-50 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:document-arrow-down', {class: 'h-4 w-4'}) }}
+                        {{ 'group_stats.export_pdf'|trans({}, 'admin') }}
+                    </a>
+                    <a href="{{ path('app_reports_group_stats_xlsx', {centreId: centre.id, from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}"
+                       class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                              hover:bg-gray-50 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:table-cells', {class: 'h-4 w-4'}) }}
+                        {{ 'group_stats.export_xlsx'|trans({}, 'admin') }}
+                    </a>
+                </div>
+            {% endif %}
+        </form>
+
+        {% if from and to and report is null %}
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                {{ 'group_stats.invalid_range'|trans({}, 'admin') }}
+            </div>
+        {% endif %}
+
+        {% if report %}
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            <th scope="col" class="text-left px-4 py-3">{{ 'group_stats.column.group'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-right px-4 py-3">{{ 'group_stats.column.unique_students'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-right px-4 py-3">{{ 'group_stats.column.reports'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-right px-4 py-3">{{ 'group_stats.column.notified'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-right px-4 py-3">{{ 'group_stats.column.sanctioned'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-right px-4 py-3">{{ 'group_stats.column.prescribed'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-right px-4 py-3">{{ 'group_stats.column.sanctions'|trans({}, 'admin') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for programme in report.programmes %}
+                            <tr class="bg-forest-50">
+                                <td colspan="7" class="px-4 py-2 text-xs font-bold uppercase tracking-wide text-forest-700">{{ programme.programme.name }}</td>
+                            </tr>
+                            {% for row in programme.rows %}
+                                <tr class="[&>td]:px-4 [&>td]:py-2.5">
+                                    <td>{{ row.group.name }}</td>
+                                    <td class="text-right">{{ row.uniqueStudents }}</td>
+                                    <td class="text-right">{{ row.reportsTotal }} <span class="text-xs text-gray-400">({{ row.reportsNormal }}N / {{ row.reportsSerious }}G)</span></td>
+                                    <td class="text-right">{{ row.notifiedTotal }} <span class="text-xs text-gray-400">({{ row.notifiedNormal }}N / {{ row.notifiedSerious }}G)</span></td>
+                                    <td class="text-right">{{ row.sanctionedTotal }} <span class="text-xs text-gray-400">({{ row.sanctionedNormal }}N / {{ row.sanctionedSerious }}G)</span></td>
+                                    <td class="text-right">{{ row.prescribedTotal }} <span class="text-xs text-gray-400">({{ row.prescribedNormal }}N / {{ row.prescribedSerious }}G)</span></td>
+                                    <td class="text-right">{{ row.sanctionsCount }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr class="[&>td]:px-4 [&>td]:py-2.5 font-semibold bg-gray-50 border-t border-gray-200">
+                                <td>{{ 'group_stats.subtotal'|trans({}, 'admin') }}</td>
+                                <td class="text-right">{{ programme.total.uniqueStudents }}</td>
+                                <td class="text-right">{{ programme.total.reportsTotal }} <span class="text-xs text-gray-400 font-normal">({{ programme.total.reportsNormal }}N / {{ programme.total.reportsSerious }}G)</span></td>
+                                <td class="text-right">{{ programme.total.notifiedTotal }} <span class="text-xs text-gray-400 font-normal">({{ programme.total.notifiedNormal }}N / {{ programme.total.notifiedSerious }}G)</span></td>
+                                <td class="text-right">{{ programme.total.sanctionedTotal }} <span class="text-xs text-gray-400 font-normal">({{ programme.total.sanctionedNormal }}N / {{ programme.total.sanctionedSerious }}G)</span></td>
+                                <td class="text-right">{{ programme.total.prescribedTotal }} <span class="text-xs text-gray-400 font-normal">({{ programme.total.prescribedNormal }}N / {{ programme.total.prescribedSerious }}G)</span></td>
+                                <td class="text-right">{{ programme.total.sanctionsCount }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="px-4 py-6 text-center text-sm text-gray-400">{{ 'group_stats.no_groups'|trans({}, 'admin') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if report.programmes is not empty %}
+                        <tfoot>
+                            <tr class="[&>td]:px-4 [&>td]:py-3 font-bold bg-forest-100 border-t-2 border-forest-200">
+                                <td>{{ 'group_stats.grand_total'|trans({}, 'admin') }}</td>
+                                <td class="text-right">{{ report.grandTotal.uniqueStudents }}</td>
+                                <td class="text-right">{{ report.grandTotal.reportsTotal }} <span class="text-xs text-gray-500 font-normal">({{ report.grandTotal.reportsNormal }}N / {{ report.grandTotal.reportsSerious }}G)</span></td>
+                                <td class="text-right">{{ report.grandTotal.notifiedTotal }} <span class="text-xs text-gray-500 font-normal">({{ report.grandTotal.notifiedNormal }}N / {{ report.grandTotal.notifiedSerious }}G)</span></td>
+                                <td class="text-right">{{ report.grandTotal.sanctionedTotal }} <span class="text-xs text-gray-500 font-normal">({{ report.grandTotal.sanctionedNormal }}N / {{ report.grandTotal.sanctionedSerious }}G)</span></td>
+                                <td class="text-right">{{ report.grandTotal.prescribedTotal }} <span class="text-xs text-gray-500 font-normal">({{ report.grandTotal.prescribedNormal }}N / {{ report.grandTotal.prescribedSerious }}G)</span></td>
+                                <td class="text-right">{{ report.grandTotal.sanctionsCount }}</td>
+                            </tr>
+                        </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}

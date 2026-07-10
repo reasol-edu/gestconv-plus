@@ -146,6 +146,17 @@
                 'app_calendar'
             ) }}
 
+            {# Informes — solo para equipo directivo y admins #}
+            {% if active_centre and is_granted('educational_centre.section', active_centre) %}
+                {% set reports_active = current_route starts with 'app_reports_' %}
+                <a href="{{ path('app_reports_index', {centreId: active_centre.id}) }}"
+                   class="{{ reports_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:chart-bar', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'reports'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
             {# Centro educativo — solo para equipo directivo y admins #}
             {% if active_centre and is_granted('educational_centre.section', active_centre) %}
                 {% set centre_active = current_route starts with 'app_centre_' %}

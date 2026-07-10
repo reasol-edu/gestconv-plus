@@ -1,0 +1,66 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+    <p class="section-title">
+        {{ 'group_stats.title'|trans({}, 'admin') }} · {{ year.name }} · {{ from|date('d/m/Y') }} – {{ to|date('d/m/Y') }}
+    </p>
+
+    {% for programme in report.programmes %}
+        <p class="subsection-title">{{ programme.programme.name }}</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'group_stats.column.group'|trans({}, 'admin') }}</th>
+                    <th>{{ 'group_stats.column.unique_students'|trans({}, 'admin') }}</th>
+                    <th>{{ 'group_stats.column.reports'|trans({}, 'admin') }}</th>
+                    <th>{{ 'group_stats.column.notified'|trans({}, 'admin') }}</th>
+                    <th>{{ 'group_stats.column.sanctioned'|trans({}, 'admin') }}</th>
+                    <th>{{ 'group_stats.column.prescribed'|trans({}, 'admin') }}</th>
+                    <th>{{ 'group_stats.column.sanctions'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in programme.rows %}
+                    <tr>
+                        <td>{{ row.group.name }}</td>
+                        <td>{{ row.uniqueStudents }}</td>
+                        <td>{{ row.reportsTotal }} <span class="cell-sub">({{ row.reportsNormal }}N / {{ row.reportsSerious }}G)</span></td>
+                        <td>{{ row.notifiedTotal }} <span class="cell-sub">({{ row.notifiedNormal }}N / {{ row.notifiedSerious }}G)</span></td>
+                        <td>{{ row.sanctionedTotal }} <span class="cell-sub">({{ row.sanctionedNormal }}N / {{ row.sanctionedSerious }}G)</span></td>
+                        <td>{{ row.prescribedTotal }} <span class="cell-sub">({{ row.prescribedNormal }}N / {{ row.prescribedSerious }}G)</span></td>
+                        <td>{{ row.sanctionsCount }}</td>
+                    </tr>
+                {% endfor %}
+                <tr style="font-weight:bold;background-color:#eef0fa;">
+                    <td>{{ 'group_stats.subtotal'|trans({}, 'admin') }}</td>
+                    <td>{{ programme.total.uniqueStudents }}</td>
+                    <td>{{ programme.total.reportsTotal }} <span class="cell-sub">({{ programme.total.reportsNormal }}N / {{ programme.total.reportsSerious }}G)</span></td>
+                    <td>{{ programme.total.notifiedTotal }} <span class="cell-sub">({{ programme.total.notifiedNormal }}N / {{ programme.total.notifiedSerious }}G)</span></td>
+                    <td>{{ programme.total.sanctionedTotal }} <span class="cell-sub">({{ programme.total.sanctionedNormal }}N / {{ programme.total.sanctionedSerious }}G)</span></td>
+                    <td>{{ programme.total.prescribedTotal }} <span class="cell-sub">({{ programme.total.prescribedNormal }}N / {{ programme.total.prescribedSerious }}G)</span></td>
+                    <td>{{ programme.total.sanctionsCount }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <p class="cell-sub">{{ 'group_stats.no_groups'|trans({}, 'admin') }}</p>
+    {% endfor %}
+
+    {% if report.programmes is not empty %}
+        <p class="subsection-title">{{ 'group_stats.grand_total'|trans({}, 'admin') }}</p>
+        <table class="data-table">
+            <tbody>
+                <tr style="font-weight:bold;background-color:#dcdef2;">
+                    <td>{{ 'group_stats.column.unique_students'|trans({}, 'admin') }}: {{ report.grandTotal.uniqueStudents }}</td>
+                    <td>{{ 'group_stats.column.reports'|trans({}, 'admin') }}: {{ report.grandTotal.reportsTotal }} <span class="cell-sub">({{ report.grandTotal.reportsNormal }}N / {{ report.grandTotal.reportsSerious }}G)</span></td>
+                    <td>{{ 'group_stats.column.notified'|trans({}, 'admin') }}: {{ report.grandTotal.notifiedTotal }} <span class="cell-sub">({{ report.grandTotal.notifiedNormal }}N / {{ report.grandTotal.notifiedSerious }}G)</span></td>
+                </tr>
+                <tr style="font-weight:bold;background-color:#dcdef2;">
+                    <td>{{ 'group_stats.column.sanctioned'|trans({}, 'admin') }}: {{ report.grandTotal.sanctionedTotal }} <span class="cell-sub">({{ report.grandTotal.sanctionedNormal }}N / {{ report.grandTotal.sanctionedSerious }}G)</span></td>
+                    <td>{{ 'group_stats.column.prescribed'|trans({}, 'admin') }}: {{ report.grandTotal.prescribedTotal }} <span class="cell-sub">({{ report.grandTotal.prescribedNormal }}N / {{ report.grandTotal.prescribedSerious }}G)</span></td>
+                    <td>{{ 'group_stats.column.sanctions'|trans({}, 'admin') }}: {{ report.grandTotal.sanctionsCount }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

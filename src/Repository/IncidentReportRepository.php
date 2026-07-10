@@ -540,6 +540,44 @@ class IncidentReportRepository extends ServiceEntityRepository
     }
 
     /**
+     * Reports of the centre/year in the given date range, with group, programme hierarchy,
+     * student, behaviors (+category) and sanction eager-loaded — the raw dataset consumed by
+     * GroupStatisticsService to build the "Estadísticas por grupo" report.
+     *
+     * @return list<IncidentReport>
+     */
+    public function findForGroupStats(
+        EducationalCentre $centre,
+        AcademicYear $year,
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $to,
+    ): array {
+        /** @var list<IncidentReport> $result */
+        $result = $this->createQueryBuilder('r')
+            ->addSelect('g', 'py', 'prog', 's', 'beh', 'bc', 'sanction')
+            ->join('r.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->join('r.student', 's')
+            ->leftJoin('r.behaviors', 'beh')
+            ->leftJoin('beh.category', 'bc')
+            ->leftJoin('r.sanction', 'sanction')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('ay = :year')
+            ->andWhere('r.occurredAt >= :from')
+            ->andWhere('r.occurredAt <= :to')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('from', $from->setTime(0, 0, 0))
+            ->setParameter('to', $to->setTime(23, 59, 59))
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
      * All reports of the centre still un-notified and not prescribed, regardless of how close they
      * are to the centre's auto-prescription cutoff — used to compute upcoming-prescription warnings,
      * where the remaining days depend on each recipient's personal warning threshold.

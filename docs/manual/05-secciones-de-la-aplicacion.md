@@ -303,6 +303,24 @@ El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista
 
 > Una vez activado el modo tablón, no se puede navegar a ninguna otra parte de la aplicación en esa sesión del navegador: cualquier intento de acceder a otra pantalla redirige de vuelta al tablón. La única salida es cerrar sesión con el botón de encendido/apagado.
 
+## Informes
+
+La sección **Informes**, accesible desde el menú lateral tras **Calendario**, reúne los informes agregados de convivencia disponibles para el centro. Solo la ven los docentes con acceso a la sección **Centro educativo** (equipo directivo y administradores); requiere un curso académico activo, tanto para consultarla como para generar cualquier informe.
+
+### Estadísticas por grupo
+
+La tarjeta **Estadísticas por grupo** abre un formulario para elegir una fecha de inicio y una fecha de fin; al generarlo, se muestra una tabla con los partes registrados en ese rango de fechas para cada grupo del curso académico activo, agrupados por enseñanza:
+
+- **Alumnos únicos**: número de estudiantes distintos con al menos un parte en el rango.
+- **Partes registrados**, **notificados**, **sancionados** y **prescritos**: cada uno desglosado entre partes de conductas normales y graves.
+- **Sanciones**: número de sanciones distintas asociadas a los partes del grupo; una sanción que agrupe varios partes cuenta una sola vez.
+
+Los grupos sin partes en el rango también aparecen, con todos los valores a cero. Cada enseñanza muestra una fila de subtotal con la suma de sus grupos, y la tabla termina con una fila de total general para todo el centro.
+
+![Resultado del informe de estadísticas por grupo](img/informes/informes-estadisticas-grupo.png)
+
+Los botones **Exportar a PDF** y **Exportar a hoja de cálculo**, visibles una vez generado el informe, descargan el mismo contenido en formato PDF (con el encabezado personalizable del centro, ver [Personalización de informes](07-ajustes.md#personalizacion-de-informes)) o en una hoja Excel con una fila por grupo, los subtotales de cada enseñanza y el total general.
+
 ## Centro Educativo
 
 La sección **Centro educativo** del menú lateral es el panel de configuración del centro, reservado a los administradores. Desde sus tarjetas se gestionan los docentes, la oferta formativa, los estudiantes, las conductas contrarias, las medidas disciplinarias, los métodos de comunicación, los perfiles especiales y los ajustes del centro. Las conductas, medidas y métodos se describen en las secciones anteriores de este capítulo; a continuación se detallan el resto de apartados.
