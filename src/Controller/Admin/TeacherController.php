@@ -62,8 +62,8 @@ class TeacherController extends AbstractController
                 'password'   => $request->request->getString('password'),
             ];
             $flags = [
-                'admin'    => $request->request->has('admin'),
-                'active'   => $request->request->has('active'),
+                'admin'    => $request->request->getString('admin') === 'yes',
+                'active'   => $request->request->getString('active') === 'yes',
                 'external' => $request->request->getString('auth_method') === 'external',
             ];
             $flags['force_password_change'] = !$flags['external']
@@ -148,8 +148,8 @@ class TeacherController extends AbstractController
                 'password'   => $request->request->getString('password'),
             ];
             $flags = [
-                'admin'    => $request->request->has('admin'),
-                'active'   => $request->request->has('active'),
+                'admin'    => $request->request->getString('admin') === 'yes',
+                'active'   => $request->request->getString('active') === 'yes',
                 'external' => $request->request->getString('auth_method') === 'external',
             ];
             $flags['force_password_change'] = !$flags['external']

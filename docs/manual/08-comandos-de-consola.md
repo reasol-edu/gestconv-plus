@@ -8,7 +8,7 @@ cualquier momento con `php bin/console list app`.
 ## app:setup
 
 ```
-php bin/console app:setup
+php bin/console app:setup [--no-force-password-change]
 ```
 
 Inicializa la aplicación con datos de demostración **si la base de datos está completamente
@@ -23,10 +23,16 @@ Cuando sí se ejecuta, crea:
   un curso académico activo nombrado con el año en curso (por ejemplo, «2026-2027»).
 - Las conductas contrarias a la convivencia, medidas disciplinarias y métodos de comunicación por
   defecto del centro (ver [Secciones de la aplicación](05-secciones-de-la-aplicacion.md)).
-- Un docente administrador global con usuario `admin` y contraseña `admin`.
+- Un docente administrador global con usuario `admin` y contraseña `admin`, con el cambio de
+  contraseña obligatorio en el primer inicio de sesión (ver
+  [Secciones de la aplicación](05-secciones-de-la-aplicacion.md#forzar-cambio-de-contrasena)): la
+  cuenta queda confinada a la pantalla de cambio de contraseña hasta que se establece una nueva.
+  La opción `--no-force-password-change` omite esta obligación y deja la contraseña `admin` activa
+  sin restricciones.
 
-> Cambia la contraseña del usuario `admin` inmediatamente después del primer arranque en cualquier
-> entorno accesible desde fuera de tu equipo.
+> Si usas `--no-force-password-change`, cambia la contraseña del usuario `admin` manualmente
+> inmediatamente después del primer arranque en cualquier entorno accesible desde fuera de tu
+> equipo.
 
 ## app:create-educational-centre
 
@@ -49,7 +55,7 @@ la aplicación (ver [Primeros pasos](02-primeros-pasos.md)).
 ## app:create-admin
 
 ```
-php bin/console app:create-admin <usuario> [contraseña]
+php bin/console app:create-admin <usuario> [contraseña] [--no-force-password-change]
 ```
 
 Crea una cuenta de docente con privilegios de **administrador global** (acceso a todos los centros
@@ -57,6 +63,11 @@ del servidor). El argumento `usuario` es obligatorio; si se omite `contraseña`,
 de forma interactiva sin mostrarla en pantalla.
 
 Si el nombre de usuario ya existe, el comando falla con un error y no modifica la cuenta existente.
+
+Por defecto, la cuenta creada tiene el cambio de contraseña obligatorio en el primer inicio de
+sesión (ver [Secciones de la aplicación](05-secciones-de-la-aplicacion.md#forzar-cambio-de-contrasena)).
+La opción `--no-force-password-change` omite esta obligación y deja la contraseña indicada activa
+sin restricciones.
 
 Es la vía recomendada para crear administradores adicionales o para recuperar el acceso si se ha
 perdido la contraseña del único administrador (ver

@@ -45,8 +45,9 @@ Abre la carpeta que se ha creado y:
 
 Espera unos segundos (la primera vez tarda un poco en prepararse) y abre tu navegador en
 **[http://localhost:8080](http://localhost:8080)**. Entra con usuario **`admin`** y contraseña
-**`admin`**, o con cualquiera de los docentes de ejemplo (contraseña `ejemplo`; la lista completa
-está en el fichero `DEMO.md` del repositorio).
+**`admin`** — el primer inicio de sesión te pedirá establecer una nueva contraseña —, o con
+cualquiera de los docentes de ejemplo (contraseña `ejemplo`; la lista completa está en el fichero
+`DEMO.md` del repositorio).
 
 ??? warning "Aviso de seguridad en macOS"
     Como la aplicación no está firmada con un certificado de Apple, la primera vez macOS la bloqueará
@@ -507,8 +508,12 @@ php bin/console app:setup --no-interaction
 ```
 
 !!! danger "Cambia la contraseña por defecto"
-    `app:setup` crea el usuario `admin` con contraseña `admin`. **Cámbiala inmediatamente** en
-    **Perfil → Cambiar contraseña** antes de que nadie más acceda.
+    `app:setup` crea el usuario `admin` con contraseña `admin`, con el cambio de contraseña
+    obligatorio en el primer inicio de sesión (ver
+    [Comandos de consola](08-comandos-de-consola.md#appsetup)): la cuenta queda confinada a la
+    pantalla de cambio de contraseña hasta que se establece una nueva, así que no hace falta
+    ningún paso manual adicional. Si has usado `--no-force-password-change`, cambia la contraseña
+    manualmente en **Perfil → Cambiar contraseña** antes de que nadie más acceda.
 
 ### 7. Correos y tareas programadas (worker vía cron)
 

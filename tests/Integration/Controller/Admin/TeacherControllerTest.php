@@ -204,7 +204,7 @@ class TeacherControllerTest extends ControllerTestCase
         $crawler = $this->client->request('GET', '/admin/docentes/' . $adminId);
         $token   = $crawler->filter('form')->first()->filter('[name="_token"]')->attr('value');
 
-        // Submit without the 'admin' checkbox → tries to demote self
+        // Submit 'admin' => 'no' → tries to demote self
         $this->client->request('POST', '/admin/docentes/' . $adminId, [
             '_token'      => $token,
             'first_name'  => 'Admin',
@@ -213,7 +213,8 @@ class TeacherControllerTest extends ControllerTestCase
             'email'       => '',
             'password'    => '',
             'auth_method' => 'local',
-            'active'      => '1', // keep active, no 'admin' → demote
+            'admin'       => 'no',
+            'active'      => 'yes', // keep active, demote admin
         ]);
 
         // Redirects back to edit page without saving the demotion
@@ -234,7 +235,7 @@ class TeacherControllerTest extends ControllerTestCase
         $crawler = $this->client->request('GET', '/admin/docentes/' . $adminId);
         $token   = $crawler->filter('form')->first()->filter('[name="_token"]')->attr('value');
 
-        // Submit without 'active' checkbox → tries to deactivate self
+        // Submit 'active' => 'no' → tries to deactivate self
         $this->client->request('POST', '/admin/docentes/' . $adminId, [
             '_token'      => $token,
             'first_name'  => 'Admin',
@@ -243,7 +244,8 @@ class TeacherControllerTest extends ControllerTestCase
             'email'       => '',
             'password'    => '',
             'auth_method' => 'local',
-            'admin'       => '1', // keep admin, no 'active' → deactivate
+            'admin'       => 'yes', // keep admin, deactivate self
+            'active'      => 'no',
         ]);
 
         self::assertResponseRedirects();

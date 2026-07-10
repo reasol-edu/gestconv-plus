@@ -173,22 +173,66 @@
                 </div>
             </div>
 
-            {# Opciones #}
-            <div class="space-y-3 pt-1">
-                <label class="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" name="admin" value="1"
-                           {{ flags.admin ? 'checked' : '' }}
-                           {{ is_current_user ? 'disabled' : '' }}
-                           class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
-                    <span class="text-sm text-gray-700">{{ 'teacher.field.admin'|trans({}, 'admin') }}</span>
-                </label>
-                <label class="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" name="active" value="1"
-                           {{ flags.active ? 'checked' : '' }}
-                           {{ is_current_user ? 'disabled' : '' }}
-                           class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
-                    <span class="text-sm text-gray-700">{{ 'teacher.field.active'|trans({}, 'admin') }}</span>
-                </label>
+            {# Rol #}
+            <div>
+                <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'teacher.field.admin'|trans({}, 'admin') }}</span>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50
+                                  {{ is_current_user ? 'opacity-60 cursor-not-allowed' : '' }}">
+                        <input type="radio" name="admin" value="no"
+                               {{ not flags.admin ? 'checked' : '' }}
+                               {{ is_current_user ? 'disabled' : '' }}
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.admin_no'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'teacher.field.admin_no_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50
+                                  {{ is_current_user ? 'opacity-60 cursor-not-allowed' : '' }}">
+                        <input type="radio" name="admin" value="yes"
+                               {{ flags.admin ? 'checked' : '' }}
+                               {{ is_current_user ? 'disabled' : '' }}
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.admin_yes'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'teacher.field.admin_yes_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            {# Estado de la cuenta #}
+            <div>
+                <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'teacher.field.active'|trans({}, 'admin') }}</span>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50
+                                  {{ is_current_user ? 'opacity-60 cursor-not-allowed' : '' }}">
+                        <input type="radio" name="active" value="yes"
+                               {{ flags.active ? 'checked' : '' }}
+                               {{ is_current_user ? 'disabled' : '' }}
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.active_yes'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'teacher.field.active_yes_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50
+                                  {{ is_current_user ? 'opacity-60 cursor-not-allowed' : '' }}">
+                        <input type="radio" name="active" value="no"
+                               {{ not flags.active ? 'checked' : '' }}
+                               {{ is_current_user ? 'disabled' : '' }}
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.active_no'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'teacher.field.active_no_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                </div>
             </div>
 
             {% if is_current_user %}

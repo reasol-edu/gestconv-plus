@@ -397,6 +397,24 @@ Detalles del listado, sus filtros y el ajuste que lo activa o desactiva en
 
 ## Administración
 
+### Docentes
+
+La tarjeta **Docentes** del panel de administración global permite crear y editar cualquier cuenta de docente del servidor, con independencia del centro al que pertenezca. Solo la ven los administradores globales.
+
+El formulario de alta y edición incluye, además del nombre, apellidos, usuario y correo electrónico, tres opciones presentadas como pares de botones de radio en cajas:
+
+- **Modo de acceso** — contraseña propia o autenticación externa vía usuario IdEA (Séneca). Con autenticación externa, la aplicación no gestiona ninguna contraseña para esa cuenta.
+- **Administrador global** — concede acceso total a todos los centros, todos los cursos y toda la configuración del sistema.
+- **Cuenta activa** — una cuenta inactiva no puede iniciar sesión.
+
+Por seguridad, un administrador no puede quitarse a sí mismo el rol de administrador global ni desactivar su propia cuenta desde este formulario.
+
+#### Forzar cambio de contraseña
+
+Al crear o editar un docente con acceso por contraseña (no disponible con autenticación externa), un tercer par de botones de radio permite **forzar el cambio de contraseña** en el próximo acceso. Al activarlo, la próxima vez que ese docente inicie sesión queda confinado a una pantalla dedicada de cambio de contraseña (contraseña actual, nueva contraseña y su repetición) hasta que la cambie; un botón le permite cerrar sesión si no quiere hacerlo en ese momento. El resto de la aplicación queda inaccesible mientras el cambio esté pendiente.
+
+Esta opción es la vía recomendada para entregar una contraseña provisional a un docente nuevo o para forzar la renovación de una contraseña que se sospeche comprometida.
+
 ### Registro de actividad
 
 El registro de actividad recoge las acciones relevantes realizadas en la plataforma: accesos, modificaciones de datos, importaciones y exportaciones. Solo es visible para los administradores globales.
