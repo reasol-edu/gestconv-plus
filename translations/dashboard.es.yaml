@@ -10,6 +10,12 @@ students: 'Estudiantes'
 students_enrolled: 'matriculados este curso'
 no_students_registered: 'Todavía no hay estudiantes matriculados en el curso académico activo.'
 
+no_groups_defined: 'Todavía no se han definido los grupos del curso académico activo.'
+action_manage_offer: 'Configurar oferta y grupos'
+
+no_teachers_registered: 'Todavía no hay docentes incorporados al curso académico activo.'
+action_manage_teachers: 'Incorporar docentes'
+
 incident_reports: 'Partes de convivencia'
 incidents_last_30_days: 'en los últimos 30 días'
 

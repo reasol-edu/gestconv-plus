@@ -130,6 +130,8 @@ class DashboardControllerTest extends ControllerTestCase
     public function testStudentsRegisteredShowsStatsInsteadOfNotice(): void
     {
         [$teacher, $centre] = $this->makeScenarioWithActiveYear(true, withStudent: true);
+        $centre->getActiveAcademicYear()->addTeacher($teacher);
+        $this->flush();
         $this->loginAs($teacher, $centre);
 
         $crawler = $this->client->request('GET', '/');
@@ -137,6 +139,68 @@ class DashboardControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('a[href$="/estudiantes/importar"]'));
         self::assertStringContainsString('matriculados este curso', $crawler->filter('body')->text());
+    }
+
+    public function testNoGroupsDefinedShowsNoticeForAdminInsteadOfStudentsNotice(): void
+    {
+        $suffix  = uniqid('', false);
+        $centre  = (new EducationalCentre())->setCode('41' . substr($suffix, 0, 6))->setName('IES Test')->setCity('Sevilla');
+        $teacher = (new Teacher(new PersonName('Test', 'Teacher')))->setUsername('teacher.' . $suffix)->setAdmin(true);
+        $year    = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
+        $centre->setActiveAcademicYear($year);
+        $this->persist($centre, $teacher, $year);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        $bodyText = $crawler->filter('body')->text();
+        self::assertStringContainsString('Todavía no se han definido los grupos', $bodyText);
+        self::assertSelectorExists('a[href$="/offer"]');
+        self::assertStringNotContainsString('Todavía no hay estudiantes matriculados', $bodyText);
+        self::assertStringNotContainsString('Todavía no hay docentes incorporados', $bodyText);
+    }
+
+    public function testNoGroupsDefinedShowsNoButtonForNonAdmin(): void
+    {
+        $suffix  = uniqid('', false);
+        $centre  = (new EducationalCentre())->setCode('41' . substr($suffix, 0, 6))->setName('IES Test')->setCity('Sevilla');
+        $teacher = (new Teacher(new PersonName('Test', 'Teacher')))->setUsername('teacher.' . $suffix);
+        $year    = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
+        $centre->setActiveAcademicYear($year);
+        $this->persist($centre, $teacher, $year);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('Todavía no se han definido los grupos', $crawler->filter('body')->text());
+    }
+
+    public function testNoTeachersInYearShowsNoticeForAdminWhenGroupsExist(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(true, withStudent: true);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        $bodyText = $crawler->filter('body')->text();
+        self::assertStringContainsString('Todavía no hay docentes incorporados', $bodyText);
+        self::assertSelectorExists('a[href$="/docentes-curso"]');
+    }
+
+    public function testTeachersInYearHidesTeacherNotice(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(true, withStudent: true);
+        $centre->getActiveAcademicYear()->addTeacher($teacher);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('Todavía no hay docentes incorporados', $crawler->filter('body')->text());
     }
 
     /** @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: Student} */

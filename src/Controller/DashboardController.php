@@ -9,6 +9,7 @@ use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\StudentRepository;
+use App\Repository\TeacherRepository;
 use App\Security\Voter\SanctionVoter;
 use App\Service\PendingNotificationQueue;
 use App\Service\TenantContext;
@@ -24,6 +25,7 @@ class DashboardController extends AbstractController
         private readonly IncidentReportRepository $incidentRepository,
         private readonly SanctionRepository $sanctionRepository,
         private readonly GroupRepository $groupRepository,
+        private readonly TeacherRepository $teacherRepository,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
     ) {}
 
@@ -42,6 +44,8 @@ class DashboardController extends AbstractController
         if ($year === null || $viewer === null) {
             return $this->render('dashboard/index.html.twig', [
                 'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
+                'groupCount'           => 0,
+                'teacherCount'         => 0,
                 'reportCount30d'       => 0,
                 'activeSanctionsCount' => 0,
                 'pendingQueue'         => ['reports' => [], 'sanctions' => [], 'total' => 0],
@@ -78,6 +82,8 @@ class DashboardController extends AbstractController
 
         return $this->render('dashboard/index.html.twig', [
             'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
+            'groupCount'           => $this->groupRepository->countByActiveYearOfCentre($centre, $year),
+            'teacherCount'         => $this->teacherRepository->countByAcademicYear($year),
             'reportCount30d'       => $this->incidentRepository->countRecentByCentre($centre, $viewer, $year, 30),
             'activeSanctionsCount' => $this->sanctionRepository->countActiveByCentre($centre, $viewer, new \DateTimeImmutable(), $year),
             'pendingQueue'         => $this->pendingNotificationQueue->forViewer($centre, $viewer, $year),

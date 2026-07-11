@@ -147,6 +147,23 @@ class GroupRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function countByActiveYearOfCentre(EducationalCentre $centre, ?AcademicYear $year = null): int
+    {
+        $year ??= $centre->getActiveAcademicYear();
+        if ($year === null) {
+            return 0;
+        }
+
+        return (int) $this->createQueryBuilder('g')
+            ->select('COUNT(g.id)')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->where('prog.academicYear = :year')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /** @return Group[] */
     public function findByActiveYearOfCentreOrderedByName(EducationalCentre $centre, ?AcademicYear $year = null): array
     {

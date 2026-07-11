@@ -106,7 +106,33 @@
         </div>
     {% endif %}
 
-    {# ── Tarjetas estadísticas, o aviso si no hay estudiantes matriculados ──── #}
+    {# ── Tarjetas estadísticas, o avisos de configuración pendiente del curso ── #}
+    {% if can_students_section and groupCount == 0 %}
+        <div class="rounded-2xl border border-gray-200 bg-white px-6 py-12 text-center">
+            {{ ux_icon('heroicons:squares-2x2', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+            <p class="text-sm font-medium text-gray-700">{{ 'no_groups_defined'|trans({}, 'dashboard') }}</p>
+            {% if not viewing_past %}
+                <a href="{{ path('app_centre_offer_index', {centreId: active_centre.id}) }}"
+                   class="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-forest-700 transition-colors">
+                    {{ ux_icon('heroicons:arrow-right', {class: 'h-4 w-4'}) }}
+                    {{ 'action_manage_offer'|trans({}, 'dashboard') }}
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+    {% if can_students_section and teacherCount == 0 %}
+        <div class="rounded-2xl border border-gray-200 bg-white px-6 py-8 text-center">
+            {{ ux_icon('heroicons:user-group', {class: 'mx-auto h-8 w-8 text-gray-300 mb-2'}) }}
+            <p class="text-sm font-medium text-gray-700">{{ 'no_teachers_registered'|trans({}, 'dashboard') }}</p>
+            {% if not viewing_past %}
+                <a href="{{ path('app_centre_teachers_index', {centreId: active_centre.id}) }}"
+                   class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-forest-700 transition-colors">
+                    {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
+                    {{ 'action_manage_teachers'|trans({}, 'dashboard') }}
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
     {% if studentCount == 0 %}
         <div class="rounded-2xl border border-gray-200 bg-white px-6 py-12 text-center">
             {{ ux_icon('heroicons:academic-cap', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
@@ -177,6 +203,7 @@
             </p>
         </a>
     </div>
+    {% endif %}
     {% endif %}
 
     {# ── Últimos partes + panel condicional por rol (requieren estudiantado matriculado) ── #}

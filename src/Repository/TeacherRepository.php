@@ -40,6 +40,17 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         return $this->createByAcademicYearFilteredQuery($year)->getResult();
     }
 
+    public function countByAcademicYear(AcademicYear $year): int
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->join('t.academicYears', 'ay')
+            ->where('ay.id = :year')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function findByAcademicYearAndId(AcademicYear $year, string $id): ?Teacher
     {
         $result = $this->createQueryBuilder('t')
