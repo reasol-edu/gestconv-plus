@@ -1,8 +1,11 @@
-.PHONY: dev dev-stop fixtures migrate setup test slides docs docs-pdf docs-web docs-serve
+.PHONY: dev dev-stop fixtures migrate setup test slides docs docs-pdf docs-web docs-serve bump-readme
 
 # Versión publicada, leída de config/services.yaml (app.version). La portada del
-# manual en PDF la muestra automáticamente, así que en cada release basta con
-# actualizar services.yaml (paso 2 del procedimiento): no hay que tocar el manual.
+# manual en PDF y la presentación la muestran automáticamente, así que en cada
+# release basta con actualizar services.yaml: no hay que tocar el manual ni las
+# slides a mano. El badge de README.md es la única excepción, porque README.md
+# es un fichero versionado (no generado) — hay que ejecutar "make bump-readme"
+# aparte, después de actualizar services.yaml.
 VERSION := $(shell grep -E '^[[:space:]]*app\.version:' config/services.yaml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
 # Fecha del release (app.pub_date), reformateada YYYY-MM-DD -> DD/MM/YYYY para
 # mostrarla junto a la versión en la presentación y la portada del manual.
@@ -110,3 +113,12 @@ docs-web:
 docs-serve:
 	@command -v mkdocs >/dev/null 2>&1 || { echo "Necesitas MkDocs Material: pip install -r docs/manual/requirements.txt"; exit 1; }
 	MANUAL_COPYRIGHT="GestConv+ · versión $(VERSION) · $(PUB_DATE)" mkdocs serve -f docs/manual/mkdocs.yml
+
+## Actualiza el badge de versión de README.md a partir de config/services.yaml.
+##
+## README.md es un fichero versionado (no un artefacto generado como el PDF o
+## la web del manual), así que esta sustitución no se ejecuta como parte de
+## "make docs"/"make slides": hay que invocarla a mano en cada release, justo
+## después de actualizar app.version en services.yaml.
+bump-readme:
+	sed -E 's/<strong>v[^<]+<\/strong>/<strong>v$(VERSION)<\/strong>/' README.md > README.md.tmp && mv README.md.tmp README.md
