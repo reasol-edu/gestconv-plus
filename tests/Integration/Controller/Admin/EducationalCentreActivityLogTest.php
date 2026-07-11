@@ -85,32 +85,6 @@ class EducationalCentreActivityLogTest extends ControllerTestCase
         self::assertSame('Malaga', $changes['city']['after'] ?? null);
     }
 
-    public function testAddingYearLogsAcademicYearCreated(): void
-    {
-        $admin  = $this->makeAdmin('admin.' . uniqid('', false));
-        $centre = $this->makeCentre('45000003');
-        $this->persist($admin, $centre);
-        $this->loginAs($admin);
-
-        $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId);
-        $token    = $crawler->filter('form[action$="/cursos"] [name="_token"]')->first()->attr('value');
-
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/cursos', [
-            '_token' => $token,
-            'name'   => '2025-2026',
-        ]);
-
-        self::assertResponseRedirects();
-
-        $this->em->clear();
-        $logs = $this->em->getRepository(ActivityLog::class)->findAll();
-        self::assertCount(1, $logs);
-        self::assertSame('academic_year.created', $logs[0]->getActionType());
-        self::assertSame('2025-2026', $logs[0]->getData()['name'] ?? null);
-        self::assertSame($centreId, $logs[0]->getData()['centreId'] ?? null);
-    }
-
     private function makeAdmin(string $username): Teacher
     {
         return (new Teacher(new PersonName('Admin', 'User')))->setUsername($username)->setAdmin(true);

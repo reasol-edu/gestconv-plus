@@ -340,7 +340,20 @@ Los botones **Exportar a PDF** y **Exportar a hoja de cálculo**, visibles una v
 
 ## Centro Educativo
 
-La sección **Centro educativo** del menú lateral es el panel de configuración del centro, reservado a los administradores. Desde sus tarjetas se gestionan los docentes, la oferta formativa, los estudiantes, las conductas contrarias, las medidas disciplinarias, los métodos de comunicación, los perfiles especiales y los ajustes del centro. Las conductas, medidas y métodos se describen en las secciones anteriores de este capítulo; a continuación se detallan el resto de apartados.
+La sección **Centro educativo** del menú lateral es el panel de configuración del centro, reservado a los administradores. Desde sus tarjetas se gestionan los cursos académicos, los docentes, la oferta formativa, los estudiantes, las conductas contrarias, las medidas disciplinarias, los métodos de comunicación, los perfiles especiales y los ajustes del centro. Las conductas, medidas y métodos se describen en las secciones anteriores de este capítulo; a continuación se detallan el resto de apartados.
+
+### Cursos académicos
+
+La tarjeta **Cursos académicos** del panel de centro educativo gestiona los cursos del centro: crearlos, renombrarlos, eliminarlos y establecer cuál es el activo.
+
+![Gestión de cursos académicos del centro](img/centro/centro-cursos.png)
+
+- **Añadir** — un formulario con el nombre del curso (por ejemplo, `2026-2027`) lo crea de inmediato.
+- **Establecer activo** — cambia el curso activo del centro; a partir de ese momento, los partes, sanciones y demás datos nuevos se asocian a él. El curso previamente activo pasa a poder consultarse como histórico (ver [Cambio de curso académico](#cambio-de-curso-académico-administradores)).
+- **Editar** — permite corregir el nombre de un curso.
+- **Eliminar** — solo disponible en cursos que no sean el activo.
+
+A diferencia del resto de tarjetas del panel de centro educativo, esta no requiere un curso académico activo para poder usarse: es precisamente la que permite crear el primero.
 
 ### Estructurar la oferta formativa
 

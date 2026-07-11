@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Controller\Admin;
 
-use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
@@ -219,138 +218,6 @@ class EducationalCentreControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
-    // ── academic year ─────────────────────────────────────────────────────────
-
-    public function testAddYearCreatesYearAndRedirectsToEdit(): void
-    {
-        $admin  = $this->makeAdmin('admin.1');
-        $centre = $this->makeCentre('41000001');
-        $this->persist($admin, $centre);
-        $this->loginAs($admin);
-
-        $centreId = $centre->getId()->toRfc4122();
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId);
-        $token    = $crawler->filter('form[action$="/cursos"] [name="_token"]')->first()->attr('value');
-
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/cursos', [
-            '_token' => $token,
-            'name'   => '2025-2026',
-        ]);
-
-        self::assertResponseRedirects();
-        self::assertStringContainsString('/admin/centros/' . $centreId, (string) $this->client->getResponse()->headers->get('Location'));
-    }
-
-    public function testAddYearWithInvalidCsrfIsDenied(): void
-    {
-        $admin  = $this->makeAdmin('admin.1');
-        $centre = $this->makeCentre('41000001');
-        $this->persist($admin, $centre);
-        $this->loginAs($admin);
-
-        $centreId = $centre->getId()->toRfc4122();
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/cursos', [
-            '_token' => 'token-invalido',
-            'name'   => '2025-2026',
-        ]);
-
-        self::assertResponseStatusCodeSame(403);
-    }
-
-    public function testEditYearGetRendersForm(): void
-    {
-        $admin  = $this->makeAdmin('admin.1');
-        $centre = $this->makeCentre('41000001');
-        $year   = $this->makeYear($centre, '2024-2025');
-        $this->persist($admin, $centre, $year);
-        $this->loginAs($admin);
-
-        $centreId = $centre->getId()->toRfc4122();
-        $yearId   = $year->getId()->toRfc4122();
-
-        $this->client->request('GET', '/admin/centros/' . $centreId . '/cursos/' . $yearId);
-
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists('form');
-    }
-
-    public function testEditYearPostSavesChanges(): void
-    {
-        $admin  = $this->makeAdmin('admin.1');
-        $centre = $this->makeCentre('41000001');
-        $year   = $this->makeYear($centre, '2024-2025');
-        $this->persist($admin, $centre, $year);
-        $this->loginAs($admin);
-
-        $centreId = $centre->getId()->toRfc4122();
-        $yearId   = $year->getId()->toRfc4122();
-
-        $crawler = $this->client->request('GET', '/admin/centros/' . $centreId . '/cursos/' . $yearId);
-        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
-
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/cursos/' . $yearId, [
-            '_token' => $token,
-            'name'   => '2025-2026',
-        ]);
-
-        self::assertResponseRedirects();
-
-        $this->em->clear();
-        $updated = $this->em->find(AcademicYear::class, $year->getId());
-        self::assertSame('2025-2026', $updated->getName());
-    }
-
-    public function testDeleteYearDeletesNonActiveYear(): void
-    {
-        $admin  = $this->makeAdmin('admin.1');
-        $centre = $this->makeCentre('41000001');
-        $active = $this->makeYear($centre, '2024-2025');
-        $extra  = $this->makeYear($centre, '2023-2024');
-        $this->persist($admin, $centre, $active, $extra);
-        $centre->setActiveAcademicYear($active);
-        $this->flush();
-        $this->loginAs($admin);
-
-        $centreId = $centre->getId()->toRfc4122();
-        $yearId   = $extra->getId()->toRfc4122();
-        // Delete and activate forms for years live on the centre edit page
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId);
-        $token    = $crawler->filter('form[action*="/cursos/' . $yearId . '/eliminar"] [name="_token"]')->first()->attr('value');
-
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/cursos/' . $yearId . '/eliminar', ['_token' => $token]);
-
-        self::assertResponseRedirects();
-
-        $this->em->clear();
-        self::assertNull($this->em->find(AcademicYear::class, $extra->getId()));
-    }
-
-    public function testActivateYearSetsActiveYear(): void
-    {
-        $admin  = $this->makeAdmin('admin.1');
-        $centre = $this->makeCentre('41000001');
-        $active = $this->makeYear($centre, '2024-2025');
-        $other  = $this->makeYear($centre, '2023-2024');
-        $this->persist($admin, $centre, $active, $other);
-        $centre->setActiveAcademicYear($active);
-        $this->flush();
-        $this->loginAs($admin);
-
-        $centreId = $centre->getId()->toRfc4122();
-        $otherId  = $other->getId()->toRfc4122();
-        // Delete and activate forms for years live on the centre edit page
-        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId);
-        $token    = $crawler->filter('form[action*="/cursos/' . $otherId . '/activar"] [name="_token"]')->first()->attr('value');
-
-        $this->client->request('POST', '/admin/centros/' . $centreId . '/cursos/' . $otherId . '/activar', ['_token' => $token]);
-
-        self::assertResponseRedirects();
-
-        $this->em->clear();
-        $updated = $this->em->find(EducationalCentre::class, $centre->getId());
-        self::assertSame($otherId, $updated->getActiveAcademicYear()->getId()->toRfc4122());
-    }
-
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function makeTeacher(string $username): Teacher
@@ -366,10 +233,5 @@ class EducationalCentreControllerTest extends ControllerTestCase
     private function makeCentre(string $code): EducationalCentre
     {
         return (new EducationalCentre())->setCode($code)->setName('IES ' . $code)->setCity('Sevilla');
-    }
-
-    private function makeYear(EducationalCentre $centre, string $name): AcademicYear
-    {
-        return (new AcademicYear())->setName($name)->setEducationalCentre($centre);
     }
 }

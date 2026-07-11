@@ -8,16 +8,12 @@
     <div class="mb-6">
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
             {% include 'components/_breadcrumb_home.html.twig' %}
-            <a href="{{ path('app_admin') }}" class="hover:text-forest-600 transition-colors">
-                {{ 'dashboard.title'|trans({}, 'admin') }}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">
+                {{ 'educational_centre'|trans({}, 'navigation') }}
             </a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
-            <a href="{{ path('app_admin_centres_index') }}" class="hover:text-forest-600 transition-colors">
-                {{ 'centres.title'|trans({}, 'admin') }}
-            </a>
-            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
-            <a href="{{ path('app_admin_centres_edit', {id: centre.id}) }}" class="hover:text-forest-600 transition-colors">
-                {{ centre.name }}
+            <a href="{{ path('app_centre_years_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">
+                {{ 'years.title'|trans({}, 'admin') }}
             </a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
         </div>
@@ -47,7 +43,7 @@
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-2">
-                <a href="{{ path('app_admin_centres_edit', {id: centre.id}) }}"
+                <a href="{{ path('app_centre_years_index', {centreId: centre.id}) }}"
                    class="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700
                           hover:bg-gray-50 transition-colors">
                     {{ 'years.edit.cancel'|trans({}, 'admin') }}

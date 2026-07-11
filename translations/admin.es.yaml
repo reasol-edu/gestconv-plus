@@ -145,6 +145,8 @@ centre.delete_warning: 'Una vez eliminado el centro, no se podrá recuperar.'
 
 # Cursos académicos
 years.title: 'Cursos académicos'
+years.hub_help: 'Crea, edita y activa los cursos académicos del centro.'
+years.manage: 'Gestionar cursos'
 years.add.title: 'Añadir curso'
 years.add.submit: 'Añadir'
 years.field.name: 'Nombre del curso'
