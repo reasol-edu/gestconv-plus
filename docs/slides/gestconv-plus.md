@@ -8,9 +8,9 @@ header: 'GestConv+'
 footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 style: |
   :root {
-    --nx-ink: #1c2b1a;
-    --nx-accent: #3e885b;
-    --nx-accent-soft: #dcefe1;
+    --nx-ink: #1c2238;
+    --nx-accent: #677dae;
+    --nx-accent-soft: #f0f0ff;
     --nx-muted: #6b7280;
   }
   section {
@@ -20,7 +20,7 @@ style: |
     padding: 56px 64px;
   }
   h1 { color: var(--nx-ink); font-size: 52px; }
-  h2 { color: var(--nx-accent); font-size: 38px; border-bottom: 2px solid #c0d7bb; padding-bottom: 8px; }
+  h2 { color: var(--nx-accent); font-size: 38px; border-bottom: 2px solid #c9cad9; padding-bottom: 8px; }
   h3 { color: var(--nx-ink); font-size: 28px; }
   strong { color: var(--nx-accent); }
   table { font-size: 20px; }
@@ -31,9 +31,9 @@ style: |
   footer { color: var(--nx-muted); font-size: 14px; }
   section.lead { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   section.lead h1 { font-size: 60px; margin-bottom: 0.2em; }
-  section.sep { background: #2f4b26; color: #fff; justify-content: center; }
+  section.sep { background: #3e4a6e; color: #fff; justify-content: center; }
   section.sep h1 { color: #fff; }
-  section.sep h2 { color: #85bda6; border: none; }
+  section.sep h2 { color: #8da9e2; border: none; }
   section.tight { font-size: 23px; }
 ---
 

@@ -7,15 +7,15 @@
  */
 
 :root {
-  --nx-ink: #1c2b1a;
-  --nx-accent: #3e885b;
-  --nx-accent-dark: #2f4b26;
-  --nx-accent-soft: #dcefe1;
+  --nx-ink: #1c2238;
+  --nx-accent: #677dae;
+  --nx-accent-dark: #3e4a6e;
+  --nx-accent-soft: #f0f0ff;
   --nx-muted: #6b7280;
-  --nx-border: #c0d7bb;
+  --nx-border: #c9cad9;
 }
 
-/* ----- Variables de Material for MkDocs: igualan la paleta verde ----- */
+/* ----- Variables de Material for MkDocs: igualan la paleta azul (misma escala "forest" de assets/styles/app.css) ----- */
 [data-md-color-scheme="default"] {
   --md-primary-fg-color: var(--nx-accent);
   --md-primary-fg-color--light: var(--nx-accent);

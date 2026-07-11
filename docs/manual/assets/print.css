@@ -41,14 +41,14 @@ html { font-size: 11pt; }
 
 #title-block-header .title {
   font-size: 34pt;
-  color: #3e885b;
+  color: #677dae;
   border: none;
   margin-bottom: 0.2em;
 }
 
 #title-block-header .subtitle {
   font-size: 16pt;
-  color: #2f4b26;
+  color: #3e4a6e;
   font-weight: normal;
 }
 
@@ -67,15 +67,15 @@ nav#TOC::before {
   content: "Índice";
   display: block;
   font-size: 20pt;
-  color: #3e885b;
-  border-bottom: 2px solid #c0d7bb;
+  color: #677dae;
+  border-bottom: 2px solid #c9cad9;
   padding-bottom: 0.2em;
   margin-bottom: 0.6em;
 }
 
 nav#TOC ul { list-style: none; padding-left: 1em; }
 nav#TOC > ul { padding-left: 0; }
-nav#TOC a { text-decoration: none; color: #1c2b1a; }
+nav#TOC a { text-decoration: none; color: #1c2238; }
 
 /* Número de página junto a cada entrada del índice (Paged.js). */
 nav#TOC a::after {
@@ -172,16 +172,16 @@ p { orphans: 3; widows: 3; }
 .admonition.danger .admonition-title::before,
 .admonition.error .admonition-title::before { content: '🚨 '; }
 
-/* — question / help / faq ———— verde oscuro  ❓ */
+/* — question / help / faq ———— azul de marca  ❓ */
 .admonition.question,
 .admonition.help,
 .admonition.faq {
-  border-color: #3e885b;
-  background:   #dcefe1;
+  border-color: #677dae;
+  background:   #f0f0ff;
 }
 .admonition.question .admonition-title,
 .admonition.help .admonition-title,
-.admonition.faq .admonition-title { color: #2f4b26; }
+.admonition.faq .admonition-title { color: #3e4a6e; }
 .admonition.question .admonition-title::before,
 .admonition.help .admonition-title::before,
 .admonition.faq .admonition-title::before { content: '❓ '; }
