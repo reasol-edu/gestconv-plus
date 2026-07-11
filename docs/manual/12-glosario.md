@@ -3,7 +3,7 @@
 ## Conceptos generales
 
 **Parte de convivencia**
-Registro formal de un incidente de convivencia escolar. Incluye el alumno/a implicado, el grupo, el docente que lo registra, la fecha y hora del suceso, las conductas observadas, una descripción detallada y, si procede, información sobre la expulsión del aula.
+Registro formal de un incidente de convivencia escolar. Incluye el estudiante implicado, el grupo, el docente que lo registra, la fecha y hora del suceso, las conductas observadas, una descripción detallada y, si procede, información sobre la expulsión del aula.
 
 **Conducta contraria a la convivencia**
 Comportamiento que altera el normal funcionamiento de la clase o el centro, pero que no tiene carácter grave. Ejemplos: perturbación del desarrollo de actividades, faltas de puntualidad o de asistencia.
@@ -12,7 +12,7 @@ Comportamiento que altera el normal funcionamiento de la clase o el centro, pero
 Comportamiento tipificado como grave en el reglamento de convivencia, como agresiones físicas, acoso escolar, vejaciones o amenazas. Los partes que incluyen al menos una conducta grave se identifican con el distintivo **Grave** en el listado.
 
 **Expulsión del aula**
-Medida correctora inmediata consistente en la salida temporal del alumno/a del aula. Al registrar una expulsión en un parte puede indicarse las tareas encomendadas y si el alumno las realizó.
+Medida correctora inmediata consistente en la salida temporal del estudiante del aula. Al registrar una expulsión en un parte puede indicarse las tareas encomendadas y si el estudiante las realizó.
 
 **Conducta activa / inactiva**
 Solo las conductas marcadas como *activas* pueden seleccionarse al registrar un parte. Las conductas inactivas siguen apareciendo en partes ya registrados, pero no en nuevos.
@@ -29,7 +29,7 @@ Registro de cada intento de informar a la familia de un parte o una sanción: m�
 **Parte prescrito**
 Parte marcado con una fecha de prescripción por un administrador. Un parte prescrito se considera *no sancionable*: deja de poder incorporarse a nuevas sanciones.
 
-**Ficha del alumno**
+**Ficha del estudiante**
 Pantalla que reúne los datos básicos de un estudiante, sus contadores de partes y sanciones, los datos de contacto de la familia (visibles solo para determinados perfiles) y su historial de convivencia. Se abre desde el buscador global y desde los listados y detalles de partes y sanciones.
 
 **Paleta de búsqueda**
@@ -50,7 +50,7 @@ Conjunto de programas de estudio (enseñanzas) disponibles en el centro para un 
 Cada curso dentro de una enseñanza (por ejemplo, *1º* y *2º* de un ciclo formativo).
 
 **Grupo**
-División de alumnos dentro de un nivel (por ejemplo, *1ºA DAW*). Cada grupo puede tener uno o varios tutores y docentes asignados.
+División de estudiantes dentro de un nivel (por ejemplo, *1ºA DAW*). Cada grupo puede tener uno o varios tutores y docentes asignados.
 
 ## Roles
 

@@ -4,6 +4,8 @@
 
 Solo los docentes registrados en el sistema pueden acceder. El acceso se realiza con usuario y contraseña propios o mediante autenticación externa (iSéneca).
 
+Un mismo servidor puede alojar **varios centros educativos** con datos completamente separados: partes, sanciones, estudiantes, oferta formativa y configuración de cada centro son independientes entre sí. Un docente puede estar vinculado a varios centros (por ejemplo, si imparte clase en más de uno); al entrar en la aplicación, si tiene acceso a más de uno se le muestra un selector para elegir con cuál trabajar en esa sesión, y puede cambiar de centro en cualquier momento desde el menú lateral.
+
 ## Los perfiles
 
 ### Administrador global
@@ -96,4 +98,4 @@ La cola de pendientes muestra a cada docente los elementos que puede ver según 
 
 - Cualquier docente puede ver y editar su propio perfil (nombre, contraseña, correo electrónico).
 - La sección de **Inicio** y **Calendario** son accesibles para todos los docentes autenticados con un centro seleccionado.
-- En la [ficha del alumno](05-secciones-de-la-aplicacion.md#ficha-del-alumno), los **datos de contacto de la familia** solo son visibles para los administradores, la comisión de convivencia, la orientación y los tutores/as del grupo del alumno; el historial muestra a cada docente únicamente los partes y sanciones que ya puede ver según las tablas anteriores.
+- En la [ficha del estudiante](05-secciones-de-la-aplicacion.md#ficha-del-estudiante), los **datos de contacto de la familia** solo son visibles para los administradores, la comisión de convivencia, la orientación y los tutores/as del grupo del estudiante; el historial muestra a cada docente únicamente los partes y sanciones que ya puede ver según las tablas anteriores.

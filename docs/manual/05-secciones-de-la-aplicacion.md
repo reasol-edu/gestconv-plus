@@ -19,7 +19,7 @@ Debajo de las tarjetas:
 
 - **Accesos rápidos** — botones grandes pensados para su uso desde el móvil: **Nuevo parte** (todo el profesorado), **Notificar** (con un contador en rojo si hay partes o sanciones pendientes de comunicar a la familia) y **Nueva sanción** (solo quien puede registrar sanciones en el centro). Junto a ellos, **Importar estudiantes** aparece como enlace secundario para quienes administran el centro.
 - **Últimos partes** — los seis partes más recientes accesibles para el docente, cada uno con su estado (*Notificado* / *Pendiente de notificar*).
-- **Alumnado con partes pendientes de sanción** — visible para administradores, comisión de convivencia y orientación: los estudiantes con más partes ya notificados y todavía sin sanción. Cada nombre enlaza con su [ficha del alumno](#ficha-del-alumno).
+- **Alumnado con partes pendientes de sanción** — visible para administradores, comisión de convivencia y orientación: los estudiantes con más partes ya notificados y todavía sin sanción. Cada nombre enlaza con su [ficha del estudiante](#ficha-del-estudiante).
 - **Tus grupos** — visible para los tutores/as sin los perfiles anteriores: sus grupos tutorizados y el número de estudiantes de cada uno.
 
 Si el curso activo todavía no tiene estudiantado matriculado, las tarjetas de resumen y estos paneles se sustituyen por un aviso con acceso directo a importar estudiantes (para quienes administran el centro).
@@ -52,7 +52,7 @@ El campo **Buscar…** de la cabecera abre una paleta de búsqueda que también 
 
 ![Paleta de búsqueda global abierta con resultados filtrados](img/buscar/buscar-global.png)
 
-- **Estudiantes** — abre la [ficha del alumno](#ficha-del-alumno) correspondiente.
+- **Estudiantes** — abre la [ficha del estudiante](#ficha-del-estudiante) correspondiente.
 - **Docentes** — solo para administradores.
 - **Acciones** — accesos directos a **Nuevo parte**, **Ir a notificaciones** y **Cambiar de curso** (esta última requiere permisos de administración). Las acciones aparecen nada más abrir la paleta y se filtran igual que el resto de resultados.
 
@@ -76,18 +76,18 @@ La sección **Partes** está accesible desde el menú lateral para cualquier doc
 ![Formulario de nuevo parte](img/partes/nuevo-parte-vacio.png)
 
 1. Pulsa **Nuevo parte** en la esquina superior derecha de la sección o desde el acceso rápido del inicio.
-2. **Alumnado implicado** — escribe en el campo de búsqueda el nombre o NIE del estudiante. El desplegable muestra el nombre del alumno con el grupo como información secundaria. Si en el incidente participaron varios estudiantes (incluso de grupos distintos), selecciónalos todos: se creará un parte independiente para cada uno con los mismos datos.
+2. **Alumnado implicado** — escribe en el campo de búsqueda el nombre o NIE del estudiante. El desplegable muestra el nombre del estudiante con el grupo como información secundaria. Si en el incidente participaron varios estudiantes (incluso de grupos distintos), selecciónalos todos: se creará un parte independiente para cada uno con los mismos datos.
 
-   ![Selector de alumnado con un alumno seleccionado](img/partes/nuevo-parte-selector-alumnado.png)
+   ![Selector de alumnado con un estudiante seleccionado](img/partes/nuevo-parte-selector-alumnado.png)
 
 3. **Fecha y hora del suceso** — por defecto se rellena con el momento actual; modifícala si el parte se registra con posterioridad al incidente.
 4. **Dónde sucedió** — campo obligatorio con el catálogo de ubicaciones del centro (ver [Ubicaciones](#ubicaciones) más abajo), agrupadas por categoría en el desplegable.
 5. **Conductas** — marca al menos una conducta de las definidas para el centro. Las conductas están agrupadas en *Contrarias a la convivencia* y *Conductas graves*; los bloques de conductas graves se destacan con un recuadro rojo. Un campo de filtro sobre la lista oculta al instante las conductas que no coinciden con el texto escrito (sin distinguir mayúsculas ni tildes) y, junto al título de la sección, un contador indica cuántas conductas hay seleccionadas. Solo aparecen las conductas activas.
 6. **Descripción de lo acontecido** — campo de texto enriquecido obligatorio. Describe los hechos con detalle.
-7. **Expulsión del aula** — activa el interruptor si el alumno fue expulsado. Aparecerán entonces dos campos adicionales:
+7. **Expulsión del aula** — activa el interruptor si el estudiante fue expulsado. Aparecerán entonces dos campos adicionales:
    - *Tareas encargadas durante la expulsión*
    - *¿Realizó las tareas?* (opciones: No se sabe / Sí / No)
-8. Pulsa **Guardar parte**. Una pantalla de confirmación muestra los partes creados (uno por alumno) con accesos directos para **notificar a la familia**, **crear otro parte** o **volver al listado**.
+8. Pulsa **Guardar parte**. Una pantalla de confirmación muestra los partes creados (uno por estudiante) con accesos directos para **notificar a la familia**, **crear otro parte** o **volver al listado**.
 
 Los campos obligatorios están marcados con un asterisco; si falta alguno al guardar, cada error se muestra junto al campo afectado.
 
@@ -170,7 +170,7 @@ La sección **Sanciones** del menú lateral recoge las sanciones del curso activ
 
 El listado muestra las sanciones accesibles para el docente, con paginación y estas herramientas:
 
-- **Búsqueda por alumno o grupo**, que filtra en vivo mientras se escribe.
+- **Búsqueda por estudiante o grupo**, que filtra en vivo mientras se escribe.
 - Filtros de **Vigentes hoy** y **Pendientes de notificar**.
 - Una columna con el **estado de la notificación** a la familia, con enlace directo para registrar la comunicación si está pendiente.
 
@@ -206,17 +206,17 @@ Los administradores de centro configuran las medidas disponibles en **Centro edu
 
 Al igual que en las conductas, los botones **Exportar JSON** e **Importar JSON** permiten copiar la configuración de medidas y categorías entre centros, con la misma opción de vaciar las medidas y categorías existentes antes de importar.
 
-## Ficha del alumno
+## Ficha del estudiante
 
-La ficha del alumno reúne en una sola pantalla toda la información de convivencia de un estudiante:
+La ficha del estudiante reúne en una sola pantalla toda la información de convivencia de un estudiante:
 
-![Ficha del alumno con su historial de convivencia](img/alumnado/alumnado-ficha.png)
+![Ficha del estudiante con su historial de convivencia](img/alumnado/alumnado-ficha.png)
 
 - **Datos básicos** — nombre y grupo.
 - **Contadores** — partes registrados (indicando cuántos incluyen conductas graves y cuántos han prescrito) y sanciones vigentes hoy.
-- **Datos de contacto** — tutores legales, teléfonos y observaciones. Solo son visibles para los administradores, la comisión de convivencia, la orientación y los tutores/as del grupo del alumno.
+- **Datos de contacto** — tutores legales, teléfonos y observaciones. Solo son visibles para los administradores, la comisión de convivencia, la orientación y los tutores/as del grupo del estudiante.
 - **Historial de convivencia** — los partes y sanciones del estudiante en orden cronológico, cada uno con su estado de notificación. Se muestran solo los visibles según los permisos del docente.
-- **Accesos directos** para registrar un nuevo parte o una nueva sanción con el alumno ya seleccionado.
+- **Accesos directos** para registrar un nuevo parte o una nueva sanción con el estudiante ya seleccionado.
 
 Se llega a la ficha desde el buscador global, el listado y el detalle de partes, el detalle de sanciones y la lista *Alumnado con partes pendientes de sanción* del inicio.
 
@@ -238,7 +238,7 @@ El botón **Notificar** solo aparece si el docente tiene permiso para registrar 
 
 Pulsa **Notificar** en la fila correspondiente para abrir el formulario de registro, común a partes y sanciones.
 
-Si el docente tiene permiso para verlos, la pantalla muestra también los **datos de contacto** del alumno (tutores legales, teléfonos y observaciones) justo antes del formulario: los mismos que en la [ficha del alumno](#ficha-del-alumno) (equipo directivo, comisión de convivencia, orientación y tutores/as del grupo) y, además, siempre el propio docente que registró el parte o la sanción, para que pueda contactar con la familia aunque no sea tutor del grupo.
+Si el docente tiene permiso para verlos, la pantalla muestra también los **datos de contacto** del estudiante (tutores legales, teléfonos y observaciones) justo antes del formulario: los mismos que en la [ficha del estudiante](#ficha-del-estudiante) (equipo directivo, comisión de convivencia, orientación y tutores/as del grupo) y, además, siempre el propio docente que registró el parte o la sanción, para que pueda contactar con la familia aunque no sea tutor del grupo.
 
 ![Formulario de registro de comunicación](img/notificaciones/notificaciones-registrar-parte.png)
 
@@ -267,18 +267,18 @@ Los datos de la comunicación (método, fecha y hora, resultado y observaciones)
 
 ### Historial de notificaciones
 
-La pestaña **Historial de notificaciones** reúne, en una única tabla paginada, todas las comunicaciones registradas en el curso académico activo sobre partes y sanciones: fecha, alumno, grupo, tipo de elemento (parte o sanción), método, docente que la registró, resultado y observaciones. Un enlace **Ver** lleva al parte o sanción correspondiente.
+La pestaña **Historial de notificaciones** reúne, en una única tabla paginada, todas las comunicaciones registradas en el curso académico activo sobre partes y sanciones: fecha, estudiante, grupo, tipo de elemento (parte o sanción), método, docente que la registró, resultado y observaciones. Un enlace **Ver** lleva al parte o sanción correspondiente.
 
 Un docente sin permisos especiales solo ve las comunicaciones de los partes y sanciones que él mismo registró o que pertenecen a un grupo del que es tutor. Los administradores, la comisión de convivencia y orientación ven el historial completo del centro, sin restricción por autoría ni tutoría.
 
-Puede filtrarse por texto libre (alumno, grupo o docente que realizó la comunicación), por tipo de elemento y por resultado (*Notificado* / *No notificado*).
+Puede filtrarse por texto libre (estudiante, grupo o docente que realizó la comunicación), por tipo de elemento y por resultado (*Notificado* / *No notificado*).
 
 ### Quién puede notificar
 
 Un ajuste por centro (**Centro educativo › Ajustes**) determina, además de los administradores, qué docentes pueden registrar la comunicación de un parte y de una sanción, de forma independiente:
 
 - **El docente del parte / de la sanción** — solo quien lo registró.
-- **El tutor/a de grupo** — solo los tutores del grupo del alumno.
+- **El tutor/a de grupo** — solo los tutores del grupo del estudiante.
 - **Ambos** (opción por defecto).
 
 ![Ajustes de quién notifica partes y sanciones](img/notificaciones/ajustes-notificaciones.png)
@@ -300,8 +300,8 @@ La sección **Calendario**, accesible desde el menú lateral, muestra en una vis
 ![Vista mensual del calendario de sanciones](img/calendario/calendario.png)
 
 - Se muestran **todas las sanciones del curso ya notificadas a la familia y con fecha**, sin filtrar por autoría ni tutoría: cualquier docente con un centro seleccionado las ve todas. Las sanciones pendientes de notificar no aparecen hasta que se registra la comunicación (ver [Notificaciones](#notificaciones)).
-- Cada sanción aparece como una barra horizontal que puede abarcar varios días si tiene fecha de fin. Dentro de la barra se muestra el nombre del alumno, su grupo (el grupo con el que se registró la sanción) y el detalle de la sanción.
-- El color de la barra depende del grupo: todas las sanciones de alumnos del mismo grupo comparten color, lo que permite distinguir de un vistazo a qué grupos pertenecen las sanciones visibles en una misma semana.
+- Cada sanción aparece como una barra horizontal que puede abarcar varios días si tiene fecha de fin. Dentro de la barra se muestra el nombre del estudiante, su grupo (el grupo con el que se registró la sanción) y el detalle de la sanción.
+- El color de la barra depende del grupo: todas las sanciones de estudiantes del mismo grupo comparten color, lo que permite distinguir de un vistazo a qué grupos pertenecen las sanciones visibles en una misma semana.
 - Solo se muestran los días lectivos de lunes a viernes; sábados y domingos no aparecen en la cuadrícula.
 - El día actual se resalta con un color de fondo distinto en toda su columna.
 
@@ -312,7 +312,7 @@ El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista
 ![Modo tablón con la semana actual](img/calendario/calendario-tablon.png)
 
 - Muestra una semana (lunes a viernes) a la vez, en cinco columnas, para que todo el contenido se lea de un vistazo sin necesidad de desplazar la pantalla a mano.
-- Para cada día se listan las sanciones que lo cubren, agrupadas por grupo, indicando el alumno, el detalle de la sanción y sus fechas de inicio y fin. Si el contenido de un día no cabe en la columna, se desplaza automáticamente hacia arriba y hacia abajo; no se puede desplazar manualmente.
+- Para cada día se listan las sanciones que lo cubren, agrupadas por grupo, indicando el estudiante, el detalle de la sanción y sus fechas de inicio y fin. Si el contenido de un día no cabe en la columna, se desplaza automáticamente hacia arriba y hacia abajo; no se puede desplazar manualmente.
 - La semana actual y la semana siguiente se alternan automáticamente con una transición suave. Los administradores de centro y globales pueden configurar en **Ajustes** cuántos segundos se muestra cada una (0-3600 segundos; 15 y 5 por defecto). Si cualquiera de los dos ajustes vale 0, solo se muestra la semana actual, sin alternancia.
 - El tema de colores (claro, oscuro o según el sistema) también se configura en **Ajustes**; ver [Modo tablón](07-ajustes.md#modo-tablon).
 - Un botón en la esquina superior permite alternar la pantalla completa del navegador.
@@ -328,7 +328,7 @@ La sección **Informes**, accesible desde el menú lateral tras **Calendario**, 
 
 La tarjeta **Estadísticas por grupo** abre un formulario para elegir una fecha de inicio y una fecha de fin; al generarlo, se muestra una tabla con los partes registrados en ese rango de fechas para cada grupo del curso académico activo, agrupados por enseñanza:
 
-- **Alumnos únicos**: número de estudiantes distintos con al menos un parte en el rango.
+- **Estudiantes únicos**: número de estudiantes distintos con al menos un parte en el rango.
 - **Partes registrados**, **notificados**, **sancionados** y **prescritos**: cada uno desglosado entre partes de conductas normales y graves.
 - **Sanciones**: número de sanciones distintas asociadas a los partes del grupo; una sanción que agrupe varios partes cuenta una sola vez.
 
@@ -349,7 +349,7 @@ La tarjeta **Cursos académicos** del panel de centro educativo gestiona los cur
 ![Gestión de cursos académicos del centro](img/centro/centro-cursos.png)
 
 - **Añadir** — un formulario con el nombre del curso (por ejemplo, `2026-2027`) lo crea de inmediato.
-- **Establecer activo** — cambia el curso activo del centro; a partir de ese momento, los partes, sanciones y demás datos nuevos se asocian a él. El curso previamente activo pasa a poder consultarse como histórico (ver [Cambio de curso académico](#cambio-de-curso-académico-administradores)).
+- **Establecer activo** — cambia el curso activo del centro; a partir de ese momento, los partes, sanciones y demás datos nuevos se asocian a él. El curso previamente activo pasa a poder consultarse como histórico (ver [Cambio de curso académico](#cambio-de-curso-academico-administradores)).
 - **Editar** — permite corregir el nombre de un curso.
 - **Eliminar** — solo disponible en cursos que no sean el activo.
 

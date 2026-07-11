@@ -50,7 +50,7 @@ style: |
 - La convivencia escolar genera **mucho papel**: partes en cuadernos, avisos por
   WhatsApp, sanciones en carpetas sueltas, hojas de cálculo por grupo…
 - Cada docente lleva su propio registro y **nadie tiene la foto completa** del
-  alumno: ni el tutor/a, ni la comisión de convivencia, ni la familia.
+  estudiante: ni el tutor/a, ni la comisión de convivencia, ni la familia.
 - Notificar a las familias es una tarea manual, fácil de olvidar y difícil de
   demostrar después ("¿se avisó o no se avisó?").
 - El seguimiento de sanciones y medidas disciplinarias se pierde entre correos
@@ -95,7 +95,7 @@ Cada bloque solo añade lo que ese rol tiene **de más** sobre el anterior.
 
 - El **panel de inicio** muestra tarjetas con lo pendiente: partes sin
   notificar, tareas de seguimiento, avisos del centro.
-- La **búsqueda global** (`⌘K` / `Ctrl+K`) encuentra un alumno, un grupo o un
+- La **búsqueda global** (`⌘K` / `Ctrl+K`) encuentra un estudiante, un grupo o un
   parte en segundos, sin navegar por menús.
 - Si tienes acceso a **varios centros educativos**, un selector en la cabecera
   permite cambiar de centro sin cerrar sesión.
@@ -120,7 +120,7 @@ Sin ningún rol especial, todo docente puede:
 - Consultar y filtrar **los partes que él mismo ha registrado**.
 - **Notificar a la familia** los partes cuyo aviso le corresponde (según el
   ajuste "quién notifica" del centro).
-- Consultar la **ficha del alumno** con la información básica de su historial
+- Consultar la **ficha del estudiante** con la información básica de su historial
   de convivencia.
 - Ver su **calendario** y las **notificaciones pendientes** que le afectan.
 
@@ -206,7 +206,7 @@ El parte pasa a **"Notificado"** y queda en el historial.
 
 ---
 
-## Ficha del alumno: qué ve un docente normal
+## Ficha del estudiante: qué ve un docente normal
 
 - Datos básicos del estudiante y su grupo.
 - Listado de **partes y sanciones** en los que aparece, con su estado.
@@ -362,7 +362,7 @@ el centro**, no solo de sus propios grupos:
 
 - Cada parte y cada sanción se puede **exportar a PDF** con un formato
   homogéneo, listo para archivar o entregar.
-- Los datos principales (alumno, grupo, docente, fecha, estado) aparecen en
+- Los datos principales (estudiante, grupo, docente, fecha, estado) aparecen en
   una tabla al comienzo, y las conductas marcadas se agrupan por categoría en
   columnas.
 - El centro puede **personalizar el encabezado** de estos informes (título,
@@ -486,7 +486,7 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Nueva sección **Informes** en el menú lateral, tras Calendario, reservada
   al equipo directivo y a los administradores.
 - El informe **Estadísticas por grupo** resume, para un rango de fechas
-  elegido, los partes de cada grupo del curso —alumnos únicos, partes
+  elegido, los partes de cada grupo del curso —estudiantes únicos, partes
   registrados/notificados/sancionados/prescritos (normales y graves) y
   sanciones distintas—, agrupados por enseñanza con subtotales y un total
   general.

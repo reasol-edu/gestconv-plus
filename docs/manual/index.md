@@ -5,17 +5,6 @@ centros de Educación Secundaria Obligatoria, Bachillerato y Formación Profesio
 registro de partes de convivencia, la tramitación de sanciones, la comunicación con las familias y
 el seguimiento del historial de cada estudiante.
 
-## Multicentro
-
-Un mismo servidor puede alojar **varios centros educativos** con datos completamente separados:
-partes, sanciones, estudiantes, oferta formativa y configuración de cada centro son independientes
-entre sí.
-
-Un docente puede estar vinculado a varios centros (por ejemplo, si imparte clase en más de uno). Al
-entrar en la aplicación, si tiene acceso a más de un centro se le muestra un selector para elegir con
-cuál trabajar en esa sesión; puede cambiar de centro en cualquier momento desde el menú lateral. Los
-administradores globales tienen acceso a todos los centros dados de alta en el servidor.
-
 ## Cómo usar este manual
 
 El manual está organizado siguiendo el orden natural de puesta en marcha de la aplicación:

@@ -120,7 +120,7 @@ El importador lee directamente el fichero CSV que genera Séneca sin necesidad d
 | Columna Séneca | Dato importado |
 |---|---|
 | `Estado Matrícula` | Filtro: filas con valor no vacío se omiten |
-| `Nº Id. Escolar` | NIE del alumno (identificador único) |
+| `Nº Id. Escolar` | NIE del estudiante (identificador único) |
 | `Nombre` | Nombre |
 | `Primer apellido` | Primer apellido |
 | `Segundo apellido` | Segundo apellido |
@@ -136,7 +136,7 @@ El importador lee directamente el fichero CSV que genera Séneca sin necesidad d
 | `Nombre Segundo tutor` + `Primer apellido Segundo tutor` + `Segundo apellido Segundo tutor` | Nombre completo del tutor/a 2 |
 | `Correo Electrónico Segundo tutor` | Correo electrónico del tutor/a 2 |
 | `Teléfono Segundo tutor` | Teléfono de contacto 2 |
-| `Teléfono` | Teléfono de contacto 3 (teléfono del alumno) |
+| `Teléfono` | Teléfono de contacto 3 (teléfono del estudiante) |
 | `Observaciones de la matrícula` | Observaciones |
 
 El nombre de los tutores se compone automáticamente en formato «Apellido1 Apellido2, Nombre».

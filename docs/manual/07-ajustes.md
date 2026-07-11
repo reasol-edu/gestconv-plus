@@ -181,7 +181,7 @@ informe al generar el PDF:
 |---|---|---|
 | `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo») | Todos |
 | `{report_nr}` | Número del parte | Solo partes |
-| `{student_name}` | Nombre completo del alumno | Partes y sanciones |
+| `{student_name}` | Nombre completo del estudiante | Partes y sanciones |
 | `{group_name}` | Nombre del grupo | Partes y sanciones |
 | `{centre_name}` | Nombre del centro educativo | Todos |
 | `{academic_year}` | Nombre del curso académico | Todos |

@@ -189,7 +189,7 @@ settings.placeholder_help.scope.group_stats_only: 'Solo estadísticas por grupo'
 
 settings.placeholder_help.marker.title: 'Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo»)'
 settings.placeholder_help.marker.report_nr: 'Número del parte'
-settings.placeholder_help.marker.student_name: 'Nombre completo del alumno'
+settings.placeholder_help.marker.student_name: 'Nombre completo del estudiante'
 settings.placeholder_help.marker.group_name: 'Nombre del grupo'
 settings.placeholder_help.marker.centre_name: 'Nombre del centro educativo'
 settings.placeholder_help.marker.academic_year: 'Nombre del curso académico'
