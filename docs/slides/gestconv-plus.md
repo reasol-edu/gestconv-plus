@@ -91,7 +91,7 @@ Cada bloque solo añade lo que ese rol tiene **de más** sobre el anterior.
 
 ## Cómo moverte por la aplicación
 
-![width:360px](../manual/img/inicio.png)
+![bg right:40% fit](../manual/img/inicio.png)
 
 - El **panel de inicio** muestra tarjetas con lo pendiente: partes sin
   notificar, tareas de seguimiento, avisos del centro.
@@ -133,7 +133,7 @@ necesidad de ser tutor/a ni de pertenecer a la comisión de convivencia.
 
 ## Registrar un parte de convivencia (paso a paso)
 
-![width:300px](../manual/img/partes/nuevo-parte-vacio.png)
+![bg right:35% fit](../manual/img/partes/nuevo-parte-vacio.png)
 
 1. Desde el listado de partes, pulsa **"Nuevo parte"**.
 2. Selecciona el **grupo** y, dentro de él, el o los **estudiantes** implicados.
@@ -149,7 +149,7 @@ incidente los afecta conjuntamente.
 
 ## Consultar y filtrar "Mis partes"
 
-![width:360px](../manual/img/partes/partes-listado.png)
+![bg right:40% fit](../manual/img/partes/partes-listado.png)
 
 - El listado muestra los partes **registrados por ti**, con filtros por
   grupo, estudiante, fecha y estado de notificación.
@@ -162,7 +162,7 @@ incidente los afecta conjuntamente.
 
 ## Ver el detalle de un parte y añadir observaciones
 
-![width:360px](../manual/img/partes/parte-editar.png)
+![bg right:40% fit](../manual/img/partes/parte-editar.png)
 
 - El detalle reúne los datos del incidente: estudiantes, conducta, fecha y
   descripción original.
@@ -173,11 +173,9 @@ incidente los afecta conjuntamente.
 
 ---
 
-<!-- _class: tight -->
-
 ## Notificar un parte a la familia
 
-![width:300px](../manual/img/notificaciones/notificaciones-registrar-parte.png)
+![bg right:35% fit](../manual/img/notificaciones/notificaciones-registrar-parte.png)
 
 1. Entra en **Notificaciones → Pendientes** o accede desde el propio parte.
 2. Pulsa **"Notificar"** y elige el **método** utilizado (llamada, correo,
@@ -193,7 +191,7 @@ El parte pasa a **"Notificado"** y queda en el historial.
 
 ## Notificar varios partes a la vez de un mismo estudiante
 
-![width:300px](../manual/img/notificaciones/parte-badge-notificado.png)
+![bg right:35% fit](../manual/img/notificaciones/parte-badge-notificado.png)
 
 - Si un estudiante acumula **varios partes pendientes de notificar**,
   cualquier docente que pueda notificarlos puede hacerlo **en un solo paso**,
@@ -251,11 +249,9 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 
 ---
 
-<!-- _class: tight -->
-
 ## Historial de notificaciones del grupo
 
-![width:300px](../manual/img/notificaciones/notificaciones-registrar-parte-historial.png)
+![bg right:35% fit](../manual/img/notificaciones/notificaciones-registrar-parte-historial.png)
 
 - Registro completo de **todas las comunicaciones** ya realizadas a las
   familias del grupo: método, fecha, resultado y quién la registró.
@@ -375,7 +371,7 @@ el centro**, no solo de sus propios grupos:
 
 ## El calendario
 
-![width:360px](../manual/img/calendario/calendario.png)
+![bg right:40% fit](../manual/img/calendario/calendario.png)
 
 - Muestra la actividad de convivencia distribuida por fechas: seguimientos,
   firmas y tareas pendientes de cada grupo.
@@ -385,7 +381,7 @@ el centro**, no solo de sus propios grupos:
 
 ## Modo tablón
 
-![width:360px](../manual/img/calendario/calendario-tablon.png)
+![bg right:40% fit](../manual/img/calendario/calendario-tablon.png)
 
 - Vista simplificada del calendario, pensada para **pantallas compartidas**
   en sala de profesores o pasillos.
@@ -444,11 +440,9 @@ el centro**, no solo de sus propios grupos:
 
 ---
 
-<!-- _class: tight -->
-
 ## Configurar quién notifica partes y sanciones
 
-![width:300px](../manual/img/notificaciones/ajustes-notificaciones.png)
+![bg right:35% fit](../manual/img/notificaciones/ajustes-notificaciones.png)
 
 El centro decide, con un ajuste global, quién se encarga de notificar a las
 familias:
@@ -462,11 +456,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 ---
 
-<!-- _class: tight -->
-
 ## Métodos de comunicación con las familias
 
-![width:300px](../manual/img/notificaciones/admin-metodos-comunicacion.png)
+![bg right:35% fit](../manual/img/notificaciones/admin-metodos-comunicacion.png)
 
 - El centro define su propio catálogo de **métodos de comunicación**:
   llamada telefónica, correo electrónico, entrevista presencial, etc.
@@ -481,7 +473,7 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 ## Informes: estadísticas por grupo
 
-![width:420px](../manual/img/informes/informes-estadisticas-grupo.png)
+![bg right:38% fit](../manual/img/informes/informes-estadisticas-grupo.png)
 
 - Nueva sección **Informes** en el menú lateral, tras Calendario, reservada
   al equipo directivo y a los administradores.
@@ -494,6 +486,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   partes y sanciones) o a una **hoja de cálculo Excel**.
 
 ---
+
+<!-- _class: tight -->
 
 ## Personalización de informes PDF
 
@@ -519,7 +513,7 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 ## Ajustes de centro: candados y catálogos
 
-![width:300px](../manual/img/partes/admin-conductas.png)
+![bg right:30% fit](../manual/img/partes/admin-conductas.png)
 
 - Cada ajuste puede **bloquearse** a nivel global para impedir que un centro
   lo modifique, o dejarse libre para que cada centro lo personalice.
