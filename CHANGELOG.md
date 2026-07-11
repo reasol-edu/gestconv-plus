@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-11
+
 ### Added
 
 - El comando `app:setup` ya no crea por defecto el centro educativo de demostración «IES Test»: solo crea el usuario `admin`, pensado para despliegues en producción reales. La nueva opción `--demo-data` recupera el comportamiento anterior (crea también el centro de demostración con sus catálogos) para quien quiera probar la aplicación (ver [Comandos de consola](docs/manual/08-comandos-de-consola.md)). Además, la pantalla de selección de centro ofrece ahora a los administradores globales, cuando todavía no hay ningún centro creado, un enlace directo a **Administración › Centros › Nuevo centro** y, en el pie, un acceso a **Administrar centros**.
