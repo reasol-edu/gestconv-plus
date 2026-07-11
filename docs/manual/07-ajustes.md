@@ -175,7 +175,13 @@ cuanto se registra la notificación. Está desactivada por defecto.
 ![Ajustes de personalización de informes](img/ajustes/ajustes-informes.png)
 
 Dentro del texto se pueden escribir **marcadores** que se sustituyen por los datos reales del
-informe al generar el PDF:
+informe al generar el PDF. Un marcador desconocido (por ejemplo, uno con una errata) no rompe el
+informe: se muestra tal cual en el PDF, lo que facilita detectar el error. Ninguno de los once
+ajustes tiene ámbito de docente: se fijan a nivel global o de centro únicamente.
+
+Esta misma tabla está disponible sin salir de la pantalla de ajustes: cada campo de texto
+enriquecido de esta categoría tiene junto a su nombre un icono ⓘ que, al pulsarlo, despliega
+un popover con la lista completa de marcadores.
 
 | Marcador | Se sustituye por | Disponible en |
 |---|---|---|
@@ -192,11 +198,3 @@ informe al generar el PDF:
 | `{current_day}` | Día del mes de generación del PDF, sin ceros a la izquierda | Todos |
 | `{current_month_name}` | Nombre del mes de generación del PDF, en minúscula (p. ej. «julio») | Todos |
 | `{current_year}` | Año de generación del PDF | Todos |
-
-Un marcador desconocido (por ejemplo, uno con una errata) no rompe el informe: se muestra tal
-cual en el PDF, lo que facilita detectar el error. Ninguno de los once ajustes tiene ámbito de
-docente: se fijan a nivel global o de centro únicamente.
-
-Esta misma tabla está disponible sin salir de la pantalla de ajustes: cada campo de texto
-enriquecido de esta categoría tiene junto a su nombre un icono ⓘ que, al pulsarlo, despliega
-un popover con la lista completa de marcadores.

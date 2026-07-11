@@ -10,7 +10,7 @@ style: |
   :root {
     --nx-ink: #1c2b1a;
     --nx-accent: #3e885b;
-    --nx-accent-soft: #bedcfe;
+    --nx-accent-soft: #dcefe1;
     --nx-muted: #6b7280;
   }
   section {

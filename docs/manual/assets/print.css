@@ -177,7 +177,7 @@ p { orphans: 3; widows: 3; }
 .admonition.help,
 .admonition.faq {
   border-color: #3e885b;
-  background:   #bedcfe;
+  background:   #dcefe1;
 }
 .admonition.question .admonition-title,
 .admonition.help .admonition-title,
