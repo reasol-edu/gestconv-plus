@@ -6,7 +6,16 @@ namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
+use App\Entity\Group;
+use App\Entity\IncidentBehavior;
+use App\Entity\IncidentBehaviorCategory;
+use App\Entity\IncidentReport;
+use App\Entity\IncidentReportObservation;
 use App\Entity\PersonName;
+use App\Entity\Programme;
+use App\Entity\ProgrammeYear;
+use App\Entity\Sanction;
+use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -196,6 +205,233 @@ class PastYearGuardTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    // ── IncidentReportController ────────────────────────────────────────────────
+
+    public function testIncidentNewReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testIncidentEditReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, $report] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testIncidentDeleteReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, $report] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/eliminar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testIncidentAddObservationReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, $report] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('POST', '/partes/' . $report->getId()->toRfc4122() . '/observaciones');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testIncidentEditObservationReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, $report, , $observation] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request(
+            'GET',
+            '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/editar',
+        );
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testIncidentDeleteObservationReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, $report, , $observation] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request(
+            'POST',
+            '/partes/' . $report->getId()->toRfc4122() . '/observaciones/' . $observation->getId()->toRfc4122() . '/eliminar',
+        );
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testIncidentIndexHidesNewButtonWhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $crawler = $this->client->request('GET', '/partes');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/partes/nuevo"]');
+    }
+
+    public function testIncidentShowHidesWriteButtonsWhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, $report] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $crawler = $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/editar"]');
+        self::assertSelectorNotExists('a[href*="/notificaciones/partes/"]');
+        self::assertSelectorNotExists('form[action$="/eliminar"]');
+    }
+
+    public function testIncidentNewSucceedsWhenViewingActiveYear(): void
+    {
+        [$admin, $centre] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertResponseIsSuccessful();
+    }
+
+    // ── SanctionController ───────────────────────────────────────────────────────
+
+    public function testSanctionNewReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('GET', '/sanciones/nueva');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testSanctionEditReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, , $sanction] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testSanctionDeleteReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, , $sanction] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('POST', '/sanciones/' . $sanction->getId()->toRfc4122() . '/eliminar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testSanctionIndexHidesNewButtonWhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $crawler = $this->client->request('GET', '/sanciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/sanciones/nueva"]');
+    }
+
+    public function testSanctionShowHidesWriteButtonsWhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, , $sanction] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/editar"]');
+        self::assertSelectorNotExists('a[href*="/notificaciones/sanciones/"]');
+        self::assertSelectorNotExists('form[action$="/eliminar"]');
+    }
+
+    public function testSanctionEditSucceedsWhenViewingActiveYear(): void
+    {
+        [$admin, $centre, , , , $sanction] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseIsSuccessful();
+    }
+
+    // ── NotificationController ───────────────────────────────────────────────────
+
+    public function testNotificationRegisterReportReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, $report] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('GET', '/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testNotificationRegisterSanctionReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear, , $sanction] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $this->client->request('GET', '/notificaciones/sanciones/' . $sanction->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testNotificationRegisterStudentReportsReturns403WhenViewingPastYear(): void
+    {
+        [$admin, $centre, , $pastYear] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+        $this->viewPastYear($pastYear);
+
+        $fakeId = '00000000-0000-0000-0000-000000000001';
+        $this->client->request('GET', '/notificaciones/partes/estudiante/' . $fakeId . '/registrar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testNotificationRegisterReportSucceedsWhenViewingActiveYear(): void
+    {
+        [$admin, $centre, , , $report] = $this->makeCentreWithReportAndSanction();
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/notificaciones/partes/' . $report->getId()->toRfc4122() . '/registrar');
+
+        self::assertResponseIsSuccessful();
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
@@ -219,5 +455,57 @@ class PastYearGuardTest extends ControllerTestCase
         $this->flush();
 
         return [$admin, $centre, $activeYear, $pastYear];
+    }
+
+    /**
+     * Like makeCentreWithTwoYears(), plus a group/student and one incident report
+     * and one sanction registered in the active year, for testing guards on
+     * actions that need an existing entity to look up.
+     *
+     * @return array{0: Teacher, 1: EducationalCentre, 2: AcademicYear, 3: AcademicYear, 4: IncidentReport, 5: Sanction, 6: IncidentReportObservation}
+     */
+    private function makeCentreWithReportAndSanction(): array
+    {
+        [$admin, $centre, $activeYear, $pastYear] = $this->makeCentreWithTwoYears();
+
+        $programme = (new Programme())->setName('DAW')->setAcademicYear($activeYear);
+        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
+        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-' . uniqid('', false));
+        $group->addStudent($student);
+
+        $category = (new IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)->setName('Contrarias')->setSerious(false)->setPosition(0);
+        $behavior = (new IncidentBehavior())
+            ->setEducationalCentre($centre)->setCategory($category)->setName('Perturbación')->setPosition(0)->setActive(true);
+
+        $report = (new IncidentReport())
+            ->setAcademicYear($activeYear)
+            ->setNumber(1)
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setRegisteredBy($admin)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Test.</p>')
+            ->setExpelledFromClass(false);
+        $report->addBehavior($behavior);
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($activeYear)
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setRegisteredBy($admin)
+            ->setDetails('Detalle de la sanción.')
+            ->setNoMeasureApplied(true)
+            ->setNoMeasureReason('Sin medida aplicada.');
+
+        $this->persist($programme, $level, $group, $student, $category, $behavior, $report, $sanction);
+        $this->flush();
+
+        $observation = new IncidentReportObservation($report, $admin, new \DateTimeImmutable(), 'Observación de prueba.');
+        $this->persist($observation);
+        $this->flush();
+
+        return [$admin, $centre, $activeYear, $pastYear, $report, $sanction, $observation];
     }
 }

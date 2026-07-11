@@ -107,7 +107,7 @@
                                         {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
                                         {{ 'notification.badge.notified'|trans({}, 'notifications') }}
                                     </span>
-                                {% elseif is_granted('sanction.notify', sanction) %}
+                                {% elseif is_granted('sanction.notify', sanction) and not is_viewing_past_year() %}
                                     <a href="{{ path('app_notifications_register_sanction', {id: sanction.id}) }}"
                                        class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium hover:bg-amber-200 transition-colors">
                                         {{ ux_icon('heroicons:bell-alert', {class: 'h-3 w-3'}) }}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\EducationalCentre;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\Teacher;
@@ -85,6 +86,8 @@ class SanctionController extends AbstractController
         if ($centre === null) {
             return $this->redirectToRoute('app_select_centre');
         }
+
+        $this->denyIfViewingPastYear($centre);
 
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
@@ -367,6 +370,7 @@ class SanctionController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(SanctionVoter::EDIT, $sanction);
+        $this->denyIfViewingPastYear($centre);
 
         $user = $this->getUser();
         \assert($user instanceof Teacher);
@@ -571,6 +575,7 @@ class SanctionController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(SanctionVoter::DELETE, $sanction);
+        $this->denyIfViewingPastYear($this->centreFor($sanction));
 
         if (!$this->isCsrfTokenValid('delete_sanction_' . $id, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
@@ -614,6 +619,22 @@ class SanctionController extends AbstractController
         }
 
         return array_values($groups);
+    }
+
+    private function centreFor(Sanction $sanction): EducationalCentre
+    {
+        return $sanction->getGroup()
+            ->getProgrammeYear()
+            ->getProgramme()
+            ->getAcademicYear()
+            ->getEducationalCentre();
+    }
+
+    private function denyIfViewingPastYear(EducationalCentre $centre): void
+    {
+        if ($this->tenantContext->isViewingNonActiveYear($centre)) {
+            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
+        }
     }
 
     private function t(string $key): string

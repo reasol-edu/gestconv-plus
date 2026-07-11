@@ -13,12 +13,14 @@
                 <p class="mt-1 text-sm {{ is_viewing_past_year() ? 'text-amber-600 font-medium' : 'text-gray-500' }}">{{ vy.name }}</p>
             {% endif %}
         </div>
-        <a href="{{ path('app_incidents_new') }}"
-           class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
-                  hover:bg-forest-700 transition-colors shadow-xs shrink-0">
-            {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
-            {{ 'incident.new'|trans({}, 'admin') }}
-        </a>
+        {% if not is_viewing_past_year() %}
+            <a href="{{ path('app_incidents_new') }}"
+               class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                      hover:bg-forest-700 transition-colors shadow-xs shrink-0">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'incident.new'|trans({}, 'admin') }}
+            </a>
+        {% endif %}
     </div>
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">

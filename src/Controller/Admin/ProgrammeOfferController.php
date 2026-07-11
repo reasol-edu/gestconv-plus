@@ -152,7 +152,7 @@ class ProgrammeOfferController extends AbstractController
     {
         $centre = $this->requireCentreWithActiveYear($centreId);
         if ($this->tenantContext->isViewingNonActiveYear($centre)) {
-            throw $this->createAccessDeniedException('Write operations are not allowed when viewing a past academic year.');
+            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
         }
 
         return $centre;

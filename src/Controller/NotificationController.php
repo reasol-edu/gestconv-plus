@@ -81,6 +81,8 @@ class NotificationController extends AbstractController
         $this->denyAccessUnlessGranted(IncidentReportVoter::NOTIFY, $report);
 
         $centre = $this->centreFor($report);
+        $this->denyIfViewingPastYear($centre);
+
         $user   = $this->getUser();
         \assert($user instanceof Teacher);
 
@@ -121,6 +123,8 @@ class NotificationController extends AbstractController
         $this->denyAccessUnlessGranted(SanctionVoter::NOTIFY, $sanction);
 
         $centre = $this->centreFor($sanction);
+        $this->denyIfViewingPastYear($centre);
+
         $user   = $this->getUser();
         \assert($user instanceof Teacher);
 
@@ -157,6 +161,8 @@ class NotificationController extends AbstractController
         if ($centre === null) {
             return $this->redirectToRoute('app_select_centre');
         }
+
+        $this->denyIfViewingPastYear($centre);
 
         $student = $this->students->findById($studentId);
         if ($student === null) {
@@ -341,6 +347,13 @@ class NotificationController extends AbstractController
             ->getProgramme()
             ->getAcademicYear()
             ->getEducationalCentre();
+    }
+
+    private function denyIfViewingPastYear(EducationalCentre $centre): void
+    {
+        if ($this->tenantContext->isViewingNonActiveYear($centre)) {
+            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
+        }
     }
 
     private function t(string $key): string

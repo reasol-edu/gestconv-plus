@@ -42,12 +42,14 @@
                             </td>
                             <td class="px-6 py-3 w-56">
                                 <div class="flex items-center justify-end">
-                                    <a href="{{ path('app_notifications_register_student_reports', {studentId: row.student.id}) }}"
-                                       class="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-1.5 text-xs font-semibold text-white
-                                              hover:bg-forest-700 transition-colors shadow-xs">
-                                        {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}
-                                        {{ 'notification.index.notify_student'|trans({}, 'notifications') }}
-                                    </a>
+                                    {% if not is_viewing_past_year() %}
+                                        <a href="{{ path('app_notifications_register_student_reports', {studentId: row.student.id}) }}"
+                                           class="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-1.5 text-xs font-semibold text-white
+                                                  hover:bg-forest-700 transition-colors shadow-xs">
+                                            {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}
+                                            {{ 'notification.index.notify_student'|trans({}, 'notifications') }}
+                                        </a>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>

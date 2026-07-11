@@ -9,7 +9,7 @@
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
                         {{ observation.registeredAt|date('d/m/Y H:i') }} · {{ observation.registeredBy.name.lastName }}, {{ observation.registeredBy.name.firstName }}
                     </p>
-                    {% if is_granted('incident_report_observation.edit', observation) or is_granted('incident_report_observation.delete', observation) %}
+                    {% if not is_viewing_past_year() and (is_granted('incident_report_observation.edit', observation) or is_granted('incident_report_observation.delete', observation)) %}
                         <div class="flex items-center gap-1 shrink-0">
                             {% if is_granted('incident_report_observation.edit', observation) %}
                                 <a href="{{ path('app_incidents_edit_observation', {id: observation.incidentReport.id, observationId: observation.id}) }}"

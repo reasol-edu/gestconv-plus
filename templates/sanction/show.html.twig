@@ -23,7 +23,7 @@
                 {{ sanction.group.name }} · {{ sanction.createdAt|date('d/m/Y') }}
             </p>
             <div class="mt-2">
-                {% set notifyUrl = is_granted('sanction.notify', sanction) ? path('app_notifications_register_sanction', {id: sanction.id}) : null %}
+                {% set notifyUrl = is_granted('sanction.notify', sanction) and not is_viewing_past_year() ? path('app_notifications_register_sanction', {id: sanction.id}) : null %}
                 {% if sanction.isNotified %}
                     {% set badgeClasses, badgeIcon, badgeLabel = 'bg-green-100 text-green-700', 'heroicons:check-circle', 'notification.badge.notified'|trans({}, 'notifications') %}
                 {% else %}
@@ -50,7 +50,7 @@
                 {{ ux_icon('heroicons:document-arrow-down', {class: 'h-4 w-4'}) }}
                 {{ 'sanction.pdf.download'|trans({}, 'admin') }}
             </a>
-            {% if not sanction.isNotified and is_granted('sanction.notify', sanction) %}
+            {% if not sanction.isNotified and is_granted('sanction.notify', sanction) and not is_viewing_past_year() %}
                 <a href="{{ path('app_notifications_register_sanction', {id: sanction.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-medium text-white
                           hover:bg-forest-700 transition-colors shadow-xs">
@@ -58,7 +58,7 @@
                     {{ 'notification.register_sanction.title'|trans({}, 'notifications') }}
                 </a>
             {% endif %}
-            {% if is_granted('sanction.edit', sanction) %}
+            {% if is_granted('sanction.edit', sanction) and not is_viewing_past_year() %}
                 <a href="{{ path('app_sanctions_edit', {id: sanction.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
                           hover:bg-gray-50 transition-colors shadow-xs">
@@ -66,7 +66,7 @@
                     {{ 'sanction.edit'|trans({}, 'admin') }}
                 </a>
             {% endif %}
-            {% if is_granted('sanction.delete', sanction) %}
+            {% if is_granted('sanction.delete', sanction) and not is_viewing_past_year() %}
                 <form method="post" action="{{ path('app_sanctions_delete', {id: sanction.id}) }}"
                       class="js-confirm-form"
                       data-confirm="{{ 'sanction.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">

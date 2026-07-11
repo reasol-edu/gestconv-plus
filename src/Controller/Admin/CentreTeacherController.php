@@ -443,7 +443,7 @@ class CentreTeacherController extends AbstractController
     private function denyIfViewingPastYear(EducationalCentre $centre): void
     {
         if ($this->tenantContext->isViewingNonActiveYear($centre)) {
-            throw $this->createAccessDeniedException('Write operations are not allowed when viewing a past academic year.');
+            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
         }
     }
 

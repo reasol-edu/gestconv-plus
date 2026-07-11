@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\EducationalCentre;
 use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
 use App\Entity\Teacher;
@@ -147,6 +148,8 @@ class IncidentReportController extends AbstractController
         if ($centre === null) {
             return $this->redirectToRoute('app_select_centre');
         }
+
+        $this->denyIfViewingPastYear($centre);
 
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
@@ -503,6 +506,7 @@ class IncidentReportController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(IncidentReportVoter::VIEW, $report);
+        $this->denyIfViewingPastYear($this->centreFor($report));
 
         if (!$this->isCsrfTokenValid('add_observation_' . $id, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
@@ -552,6 +556,7 @@ class IncidentReportController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(IncidentReportObservationVoter::EDIT, $observation);
+        $this->denyIfViewingPastYear($centre);
 
         $canEditDate = $this->isGranted(IncidentReportObservationVoter::EDIT_DATE, $observation);
 
@@ -630,6 +635,7 @@ class IncidentReportController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(IncidentReportObservationVoter::DELETE, $observation);
+        $this->denyIfViewingPastYear($this->centreFor($report));
 
         if (!$this->isCsrfTokenValid('delete_observation_' . $observationId, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
@@ -664,6 +670,7 @@ class IncidentReportController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(IncidentReportVoter::EDIT, $report);
+        $this->denyIfViewingPastYear($centre);
 
         $user = $this->getUser();
         \assert($user instanceof Teacher);
@@ -839,6 +846,7 @@ class IncidentReportController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(IncidentReportVoter::DELETE, $report);
+        $this->denyIfViewingPastYear($this->centreFor($report));
 
         if (!$this->isCsrfTokenValid('delete_incident_' . $id, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
@@ -886,6 +894,22 @@ class IncidentReportController extends AbstractController
         }
 
         return array_values($groups);
+    }
+
+    private function centreFor(IncidentReport $report): EducationalCentre
+    {
+        return $report->getGroup()
+            ->getProgrammeYear()
+            ->getProgramme()
+            ->getAcademicYear()
+            ->getEducationalCentre();
+    }
+
+    private function denyIfViewingPastYear(EducationalCentre $centre): void
+    {
+        if ($this->tenantContext->isViewingNonActiveYear($centre)) {
+            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
+        }
     }
 
     private function t(string $key): string
