@@ -207,6 +207,28 @@ class GroupRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns whether the viewer teaches or tutors any group in the given academic year.
+     * Used to decide whether to show the weekly-sanctions widget on the dashboard.
+     */
+    public function hasTeachingGroupsInYear(EducationalCentre $centre, Teacher $viewer, AcademicYear $year): bool
+    {
+        $qb = $this->createQueryBuilder('g');
+        $qb->select('1')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->where('prog.academicYear = :year')
+            ->andWhere($qb->expr()->orX(
+                ':viewer MEMBER OF g.teachers',
+                ':viewer MEMBER OF g.tutors',
+            ))
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('viewer', $viewer->getId(), 'uuid')
+            ->setMaxResults(1);
+
+        return $qb->getQuery()->getOneOrNullResult() !== null;
+    }
+
+    /**
      * Returns student and teacher counts for every group in the given academic year,
      * keyed by group UUID (RFC4122). Single query; avoids N+1 per group.
      *

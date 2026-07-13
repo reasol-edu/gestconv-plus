@@ -54,6 +54,9 @@ class DashboardController extends AbstractController
                 'topStudents'          => [],
                 'tutoredGroups'        => [],
                 'sanctionableCount'    => 0,
+                'hasTeachingGroups'    => false,
+                'thisWeekSanctions'    => [],
+                'nextWeekSanctions'    => [],
             ]);
         }
 
@@ -80,18 +83,36 @@ class DashboardController extends AbstractController
 
         $canSanction = $this->isGranted(SanctionVoter::CREATE, $centre);
 
+        $today      = new \DateTimeImmutable('today');
+        $dow        = (int) $today->format('N'); // 1 = lunes … 7 = domingo
+        $thisMonday = $today->modify('-' . ($dow - 1) . ' days')->setTime(0, 0, 0);
+        $thisSunday = $thisMonday->modify('+6 days')->setTime(23, 59, 59);
+        $nextMonday = $thisMonday->modify('+7 days');
+        $nextSunday = $nextMonday->modify('+6 days')->setTime(23, 59, 59);
+
+        $hasTeachingGroups = $this->groupRepository->hasTeachingGroupsInYear($centre, $viewer, $year);
+        $thisWeekSanctions = $hasTeachingGroups
+            ? $this->sanctionRepository->findActiveForTeacherInDateRange($centre, $viewer, $year, $thisMonday, $thisSunday)
+            : [];
+        $nextWeekSanctions = $hasTeachingGroups
+            ? $this->sanctionRepository->findActiveForTeacherInDateRange($centre, $viewer, $year, $nextMonday, $nextSunday)
+            : [];
+
         return $this->render('dashboard/index.html.twig', [
             'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
             'groupCount'           => $this->groupRepository->countByActiveYearOfCentre($centre, $year),
             'teacherCount'         => $this->teacherRepository->countByAcademicYear($year),
             'reportCount30d'       => $this->incidentRepository->countRecentByCentre($centre, $viewer, $year, 30),
-            'activeSanctionsCount' => $this->sanctionRepository->countActiveByCentre($centre, $viewer, new \DateTimeImmutable(), $year),
+            'activeSanctionsCount' => $this->sanctionRepository->countActiveByCentre($centre, $viewer, $today, $year),
             'pendingQueue'         => $this->pendingNotificationQueue->forViewer($centre, $viewer, $year),
             'recentReports'        => $this->incidentRepository->createFilteredQuery($centre, $viewer, $year, [])->setMaxResults(6)->getResult(),
             'hasFullAccess'        => $hasFullAccess,
             'topStudents'          => $topStudents,
             'tutoredGroups'        => $tutoredGroups,
             'sanctionableCount'    => $canSanction ? $this->sanctionRepository->countSanctionableByCentre($centre) : 0,
+            'hasTeachingGroups'    => $hasTeachingGroups,
+            'thisWeekSanctions'    => $thisWeekSanctions,
+            'nextWeekSanctions'    => $nextWeekSanctions,
         ]);
     }
 }

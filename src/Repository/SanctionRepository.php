@@ -372,6 +372,49 @@ class SanctionRepository extends ServiceEntityRepository
      *
      * @return list<Sanction>
      */
+    /**
+     * Returns notified sanctions that overlap with the given date range and belong to groups
+     * where the viewer is a teacher or tutor. Used for the dashboard weekly widget.
+     *
+     * @return list<Sanction>
+     */
+    public function findActiveForTeacherInDateRange(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        AcademicYear $year,
+        \DateTimeImmutable $rangeStart,
+        \DateTimeImmutable $rangeEnd,
+    ): array {
+        $qb = $this->createQueryBuilder('s')
+            ->addSelect('st', 'g')
+            ->join('s.student', 'st')
+            ->join('s.group', 'g')
+            ->join('g.programmeYear', 'py')
+            ->join('py.programme', 'prog')
+            ->join('prog.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('ay = :year')
+            ->andWhere('s.notifiedCommunication IS NOT NULL')
+            ->andWhere('s.effectiveFrom IS NOT NULL')
+            ->andWhere('s.effectiveFrom <= :rangeEnd')
+            ->andWhere('s.effectiveTo IS NULL OR s.effectiveTo >= :rangeStart')
+            ->andWhere($qb->expr()->orX(
+                ':viewer MEMBER OF g.teachers',
+                ':viewer MEMBER OF g.tutors',
+            ))
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('rangeStart', $rangeStart)
+            ->setParameter('rangeEnd', $rangeEnd)
+            ->setParameter('viewer', $viewer->getId(), 'uuid')
+            ->orderBy('s.effectiveFrom', 'ASC')
+            ->addOrderBy('g.name', 'ASC')
+            ->addOrderBy('st.name', 'ASC');
+
+        /** @var list<Sanction> */
+        return $qb->getQuery()->getResult();
+    }
+
     public function findWithDatesForAcademicYear(AcademicYear $year): array
     {
         /** @var list<Sanction> $result */

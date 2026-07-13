@@ -47,3 +47,9 @@ top_students_col_serious: 'graves'
 
 tutored_groups_title: 'Tus grupos'
 tutored_groups_students: 'estudiantes'
+
+
+active_sanctions_week_title: 'Sanciones en vigor en tus grupos'
+active_sanctions_this_week: 'Esta semana'
+active_sanctions_next_week: 'Próxima semana'
+active_sanctions_week_empty: 'Ninguna sanción en vigor esta semana.'
