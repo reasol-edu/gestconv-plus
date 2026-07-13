@@ -7,23 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-13
+
 ### Added
 
 - Widget en el panel de inicio con las **sanciones notificadas y vigentes** de la semana actual y la siguiente, filtradas a los grupos donde el docente imparte clase o es tutor/a. Si el docente no pertenece a ningún grupo del curso activo, el widget no aparece.
 - **Seguimiento de sanciones**: nuevos campos opcionales en el formulario de sanción («¿Las medidas tuvieron efecto?», «¿La familia reclamó?», «Actitud de la familia» y «¿Registrada en Séneca?») que permiten completar el resultado de la sanción una vez ejecutada; solo editable por quien tenga permiso de vista sobre la sanción.
 - **Observaciones en sanciones**: cualquier docente o administrador con acceso a una sanción puede añadir anotaciones de texto enriquecido; el autor puede modificarlas o eliminarlas durante la hora siguiente a su creación, y los administradores en cualquier momento.
 - Badges de estado en el listado de sanciones bajo el nombre del alumno: **En Séneca**, **Sin efecto** y **Familia reclamó**, derivados de los nuevos campos de seguimiento.
-
-### Changed
-
-- La relación entre grupos y cursos pasa de **muchos-a-muchos a muchos-a-uno**: cada grupo pertenece ahora a un único curso. La oferta formativa muestra los cursos en la columna izquierda y los grupos del curso seleccionado en la derecha, sin casillas de verificación de pertenencia múltiple. Se eliminan las entidades `Programme` y `ProgrammeYear`, que duplicaban esta estructura (migración v29).
-- La vista previa de importación de estudiantes, cuando un mismo nombre de grupo aparece en el CSV bajo cursos distintos, muestra ahora **botones de radio** (uno por cada curso detectado) y un campo de texto editable al final; al seleccionar un radio se copia su valor en el campo para que pueda personalizarse. Antes se usaba un desplegable de búsqueda Tom Select.
-- Los desplegables de selección de tutores y docentes en la oferta formativa muestran el mensaje **«Sin resultados»** en español cuando ningún docente coincide con el texto buscado.
-
-## [1.0.0] - 2026-07-11
-
-### Added
-
 - El comando `app:setup` ya no crea por defecto el centro educativo de demostración «IES Test»: solo crea el usuario `admin`, pensado para despliegues en producción reales. La nueva opción `--demo-data` recupera el comportamiento anterior (crea también el centro de demostración con sus catálogos) para quien quiera probar la aplicación (ver [Comandos de consola](docs/manual/08-comandos-de-consola.md)). Además, la pantalla de selección de centro ofrece ahora a los administradores globales, cuando todavía no hay ningún centro creado, un enlace directo a **Administración › Centros › Nuevo centro** y, en el pie, un acceso a **Administrar centros**.
 - Los administradores globales pueden marcar en el formulario de un docente, tarjeta **Docentes** del panel de administración, un **cambio de contraseña obligatorio** que solo aplica a cuentas con contraseña propia (no a las de autenticación externa). El docente marcado queda confinado, la próxima vez que inicie sesión, a una pantalla dedicada de cambio de contraseña (contraseña actual, nueva contraseña y su repetición) hasta completarlo, con la única salida posible de cerrar sesión; el resto de la aplicación permanece inaccesible mientras tanto. Los comandos `app:setup` y `app:create-admin` fuerzan este cambio por defecto en las cuentas de administrador que crean, con la nueva opción `--no-force-password-change` para omitirlo (ver [Comandos de consola](docs/manual/08-comandos-de-consola.md)).
 - Nuevo catálogo de **ubicaciones** (dónde sucedió), configurable por los administradores de centro en **Centro educativo › Ubicaciones** y organizado en categorías igual que las conductas contrarias y las medidas disciplinarias (activar/desactivar, reordenar, editar, eliminar, y exportar/importar en JSON). Al registrar o editar un parte, el nuevo campo obligatorio **Dónde sucedió** ofrece este catálogo agrupado por categoría en un desplegable de búsqueda. Al crear un centro se siembra automáticamente un catálogo por defecto (*En clase*, *En el intercambio de clases*, *Entrada/Salida*, *Recreo*, *Durante las actividades extraescolares* y *Otros*); los centros ya existentes reciben el mismo catálogo por defecto al actualizar, y sus partes anteriores a esta funcionalidad se marcan como *Otros*. La ubicación se muestra en el detalle del parte y en su PDF.
@@ -66,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- La relación entre grupos y cursos pasa de **muchos-a-muchos a muchos-a-uno**: cada grupo pertenece ahora a un único curso. La oferta formativa muestra los cursos en la columna izquierda y los grupos del curso seleccionado en la derecha, sin casillas de verificación de pertenencia múltiple. Se eliminan las entidades `Programme` y `ProgrammeYear`, que duplicaban esta estructura (migración v29).
+- La vista previa de importación de estudiantes, cuando un mismo nombre de grupo aparece en el CSV bajo cursos distintos, muestra ahora **botones de radio** (uno por cada curso detectado) y un campo de texto editable al final; al seleccionar un radio se copia su valor en el campo para que pueda personalizarse. Antes se usaba un desplegable de búsqueda Tom Select.
+- Los desplegables de selección de tutores y docentes en la oferta formativa muestran el mensaje **«Sin resultados»** en español cuando ningún docente coincide con el texto buscado.
 - En el formulario de un docente, las opciones **Administrador global** y **Cuenta activa** pasan de casillas de verificación a pares de botones de radio en cajas, igual que el resto de opciones del formulario (modo de acceso y cambio de contraseña obligatorio).
 - Los PDF de partes y sanciones tienen un aspecto más formal: los datos principales (alumno, grupo, docente, fecha y estado) se muestran en una única tabla al comienzo, y las conductas contrarias marcadas se agrupan por categoría en columnas, con el nombre de la categoría como cabecera y las conductas concretas debajo en una lista.
 - La pantalla de ajustes agrupa ahora cada ajuste en secciones por categoría (Visualización, Correo electrónico, Modo tablón, Notificaciones a familias y Avisos por correo), en lugar de mostrarlos todos en un único listado alfabético.
