@@ -44,8 +44,6 @@
                             data-placeholder="{{ 'centre_teachers.edit.groups_placeholder'|trans({}, 'admin')|e('html_attr') }}">
                         {% for group in all_groups %}
                             <option value="{{ group.id.toRfc4122 }}"
-                                    data-programme="{{ group.programmeYear.programme.name|e('html_attr') }}"
-                                    data-level="{{ group.programmeYear.name|e('html_attr') }}"
                                     {{ group.id.toRfc4122 in current_group_ids ? 'selected' : '' }}>
                                 {{ group.name }}
                             </option>
@@ -86,11 +84,8 @@ const noResults   = el.dataset.noResults   ?? '';
 const options = [];
 el.querySelectorAll('option').forEach(opt => {
     options.push({
-        value:     opt.value,
-        name:      opt.textContent.trim(),
-        programme: opt.dataset.programme ?? '',
-        level:     opt.dataset.level     ?? '',
-        search:    `${opt.dataset.programme} ${opt.dataset.level} ${opt.textContent.trim()}`,
+        value: opt.value,
+        name:  opt.textContent.trim(),
     });
 });
 
@@ -101,23 +96,14 @@ new TomSelect(el, {
     items:         selected,
     valueField:    'value',
     labelField:    'name',
-    searchField:   ['search'],
+    searchField:   ['name'],
     create:        false,
     maxOptions:    null,
     placeholder,
     plugins:       ['remove_button', 'checkbox_options'],
     render: {
-        option: (d, esc) =>
-            `<div class="ts-group-option">
-                <p class="ts-group-programme">${esc(d.programme)} <span class="ts-group-level">· ${esc(d.level)}</span></p>
-                <p class="ts-group-name">${esc(d.name)}</p>
-            </div>`,
-        item: (d, esc) =>
-            `<div class="ts-group-item" title="${esc(d.programme)} · ${esc(d.level)}">
-                <span class="ts-group-item-programme">${esc(d.programme)}</span>
-                <span class="ts-sep">·</span>
-                <span>${esc(d.name)}</span>
-            </div>`,
+        option: (d, esc) => `<div class="px-3 py-2 text-sm">${esc(d.name)}</div>`,
+        item:   (d, esc) => `<div>${esc(d.name)}</div>`,
         no_results: () =>
             `<div class="no-results px-3 py-2 text-sm">${noResults}</div>`,
     },

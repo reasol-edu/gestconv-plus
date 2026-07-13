@@ -63,9 +63,8 @@ class SanctionRepository extends ServiceEntityRepository
             ->addSelect('st', 'g')
             ->join('s.student', 'st')
             ->join('s.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->setParameter('centre', $centre->getId(), 'uuid')
@@ -127,9 +126,8 @@ class SanctionRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('s')
             ->select('COUNT(DISTINCT s.id)')
             ->join('s.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('s.notifiedCommunication IS NOT NULL')
@@ -171,9 +169,9 @@ class SanctionRepository extends ServiceEntityRepository
             ->select('COUNT(r.id)')
             ->from(IncidentReport::class, 'r')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->where('prog.academicYear = :activeYear')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :activeYear')
             ->andWhere('r.prescribedAt IS NULL')
             ->andWhere('r.sanction IS NULL')
             ->andWhere('r.notifiedCommunication IS NOT NULL')
@@ -227,9 +225,8 @@ class SanctionRepository extends ServiceEntityRepository
                  AND r3.prescribedAt IS NOT NULL) AS prescribedCount
             FROM App\Entity\Student s
             JOIN s.groups g
-            JOIN g.programmeYear py
-            JOIN py.programme prog
-            JOIN prog.academicYear ay
+            JOIN g.course c
+            JOIN c.academicYear ay
             WHERE ay = :activeYear
             AND EXISTS (
                 SELECT r0.id FROM App\Entity\IncidentReport r0
@@ -338,9 +335,8 @@ class SanctionRepository extends ServiceEntityRepository
             ->addSelect('st', 'g')
             ->join('s.student', 'st')
             ->join('s.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('s.notifiedCommunication IS NULL')
@@ -389,19 +385,14 @@ class SanctionRepository extends ServiceEntityRepository
             ->addSelect('st', 'g')
             ->join('s.student', 'st')
             ->join('s.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('s.notifiedCommunication IS NOT NULL')
             ->andWhere('s.effectiveFrom IS NOT NULL')
             ->andWhere('s.effectiveFrom <= :rangeEnd')
             ->andWhere('s.effectiveTo IS NULL OR s.effectiveTo >= :rangeStart')
-            ->andWhere($qb->expr()->orX(
-                ':viewer MEMBER OF g.teachers',
-                ':viewer MEMBER OF g.tutors',
-            ))
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('rangeStart', $rangeStart)
@@ -409,12 +400,18 @@ class SanctionRepository extends ServiceEntityRepository
             ->setParameter('viewer', $viewer->getId(), 'uuid')
             ->orderBy('s.effectiveFrom', 'ASC')
             ->addOrderBy('g.name', 'ASC')
-            ->addOrderBy('st.name', 'ASC');
+            ->addOrderBy('st.name.lastName', 'ASC');
+
+        $qb->andWhere($qb->expr()->orX(
+            ':viewer MEMBER OF g.teachers',
+            ':viewer MEMBER OF g.tutors',
+        ));
 
         /** @var list<Sanction> */
         return $qb->getQuery()->getResult();
     }
 
+    /** @return list<Sanction> */
     public function findWithDatesForAcademicYear(AcademicYear $year): array
     {
         /** @var list<Sanction> $result */

@@ -12,8 +12,7 @@ use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -111,41 +110,6 @@ class PastYearGuardTest extends ControllerTestCase
         self::assertSelectorNotExists('a[href*="/importar"]');
     }
 
-    // ── ProgrammeOfferController ──────────────────────────────────────────────
-
-    #[DataProvider('provideOfferWriteRoutes')]
-    public function testOfferWriteReturns403WhenViewingPastYear(string $method, string $pathSuffix): void
-    {
-        [$admin, $centre, , $pastYear] = $this->makeCentreWithTwoYears();
-        $this->loginAs($admin, $centre);
-        $this->viewPastYear($pastYear);
-
-        $this->client->request($method, '/centro/' . $centre->getId()->toRfc4122() . '/offer' . $pathSuffix);
-
-        self::assertResponseStatusCodeSame(403);
-    }
-
-    /** @return iterable<string, array{string, string}> */
-    public static function provideOfferWriteRoutes(): iterable
-    {
-        yield 'import GET' => ['GET', '/import'];
-    }
-
-    public function testOfferIndexHidesWriteButtonsAndKeepsExportWhenViewingPastYear(): void
-    {
-        [$admin, $centre, , $pastYear] = $this->makeCentreWithTwoYears();
-        $this->loginAs($admin, $centre);
-        $this->viewPastYear($pastYear);
-
-        $crawler = $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/offer');
-
-        self::assertResponseIsSuccessful();
-        // Write button (import) hidden
-        self::assertSelectorNotExists('a[href*="/import"]');
-        // Export (read-only) remains visible
-        self::assertSelectorExists('a[href*="/export"]');
-    }
-
     // ── DashboardController ───────────────────────────────────────────────────
 
     public function testDashboardHidesWriteActionsWhenViewingPastYear(): void
@@ -191,16 +155,6 @@ class PastYearGuardTest extends ControllerTestCase
         $this->loginAs($admin, $centre);
 
         $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/estudiantes/nuevo');
-
-        self::assertResponseIsSuccessful();
-    }
-
-    public function testOfferWriteSucceedsWhenViewingActiveYear(): void
-    {
-        [$admin, $centre] = $this->makeCentreWithTwoYears();
-        $this->loginAs($admin, $centre);
-
-        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/offer/import');
 
         self::assertResponseIsSuccessful();
     }
@@ -468,9 +422,8 @@ class PastYearGuardTest extends ControllerTestCase
     {
         [$admin, $centre, $activeYear, $pastYear] = $this->makeCentreWithTwoYears();
 
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($activeYear);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($activeYear);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-' . uniqid('', false));
         $group->addStudent($student);
 
@@ -499,7 +452,7 @@ class PastYearGuardTest extends ControllerTestCase
             ->setNoMeasureApplied(true)
             ->setNoMeasureReason('Sin medida aplicada.');
 
-        $this->persist($programme, $level, $group, $student, $category, $behavior, $report, $sanction);
+        $this->persist($course, $group, $student, $category, $behavior, $report, $sanction);
         $this->flush();
 
         $observation = new IncidentReportObservation($report, $admin, new \DateTimeImmutable(), 'Observación de prueba.');

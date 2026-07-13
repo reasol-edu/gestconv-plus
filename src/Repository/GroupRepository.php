@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -23,87 +22,43 @@ class GroupRepository extends ServiceEntityRepository
         parent::__construct($registry, Group::class);
     }
 
-    public function isTeacherInProgramme(Teacher $teacher, Programme $programme): bool
+    public function isTeacherInCourse(Teacher $teacher, Course $course): bool
     {
         return $this->createQueryBuilder('g')
             ->select('1')
-            ->join('g.programmeYear', 'py')
+            ->join('g.course', 'c')
             ->leftJoin('g.teachers', 't')
-            ->where('py.programme = :programme')
+            ->where('c = :course')
             ->andWhere(':teacher MEMBER OF g.tutors OR t.id = :teacher')
-            ->setParameter('programme', $programme->getId(), 'uuid')
+            ->setParameter('course', $course->getId(), 'uuid')
             ->setParameter('teacher', $teacher->getId(), 'uuid')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult() !== null;
     }
 
-    /**
-     * Number of groups per level, keyed by level UUID (RFC4122). Single grouped query.
-     *
-     * @param  ProgrammeYear[] $levels
-     * @return array<string, int>
-     */
-    public function countByLevel(array $levels): array
-    {
-        if ($levels === []) {
-            return [];
-        }
-
-        // Cada UUID se vincula individualmente con el tipo 'uuid' explícito: pasar el
-        // array completo como un único parámetro IN (:levels) hace que Doctrine infiera
-        // un ArrayParameterType genérico (string) que ignora la conversión de UuidType
-        // (binaria en MySQL/SQLite, nativa en PostgreSQL), y la consulta no encuentra
-        // ninguna fila aunque los datos existan.
-        $qb           = $this->createQueryBuilder('g')
-            ->select('IDENTITY(g.programmeYear) AS lid', 'COUNT(g.id) AS cnt');
-        $placeholders = [];
-        foreach ($levels as $i => $level) {
-            $placeholders[] = ":level{$i}";
-            $qb->setParameter("level{$i}", $level->getId(), 'uuid');
-        }
-
-        /** @var list<array<string, int|string>> $rows */
-        $rows = $qb
-            ->where('g.programmeYear IN (' . implode(', ', $placeholders) . ')')
-            ->groupBy('g.programmeYear')
-            ->getQuery()
-            ->getScalarResult();
-
-        $uuidNorm = [];
-        foreach ($levels as $level) {
-            $rfc = $level->getId()->toRfc4122();
-            $uuidNorm[$rfc]                      = $rfc;
-            $uuidNorm[$level->getId()->toBinary()] = $rfc;
-        }
-
-        $map = [];
-        foreach ($rows as $row) {
-            $key = $uuidNorm[(string) $row['lid']] ?? (string) $row['lid'];
-            $map[$key] = (int) $row['cnt'];
-        }
-
-        return $map;
-    }
-
     /** @return Group[] */
-    public function findByLevelOrderedByName(ProgrammeYear $level): array
+    public function findByCourseOrderedByName(Course $course): array
     {
         return $this->createQueryBuilder('g')
-            ->where('g.programmeYear = :level')
-            ->setParameter('level', $level->getId(), 'uuid')
+            ->join('g.course', 'c')
+            ->where('c = :course')
+            ->setParameter('course', $course->getId(), 'uuid')
             ->orderBy('g.name', 'ASC')
+            ->distinct()
             ->getQuery()
             ->getResult();
     }
 
-    public function findByLevelAndId(ProgrammeYear $level, string $id): ?Group
+    public function findByCourseAndId(Course $course, string $id): ?Group
     {
         $result = $this->createQueryBuilder('g')
-            ->where('g.programmeYear = :level')
+            ->join('g.course', 'c')
+            ->where('c = :course')
             ->andWhere('g.id = :id')
-            ->setParameter('level', $level->getId(), 'uuid')
+            ->setParameter('course', $course->getId(), 'uuid')
             ->setParameter('id', $id, 'uuid')
+            ->distinct()
             ->getQuery()
             ->getOneOrNullResult();
 
@@ -113,13 +68,13 @@ class GroupRepository extends ServiceEntityRepository
     public function findByIdAndCentre(string $id, EducationalCentre $centre): ?Group
     {
         $result = $this->createQueryBuilder('g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('g.id = :id')
             ->andWhere('ay.educationalCentre = :centre')
             ->setParameter('id', $id, 'uuid')
             ->setParameter('centre', $centre->getId(), 'uuid')
+            ->distinct()
             ->getQuery()
             ->getOneOrNullResult();
 
@@ -127,22 +82,24 @@ class GroupRepository extends ServiceEntityRepository
     }
 
     /**
-     * Returns all groups (with students eagerly loaded) that belong to ProgrammeYears
-     * of the given programme. Ordered by level name → group name → student surname.
+     * Returns all groups (with students eagerly loaded) that belong to courses
+     * of the given academic year. Ordered by course name → group name → student surname.
      *
      * @return Group[]
      */
-    public function findByProgrammeWithStudents(Programme $programme): array
+    public function findByYearWithStudents(AcademicYear $year): array
     {
         return $this->createQueryBuilder('g')
             ->leftJoin('g.students', 's')->addSelect('s')
-            ->join('g.programmeYear', 'py')
-            ->where('py.programme = :programme')
-            ->setParameter('programme', $programme->getId(), 'uuid')
-            ->orderBy('py.name', 'ASC')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :year')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->orderBy('c.name', 'ASC')
             ->addOrderBy('g.name', 'ASC')
             ->addOrderBy('s.name.lastName', 'ASC')
             ->addOrderBy('s.name.firstName', 'ASC')
+            ->distinct()
             ->getQuery()
             ->getResult();
     }
@@ -155,10 +112,10 @@ class GroupRepository extends ServiceEntityRepository
         }
 
         return (int) $this->createQueryBuilder('g')
-            ->select('COUNT(g.id)')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->where('prog.academicYear = :year')
+            ->select('COUNT(DISTINCT g.id)')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :year')
             ->setParameter('year', $year->getId(), 'uuid')
             ->getQuery()
             ->getSingleScalarResult();
@@ -173,11 +130,12 @@ class GroupRepository extends ServiceEntityRepository
         }
 
         return $this->createQueryBuilder('g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->where('prog.academicYear = :year')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :year')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('g.name', 'ASC')
+            ->distinct()
             ->getQuery()
             ->getResult();
     }
@@ -195,13 +153,14 @@ class GroupRepository extends ServiceEntityRepository
         }
 
         return $this->createQueryBuilder('g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->where('prog.academicYear = :year')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :year')
             ->andWhere(':viewer MEMBER OF g.tutors')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('viewer', $viewer->getId(), 'uuid')
             ->orderBy('g.name', 'ASC')
+            ->distinct()
             ->getQuery()
             ->getResult();
     }
@@ -214,9 +173,9 @@ class GroupRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('g');
         $qb->select('1')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->where('prog.academicYear = :year')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :year')
             ->andWhere($qb->expr()->orX(
                 ':viewer MEMBER OF g.teachers',
                 ':viewer MEMBER OF g.tutors',
@@ -235,7 +194,7 @@ class GroupRepository extends ServiceEntityRepository
      * @param  Group[] $groups  All groups in the year (used to normalise binary UUIDs from getScalarResult)
      * @return array<string, array{students: int, teachers: int}>
      */
-    public function findCountsByAcademicYear(\App\Entity\AcademicYear $year, array $groups): array
+    public function findCountsByAcademicYear(AcademicYear $year, array $groups): array
     {
         if ($groups === []) {
             return [];
@@ -248,18 +207,17 @@ class GroupRepository extends ServiceEntityRepository
                        COUNT(DISTINCT s.id) AS students,
                        COUNT(DISTINCT t.id) AS teachers
                 FROM App\Entity\Group g
-                JOIN g.programmeYear py
-                JOIN py.programme prog
+                JOIN g.course c
+                JOIN c.academicYear ay
                 LEFT JOIN g.students s
                 LEFT JOIN g.teachers t
-                WHERE prog.academicYear = :year
+                WHERE ay = :year
                 GROUP BY g.id
             ')
             ->setParameter('year', $year->getId(), 'uuid')
             ->getScalarResult();
 
         // getScalarResult() returns UUIDs in binary form on MySQL.
-        // Build a lookup map so either representation normalises to RFC4122.
         $uuidNorm = [];
         foreach ($groups as $group) {
             $rfc = $group->getId()->toRfc4122();
@@ -281,12 +239,12 @@ class GroupRepository extends ServiceEntityRepository
     }
 
     /**
-     * Returns groups for the centre's active year with programme and level data eagerly loaded,
-     * sorted by programme → level → group name.
+     * Returns groups for the centre's active year with courses eagerly loaded,
+     * sorted by course name → group name.
      *
      * @return Group[]
      */
-    public function findByActiveYearOfCentreWithProgramme(EducationalCentre $centre, ?AcademicYear $year = null): array
+    public function findByActiveYearOfCentreWithCourse(EducationalCentre $centre, ?AcademicYear $year = null): array
     {
         $year ??= $centre->getActiveAcademicYear();
         if ($year === null) {
@@ -294,13 +252,13 @@ class GroupRepository extends ServiceEntityRepository
         }
 
         return $this->createQueryBuilder('g')
-            ->join('g.programmeYear', 'py')->addSelect('py')
-            ->join('py.programme', 'prog')->addSelect('prog')
-            ->where('prog.academicYear = :year')
+            ->join('g.course', 'c')->addSelect('c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('prog.name', 'ASC')
-            ->addOrderBy('py.name', 'ASC')
+            ->orderBy('c.name', 'ASC')
             ->addOrderBy('g.name', 'ASC')
+            ->distinct()
             ->getQuery()
             ->getResult();
     }

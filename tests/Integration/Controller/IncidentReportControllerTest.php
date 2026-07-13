@@ -17,8 +17,7 @@ use App\Entity\IncidentReportObservation;
 use App\Entity\LocationOption;
 use App\Entity\LocationOptionCategory;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -271,7 +270,7 @@ class IncidentReportControllerTest extends ControllerTestCase
     public function testNewPostAsCentreAdminAssignsChosenTeacher(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
-        $year = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+        $year = $group->getCourse()->getAcademicYear();
 
         $cadmin     = $this->makeTeacher('cadmin.new.assign');
         $newTeacher = $this->makeTeacher('new.teacher.assign');
@@ -311,7 +310,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
         $otherTeacher = $this->makeTeacher('other.new.assign');
         $this->persist($otherTeacher);
-        $group->getProgrammeYear()->getProgramme()->getAcademicYear()->addTeacher($otherTeacher);
+        $group->getCourse()->getAcademicYear()->addTeacher($otherTeacher);
         $location = $this->makeLocation($centre);
         $this->flush();
         $this->loginAs($teacher, $centre);
@@ -1077,7 +1076,7 @@ class IncidentReportControllerTest extends ControllerTestCase
     public function testEditPostAsCentreAdminReassignsTeacherAndStudent(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
-        $year = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+        $year = $group->getCourse()->getAcademicYear();
 
         $cadmin      = $this->makeTeacher('cadmin.reassign');
         $newTeacher  = $this->makeTeacher('new.teacher.reassign');
@@ -1120,7 +1119,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
         $otherTeacher = $this->makeTeacher('other.attempt.reassign');
         $this->persist($otherTeacher);
-        $group->getProgrammeYear()->getProgramme()->getAcademicYear()->addTeacher($otherTeacher);
+        $group->getCourse()->getAcademicYear()->addTeacher($otherTeacher);
         $this->flush();
 
         $report   = $this->makeReport($student, $group, $teacher, $behavior);
@@ -1248,9 +1247,8 @@ class IncidentReportControllerTest extends ControllerTestCase
         $teacher   = $this->makeTeacher('teacher.' . uniqid('', false) . $suffix);
         $centre    = (new EducationalCentre())->setCode('4' . str_pad($suffix, 7, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-' . uniqid('', false));
         $category  = (new \App\Entity\IncidentBehaviorCategory())
             ->setEducationalCentre($centre)
@@ -1265,7 +1263,7 @@ class IncidentReportControllerTest extends ControllerTestCase
             ->setActive(true);
 
         $centre->setActiveAcademicYear($year);
-        $this->persist($teacher, $centre, $year, $programme, $level, $group, $student, $category, $behavior);
+        $this->persist($teacher, $centre, $year, $course, $group, $student, $category, $behavior);
 
         return [$teacher, $centre, $group, $student, $behavior];
     }
@@ -1300,7 +1298,7 @@ class IncidentReportControllerTest extends ControllerTestCase
         Teacher $creator,
         IncidentBehavior $behavior,
     ): IncidentReport {
-        $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+        $academicYear = $group->getCourse()->getAcademicYear();
 
         $report = (new IncidentReport())
             ->setAcademicYear($academicYear)

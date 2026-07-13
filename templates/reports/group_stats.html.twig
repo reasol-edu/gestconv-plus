@@ -114,11 +114,11 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        {% for programme in report.programmes %}
+                        {% for course in report.courses %}
                             <tr class="bg-forest-50">
-                                <td colspan="7" class="px-4 py-2 text-xs font-bold uppercase tracking-wide text-forest-700">{{ programme.programme.name }}</td>
+                                <td colspan="7" class="px-4 py-2 text-xs font-bold uppercase tracking-wide text-forest-700">{{ course.course.name }}</td>
                             </tr>
-                            {% for row in programme.rows %}
+                            {% for row in course.rows %}
                                 <tr class="[&>td]:px-4 [&>td]:py-2.5">
                                     <td>{{ row.group.name }}</td>
                                     <td class="text-right">{{ row.uniqueStudents }}</td>
@@ -131,12 +131,12 @@
                             {% endfor %}
                             <tr class="[&>td]:px-4 [&>td]:py-2.5 font-semibold bg-gray-50 border-t border-gray-200">
                                 <td>{{ 'group_stats.subtotal'|trans({}, 'admin') }}</td>
-                                <td class="text-right">{{ programme.total.uniqueStudents }}</td>
-                                <td class="text-right">{{ programme.total.reportsTotal }} <span class="text-xs text-gray-400 font-normal">({{ programme.total.reportsNormal }}N / {{ programme.total.reportsSerious }}G)</span></td>
-                                <td class="text-right">{{ programme.total.notifiedTotal }} <span class="text-xs text-gray-400 font-normal">({{ programme.total.notifiedNormal }}N / {{ programme.total.notifiedSerious }}G)</span></td>
-                                <td class="text-right">{{ programme.total.sanctionedTotal }} <span class="text-xs text-gray-400 font-normal">({{ programme.total.sanctionedNormal }}N / {{ programme.total.sanctionedSerious }}G)</span></td>
-                                <td class="text-right">{{ programme.total.prescribedTotal }} <span class="text-xs text-gray-400 font-normal">({{ programme.total.prescribedNormal }}N / {{ programme.total.prescribedSerious }}G)</span></td>
-                                <td class="text-right">{{ programme.total.sanctionsCount }}</td>
+                                <td class="text-right">{{ course.total.uniqueStudents }}</td>
+                                <td class="text-right">{{ course.total.reportsTotal }} <span class="text-xs text-gray-400 font-normal">({{ course.total.reportsNormal }}N / {{ course.total.reportsSerious }}G)</span></td>
+                                <td class="text-right">{{ course.total.notifiedTotal }} <span class="text-xs text-gray-400 font-normal">({{ course.total.notifiedNormal }}N / {{ course.total.notifiedSerious }}G)</span></td>
+                                <td class="text-right">{{ course.total.sanctionedTotal }} <span class="text-xs text-gray-400 font-normal">({{ course.total.sanctionedNormal }}N / {{ course.total.sanctionedSerious }}G)</span></td>
+                                <td class="text-right">{{ course.total.prescribedTotal }} <span class="text-xs text-gray-400 font-normal">({{ course.total.prescribedNormal }}N / {{ course.total.prescribedSerious }}G)</span></td>
+                                <td class="text-right">{{ course.total.sanctionsCount }}</td>
                             </tr>
                         {% else %}
                             <tr>
@@ -144,7 +144,7 @@
                             </tr>
                         {% endfor %}
                     </tbody>
-                    {% if report.programmes is not empty %}
+                    {% if report.courses is not empty %}
                         <tfoot>
                             <tr class="[&>td]:px-4 [&>td]:py-3 font-bold bg-forest-100 border-t-2 border-forest-200">
                                 <td>{{ 'group_stats.grand_total'|trans({}, 'admin') }}</td>

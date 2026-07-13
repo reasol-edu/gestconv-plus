@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\ProgrammeRepository;
+use App\Repository\CourseRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity(repositoryClass: ProgrammeRepository::class)]
-class Programme
+#[ORM\Entity(repositoryClass: CourseRepository::class)]
+class Course
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]

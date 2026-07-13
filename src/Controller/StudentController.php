@@ -93,7 +93,7 @@ class StudentController extends AbstractController
 
         $activeGroups = [];
         foreach ($student->getGroups() as $group) {
-            if ($year !== null && $group->getProgrammeYear()->getProgramme()->getAcademicYear() === $year) {
+            if ($year !== null && $group->getAcademicYear() === $year) {
                 $activeGroups[] = $group;
             }
         }

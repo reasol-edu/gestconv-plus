@@ -8,8 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -38,14 +37,13 @@ class SearchControllerTest extends ControllerTestCase
 
     public function testSearchReturnsStudentForCentreAdmin(): void
     {
-        [$centre, $admin, $prog] = $this->makeChain('41000076', 'search.admin.76');
+        [$centre, $admin, $course] = $this->makeChain('41000076', 'search.admin.76');
 
-        $progYear = (new ProgrammeYear())->setName('1º DAW')->setProgramme($prog);
-        $group    = (new Group())->setProgrammeYear($progYear)->setName('1DAW-A');
-        $student  = new Student(new PersonName('Martina', 'Buscable'));
+        $group   = (new Group())->setCourse($course)->setName('1DAW-A');
+        $student = new Student(new PersonName('Martina', 'Buscable'));
         $student->setStudentId('NIE-76A');
         $group->addStudent($student);
-        $this->persist($progYear, $group, $student);
+        $this->persist($group, $student);
 
         $this->loginAs($admin, $centre);
 
@@ -59,14 +57,13 @@ class SearchControllerTest extends ControllerTestCase
 
     public function testSearchReturnsStudentForGlobalAdmin(): void
     {
-        [$centre, , $prog] = $this->makeChain('41000077', 'search.cadmin.77');
+        [$centre, , $course] = $this->makeChain('41000077', 'search.cadmin.77');
 
-        $progYear = (new ProgrammeYear())->setName('1º DAW')->setProgramme($prog);
-        $group    = (new Group())->setProgrammeYear($progYear)->setName('1DAW-A');
-        $student  = new Student(new PersonName('Martina', 'GlobalAdmin'));
+        $group   = (new Group())->setCourse($course)->setName('1DAW-A');
+        $student = new Student(new PersonName('Martina', 'GlobalAdmin'));
         $student->setStudentId('NIE-77A');
         $group->addStudent($student);
-        $this->persist($progYear, $group, $student);
+        $this->persist($group, $student);
 
         $globalAdmin = (new Teacher(new PersonName('Global', 'Admin')))->setUsername('global.admin.77');
         $globalAdmin->setPassword('x');
@@ -85,11 +82,10 @@ class SearchControllerTest extends ControllerTestCase
 
     public function testSearchReturnsStudentInOwnGroupForNonAdminTeacher(): void
     {
-        [$centre, , $prog] = $this->makeChain('41000078', 'search.admin.78');
+        [$centre, , $course] = $this->makeChain('41000078', 'search.admin.78');
 
-        $progYear = (new ProgrammeYear())->setName('1º DAW')->setProgramme($prog);
-        $group    = (new Group())->setProgrammeYear($progYear)->setName('1DAW-A');
-        $student  = new Student(new PersonName('Laura', 'Visible'));
+        $group   = (new Group())->setCourse($course)->setName('1DAW-A');
+        $student = new Student(new PersonName('Laura', 'Visible'));
         $student->setStudentId('NIE-78A');
         $group->addStudent($student);
 
@@ -97,7 +93,7 @@ class SearchControllerTest extends ControllerTestCase
         $teacher->setPassword('x');
         $group->addTeacher($teacher);
 
-        $this->persist($progYear, $group, $student, $teacher);
+        $this->persist($group, $student, $teacher);
 
         $this->loginAs($teacher, $centre);
 
@@ -111,11 +107,10 @@ class SearchControllerTest extends ControllerTestCase
 
     public function testSearchDoesNotReturnStudentFromOtherGroupForNonAdminTeacher(): void
     {
-        [$centre, , $prog] = $this->makeChain('41000079', 'search.admin.79');
+        [$centre, , $course] = $this->makeChain('41000079', 'search.admin.79');
 
-        $progYear  = (new ProgrammeYear())->setName('1º DAW')->setProgramme($prog);
-        $ownGroup  = (new Group())->setProgrammeYear($progYear)->setName('1DAW-A');
-        $otherGroup = (new Group())->setProgrammeYear($progYear)->setName('1DAW-B');
+        $ownGroup   = (new Group())->setCourse($course)->setName('1DAW-A');
+        $otherGroup = (new Group())->setCourse($course)->setName('1DAW-B');
 
         $ownStudent   = new Student(new PersonName('Ana', 'MiGrupo'));
         $ownStudent->setStudentId('NIE-79A');
@@ -129,7 +124,7 @@ class SearchControllerTest extends ControllerTestCase
         $teacher->setPassword('x');
         $ownGroup->addTeacher($teacher);
 
-        $this->persist($progYear, $ownGroup, $otherGroup, $ownStudent, $otherStudent, $teacher);
+        $this->persist($ownGroup, $otherGroup, $ownStudent, $otherStudent, $teacher);
 
         $this->loginAs($teacher, $centre);
 
@@ -145,19 +140,19 @@ class SearchControllerTest extends ControllerTestCase
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
-     * @return array{EducationalCentre, Teacher, Programme}
+     * @return array{EducationalCentre, Teacher, Course}
      */
     private function makeChain(string $code, string $username): array
     {
         $centre = (new EducationalCentre())->setCode($code)->setName('IES ' . $code)->setCity('Sevilla');
         $year   = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $prog   = (new Programme())->setName('DAW')->setAcademicYear($year);
+        $course = (new Course())->setName('DAW')->setAcademicYear($year);
         $admin  = (new Teacher(new PersonName('Admin', 'Centro')))->setUsername($username);
-        $this->persist($centre, $year, $prog, $admin);
+        $this->persist($centre, $year, $course, $admin);
         $centre->setActiveAcademicYear($year);
         $centre->addAdmin($admin);
         $this->flush();
 
-        return [$centre, $admin, $prog];
+        return [$centre, $admin, $course];
     }
 }

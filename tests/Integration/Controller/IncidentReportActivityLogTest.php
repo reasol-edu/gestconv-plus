@@ -209,9 +209,8 @@ class IncidentReportActivityLogTest extends ControllerTestCase
         $teacher   = (new Teacher(new PersonName('Test', 'Teacher')))->setUsername('teacher.' . uniqid('', false) . $suffix);
         $centre    = (new EducationalCentre())->setCode('5' . str_pad($suffix, 7, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
         $year      = (new \App\Entity\AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new \App\Entity\Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new \App\Entity\ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $course    = (new \App\Entity\Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-' . uniqid('', false));
         $category  = (new \App\Entity\IncidentBehaviorCategory())
             ->setEducationalCentre($centre)
@@ -226,7 +225,7 @@ class IncidentReportActivityLogTest extends ControllerTestCase
             ->setActive(true);
 
         $centre->setActiveAcademicYear($year);
-        $this->persist($teacher, $centre, $year, $programme, $level, $group, $student, $category, $behavior);
+        $this->persist($teacher, $centre, $year, $course, $group, $student, $category, $behavior);
 
         return [$teacher, $centre, $group, $student, $behavior];
     }
@@ -256,7 +255,7 @@ class IncidentReportActivityLogTest extends ControllerTestCase
         Teacher $creator,
         IncidentBehavior $behavior,
     ): IncidentReport {
-        $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+        $academicYear = $group->getCourse()->getAcademicYear();
 
         $report = (new IncidentReport())
             ->setAcademicYear($academicYear)

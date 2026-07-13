@@ -12,8 +12,7 @@ use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\SettingDefinition;
 use App\Entity\SettingType;
@@ -567,13 +566,12 @@ class SanctionVoterTest extends RepositoryTestCase
     {
         $centre    = (new EducationalCentre())->setCode('41000' . substr(md5($suffix), 0, 3))->setName('IES')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA' . $suffix)->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA' . $suffix)->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . $suffix . uniqid('', false));
         $creator   = $this->makeTeacher('sanction.creator.' . $suffix . uniqid('', false));
 
-        $this->persist($centre, $year, $programme, $level, $group, $student, $creator);
+        $this->persist($centre, $year, $course, $group, $student, $creator);
 
         $sanction = (new Sanction())
             ->setAcademicYear($year)
@@ -646,9 +644,8 @@ class SanctionVoterTest extends RepositoryTestCase
     {
         $centre    = (new EducationalCentre())->setCode('41' . substr(uniqid('', false), 0, 6))->setName('IES')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA' . uniqid('', false))->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA' . uniqid('', false))->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . uniqid('', false));
         $category  = (new IncidentBehaviorCategory())
             ->setEducationalCentre($centre)
@@ -662,7 +659,7 @@ class SanctionVoterTest extends RepositoryTestCase
             ->setPosition(0)
             ->setActive(true);
 
-        $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior);
+        $this->persist($centre, $year, $course, $group, $student, $category, $behavior);
 
         $sanction = (new Sanction())
             ->setAcademicYear($year)

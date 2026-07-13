@@ -11,8 +11,7 @@ use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -140,11 +139,10 @@ class ReportsControllerTest extends ControllerTestCase
         $year   = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
         $centre->setActiveAcademicYear($year);
 
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $py        = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($py);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
 
-        $this->persist($admin, $centre, $year, $programme, $py, $group);
+        $this->persist($admin, $centre, $year, $course, $group);
 
         return [$admin, $centre, $year, $group];
     }

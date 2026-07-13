@@ -8,7 +8,7 @@ use App\Entity\Group;
 
 /**
  * One row of the "Estadísticas por grupo" report: either a single group's figures, or the
- * aggregated total for a programme/the whole report ($group is null in that case).
+ * aggregated total for a course/the whole report ($group is null in that case).
  */
 final readonly class GroupStatisticsRow
 {

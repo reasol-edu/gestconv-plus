@@ -13,8 +13,7 @@ use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -139,9 +138,8 @@ class NotificationActivityLogTest extends ControllerTestCase
         $teacher   = $this->makeTeacher('teacher.' . uniqid('', false));
         $centre    = (new EducationalCentre())->setCode('71' . substr(uniqid('', false), 0, 6))->setName('IES Test')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-' . uniqid('', false));
         $category  = (new IncidentBehaviorCategory())
             ->setEducationalCentre($centre)
@@ -161,7 +159,7 @@ class NotificationActivityLogTest extends ControllerTestCase
             ->setActive(true);
 
         $centre->setActiveAcademicYear($year);
-        $this->persist($teacher, $centre, $year, $programme, $level, $group, $student, $category, $behavior, $method);
+        $this->persist($teacher, $centre, $year, $course, $group, $student, $category, $behavior, $method);
 
         return [$teacher, $centre, $group, $student, $behavior, $method];
     }
@@ -177,7 +175,7 @@ class NotificationActivityLogTest extends ControllerTestCase
         Teacher $creator,
         IncidentBehavior $behavior,
     ): IncidentReport {
-        $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+        $academicYear = $group->getCourse()->getAcademicYear();
 
         $report = (new IncidentReport())
             ->setAcademicYear($academicYear)
@@ -195,7 +193,7 @@ class NotificationActivityLogTest extends ControllerTestCase
 
     private function makeSanction(Student $student, Group $group, Teacher $creator): Sanction
     {
-        $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+        $academicYear = $group->getCourse()->getAcademicYear();
 
         return (new Sanction())
             ->setAcademicYear($academicYear)

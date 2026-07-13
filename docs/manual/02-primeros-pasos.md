@@ -47,31 +47,23 @@ fichero; el resto de columnas se ignoran.
 
 ## 3. Estructurar la oferta formativa del curso académico (equipo directivo)
 
-La oferta formativa es el árbol de **enseñanzas → niveles → grupos** del centro para el curso
-activo (por ejemplo: ESO → 1º ESO → 1ºA). Se gestiona desde
-**Centro educativo › Oferta formativa**, con un editor de tres columnas en el que se selecciona una
-enseñanza para ver sus niveles, y un nivel para ver sus grupos; las altas, ediciones y bajas se
-aplican al instante, sin recargar la página.
+La oferta formativa es el catálogo de **cursos y grupos** del centro para el año activo (por
+ejemplo: «1º ESO» con sus grupos «1ºA» y «1ºB»). Cada grupo pertenece a un único curso. Se gestiona
+desde **Centro educativo › Oferta formativa**, con un editor en dos columnas: la izquierda muestra
+los cursos; al seleccionar uno, la derecha muestra sus grupos. Al seleccionar un grupo o un curso,
+aparece su formulario de edición debajo. Los cambios se aplican al instante, sin recargar la página.
 
-Si el centro ya tenía la oferta formativa configurada en un curso anterior, no hace falta
-reconstruirla a mano: puede exportarse a JSON desde el curso de origen e importarse en el curso
-nuevo (ver más abajo), incluyendo opcionalmente las asignaciones de tutores y docentes de grupo.
+Hay dos formas de crear la oferta formativa:
+
+- **Importando el alumnado desde Séneca** — la opción más rápida: los cursos y grupos se crean automáticamente a partir de las columnas `Curso` y `Unidad` del CSV (ver paso 5).
+- **Manualmente** — creando los cursos uno a uno desde el editor.
 
 ### Cómo registrarla, paso a paso
 
-1. Selecciona una enseñanza existente o pulsa «Añadir» para crear una nueva (indicando su familia
-   profesional).
-2. Con la enseñanza seleccionada, añade sus niveles (por ejemplo, los cursos de un ciclo o de la
-   ESO).
-3. Con un nivel seleccionado, añade sus grupos (por ejemplo, 1ºA, 1ºB).
-4. Desde el panel de detalle de cada enseñanza, nivel o grupo se edita su nombre y, según el caso,
-   se asignan responsables: el coordinador de una enseñanza, los coordinadores de un nivel, o los
-   tutores y docentes de un grupo.
-
-Para clonar la oferta formativa de un curso o centro a otro sin repetir todo el proceso manual, usa
-**Exportar JSON** en el curso de origen y **Importar JSON** en el curso de destino; el fichero JSON
-es un formato propio de GestConv+ (no procede de Séneca) e incluye, si se marca la opción
-correspondiente, las asignaciones de tutores y docentes de cada grupo.
+1. Pulsa «Añadir» bajo la lista de cursos para crear uno nuevo (por ejemplo, «1º ESO»).
+2. Selecciona el curso recién creado; la columna derecha muestra sus grupos (vacía al principio).
+3. Pulsa «Añadir» en la sección de grupos para crear los grupos del curso (por ejemplo, 1ºA, 1ºB).
+4. Al seleccionar un grupo, aparece su formulario de edición: aquí se asignan tutores y docentes.
 
 ## 4. Asignar tutores y docentes a los grupos (equipo directivo)
 
@@ -124,7 +116,14 @@ El importador lee directamente el fichero CSV que genera Séneca sin necesidad d
 | `Nombre` | Nombre |
 | `Primer apellido` | Primer apellido |
 | `Segundo apellido` | Segundo apellido |
-| `Unidad` | Grupo (por nombre exacto) |
+| `Unidad` | Nombre del grupo |
+| `Curso` | Nombre del curso al que pertenece el grupo |
+
+Si el grupo (`Unidad`) o el curso (`Curso`) no existen todavía en la oferta formativa del año activo, **se crean automáticamente** durante la importación. La vista previa los identifica claramente y permite desmarcar los que no quieras crear en ese momento.
+
+Si el mismo nombre de grupo aparece en el CSV asociado a varios cursos distintos (caso poco frecuente), la vista previa muestra una sección especial donde debes elegir a qué curso se asignará ese grupo; también puedes escribir un nombre de curso diferente si lo prefieres.
+
+![Vista previa de importación con un grupo de nombre ambiguo](img/centro/centro-importar-preview.png)
 
 **Columnas opcionales** (se importan si están presentes en el fichero; si no, ese campo se deja sin cambios en registros existentes):
 

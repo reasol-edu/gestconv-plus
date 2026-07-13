@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\GroupRepository;
@@ -28,17 +27,17 @@ class GroupRepositoryTest extends RepositoryTestCase
         $this->repo = $repo;
     }
 
-    // ── findByLevelOrderedByName ──────────────────────────────────────────────
+    // ── findByCourseOrderedByName ─────────────────────────────────────────────
 
-    public function testFindByLevelOrderedByNameReturnsSortedGroups(): void
+    public function testFindByCourseOrderedByNameReturnsSortedGroups(): void
     {
-        [, , , $py] = $this->makeChain('41000001');
-        $g1 = $this->makeGroup($py, 'DAM2C');
-        $g2 = $this->makeGroup($py, 'DAM2A');
-        $g3 = $this->makeGroup($py, 'DAM2B');
+        [, , $course] = $this->makeChain('41000001');
+        $g1 = $this->makeGroup($course, 'DAM2C');
+        $g2 = $this->makeGroup($course, 'DAM2A');
+        $g3 = $this->makeGroup($course, 'DAM2B');
         $this->persist($g1, $g2, $g3);
 
-        $results = $this->repo->findByLevelOrderedByName($py);
+        $results = $this->repo->findByCourseOrderedByName($course);
 
         self::assertCount(3, $results);
         self::assertSame('DAM2A', $results[0]->getName());
@@ -46,54 +45,54 @@ class GroupRepositoryTest extends RepositoryTestCase
         self::assertSame('DAM2C', $results[2]->getName());
     }
 
-    public function testFindByLevelOrderedByNameExcludesOtherLevels(): void
+    public function testFindByCourseOrderedByNameExcludesOtherCourses(): void
     {
-        [, , $prog, $pyA] = $this->makeChain('41000002');
-        $pyB = (new ProgrammeYear())->setName('2.º DAM')->setProgramme($prog);
-        $this->persist($pyB);
+        [$centre, $year, $courseA] = $this->makeChain('41000002');
+        $courseB = (new Course())->setName('DAW')->setAcademicYear($year);
+        $this->persist($courseB);
 
-        $gA = $this->makeGroup($pyA, 'Grupo A');
-        $gB = $this->makeGroup($pyB, 'Grupo B');
+        $gA = $this->makeGroup($courseA, 'Grupo A');
+        $gB = $this->makeGroup($courseB, 'Grupo B');
         $this->persist($gA, $gB);
 
-        $results = $this->repo->findByLevelOrderedByName($pyA);
+        $results = $this->repo->findByCourseOrderedByName($courseA);
 
         self::assertCount(1, $results);
         self::assertSame('Grupo A', $results[0]->getName());
     }
 
-    // ── findByLevelAndId ──────────────────────────────────────────────────────
+    // ── findByCourseAndId ─────────────────────────────────────────────────────
 
-    public function testFindByLevelAndIdReturnsGroup(): void
+    public function testFindByCourseAndIdReturnsGroup(): void
     {
-        [, , , $py] = $this->makeChain('41000003');
-        $group = $this->makeGroup($py, 'DAM2A');
+        [, , $course] = $this->makeChain('41000003');
+        $group = $this->makeGroup($course, 'DAM2A');
         $this->persist($group);
 
-        $result = $this->repo->findByLevelAndId($py, $group->getId()->toRfc4122());
+        $result = $this->repo->findByCourseAndId($course, $group->getId()->toRfc4122());
 
         self::assertNotNull($result);
         self::assertSame($group->getId()->toRfc4122(), $result->getId()->toRfc4122());
     }
 
-    public function testFindByLevelAndIdReturnsNullForDifferentLevel(): void
+    public function testFindByCourseAndIdReturnsNullForDifferentCourse(): void
     {
-        [, , $prog, $pyA] = $this->makeChain('41000004');
-        $pyB   = (new ProgrammeYear())->setName('2.º DAM')->setProgramme($prog);
-        $this->persist($pyB);
+        [$centre, $year, $courseA] = $this->makeChain('41000004');
+        $courseB = (new Course())->setName('DAW')->setAcademicYear($year);
+        $this->persist($courseB);
 
-        $group = $this->makeGroup($pyA, 'DAM1A');
+        $group = $this->makeGroup($courseA, 'DAM1A');
         $this->persist($group);
 
-        self::assertNull($this->repo->findByLevelAndId($pyB, $group->getId()->toRfc4122()));
+        self::assertNull($this->repo->findByCourseAndId($courseB, $group->getId()->toRfc4122()));
     }
 
     // ── findByIdAndCentre ─────────────────────────────────────────────────────
 
     public function testFindByIdAndCentreReturnsGroup(): void
     {
-        [$centre, , , $py] = $this->makeChain('41000018');
-        $group = $this->makeGroup($py, 'DAM2A');
+        [$centre, , $course] = $this->makeChain('41000018');
+        $group = $this->makeGroup($course, 'DAM2A');
         $this->persist($group);
 
         $result = $this->repo->findByIdAndCentre($group->getId()->toRfc4122(), $centre);
@@ -104,21 +103,21 @@ class GroupRepositoryTest extends RepositoryTestCase
 
     public function testFindByIdAndCentreReturnsNullForDifferentCentre(): void
     {
-        [, , , $pyA] = $this->makeChain('41000019');
-        [$centreB]   = $this->makeChain('41000020');
+        [, , $courseA] = $this->makeChain('41000019');
+        [$centreB]     = $this->makeChain('41000020');
 
-        $group = $this->makeGroup($pyA, 'DAM1A');
+        $group = $this->makeGroup($courseA, 'DAM1A');
         $this->persist($group);
 
         self::assertNull($this->repo->findByIdAndCentre($group->getId()->toRfc4122(), $centreB));
     }
 
-    // ── findByProgrammeWithStudents ───────────────────────────────────────────
+    // ── findByYearWithStudents ────────────────────────────────────────────────
 
-    public function testFindByProgrammeWithStudentsReturnsGroupsWithStudentsEagerLoaded(): void
+    public function testFindByYearWithStudentsReturnsGroupsWithStudentsEagerLoaded(): void
     {
-        [, , $prog, $py] = $this->makeChain('41000005');
-        $group   = $this->makeGroup($py, 'DAM2A');
+        [, $year, $course] = $this->makeChain('41000005');
+        $group   = $this->makeGroup($course, 'DAM2A');
         $student = new Student(new PersonName('Ana', 'Garcia'));
         $student->setStudentId('ST001');
         $this->persist($group, $student);
@@ -126,41 +125,39 @@ class GroupRepositoryTest extends RepositoryTestCase
         $student->addGroup($group);
         $this->flush();
 
-        $results = $this->repo->findByProgrammeWithStudents($prog);
+        $results = $this->repo->findByYearWithStudents($year);
 
         self::assertCount(1, $results);
         self::assertCount(1, $results[0]->getStudents());
     }
 
-    public function testFindByProgrammeWithStudentsExcludesOtherProgrammes(): void
+    public function testFindByYearWithStudentsExcludesOtherYears(): void
     {
-        [$centre, $year, $progA, $pyA] = $this->makeChain('41000006');
+        [$centre, $year, $courseA] = $this->makeChain('41000006');
 
-        // Build second programme in same year
-        $progB = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $pyB   = (new ProgrammeYear())->setName('1.º DAW')->setProgramme($progB);
-        $this->persist($progB, $pyB);
+        // Build second course in same year
+        $courseB = (new Course())->setName('DAW')->setAcademicYear($year);
+        $this->persist($courseB);
 
-        $gA = $this->makeGroup($pyA, 'DAM1A');
-        $gB = $this->makeGroup($pyB, 'DAW1A');
+        $gA = $this->makeGroup($courseA, 'DAM1A');
+        $gB = $this->makeGroup($courseB, 'DAW1A');
         $this->persist($gA, $gB);
 
-        $results = $this->repo->findByProgrammeWithStudents($progA);
+        $results = $this->repo->findByYearWithStudents($year);
 
-        self::assertCount(1, $results);
-        self::assertSame('DAM1A', $results[0]->getName());
+        self::assertCount(2, $results);
     }
 
     // ── findByActiveYearOfCentreOrderedByName ─────────────────────────────────
 
     public function testFindByActiveYearOfCentreOrderedByNameReturnsGroups(): void
     {
-        [$centre, $year, , $py] = $this->makeChain('41000007');
+        [$centre, $year, $course] = $this->makeChain('41000007');
         $centre->setActiveAcademicYear($year);
         $this->flush();
 
-        $g1 = $this->makeGroup($py, 'Grupo B');
-        $g2 = $this->makeGroup($py, 'Grupo A');
+        $g1 = $this->makeGroup($course, 'Grupo B');
+        $g2 = $this->makeGroup($course, 'Grupo A');
         $this->persist($g1, $g2);
 
         $results = $this->repo->findByActiveYearOfCentreOrderedByName($centre);
@@ -172,70 +169,71 @@ class GroupRepositoryTest extends RepositoryTestCase
 
     public function testFindByActiveYearOfCentreOrderedByNameReturnsEmptyWhenNoActiveYear(): void
     {
-        [$centre, , , $py] = $this->makeChain('41000008');
+        [, , $course] = $this->makeChain('41000008');
         // No activeAcademicYear set
-        $group = $this->makeGroup($py, 'Grupo A');
+        $group = $this->makeGroup($course, 'Grupo A');
         $this->persist($group);
 
+        // Re-fetch centre without active year
+        [$centre] = $this->makeChain('41000008b');
         self::assertCount(0, $this->repo->findByActiveYearOfCentreOrderedByName($centre));
     }
 
-    // ── isTeacherInProgramme ──────────────────────────────────────────────────
+    // ── isTeacherInCourse ─────────────────────────────────────────────────────
 
-    public function testIsTeacherInProgrammeReturnsTrueWhenTeacherIsTutor(): void
+    public function testIsTeacherInCourseReturnsTrueWhenTeacherIsTutor(): void
     {
-        [, , $prog, $py] = $this->makeChain('41000009');
+        [, , $course] = $this->makeChain('41000009');
         $teacher = $this->makeTeacher('tutor.one');
-        $group   = $this->makeGroup($py, 'DAM1A');
+        $group   = $this->makeGroup($course, 'DAM1A');
         $this->persist($teacher, $group);
         $group->addTutor($teacher);
         $this->flush();
 
-        self::assertTrue($this->repo->isTeacherInProgramme($teacher, $prog));
+        self::assertTrue($this->repo->isTeacherInCourse($teacher, $course));
     }
 
-    public function testIsTeacherInProgrammeReturnsTrueWhenTeacherIsGroupTeacher(): void
+    public function testIsTeacherInCourseReturnsTrueWhenTeacherIsGroupTeacher(): void
     {
-        [, , $prog, $py] = $this->makeChain('41000010');
+        [, , $course] = $this->makeChain('41000010');
         $teacher = $this->makeTeacher('teacher.one');
-        $group   = $this->makeGroup($py, 'DAM1A');
+        $group   = $this->makeGroup($course, 'DAM1A');
         $this->persist($teacher, $group);
         $group->addTeacher($teacher);
         $this->flush();
 
-        self::assertTrue($this->repo->isTeacherInProgramme($teacher, $prog));
+        self::assertTrue($this->repo->isTeacherInCourse($teacher, $course));
     }
 
-    public function testIsTeacherInProgrammeReturnsFalseWhenTeacherHasNoRole(): void
+    public function testIsTeacherInCourseReturnsFalseWhenTeacherHasNoRole(): void
     {
-        [, , $prog] = $this->makeChain('41000011');
+        [, , $course] = $this->makeChain('41000011');
         $teacher = $this->makeTeacher('no.role');
         $this->persist($teacher);
 
-        self::assertFalse($this->repo->isTeacherInProgramme($teacher, $prog));
+        self::assertFalse($this->repo->isTeacherInCourse($teacher, $course));
     }
 
-    public function testIsTeacherInProgrammeReturnsFalseForDifferentProgramme(): void
+    public function testIsTeacherInCourseReturnsFalseForDifferentCourse(): void
     {
-        [$centre, $year, $progA, $pyA] = $this->makeChain('41000012');
-        $progB   = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $pyB     = (new ProgrammeYear())->setName('1.º DAW')->setProgramme($progB);
+        [$centre, $year, $courseA] = $this->makeChain('41000012');
+        $courseB = (new Course())->setName('DAW')->setAcademicYear($year);
         $teacher = $this->makeTeacher('tutor.other');
-        $groupB  = $this->makeGroup($pyB, 'DAW1A');
-        $this->persist($progB, $pyB, $teacher, $groupB);
+        $groupB  = $this->makeGroup($courseB, 'DAW1A');
+        $this->persist($courseB, $teacher, $groupB);
         $groupB->addTutor($teacher);
         $this->flush();
 
-        // Teacher is tutor in progB, not in progA
-        self::assertFalse($this->repo->isTeacherInProgramme($teacher, $progA));
+        // Teacher is tutor in courseB, not in courseA
+        self::assertFalse($this->repo->isTeacherInCourse($teacher, $courseA));
     }
 
     // ── findCountsByAcademicYear ──────────────────────────────────────────────
 
     public function testFindCountsByAcademicYearReturnsStudentAndTeacherCounts(): void
     {
-        [$centre, $year, , $py] = $this->makeChain('41000013');
-        $group   = $this->makeGroup($py, 'DAM1A');
+        [$centre, $year, $course] = $this->makeChain('41000013');
+        $group   = $this->makeGroup($course, 'DAM1A');
         $teacher = $this->makeTeacher('teacher.counts');
         $student = new Student(new PersonName('Ana', 'Garcia'));
         $student->setStudentId('ST001');
@@ -254,8 +252,8 @@ class GroupRepositoryTest extends RepositoryTestCase
 
     public function testFindCountsByAcademicYearReturnsZerosForEmptyGroup(): void
     {
-        [$centre, $year, , $py] = $this->makeChain('41000014');
-        $group = $this->makeGroup($py, 'DAM1A');
+        [$centre, $year, $course] = $this->makeChain('41000014');
+        $group = $this->makeGroup($course, 'DAM1A');
         $this->persist($group);
 
         $counts = $this->repo->findCountsByAcademicYear($year, [$group]);
@@ -272,83 +270,53 @@ class GroupRepositoryTest extends RepositoryTestCase
         self::assertSame([], $this->repo->findCountsByAcademicYear($year, []));
     }
 
-    // ── findByActiveYearOfCentreWithProgramme ─────────────────────────────────
+    // ── findByActiveYearOfCentreWithCourse ────────────────────────────────────
 
-    public function testFindByActiveYearOfCentreWithProgrammeReturnsOrderedGroups(): void
+    public function testFindByActiveYearOfCentreWithCourseReturnsOrderedGroups(): void
     {
-        [$centre, $year, , $py] = $this->makeChain('41000016');
+        [$centre, $year, $course] = $this->makeChain('41000016');
         $centre->setActiveAcademicYear($year);
         $this->flush();
 
-        $g1 = $this->makeGroup($py, 'Grupo B');
-        $g2 = $this->makeGroup($py, 'Grupo A');
+        $g1 = $this->makeGroup($course, 'Grupo B');
+        $g2 = $this->makeGroup($course, 'Grupo A');
         $this->persist($g1, $g2);
 
-        $results = $this->repo->findByActiveYearOfCentreWithProgramme($centre);
+        $results = $this->repo->findByActiveYearOfCentreWithCourse($centre);
 
         self::assertCount(2, $results);
         self::assertSame('Grupo A', $results[0]->getName());
         self::assertSame('Grupo B', $results[1]->getName());
     }
 
-    public function testFindByActiveYearOfCentreWithProgrammeReturnsEmptyWhenNoActiveYear(): void
+    public function testFindByActiveYearOfCentreWithCourseReturnsEmptyWhenNoActiveYear(): void
     {
-        [$centre, , , $py] = $this->makeChain('41000017');
-        $this->persist($this->makeGroup($py, 'Grupo A'));
+        [, , $course] = $this->makeChain('41000017');
+        $this->persist($this->makeGroup($course, 'Grupo A'));
 
-        self::assertCount(0, $this->repo->findByActiveYearOfCentreWithProgramme($centre));
-    }
-
-    // ── countByLevel ────────────────────────────────────────────────────────
-
-    public function testCountByLevelReturnsGroupCountsKeyedByLevelId(): void
-    {
-        [, , $prog, $pyA] = $this->makeChain('41000021');
-        $pyB = (new ProgrammeYear())->setName('2.º DAM')->setProgramme($prog);
-        $this->persist($pyB);
-
-        $this->persist($this->makeGroup($pyA, 'DAM1A'), $this->makeGroup($pyA, 'DAM1B'), $this->makeGroup($pyB, 'DAM2A'));
-
-        $counts = $this->repo->countByLevel([$pyA, $pyB]);
-
-        self::assertSame(2, $counts[$pyA->getId()->toRfc4122()]);
-        self::assertSame(1, $counts[$pyB->getId()->toRfc4122()]);
-    }
-
-    public function testCountByLevelOmitsLevelsWithNoGroups(): void
-    {
-        [, , , $py] = $this->makeChain('41000022');
-
-        $counts = $this->repo->countByLevel([$py]);
-
-        self::assertArrayNotHasKey($py->getId()->toRfc4122(), $counts);
-    }
-
-    public function testCountByLevelReturnsEmptyForEmptyInput(): void
-    {
-        self::assertSame([], $this->repo->countByLevel([]));
+        [$centre] = $this->makeChain('41000017b');
+        self::assertCount(0, $this->repo->findByActiveYearOfCentreWithCourse($centre));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
-     * Creates and persists Centre → Year → Programme → ProgrammeYear.
+     * Creates and persists Centre → Year → Course.
      *
-     * @return array{EducationalCentre, AcademicYear, Programme, ProgrammeYear}
+     * @return array{EducationalCentre, AcademicYear, Course}
      */
     private function makeChain(string $centreCode): array
     {
         $centre = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
         $year   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $prog   = (new Programme())->setName('DAM')->setAcademicYear($year);
-        $py     = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
-        $this->persist($centre, $year, $prog, $py);
-        return [$centre, $year, $prog, $py];
+        $course = (new Course())->setName('DAM')->setAcademicYear($year);
+        $this->persist($centre, $year, $course);
+        return [$centre, $year, $course];
     }
 
-    private function makeGroup(ProgrammeYear $py, string $name): Group
+    private function makeGroup(Course $course, string $name): Group
     {
-        return (new Group())->setName($name)->setProgrammeYear($py);
+        return (new Group())->setName($name)->setCourse($course);
     }
 
     private function makeTeacher(string $username): Teacher

@@ -61,8 +61,6 @@
                                 data-no-results="{{ 'student.field.groups_no_results'|trans({}, 'admin')|e('html_attr') }}">
                             {% for group in availableGroups %}
                                 <option value="{{ group.id.toRfc4122 }}"
-                                        data-programme="{{ group.programmeYear.programme.name|e('html_attr') }}"
-                                        data-level="{{ group.programmeYear.name|e('html_attr') }}"
                                         {{ group.id.toRfc4122 in selectedGroupIds ? 'selected' : '' }}>
                                     {{ group.name }}
                                 </option>
@@ -164,11 +162,8 @@ const noResults   = el.dataset.noResults   ?? '';
 const options = [];
 el.querySelectorAll('option').forEach(opt => {
     options.push({
-        value:     opt.value,
-        name:      opt.textContent.trim(),
-        programme: opt.dataset.programme ?? '',
-        level:     opt.dataset.level     ?? '',
-        search:    `${opt.dataset.programme} ${opt.dataset.level} ${opt.textContent.trim()}`,
+        value: opt.value,
+        name:  opt.textContent.trim(),
     });
 });
 
@@ -179,7 +174,7 @@ const ts = new TomSelect(el, {
     items:          selected,
     valueField:     'value',
     labelField:     'name',
-    searchField:    ['search'],
+    searchField:    ['name'],
     create:         false,
     maxOptions:     null,
     placeholder,
@@ -189,7 +184,6 @@ const ts = new TomSelect(el, {
         option: (d, esc) =>
             `<div class="ts-sg-option">
                 <span class="ts-sg-name">${esc(d.name)}</span>
-                <span class="ts-sg-teaching">${esc(d.programme)}</span>
             </div>`,
         item: (d, esc) =>
             `<span>${esc(d.name)}</span>`,

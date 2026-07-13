@@ -130,8 +130,8 @@ class StudentActivityLogTest extends ControllerTestCase
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv = implode("\n", [
-            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
-            '"","2024-001","Martinez","Lopez","Ana","DAW1A"',
+            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad","Curso"',
+            '"","2024-001","Martinez","Lopez","Ana","DAW1A","DAW"',
         ]);
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
@@ -145,11 +145,15 @@ class StudentActivityLogTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         $importId     = $previewCrawler->filter('[name="import_id"]')->first()->attr('value');
         $confirmToken = $previewCrawler->filter('[name="_token"]')->first()->attr('value');
+        $newGroups    = $previewCrawler->filter('[name="new_groups[]"]')->each(
+            static fn ($node) => $node->attr('value'),
+        );
 
         $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
             'import_confirmed' => '1',
             'import_id'        => $importId,
             '_token'           => $confirmToken,
+            'new_groups'       => $newGroups,
         ]);
 
         self::assertResponseRedirects();

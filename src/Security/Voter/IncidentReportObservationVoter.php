@@ -38,11 +38,10 @@ final class IncidentReportObservationVoter extends Voter
             return true;
         }
 
-        $centre = $subject->getIncidentReport()->getGroup()
-            ->getProgrammeYear()
-            ->getProgramme()
-            ->getAcademicYear()
-            ->getEducationalCentre();
+        $centre = $subject->getIncidentReport()->getGroup()->getAcademicYear()?->getEducationalCentre();
+        if ($centre === null) {
+            return false;
+        }
 
         if ($centre->getAdmins()->contains($user)) {
             return true;

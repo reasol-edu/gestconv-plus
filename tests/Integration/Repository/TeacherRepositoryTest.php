@@ -6,10 +6,8 @@ namespace App\Tests\Integration\Repository;
 
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
-use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Teacher;
 use App\Repository\TeacherRepository;
 use App\Tests\Integration\RepositoryTestCase;
@@ -99,68 +97,6 @@ class TeacherRepositoryTest extends RepositoryTestCase
         $results = $this->repo->findNoneQuery()->getResult();
 
         self::assertCount(0, $results);
-    }
-
-    // ── findByProgrammeOrderedByName ──────────────────────────────────────────
-
-    public function testFindByProgrammeOrderedByNameReturnsTutors(): void
-    {
-        $prog    = $this->makeProgrammeChain('41000003');
-        $py      = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
-        $teacher = $this->makeTeacher('tutor.prog', 'Ana', 'Garcia');
-        $group   = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $this->persist($py, $teacher, $group);
-        $group->addTutor($teacher);
-        $this->flush();
-
-        $results = $this->repo->findByProgrammeOrderedByName($prog);
-
-        self::assertCount(1, $results);
-        self::assertSame('tutor.prog', $results[0]->getUsername());
-    }
-
-    public function testFindByProgrammeOrderedByNameReturnsGroupTeachers(): void
-    {
-        $prog    = $this->makeProgrammeChain('41000004');
-        $py      = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
-        $teacher = $this->makeTeacher('grp.teacher', 'Pedro', 'Lopez');
-        $group   = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $this->persist($py, $teacher, $group);
-        $group->addTeacher($teacher);
-        $this->flush();
-
-        $results = $this->repo->findByProgrammeOrderedByName($prog);
-
-        self::assertCount(1, $results);
-        self::assertSame('grp.teacher', $results[0]->getUsername());
-    }
-
-    public function testFindByProgrammeOrderedByNameExcludesUnrelatedTeachers(): void
-    {
-        $prog      = $this->makeProgrammeChain('41000005');
-        $unrelated = $this->makeTeacher('unrelated.one');
-        $this->persist($unrelated);
-
-        $results = $this->repo->findByProgrammeOrderedByName($prog);
-
-        self::assertCount(0, $results);
-    }
-
-    public function testFindByProgrammeOrderedByNameDeduplicatesAcrossGroups(): void
-    {
-        $prog    = $this->makeProgrammeChain('41000006');
-        $py      = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
-        $teacher = $this->makeTeacher('multi.group', 'Ana', 'Garcia');
-        $g1      = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $g2      = (new Group())->setName('DAM1B')->setProgrammeYear($py);
-        $this->persist($py, $teacher, $g1, $g2);
-        $g1->addTutor($teacher);
-        $g2->addTutor($teacher);
-        $this->flush();
-
-        $results = $this->repo->findByProgrammeOrderedByName($prog);
-
-        self::assertCount(1, $results);
     }
 
     // ── findByUsername ───────────────────────────────────────────────────────
@@ -396,12 +332,4 @@ class TeacherRepositoryTest extends RepositoryTestCase
             ->setEducationalCentre($centre);
     }
 
-    private function makeProgrammeChain(string $centreCode): Programme
-    {
-        $centre = $this->makeCentre($centreCode);
-        $year   = $this->makeYear($centre, '2024-2025');
-        $prog   = (new Programme())->setName('DAM')->setAcademicYear($year);
-        $this->persist($centre, $year, $prog);
-        return $prog;
-    }
 }

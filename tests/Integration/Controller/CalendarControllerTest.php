@@ -12,8 +12,7 @@ use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\SettingDefinition;
 use App\Entity\Student;
@@ -391,12 +390,11 @@ class CalendarControllerTest extends ControllerTestCase
     {
         $centre    = (new EducationalCentre())->setCode('46000030')->setName('IES Calendar')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-CAL-' . uniqid('', false));
         $centre->setActiveAcademicYear($year);
-        $this->persist($centre, $year, $programme, $level, $group, $student);
+        $this->persist($centre, $year, $course, $group, $student);
 
         return compact('centre', 'year', 'group', 'student');
     }

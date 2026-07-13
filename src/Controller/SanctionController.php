@@ -210,7 +210,10 @@ class SanctionController extends AbstractController
                 }
 
                 if (empty($errors)) {
-                    $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+                    $academicYear = $group->getAcademicYear();
+                    if ($academicYear === null) {
+                        throw $this->createNotFoundException();
+                    }
 
                     $sanction = (new Sanction())
                         ->setAcademicYear($academicYear)
@@ -583,7 +586,7 @@ class SanctionController extends AbstractController
 
                 $changes = $this->changeTracker->diff($before, $sanction, self::LOGGED_SANCTION_FIELDS);
 
-                if ($canEditAll && isset($previouslyLinkedIds, $currentLinkedIds) && $previouslyLinkedIds !== $currentLinkedIds) {
+                if ($canEditAll && $previouslyLinkedIds !== $currentLinkedIds) {
                     $changes['reportIds'] = ['before' => $previouslyLinkedIds, 'after' => $currentLinkedIds];
                 }
 
@@ -842,11 +845,8 @@ class SanctionController extends AbstractController
 
     private function centreFor(Sanction $sanction): EducationalCentre
     {
-        return $sanction->getGroup()
-            ->getProgrammeYear()
-            ->getProgramme()
-            ->getAcademicYear()
-            ->getEducationalCentre();
+        return $sanction->getGroup()->getAcademicYear()?->getEducationalCentre()
+            ?? throw new \LogicException('Sanction group has no course with an academic year.');
     }
 
     private function denyIfViewingPastYear(EducationalCentre $centre): void

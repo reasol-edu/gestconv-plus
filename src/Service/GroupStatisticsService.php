@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\AcademicYear;
+use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
@@ -13,8 +14,8 @@ use App\Repository\IncidentReportRepository;
 
 /**
  * Builds the "Estadísticas por grupo" report: for every group of the given academic year,
- * grouped by programme, the incident/sanction figures within a date range, with aggregated
- * subtotals per programme and a grand total.
+ * grouped by course, the incident/sanction figures within a date range, with aggregated
+ * subtotals per course and a grand total.
  */
 class GroupStatisticsService
 {
@@ -29,7 +30,7 @@ class GroupStatisticsService
         \DateTimeImmutable $from,
         \DateTimeImmutable $to,
     ): GroupStatisticsReport {
-        $groups  = $this->groups->findByActiveYearOfCentreWithProgramme($centre, $year);
+        $groups  = $this->groups->findByActiveYearOfCentreWithCourse($centre, $year);
         $reports = $this->incidentReports->findForGroupStats($centre, $year, $from, $to);
 
         /** @var array<string, list<IncidentReport>> $reportsByGroup */
@@ -38,41 +39,42 @@ class GroupStatisticsService
             $reportsByGroup[$report->getGroup()->getId()->toRfc4122()][] = $report;
         }
 
-        /** @var array<string, \App\Entity\Programme> $programmeById */
-        $programmeById = [];
-        /** @var array<string, list<Group>> $groupsByProgramme */
-        $groupsByProgramme = [];
-        /** @var array<string, list<IncidentReport>> $reportsByProgramme */
-        $reportsByProgramme = [];
+        /** @var array<string, Course> $courseById */
+        $courseById = [];
+        /** @var array<string, list<Group>> $groupsByCourse */
+        $groupsByCourse = [];
+        /** @var array<string, list<IncidentReport>> $reportsByCourse */
+        $reportsByCourse = [];
 
         foreach ($groups as $group) {
-            $programme = $group->getProgrammeYear()->getProgramme();
-            $pid       = $programme->getId()->toRfc4122();
+            $course = $group->getCourse();
 
-            $programmeById[$pid] ??= $programme;
-            $groupsByProgramme[$pid][] = $group;
+            $cid = $course->getId()->toRfc4122();
+
+            $courseById[$cid] ??= $course;
+            $groupsByCourse[$cid][] = $group;
 
             $groupReports = $reportsByGroup[$group->getId()->toRfc4122()] ?? [];
             foreach ($groupReports as $report) {
-                $reportsByProgramme[$pid][] = $report;
+                $reportsByCourse[$cid][] = $report;
             }
         }
 
-        $programmes = [];
-        foreach ($groupsByProgramme as $pid => $programmeGroups) {
+        $courseStats = [];
+        foreach ($groupsByCourse as $cid => $courseGroups) {
             $rows = [];
-            foreach ($programmeGroups as $group) {
+            foreach ($courseGroups as $group) {
                 $rows[] = $this->buildRow($group, $reportsByGroup[$group->getId()->toRfc4122()] ?? []);
             }
 
-            $programmes[] = new ProgrammeStatistics(
-                $programmeById[$pid],
+            $courseStats[] = new CourseStatistics(
+                $courseById[$cid],
                 $rows,
-                $this->buildRow(null, $reportsByProgramme[$pid] ?? []),
+                $this->buildRow(null, $reportsByCourse[$cid] ?? []),
             );
         }
 
-        return new GroupStatisticsReport($from, $to, $programmes, $this->buildRow(null, $reports));
+        return new GroupStatisticsReport($from, $to, $courseStats, $this->buildRow(null, $reports));
     }
 
     /**

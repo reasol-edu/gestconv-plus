@@ -347,7 +347,7 @@ class CentreTeacherController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        $allGroups      = $this->groups->findByActiveYearOfCentreWithProgramme($centre);
+        $allGroups      = $this->groups->findByActiveYearOfCentreWithCourse($centre);
         $currentGroupIds = [];
         foreach ($allGroups as $group) {
             if ($group->getTeachers()->contains($teacher)) {

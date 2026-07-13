@@ -13,8 +13,7 @@ use App\Entity\Group;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\IncidentReportRepository;
@@ -825,9 +824,8 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
     {
         $centre    = (new EducationalCentre())->setCode('41000' . substr(md5($suffix . 'x'), 0, 3))->setName('IES ' . $suffix)->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA' . $suffix)->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA' . $suffix)->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE' . $suffix . uniqid('', false));
         $category  = (new \App\Entity\IncidentBehaviorCategory())
             ->setEducationalCentre($centre)
@@ -842,7 +840,7 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
             ->setActive(true);
 
         $centre->setActiveAcademicYear($year);
-        $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior);
+        $this->persist($centre, $year, $course, $group, $student, $category, $behavior);
 
         return compact('centre', 'year', 'group', 'student', 'behavior');
     }
@@ -859,12 +857,11 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
     {
         $centre    = $world['centre'];
         $year      = (new AcademicYear())->setName('2026-2027')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW-Y2' . $suffix)->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºB' . $suffix)->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW-Y2' . $suffix)->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºB' . $suffix)->setCourse($course);
         $student   = (new Student(new PersonName('Bea', 'Ruiz')))->setStudentId('NIE-Y2-' . $suffix . uniqid('', false));
 
-        $this->persist($year, $programme, $level, $group, $student);
+        $this->persist($year, $course, $group, $student);
 
         return ['centre' => $centre, 'year' => $year, 'group' => $group, 'student' => $student, 'behavior' => $world['behavior']];
     }

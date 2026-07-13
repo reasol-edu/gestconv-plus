@@ -326,17 +326,17 @@ La sección **Informes**, accesible desde el menú lateral tras **Calendario**, 
 
 ### Estadísticas por grupo
 
-La tarjeta **Estadísticas por grupo** abre un formulario para elegir una fecha de inicio y una fecha de fin; al generarlo, se muestra una tabla con los partes registrados en ese rango de fechas para cada grupo del curso académico activo, agrupados por enseñanza:
+La tarjeta **Estadísticas por grupo** abre un formulario para elegir una fecha de inicio y una fecha de fin; al generarlo, se muestra una tabla con los partes registrados en ese rango de fechas para cada grupo del curso académico activo, agrupados por curso:
 
 - **Estudiantes únicos**: número de estudiantes distintos con al menos un parte en el rango.
 - **Partes registrados**, **notificados**, **sancionados** y **prescritos**: cada uno desglosado entre partes de conductas normales y graves.
 - **Sanciones**: número de sanciones distintas asociadas a los partes del grupo; una sanción que agrupe varios partes cuenta una sola vez.
 
-Los grupos sin partes en el rango también aparecen, con todos los valores a cero. Cada enseñanza muestra una fila de subtotal con la suma de sus grupos, y la tabla termina con una fila de total general para todo el centro.
+Los grupos sin partes en el rango también aparecen, con todos los valores a cero. Cada curso muestra una fila de subtotal con la suma de sus grupos, y la tabla termina con una fila de total general para todo el centro.
 
 ![Resultado del informe de estadísticas por grupo](img/informes/informes-estadisticas-grupo.png)
 
-Los botones **Exportar a PDF** y **Exportar a hoja de cálculo**, visibles una vez generado el informe, descargan el mismo contenido en formato PDF (con el encabezado personalizable del centro, ver [Personalización de informes](07-ajustes.md#personalizacion-de-informes)) o en una hoja Excel con una fila por grupo, los subtotales de cada enseñanza y el total general.
+Los botones **Exportar a PDF** y **Exportar a hoja de cálculo**, visibles una vez generado el informe, descargan el mismo contenido en formato PDF (con el encabezado personalizable del centro, ver [Personalización de informes](07-ajustes.md#personalizacion-de-informes)) o en una hoja Excel con una fila por grupo, los subtotales de cada curso y el total general.
 
 ## Centro Educativo
 
@@ -357,35 +357,21 @@ A diferencia del resto de tarjetas del panel de centro educativo, esta no requie
 
 ### Estructurar la oferta formativa
 
-La tarjeta **Oferta formativa** del panel de centro educativo abre un editor de tres columnas
-(enseñanzas → niveles → grupos, también llamado «columnas de Miller») para el curso académico
-activo del centro. Seleccionar un elemento de una columna muestra sus elementos dependientes en la
-columna siguiente; las altas, ediciones y bajas se aplican al instante, sin recargar la página.
+La tarjeta **Oferta formativa** del panel de centro educativo abre un editor de dos columnas para el
+curso académico activo: la izquierda muestra los cursos del año activo y la derecha los grupos del
+curso seleccionado. Al seleccionar un curso o un grupo, aparece su formulario de edición debajo.
+Los cambios se aplican al instante, sin recargar la página.
 
-![Editor de tres columnas de la oferta formativa](img/centro/centro-oferta.png)
+![Editor de oferta formativa por columnas](img/centro/centro-oferta.png)
 
-- **Enseñanzas** — se crean indicando su familia profesional y su nombre. Desde el panel de detalle
-  se les puede asignar un coordinador.
-- **Niveles** — cursos dentro de una enseñanza (por ejemplo, 1º y 2º de un ciclo). Admiten uno o
-  varios coordinadores.
-- **Grupos** — unidades dentro de un nivel (por ejemplo, 1ºA, 1ºB). Admiten uno o varios tutores y
-  el resto del profesorado que imparte clase en ellos.
+- **Cursos** — cada entrada del año activo (por ejemplo, «1º ESO», «2º Bachillerato»). Desde su
+  formulario de edición se puede cambiar el nombre y añadir observaciones.
+- **Grupos** — unidades de un curso (por ejemplo, 1ºA, 1ºB). Cada grupo pertenece a un único curso.
+  El formulario de edición permite asignar tutores y docentes.
 
 Si el centro no tiene un curso académico activo, la sección muestra un aviso y no permite gestionar
 la oferta formativa. Ver también el paso a paso completo en
 [Primeros pasos](02-primeros-pasos.md#3-estructurar-la-oferta-formativa-del-curso-academico-equipo-directivo).
-
-### Exportar e importar la oferta formativa
-
-Los botones **Exportar JSON** e **Importar JSON**, disponibles junto al editor, permiten copiar la
-oferta formativa completa (enseñanzas, niveles y grupos) de un curso o centro a otro sin
-reconstruirla a mano. El fichero JSON es un formato propio de GestConv+, no algo que se descargue de
-Séneca.
-
-Al importar puede marcarse la opción de incluir también las asignaciones de **tutores** y
-**docentes de grupo**; si algún docente mencionado en el fichero no existe en el centro de destino,
-se omite su asignación y se informa de los nombres no encontrados al finalizar la importación. Los
-botones de exportar/importar no están disponibles al consultar un curso académico histórico.
 
 ### Perfiles
 

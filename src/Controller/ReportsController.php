@@ -114,7 +114,7 @@ class ReportsController extends AbstractController
         $report = $this->groupStatistics->build($centre, $year, $from, $to);
 
         $headers = [
-            $this->translator->trans('group_stats.column.programme', [], 'admin'),
+            $this->translator->trans('group_stats.column.course', [], 'admin'),
             $this->translator->trans('group_stats.column.group', [], 'admin'),
             $this->translator->trans('group_stats.column.unique_students', [], 'admin'),
             $this->translator->trans('group_stats.column.reports_normal', [], 'admin'),
@@ -129,14 +129,14 @@ class ReportsController extends AbstractController
         ];
 
         $rows = [];
-        foreach ($report->programmes as $programme) {
-            foreach ($programme->rows as $row) {
-                $rows[] = $this->rowToArray($programme->programme->getName(), $row->group?->getName() ?? '', $row);
+        foreach ($report->courses as $course) {
+            foreach ($course->rows as $row) {
+                $rows[] = $this->rowToArray($course->course->getName(), $row->group?->getName() ?? '', $row);
             }
             $rows[] = $this->rowToArray(
-                $programme->programme->getName(),
+                $course->course->getName(),
                 $this->translator->trans('group_stats.subtotal', [], 'admin'),
-                $programme->total,
+                $course->total,
             );
         }
         $rows[] = $this->rowToArray(
@@ -186,10 +186,10 @@ class ReportsController extends AbstractController
     }
 
     /** @return list<string|int> */
-    private function rowToArray(string $programmeName, string $groupName, GroupStatisticsRow $row): array
+    private function rowToArray(string $courseName, string $groupName, GroupStatisticsRow $row): array
     {
         return [
-            $programmeName,
+            $courseName,
             $groupName,
             $row->uniqueStudents,
             $row->reportsNormal,

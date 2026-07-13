@@ -11,8 +11,7 @@ use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -124,11 +123,10 @@ class StudentControllerTest extends ControllerTestCase
         $this->flush();
 
         $pastYear      = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $pastProgramme = (new Programme())->setName('DAW-Y0')->setAcademicYear($pastYear);
-        $pastLevel     = (new ProgrammeYear())->setName('1º')->setProgramme($pastProgramme);
-        $pastGroup     = (new Group())->setName('1ºA-Y0')->setProgrammeYear($pastLevel);
+        $pastCourse = (new Course())->setName('DAW-Y0')->setAcademicYear($pastYear);
+        $pastGroup  = (new Group())->setName('1ºA-Y0')->setCourse($pastCourse);
         $pastGroup->addStudent($student);
-        $this->persist($pastYear, $pastProgramme, $pastLevel, $pastGroup);
+        $this->persist($pastYear, $pastCourse, $pastGroup);
         $pastReport = $this->makeReport($student, $pastGroup, $teacher, $behavior);
         $this->flush();
 
@@ -153,9 +151,8 @@ class StudentControllerTest extends ControllerTestCase
         $teacher   = $this->makeTeacher('student.teacher.' . uniqid('', false) . $suffix);
         $centre    = (new EducationalCentre())->setCode('5' . str_pad($suffix, 7, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-' . uniqid('', false));
         $category  = (new IncidentBehaviorCategory())
             ->setEducationalCentre($centre)
@@ -171,7 +168,7 @@ class StudentControllerTest extends ControllerTestCase
 
         $centre->setActiveAcademicYear($year);
         $group->addStudent($student);
-        $this->persist($teacher, $centre, $year, $programme, $level, $group, $student, $category, $behavior);
+        $this->persist($teacher, $centre, $year, $course, $group, $student, $category, $behavior);
 
         return [$teacher, $centre, $group, $student, $behavior];
     }
@@ -187,7 +184,7 @@ class StudentControllerTest extends ControllerTestCase
         Teacher $creator,
         IncidentBehavior $behavior,
     ): IncidentReport {
-        $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+        $academicYear = $group->getCourse()->getAcademicYear();
 
         $report = (new IncidentReport())
             ->setAcademicYear($academicYear)
@@ -207,7 +204,7 @@ class StudentControllerTest extends ControllerTestCase
 
     private function makeSanction(Student $student, Group $group, Teacher $registeredBy): Sanction
     {
-        $academicYear = $group->getProgrammeYear()->getProgramme()->getAcademicYear();
+        $academicYear = $group->getCourse()->getAcademicYear();
 
         $sanction = (new Sanction())
             ->setAcademicYear($academicYear)

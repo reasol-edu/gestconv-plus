@@ -29,7 +29,7 @@ class Group
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ProgrammeYear $programmeYear;
+    private Course $course;
 
     /** @var Collection<int, Teacher> */
     #[ORM\ManyToMany(targetEntity: Teacher::class, fetch: 'EXTRA_LAZY')]
@@ -80,16 +80,21 @@ class Group
         return $this;
     }
 
-    public function getProgrammeYear(): ProgrammeYear
+    public function getCourse(): Course
     {
-        return $this->programmeYear;
+        return $this->course;
     }
 
-    public function setProgrammeYear(ProgrammeYear $programmeYear): static
+    public function setCourse(Course $course): static
     {
-        $this->programmeYear = $programmeYear;
+        $this->course = $course;
 
         return $this;
+    }
+
+    public function getAcademicYear(): AcademicYear
+    {
+        return $this->course->getAcademicYear();
     }
 
     /**

@@ -13,6 +13,7 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\CommunicationRepository;
 use App\Repository\IncidentReportObservationRepository;
+use App\Repository\SanctionObservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -46,6 +47,7 @@ final class IncidentEmailNotifier
         private readonly PdfRenderer $pdfRenderer,
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly IncidentReportObservationRepository $observations,
+        private readonly SanctionObservationRepository $sanctionObservations,
         private readonly CommunicationRepository $communications,
         #[Autowire(env: 'MAILER_FROM')]
         private readonly string $fromAddress,
@@ -384,6 +386,7 @@ final class IncidentEmailNotifier
                 'centre'                 => $centre,
                 'sanction'               => $sanction,
                 'history'                => $this->communications->findBySanction($sanction),
+                'observations'           => $this->sanctionObservations->findBySanction($sanction),
                 'observationsByReport'   => $this->observations->findByIncidentReports($reports),
                 'communicationsByReport' => $this->communications->findByIncidentReports($reports),
                 'footerHtml'             => $footer,
@@ -456,7 +459,8 @@ final class IncidentEmailNotifier
 
     private function centreForGroup(Group $group): EducationalCentre
     {
-        return $group->getProgrammeYear()->getProgramme()->getAcademicYear()->getEducationalCentre();
+        return $group->getAcademicYear()?->getEducationalCentre()
+            ?? throw new \LogicException('Group has no course with an academic year.');
     }
 
     private function fullName(Teacher|Student $person): string

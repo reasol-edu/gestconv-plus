@@ -48,11 +48,10 @@ final class IncidentReportVoter extends Voter
         }
 
         // Resolve the educational centre through the report's group
-        $centre = $subject->getGroup()
-            ->getProgrammeYear()
-            ->getProgramme()
-            ->getAcademicYear()
-            ->getEducationalCentre();
+        $centre = $subject->getGroup()->getAcademicYear()?->getEducationalCentre();
+        if ($centre === null) {
+            return false;
+        }
 
         // Centre admin: always allowed
         if ($centre->getAdmins()->contains($user)) {

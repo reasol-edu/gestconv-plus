@@ -8,8 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\StudentRepository;
@@ -154,10 +153,9 @@ class StudentRepositoryTest extends RepositoryTestCase
     public function testCreateByCentreFilteredQueryFiltersByGroupId(): void
     {
         [$centre, $year, $groupA] = $this->makeGroupChain('41000003');
-        // Create a second group in the same chain
-        $prog    = $groupA->getProgrammeYear()->getProgramme();
-        $py      = $groupA->getProgrammeYear();
-        $groupB  = (new Group())->setName('B')->setProgrammeYear($py);
+        // Create a second group in the same course
+        $course  = $groupA->getCourse();
+        $groupB  = (new Group())->setName('B')->setCourse($course);
         $this->persist($groupB);
 
         $centre->setActiveAcademicYear($year);
@@ -185,7 +183,7 @@ class StudentRepositoryTest extends RepositoryTestCase
 
     public function testCountByActiveYearWithoutViewer(): void
     {
-        [$centre, , $groupA, $groupB] = $this->makeTwoProgrammeChain('41001001');
+        [$centre, , $groupA, $groupB] = $this->makeTwoCourseChain('41001001');
 
         $s1 = $this->makeStudent('ST001'); $s2 = $this->makeStudent('ST002');
         $s3 = $this->makeStudent('ST003'); $s4 = $this->makeStudent('ST004');
@@ -199,7 +197,7 @@ class StudentRepositoryTest extends RepositoryTestCase
 
     public function testCountByActiveYearGlobalAdminSeesAll(): void
     {
-        [$centre, , $groupA, $groupB] = $this->makeTwoProgrammeChain('41001002');
+        [$centre, , $groupA, $groupB] = $this->makeTwoCourseChain('41001002');
 
         $s1 = $this->makeStudent('ST001'); $s2 = $this->makeStudent('ST002');
         $s3 = $this->makeStudent('ST003');
@@ -216,7 +214,7 @@ class StudentRepositoryTest extends RepositoryTestCase
 
     public function testCountByActiveYearCentreAdminSeesAll(): void
     {
-        [$centre, $year, $groupA, $groupB] = $this->makeTwoProgrammeChain('41001003');
+        [$centre, $year, $groupA, $groupB] = $this->makeTwoCourseChain('41001003');
 
         $s1 = $this->makeStudent('ST001'); $s2 = $this->makeStudent('ST002');
         $s3 = $this->makeStudent('ST003');
@@ -233,21 +231,19 @@ class StudentRepositoryTest extends RepositoryTestCase
         self::assertSame(3, $this->repo->countByActiveYear($centre, $centreAdmin));
     }
 
-    public function testCountByActiveYearGroupTeacherSeesProgrammeStudents(): void
+    public function testCountByActiveYearGroupTeacherSeesOwnGroupStudents(): void
     {
-        // Teacher in groupA2 (second group of progA) must see ALL students of progA,
-        // not just groupA2 students.
-        [$centre, $year, $groupA, , $progA] = $this->makeTwoProgrammeChain('41001006');
+        // Teacher in groupA2 sees only students of their own group(s).
+        [$centre, $year, $groupA, , $courseA] = $this->makeTwoCourseChain('41001006');
 
-        $pyA    = $groupA->getProgrammeYear();
-        $groupA2 = (new Group())->setName('A2')->setProgrammeYear($pyA);
+        $groupA2 = (new Group())->setName('A2')->setCourse($courseA);
         $this->persist($groupA2);
 
         $s1 = $this->makeStudent('ST001'); $s2 = $this->makeStudent('ST002');
         $s3 = $this->makeStudent('ST003');
         $this->persist($s1, $s2, $s3);
-        $s1->addGroup($groupA);  // groupA
-        $s2->addGroup($groupA);  // groupA
+        $s1->addGroup($groupA);  // groupA — not teacher's group
+        $s2->addGroup($groupA);  // groupA — not teacher's group
         $s3->addGroup($groupA2); // groupA2 — teacher's group
         $this->flush();
 
@@ -257,13 +253,13 @@ class StudentRepositoryTest extends RepositoryTestCase
         $this->persist($teacher);
         $this->flush();
 
-        // Teacher is in groupA2 of progA → sees all 3 students of progA
-        self::assertSame(3, $this->repo->countByActiveYear($centre, $teacher));
+        // Teacher is in groupA2 only → sees only groupA2's 1 student
+        self::assertSame(1, $this->repo->countByActiveYear($centre, $teacher));
     }
 
     public function testCountByActiveYearUnrelatedTeacherSeesZero(): void
     {
-        [$centre, $year, $groupA, $groupB] = $this->makeTwoProgrammeChain('41001007');
+        [$centre, $year, $groupA, $groupB] = $this->makeTwoCourseChain('41001007');
 
         $s1 = $this->makeStudent('ST001'); $s2 = $this->makeStudent('ST002');
         $this->persist($s1, $s2);
@@ -281,7 +277,7 @@ class StudentRepositoryTest extends RepositoryTestCase
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
-     * Builds and persists Centre → Year → Programme → ProgrammeYear → Group.
+     * Builds and persists Centre → Year → Course → Group.
      *
      * @return array{EducationalCentre, AcademicYear, Group}
      */
@@ -289,10 +285,9 @@ class StudentRepositoryTest extends RepositoryTestCase
     {
         $centre = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
         $year   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $prog   = (new Programme())->setName('DAM')->setAcademicYear($year);
-        $py     = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
-        $group  = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $this->persist($centre, $year, $prog, $py, $group);
+        $course = (new Course())->setName('DAM')->setAcademicYear($year);
+        $group  = (new Group())->setName('DAM1A')->setCourse($course);
+        $this->persist($centre, $year, $course, $group);
         return [$centre, $year, $group];
     }
 
@@ -312,26 +307,24 @@ class StudentRepositoryTest extends RepositoryTestCase
     /**
      * Builds and persists:
      *   Centre → Year
-     *     ProgrammeA → ProgrammeYearA → GroupA
-     *     ProgrammeB → ProgrammeYearB → GroupB
+     *     CourseA → GroupA
+     *     CourseB → GroupB
      *
-     * @return array{EducationalCentre, AcademicYear, Group, Group, Programme}
+     * @return array{EducationalCentre, AcademicYear, Group, Group, Course}
      */
-    private function makeTwoProgrammeChain(string $centreCode): array
+    private function makeTwoCourseChain(string $centreCode): array
     {
         $centre = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
         $year   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
         $centre->setActiveAcademicYear($year);
 
-        $progA  = (new Programme())->setName('ProgA')->setAcademicYear($year);
-        $pyA    = (new ProgrammeYear())->setName('1.º ProgA')->setProgramme($progA);
-        $groupA = (new Group())->setName('GA')->setProgrammeYear($pyA);
+        $courseA = (new Course())->setName('CourseA')->setAcademicYear($year);
+        $groupA  = (new Group())->setName('GA')->setCourse($courseA);
 
-        $progB  = (new Programme())->setName('ProgB')->setAcademicYear($year);
-        $pyB    = (new ProgrammeYear())->setName('1.º ProgB')->setProgramme($progB);
-        $groupB = (new Group())->setName('GB')->setProgrammeYear($pyB);
+        $courseB = (new Course())->setName('CourseB')->setAcademicYear($year);
+        $groupB  = (new Group())->setName('GB')->setCourse($courseB);
 
-        $this->persist($centre, $year, $progA, $pyA, $groupA, $progB, $pyB, $groupB);
-        return [$centre, $year, $groupA, $groupB, $progA];
+        $this->persist($centre, $year, $courseA, $groupA, $courseB, $groupB);
+        return [$centre, $year, $groupA, $groupB, $courseA];
     }
 }

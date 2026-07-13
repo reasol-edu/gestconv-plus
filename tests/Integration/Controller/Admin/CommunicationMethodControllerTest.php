@@ -183,13 +183,10 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $year     = $centre->getActiveAcademicYear();
         $category = (new IncidentBehaviorCategory())->setEducationalCentre($centre)->setName('Contrarias')->setSerious(false)->setPosition(0);
         $behavior = (new IncidentBehavior())->setEducationalCentre($centre)->setCategory($category)->setName('Perturbación')->setPosition(0)->setActive(true);
-        $group    = (new \App\Entity\Group())->setName('1ºA')->setProgrammeYear(
-            (new \App\Entity\ProgrammeYear())->setName('1º')->setProgramme(
-                (new \App\Entity\Programme())->setName('DAW')->setAcademicYear($year)
-            )
-        );
-        $student = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . uniqid('', false));
-        $this->persist($teacher, $category, $behavior, $group->getProgrammeYear()->getProgramme(), $group->getProgrammeYear(), $group, $student);
+        $course   = (new \App\Entity\Course())->setName('DAW')->setAcademicYear($year);
+        $group    = (new \App\Entity\Group())->setName('1ºA')->setCourse($course);
+        $student  = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . uniqid('', false));
+        $this->persist($teacher, $category, $behavior, $course, $group, $student);
 
         $report = (new IncidentReport())
             ->setAcademicYear($year)
@@ -407,13 +404,10 @@ class CommunicationMethodControllerTest extends ControllerTestCase
         $year     = $centre->getActiveAcademicYear();
         $category = (new IncidentBehaviorCategory())->setEducationalCentre($centre)->setName('Contrarias')->setSerious(false)->setPosition(0);
         $behavior = (new IncidentBehavior())->setEducationalCentre($centre)->setCategory($category)->setName('Perturbación')->setPosition(0)->setActive(true);
-        $group    = (new \App\Entity\Group())->setName('1ºA')->setProgrammeYear(
-            (new \App\Entity\ProgrammeYear())->setName('1º')->setProgramme(
-                (new \App\Entity\Programme())->setName('DAW')->setAcademicYear($year)
-            )
-        );
-        $student = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . uniqid('', false));
-        $this->persist($teacher, $category, $behavior, $group->getProgrammeYear()->getProgramme(), $group->getProgrammeYear(), $group, $student);
+        $course   = (new \App\Entity\Course())->setName('DAW')->setAcademicYear($year);
+        $group    = (new \App\Entity\Group())->setName('1ºA')->setCourse($course);
+        $student  = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . uniqid('', false));
+        $this->persist($teacher, $category, $behavior, $course, $group, $student);
 
         $report = (new IncidentReport())
             ->setAcademicYear($year)

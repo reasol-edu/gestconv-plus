@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller\Admin;
 
 use App\Entity\AcademicYear;
+use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -230,9 +229,9 @@ class StudentControllerTest extends ControllerTestCase
         [$otherAdmin, $otherCentre, $otherYear] = $this->makeCentreWithYear();
         $otherAdmin->setUsername('admin.other');
         $otherCentre->setCode('41000002');
-        [$programme, $level, $group] = $this->makeGroupChain($otherYear, 'DAM1');
+        [$course, $group] = $this->makeCourseWithGroup($otherYear, 'DAM1');
         $student = $this->makeStudent('2024-001')->addGroup($group);
-        $this->persist($admin, $centre, $year, $otherAdmin, $otherCentre, $otherYear, $programme, $level, $group, $student);
+        $this->persist($admin, $centre, $year, $otherAdmin, $otherCentre, $otherYear, $course, $group, $student);
         $this->loginAs($admin);
 
         $centreId  = $centre->getId()->toRfc4122();
@@ -272,8 +271,8 @@ class StudentControllerTest extends ControllerTestCase
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv = implode("\n", [
-            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
-            '"","2024-001","Martinez","Lopez","Ana","DAW1A"',
+            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad","Curso"',
+            '"","2024-001","Martinez","Lopez","Ana","DAW1A","1r DAW"',
         ]);
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
@@ -295,6 +294,8 @@ class StudentControllerTest extends ControllerTestCase
         [$admin, $centre, $year] = $this->makeCentreWithYear();
         $this->persist($admin, $centre, $year);
         $centre->setActiveAcademicYear($year);
+        [$course, $group] = $this->makeCourseWithGroup($year, 'DAW1A', '1r DAW');
+        $this->persist($course, $group);
         $this->flush();
         $this->loginAs($admin);
 
@@ -303,8 +304,8 @@ class StudentControllerTest extends ControllerTestCase
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv = implode("\n", [
-            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
-            '"","2024-001","Martinez","Lopez","Ana","DAW1A"',
+            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad","Curso"',
+            '"","2024-001","Martinez","Lopez","Ana","DAW1A","1r DAW"',
         ]);
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
@@ -325,6 +326,7 @@ class StudentControllerTest extends ControllerTestCase
             'import_confirmed' => '1',
             'import_id'        => $importId,
             '_token'           => $confirmToken,
+            'groups'           => [$group->getId()->toRfc4122()],
         ]);
 
         self::assertResponseRedirects();
@@ -351,8 +353,8 @@ class StudentControllerTest extends ControllerTestCase
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv     = implode("\n", [
-            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
-            '"","2024-999","Perez","","Luis","DAW1A"',
+            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad","Curso"',
+            '"","2024-999","Perez","","Luis","DAW1A","1r DAW"',
         ]);
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
@@ -434,8 +436,8 @@ class StudentControllerTest extends ControllerTestCase
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();
         $centre->setActiveAcademicYear($year);
-        [$programme, $level, $group] = $this->makeGroupChain($year, 'DAW1A');
-        $this->persist($admin, $centre, $year, $programme, $level, $group);
+        [$course, $group] = $this->makeCourseWithGroup($year, 'DAW1A', '1r DAW');
+        $this->persist($admin, $centre, $year, $course, $group);
         $this->flush();
         $this->loginAs($admin);
 
@@ -444,9 +446,9 @@ class StudentControllerTest extends ControllerTestCase
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $csv     = implode("\n", [
-            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
-            '"","2024-001","Martinez","Lopez","Ana","DAW1A"',
-            '"","2024-002","Sanchez","","Pedro","DAW1A"',
+            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad","Curso"',
+            '"","2024-001","Martinez","Lopez","Ana","DAW1A","1r DAW"',
+            '"","2024-002","Sanchez","","Pedro","DAW1A","1r DAW"',
         ]);
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
@@ -458,7 +460,6 @@ class StudentControllerTest extends ControllerTestCase
         @unlink($tmpFile);
 
         self::assertResponseIsSuccessful();
-        // El checkbox del grupo conocido (DAW1A) debe aparecer marcado
         $checkbox = $previewCrawler->filter('input[name="groups[]"][value="' . $group->getId()->toRfc4122() . '"]');
         self::assertCount(1, $checkbox);
         self::assertNotNull($checkbox->attr('checked'), 'El checkbox del grupo debe estar marcado por defecto');
@@ -468,9 +469,10 @@ class StudentControllerTest extends ControllerTestCase
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();
         $centre->setActiveAcademicYear($year);
-        [$programme, $level, $groupA] = $this->makeGroupChain($year, 'DAW1A');
-        $groupB = (new Group())->setName('DAW1B')->setProgrammeYear($level);
-        $this->persist($admin, $centre, $year, $programme, $level, $groupA, $groupB);
+        $course = (new Course())->setName('1r DAW')->setAcademicYear($year);
+        $groupA = (new Group())->setName('DAW1A')->setCourse($course);
+        $groupB = (new Group())->setName('DAW1B')->setCourse($course);
+        $this->persist($admin, $centre, $year, $course, $groupA, $groupB);
         $this->flush();
         $this->loginAs($admin);
 
@@ -478,11 +480,10 @@ class StudentControllerTest extends ControllerTestCase
         $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/importar');
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        // CSV con un estudiante en cada grupo
         $csv     = implode("\n", [
-            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad"',
-            '"","2024-A01","Garcia","","Ana","DAW1A"',
-            '"","2024-B01","Lopez","","Pedro","DAW1B"',
+            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad","Curso"',
+            '"","2024-A01","Garcia","","Ana","DAW1A","1r DAW"',
+            '"","2024-B01","Lopez","","Pedro","DAW1B","1r DAW"',
         ]);
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
         file_put_contents($tmpFile, $csv);
@@ -517,6 +518,69 @@ class StudentControllerTest extends ControllerTestCase
             $this->em->getRepository(Student::class)->findOneBy(['studentId' => '2024-B01']),
             'El estudiante de DAW1B no debe haberse importado'
         );
+    }
+
+    public function testImportCreatesOneGroupWhenSameNameAppearsInMultipleNewCourses(): void
+    {
+        // Group names are unique: "A" appearing in "1º ESO" and "2º ESO" is detected as a
+        // conflict (same name, multiple courses). The preview asks the user to choose one course.
+        // After resolution, exactly one Group "A" must exist and both students belong to it.
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $centre->setActiveAcademicYear($year);
+        $this->persist($admin, $centre, $year);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/importar');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $csv = implode("\n", [
+            '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad","Curso"',
+            '"","2024-ESO1","Garcia","","Ana","A","1º ESO"',
+            '"","2024-ESO2","Lopez","","Pedro","A","2º ESO"',
+        ]);
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
+        file_put_contents($tmpFile, $csv);
+        $file = new UploadedFile($tmpFile, 'students.csv', 'text/csv', null, true);
+
+        // Step 1: upload → preview (group "A" shows as a conflict group)
+        $previewCrawler = $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
+            '_token' => $token,
+        ], ['csv' => $file]);
+        @unlink($tmpFile);
+
+        self::assertResponseIsSuccessful();
+        $importId     = $previewCrawler->filter('[name="import_id"]')->first()->attr('value');
+        $confirmToken = $previewCrawler->filter('[name="_token"]')->first()->attr('value');
+
+        // Step 2: resolve conflict — user assigns group "A" to course "1º ESO"
+        $this->client->request('POST', '/centro/' . $centreId . '/estudiantes/importar', [
+            'import_confirmed'       => '1',
+            'import_id'              => $importId,
+            '_token'                 => $confirmToken,
+            'conflict_group_names'   => ['A'],
+            'conflict_group_courses' => ['1º ESO'],
+        ]);
+
+        self::assertResponseRedirects();
+
+        $this->em->clear();
+
+        // Exactly one group named "A" must exist — no duplicates
+        $groups = $this->em->getRepository(Group::class)->findBy(['name' => 'A']);
+        self::assertCount(1, $groups, 'Solo debe existir un grupo llamado "A", no uno por curso');
+
+        $student1 = $this->em->getRepository(Student::class)->findOneBy(['studentId' => '2024-ESO1']);
+        $student2 = $this->em->getRepository(Student::class)->findOneBy(['studentId' => '2024-ESO2']);
+
+        self::assertNotNull($student1, 'El alumno de 1º ESO debe haberse importado');
+        self::assertNotNull($student2, 'El alumno de 2º ESO debe haberse importado');
+
+        // Both students must be in the same single group "A"
+        $groupId1 = $student1->getGroups()->toArray()[0]->getId()->toRfc4122();
+        $groupId2 = $student2->getGroups()->toArray()[0]->getId()->toRfc4122();
+        self::assertSame($groupId1, $groupId2, 'Ambos alumnos deben estar en el mismo grupo "A"');
     }
 
     // ── delete ────────────────────────────────────────────────────────────────
@@ -566,9 +630,9 @@ class StudentControllerTest extends ControllerTestCase
         [$otherAdmin, $otherCentre, $otherYear] = $this->makeCentreWithYear();
         $otherAdmin->setUsername('admin.other');
         $otherCentre->setCode('41000002');
-        [$programme, $level, $group] = $this->makeGroupChain($otherYear, 'DAM1');
+        [$course, $group] = $this->makeCourseWithGroup($otherYear, 'DAM1');
         $student = $this->makeStudent('2024-001')->addGroup($group);
-        $this->persist($admin, $centre, $year, $otherAdmin, $otherCentre, $otherYear, $programme, $level, $group, $student);
+        $this->persist($admin, $centre, $year, $otherAdmin, $otherCentre, $otherYear, $course, $group, $student);
         $this->loginAs($admin);
 
         $centreId  = $centre->getId()->toRfc4122();
@@ -608,13 +672,12 @@ class StudentControllerTest extends ControllerTestCase
         return (new Student(new PersonName('Test', 'Student')))->setStudentId($studentId);
     }
 
-    /** @return array{0: Programme, 1: ProgrammeYear, 2: Group} */
-    private function makeGroupChain(AcademicYear $year, string $groupName): array
+    /** @return array{0: Course, 1: Group} */
+    private function makeCourseWithGroup(AcademicYear $year, string $groupName, string $courseName = '1r DAW'): array
     {
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('Primer curso')->setProgramme($programme);
-        $group     = (new Group())->setName($groupName)->setProgrammeYear($level);
+        $course = (new Course())->setName($courseName)->setAcademicYear($year);
+        $group  = (new Group())->setName($groupName)->setCourse($course);
 
-        return [$programme, $level, $group];
+        return [$course, $group];
     }
 }

@@ -11,8 +11,7 @@ use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -39,15 +38,13 @@ class GroupStatisticsServiceTest extends RepositoryTestCase
         $year   = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
         $centre->setActiveAcademicYear($year);
 
-        // 'ASIR' sorts before 'DAW', so this is the expected programme order in the report.
-        $daw    = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $dawY1  = (new ProgrammeYear())->setName('1º')->setProgramme($daw);
-        $groupA = (new Group())->setName('1ºA')->setProgrammeYear($dawY1);
-        $groupB = (new Group())->setName('1ºB')->setProgrammeYear($dawY1);
+        // 'ASIR' sorts before 'DAW', so this is the expected course order in the report.
+        $daw    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $groupA = (new Group())->setName('1ºA')->setCourse($daw);
+        $groupB = (new Group())->setName('1ºB')->setCourse($daw);
 
-        $asir   = (new Programme())->setName('ASIR')->setAcademicYear($year);
-        $asirY1 = (new ProgrammeYear())->setName('1º')->setProgramme($asir);
-        $groupC = (new Group())->setName('1ºC')->setProgrammeYear($asirY1);
+        $asir   = (new Course())->setName('ASIR')->setAcademicYear($year);
+        $groupC = (new Group())->setName('1ºC')->setCourse($asir);
 
         $teacher = (new Teacher(new PersonName('Ana', 'Docente')))->setUsername('teacher.gss');
 
@@ -61,7 +58,7 @@ class GroupStatisticsServiceTest extends RepositoryTestCase
         $student3 = (new Student(new PersonName('Cris', 'Ruiz')))->setStudentId('NIE-gss-3');
 
         $this->persist(
-            $centre, $year, $daw, $dawY1, $groupA, $groupB, $asir, $asirY1, $groupC,
+            $centre, $year, $daw, $groupA, $groupB, $asir, $groupC,
             $teacher, $categoryNormal, $categorySerious, $behaviorNormal, $behaviorSerious,
             $student1, $student2, $student3,
         );
@@ -102,11 +99,11 @@ class GroupStatisticsServiceTest extends RepositoryTestCase
 
         $report = $this->service->build($centre, $year, $from, $to);
 
-        self::assertCount(2, $report->programmes);
+        self::assertCount(2, $report->courses);
 
         // ── ASIR (alphabetically first) ──
-        $asirStats = $report->programmes[0];
-        self::assertSame('ASIR', $asirStats->programme->getName());
+        $asirStats = $report->courses[0];
+        self::assertSame('ASIR', $asirStats->course->getName());
         self::assertCount(1, $asirStats->rows);
 
         $rowC = $asirStats->rows[0];
@@ -124,8 +121,8 @@ class GroupStatisticsServiceTest extends RepositoryTestCase
         self::assertSame(1, $asirStats->total->reportsSerious);
 
         // ── DAW ──
-        $dawStats = $report->programmes[1];
-        self::assertSame('DAW', $dawStats->programme->getName());
+        $dawStats = $report->courses[1];
+        self::assertSame('DAW', $dawStats->course->getName());
         self::assertCount(2, $dawStats->rows); // 1ºA and 1ºB, even though 1ºB has zero reports
 
         $rowA = $dawStats->rows[0];

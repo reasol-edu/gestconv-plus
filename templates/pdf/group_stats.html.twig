@@ -5,8 +5,8 @@
         {{ 'group_stats.title'|trans({}, 'admin') }} · {{ year.name }} · {{ from|date('d/m/Y') }} – {{ to|date('d/m/Y') }}
     </p>
 
-    {% for programme in report.programmes %}
-        <p class="subsection-title">{{ programme.programme.name }}</p>
+    {% for course in report.courses %}
+        <p class="subsection-title">{{ course.course.name }}</p>
         <table class="data-table">
             <thead>
                 <tr>
@@ -20,7 +20,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for row in programme.rows %}
+                {% for row in course.rows %}
                     <tr>
                         <td>{{ row.group.name }}</td>
                         <td>{{ row.uniqueStudents }}</td>
@@ -33,12 +33,12 @@
                 {% endfor %}
                 <tr style="font-weight:bold;background-color:#eef0fa;">
                     <td>{{ 'group_stats.subtotal'|trans({}, 'admin') }}</td>
-                    <td>{{ programme.total.uniqueStudents }}</td>
-                    <td>{{ programme.total.reportsTotal }} <span class="cell-sub">({{ programme.total.reportsNormal }}N / {{ programme.total.reportsSerious }}G)</span></td>
-                    <td>{{ programme.total.notifiedTotal }} <span class="cell-sub">({{ programme.total.notifiedNormal }}N / {{ programme.total.notifiedSerious }}G)</span></td>
-                    <td>{{ programme.total.sanctionedTotal }} <span class="cell-sub">({{ programme.total.sanctionedNormal }}N / {{ programme.total.sanctionedSerious }}G)</span></td>
-                    <td>{{ programme.total.prescribedTotal }} <span class="cell-sub">({{ programme.total.prescribedNormal }}N / {{ programme.total.prescribedSerious }}G)</span></td>
-                    <td>{{ programme.total.sanctionsCount }}</td>
+                    <td>{{ course.total.uniqueStudents }}</td>
+                    <td>{{ course.total.reportsTotal }} <span class="cell-sub">({{ course.total.reportsNormal }}N / {{ course.total.reportsSerious }}G)</span></td>
+                    <td>{{ course.total.notifiedTotal }} <span class="cell-sub">({{ course.total.notifiedNormal }}N / {{ course.total.notifiedSerious }}G)</span></td>
+                    <td>{{ course.total.sanctionedTotal }} <span class="cell-sub">({{ course.total.sanctionedNormal }}N / {{ course.total.sanctionedSerious }}G)</span></td>
+                    <td>{{ course.total.prescribedTotal }} <span class="cell-sub">({{ course.total.prescribedNormal }}N / {{ course.total.prescribedSerious }}G)</span></td>
+                    <td>{{ course.total.sanctionsCount }}</td>
                 </tr>
             </tbody>
         </table>
@@ -46,7 +46,7 @@
         <p class="cell-sub">{{ 'group_stats.no_groups'|trans({}, 'admin') }}</p>
     {% endfor %}
 
-    {% if report.programmes is not empty %}
+    {% if report.courses is not empty %}
         <p class="subsection-title">{{ 'group_stats.grand_total'|trans({}, 'admin') }}</p>
         <table class="data-table">
             <tbody>

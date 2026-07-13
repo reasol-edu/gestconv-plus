@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
 use App\Entity\Student;
+use App\Repository\CourseRepository;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\GroupRepository;
 use App\Repository\StudentRepository;
@@ -42,6 +44,7 @@ class StudentController extends AbstractController
         private readonly EducationalCentreRepository $centres,
         private readonly StudentRepository $students,
         private readonly GroupRepository $groups,
+        private readonly CourseRepository $courses,
         private readonly TranslatorInterface $translator,
         private readonly TenantContext $tenantContext,
         private readonly CsvReader $csvReader,
@@ -271,16 +274,68 @@ class StudentController extends AbstractController
             @unlink($path);
             $request->getSession()->remove('student_import_id');
 
-            $rawGroupIds     = $request->request->all('groups');
             $allowedGroupIds = [];
-            foreach ($rawGroupIds as $gid) {
+            foreach ($request->request->all('groups') as $gid) {
                 if (is_string($gid) && $gid !== '') {
                     $allowedGroupIds[] = $gid;
                 }
             }
-            $groupsByName    = $this->buildGroupsByName($centre);
-            $rows            = $this->csvReader->parse($content)['rows'];
-            $result          = $this->processCsvImport($rows, $groupsByName, dryRun: false, allowedGroupIds: $allowedGroupIds);
+
+            $year          = $centre->getActiveAcademicYear();
+            $coursesByName = $this->buildCoursesByName($centre);
+
+            // Create new courses/groups from unambiguous new groups
+            foreach ($request->request->all('new_groups') as $key) {
+                if (!is_string($key) || $key === '') {
+                    continue;
+                }
+                $parts = explode('|||', $key, 2);
+                if (count($parts) !== 2) {
+                    continue;
+                }
+                [$courseName, $groupName] = $parts;
+                $courseLower = mb_strtolower($courseName);
+                $course = $coursesByName[$courseLower] ?? null;
+                if ($course === null && $year !== null) {
+                    $course = (new Course())->setName($courseName)->setAcademicYear($year);
+                    $this->em->persist($course);
+                    $coursesByName[$courseLower] = $course;
+                }
+                if ($course !== null) {
+                    $group = (new Group())->setName($groupName)->setCourse($course);
+                    $this->em->persist($group);
+                    $allowedGroupIds[] = $group->getId()->toRfc4122();
+                }
+            }
+
+            // Resolve conflict groups: user chose a course for each ambiguous group name
+            $cgNames   = $request->request->all('conflict_group_names');
+            $cgCourses = $request->request->all('conflict_group_courses');
+            foreach (array_keys($cgNames) as $i) {
+                $groupName  = is_string($cgNames[$i])                              ? trim($cgNames[$i])   : '';
+                $courseName = isset($cgCourses[$i]) && is_string($cgCourses[$i]) ? trim($cgCourses[$i]) : '';
+                if ($groupName === '' || $courseName === '') {
+                    continue;
+                }
+                $courseLower = mb_strtolower($courseName);
+                $course = $coursesByName[$courseLower] ?? null;
+                if ($course === null && $year !== null) {
+                    $course = (new Course())->setName($courseName)->setAcademicYear($year);
+                    $this->em->persist($course);
+                    $coursesByName[$courseLower] = $course;
+                }
+                if ($course !== null) {
+                    $group = (new Group())->setName($groupName)->setCourse($course);
+                    $this->em->persist($group);
+                    $allowedGroupIds[] = $group->getId()->toRfc4122();
+                }
+            }
+            $this->em->flush();
+
+            $groupsByName  = $this->buildGroupsByName($centre);
+            $coursesByName = $this->buildCoursesByName($centre);
+            $rows          = $this->csvReader->parse($content)['rows'];
+            $result        = $this->processCsvImport($rows, $groupsByName, $coursesByName, dryRun: false, allowedGroupIds: $allowedGroupIds);
             $this->em->flush();
 
             $this->activityLog->log('student.imported', [
@@ -313,15 +368,16 @@ class StudentController extends AbstractController
             return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
         }
 
-        $required = ['Estado Matrícula', 'Nº Id. Escolar', 'Primer apellido', 'Segundo apellido', 'Nombre', 'Unidad'];
+        $required = ['Estado Matrícula', 'Nº Id. Escolar', 'Primer apellido', 'Segundo apellido', 'Nombre', 'Unidad', 'Curso'];
         $missing  = $this->csvReader->findMissingColumn($parsed['headers'], $required);
         if ($missing !== null) {
             $this->addFlash('error', $this->t('students.import.error.missing_column') . ' «' . $missing . '»');
             return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
         }
 
-        $groupsByName = $this->buildGroupsByName($centre);
-        $result       = $this->processCsvImport($parsed['rows'], $groupsByName, dryRun: true);
+        $groupsByName  = $this->buildGroupsByName($centre);
+        $coursesByName = $this->buildCoursesByName($centre);
+        $result        = $this->processCsvImport($parsed['rows'], $groupsByName, $coursesByName, dryRun: true);
 
         $importId = Uuid::v4()->toRfc4122();
         $dir      = dirname($this->getTempImportPath($importId));
@@ -332,13 +388,14 @@ class StudentController extends AbstractController
         $request->getSession()->set('student_import_id', $importId);
 
         return $this->render('admin/student/import_preview.html.twig', [
-            'centre'        => $centre,
-            'importId'      => $importId,
-            'created'       => $result['created'],
-            'updated'       => $result['updated'],
-            'skipped'       => $result['skipped'],
-            'unknownGroups' => $result['unknownGroups'],
-            'groupStats'    => $result['groupStats'],
+            'centre'              => $centre,
+            'importId'            => $importId,
+            'created'             => $result['created'],
+            'updated'             => $result['updated'],
+            'skipped'             => $result['skipped'],
+            'newCourses'          => $result['newCourses'],
+            'existingGroupStats'  => $result['existingGroupStats'],
+            'conflictGroups'      => $result['conflictGroups'],
         ]);
     }
 
@@ -349,23 +406,48 @@ class StudentController extends AbstractController
 
     /**
      * @param list<array<string, string>> $rows
-     * @param array<string, Group>        $groupsByName
-     * @param list<string>|null           $allowedGroupIds RFC4122 UUIDs; null = all (dry-run); [] = sin-grupo only
+     * @param array<string, Group>        $groupsByName  Keyed by mb_strtolower(name)
+     * @param array<string, Course>       $coursesByName Keyed by mb_strtolower(name)
+     * @param list<string>|null           $allowedGroupIds RFC4122 UUIDs; null = all (dry-run)
      * @return array{
      *   created: int,
      *   updated: int,
      *   skipped: int,
-     *   unknownGroups: array<string, true>,
-     *   groupStats: array<string, array{group: Group, name: string, created: int, updated: int}>
+     *   newCourses: array<string, array{courseName: string, isNew: bool, groups: array<string, array{key: string, groupName: string, created: int, updated: int}>}>,
+     *   existingGroupStats: array<string, array{group: Group, name: string, courseName: string, created: int, updated: int}>,
+     *   conflictGroups: array<string, array{groupName: string, courseNames: list<string>, created: int, updated: int}>
      * }
      */
-    private function processCsvImport(array $rows, array $groupsByName, bool $dryRun, ?array $allowedGroupIds = null): array
-    {
-        $created       = 0;
-        $updated       = 0;
-        $skipped       = 0;
-        $unknownGroups = [];
-        $groupStats    = [];
+    private function processCsvImport(
+        array $rows,
+        array $groupsByName,
+        array $coursesByName,
+        bool $dryRun,
+        ?array $allowedGroupIds = null,
+    ): array {
+        $created            = 0;
+        $updated            = 0;
+        $skipped            = 0;
+        $newCourses         = [];
+        $existingGroupStats = [];
+        $conflictGroups     = [];
+
+        // Pre-pass: for new groups, collect all course names per group to detect conflicts
+        $groupCourseMap = []; // groupLower => [courseLower => courseName]
+        foreach ($rows as $row) {
+            $gn = $row['Unidad'] ?? '';
+            $cn = $row['Curso']  ?? '';
+            if ($gn === '' || $cn === '') {
+                continue;
+            }
+            $gl = mb_strtolower($gn);
+            if (isset($groupsByName[$gl])) {
+                continue; // existing group — no conflict check needed
+            }
+            $groupCourseMap[$gl][mb_strtolower($cn)] = $cn;
+        }
+        /** @var array<string, array<string, string>> $conflictGroupNames */
+        $conflictGroupNames = array_filter($groupCourseMap, static fn (array $c) => count($c) > 1);
 
         foreach ($rows as $row) {
             if (($row['Estado Matrícula'] ?? '') !== '') {
@@ -373,11 +455,12 @@ class StudentController extends AbstractController
                 continue;
             }
 
-            $studentId = $row['Nº Id. Escolar'] ?? '';
-            $firstName = $row['Nombre'] ?? '';
-            $lastName1 = $row['Primer apellido'] ?? '';
-            $lastName2 = $row['Segundo apellido'] ?? '';
-            $groupName = $row['Unidad'] ?? '';
+            $studentId  = $row['Nº Id. Escolar'] ?? '';
+            $firstName  = $row['Nombre'] ?? '';
+            $lastName1  = $row['Primer apellido'] ?? '';
+            $lastName2  = $row['Segundo apellido'] ?? '';
+            $groupName  = $row['Unidad'] ?? '';
+            $courseName = $row['Curso'] ?? '';
 
             if ($studentId === '' || $firstName === '' || $lastName1 === '') {
                 $skipped++;
@@ -385,17 +468,68 @@ class StudentController extends AbstractController
             }
 
             $lastName = $lastName2 !== '' ? $lastName1 . ' ' . $lastName2 : $lastName1;
-            $group    = $groupsByName[mb_strtolower($groupName)] ?? null;
+            $group    = $groupName  !== '' ? ($groupsByName[mb_strtolower($groupName)]   ?? null) : null;
+            $course   = $courseName !== '' ? ($coursesByName[mb_strtolower($courseName)] ?? null) : null;
 
-            if ($group === null && $groupName !== '') {
-                $unknownGroups[$groupName] = true;
+            // ── Categorise for preview ────────────────────────────────────────
+            if ($groupName !== '' && $courseName !== '') {
+                $groupLower  = mb_strtolower($groupName);
+                $courseLower = mb_strtolower($courseName);
+
+                if ($group === null) {
+                    if (isset($conflictGroupNames[$groupLower])) {
+                        // Same group name appears under multiple course names → user must resolve
+                        if (!isset($conflictGroups[$groupLower])) {
+                            $conflictGroups[$groupLower] = [
+                                'groupName'   => $groupName,
+                                'courseNames' => array_values($conflictGroupNames[$groupLower]),
+                                'created'     => 0,
+                                'updated'     => 0,
+                            ];
+                        }
+                    } else {
+                        // New group with a single unambiguous course
+                        $planKey = $courseName . '|||' . $groupName;
+                        if (!isset($newCourses[$courseLower])) {
+                            $newCourses[$courseLower] = [
+                                'courseName' => $courseName,
+                                'isNew'      => $course === null,
+                                'groups'     => [],
+                            ];
+                        }
+                        if (!isset($newCourses[$courseLower]['groups'][$planKey])) {
+                            $newCourses[$courseLower]['groups'][$planKey] = [
+                                'key'       => $planKey,
+                                'groupName' => $groupName,
+                                'created'   => 0,
+                                'updated'   => 0,
+                            ];
+                        }
+                    }
+                } else {
+                    $gId = $group->getId()->toRfc4122();
+                    if (!isset($existingGroupStats[$gId])) {
+                        $existingGroupStats[$gId] = [
+                            'group'      => $group,
+                            'name'       => $group->getName(),
+                            'courseName' => $group->getCourse()->getName(),
+                            'created'    => 0,
+                            'updated'    => 0,
+                        ];
+                    }
+                }
             }
 
-            // En modo real, omitir estudiantes cuyo grupo conocido no esté en la lista permitida
-            if (!$dryRun && $allowedGroupIds !== null && $group !== null
-                && !in_array($group->getId()->toRfc4122(), $allowedGroupIds, true)) {
-                $skipped++;
-                continue;
+            // ── Skip logic (real run only) ────────────────────────────────────
+            if (!$dryRun && $allowedGroupIds !== null) {
+                if ($groupName !== '' && $group === null) {
+                    $skipped++;
+                    continue;
+                }
+                if ($group !== null && !in_array($group->getId()->toRfc4122(), $allowedGroupIds, true)) {
+                    $skipped++;
+                    continue;
+                }
             }
 
             $existing = $this->students->findByStudentId($studentId);
@@ -414,9 +548,8 @@ class StudentController extends AbstractController
                 }
 
                 $col = static fn (string $name): string => $row[$name] ?? '';
-                $n = static fn (string $v): ?string => $v !== '' ? $v : null;
+                $n   = static fn (string $v): ?string   => $v !== '' ? $v : null;
 
-                // Tutor 1
                 $t1first = $col('Nombre Primer tutor');
                 $t1last  = trim($col('Primer apellido Primer tutor') . ' ' . $col('Segundo apellido Primer tutor'));
                 if ($t1first !== '' || $t1last !== '') {
@@ -424,7 +557,6 @@ class StudentController extends AbstractController
                 }
                 $student->setTutorEmail1($n($col('Correo Electrónico Primer tutor')));
 
-                // Tutor 2
                 $t2first = $col('Nombre Segundo tutor');
                 $t2last  = trim($col('Primer apellido Segundo tutor') . ' ' . $col('Segundo apellido Segundo tutor'));
                 if ($t2first !== '' || $t2last !== '') {
@@ -432,12 +564,10 @@ class StudentController extends AbstractController
                 }
                 $student->setTutorEmail2($n($col('Correo Electrónico Segundo tutor')));
 
-                // Teléfonos: tutor 1, tutor 2, alumno
                 $student->setContactPhone1($n($col('Teléfono Primer tutor')));
                 $student->setContactPhone2($n($col('Teléfono Segundo tutor')));
                 $student->setContactPhone3($n($col('Teléfono')));
 
-                // Observaciones
                 $obs = $col('Observaciones de la matrícula');
                 if ($obs !== '') {
                     $student->setDetails($obs);
@@ -453,63 +583,72 @@ class StudentController extends AbstractController
                     $updated++;
                 }
 
-                // Acumular estadísticas por grupo para la vista previa
-                if ($group !== null) {
-                    $gId = $group->getId()->toRfc4122();
-                    if (!isset($groupStats[$gId])) {
-                        $groupStats[$gId] = ['group' => $group, 'name' => $group->getName(), 'created' => 0, 'updated' => 0];
-                    }
-                    if ($isNew) {
-                        $groupStats[$gId]['created']++;
-                    } else {
-                        $groupStats[$gId]['updated']++;
+                // Accumulate per-group student counts for preview
+                if ($groupName !== '' && $courseName !== '') {
+                    $planKey     = $courseName . '|||' . $groupName;
+                    $groupLower  = mb_strtolower($groupName);
+                    $courseLower = mb_strtolower($courseName);
+                    if ($group === null) {
+                        if (isset($conflictGroups[$groupLower])) {
+                            $conflictGroups[$groupLower][$isNew ? 'created' : 'updated']++;
+                        } elseif (isset($newCourses[$courseLower]['groups'][$planKey])) {
+                            $newCourses[$courseLower]['groups'][$planKey][$isNew ? 'created' : 'updated']++;
+                        }
+                    } elseif (isset($existingGroupStats[$group->getId()->toRfc4122()])) {
+                        $existingGroupStats[$group->getId()->toRfc4122()][$isNew ? 'created' : 'updated']++;
                     }
                 }
             }
         }
 
-        // Ordenar por nombre de grupo
-        uasort($groupStats, static fn($a, $b) => strcmp($a['name'], $b['name']));
+        ksort($newCourses);
+        ksort($conflictGroups);
+        uasort($existingGroupStats, static fn ($a, $b) => strcmp($a['name'], $b['name']));
 
         return [
-            'created'       => $created,
-            'updated'       => $updated,
-            'skipped'       => $skipped,
-            'unknownGroups' => $unknownGroups,
-            'groupStats'    => $groupStats,
+            'created'            => $created,
+            'updated'            => $updated,
+            'skipped'            => $skipped,
+            'newCourses'         => $newCourses,
+            'existingGroupStats' => $existingGroupStats,
+            'conflictGroups'     => $conflictGroups,
         ];
     }
 
-    /** @param array{created: int, updated: int, skipped: int, unknownGroups: array<string, true>} $result */
+    /** @param array{created: int, updated: int, skipped: int} $result */
     private function buildImportFlash(array $result): void
     {
-        $summary = $this->translator->trans('students.import.flash.summary', [
+        $this->addFlash('success', $this->translator->trans('students.import.flash.summary', [
             '%created%' => $result['created'],
             '%updated%' => $result['updated'],
             '%skipped%' => $result['skipped'],
-        ], 'admin');
-
-        if (!empty($result['unknownGroups'])) {
-            $summary .= ' ' . $this->translator->trans('students.import.flash.unknown_groups', [
-                '%groups%' => implode(', ', array_map(
-                    static fn(string $g) => '«' . $g . '»',
-                    array_keys($result['unknownGroups'])
-                )),
-            ], 'admin');
-        }
-
-        $this->addFlash('success', $summary);
+        ], 'admin'));
     }
 
-    /** @return array<string, Group> */
+    /** @return array<string, Group> Keyed by mb_strtolower(name) */
     private function buildGroupsByName(EducationalCentre $centre): array
     {
-        $result = [];
+        $map = [];
         foreach ($this->groups->findByActiveYearOfCentreOrderedByName($centre) as $group) {
-            $result[mb_strtolower($group->getName())] = $group;
+            $map[mb_strtolower($group->getName())] = $group;
         }
 
-        return $result;
+        return $map;
+    }
+
+    /** @return array<string, Course> */
+    private function buildCoursesByName(EducationalCentre $centre): array
+    {
+        $year = $centre->getActiveAcademicYear();
+        if ($year === null) {
+            return [];
+        }
+        $map = [];
+        foreach ($this->courses->findByAcademicYearOrdered($year) as $course) {
+            $map[mb_strtolower($course->getName())] = $course;
+        }
+
+        return $map;
     }
 
     #[Route('/{id}/eliminar', name: 'app_centre_students_delete', methods: ['POST'])]

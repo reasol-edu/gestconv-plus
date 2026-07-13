@@ -140,9 +140,8 @@ class EducationalCentreRepository extends ServiceEntityRepository
         foreach ($this->getEntityManager()->createQueryBuilder()
             ->select('g')
             ->from(Group::class, 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->leftJoin('g.teachers', 'gt')
             ->leftJoin('g.tutors', 'gtu')
             ->where('gt.id = :tid OR gtu.id = :tid')
@@ -150,8 +149,10 @@ class EducationalCentreRepository extends ServiceEntityRepository
             ->distinct()
             ->getQuery()
             ->getResult() as $group) {
-            $ec = $group->getProgrammeYear()->getProgramme()->getAcademicYear()->getEducationalCentre();
-            $merged[$ec->getId()->toRfc4122()] = $ec;
+            $ec = $group->getAcademicYear()?->getEducationalCentre();
+            if ($ec !== null) {
+                $merged[$ec->getId()->toRfc4122()] = $ec;
+            }
         }
 
         $centres = array_values($merged);

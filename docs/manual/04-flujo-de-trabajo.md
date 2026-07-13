@@ -8,7 +8,7 @@ El administrador de centro crea o activa el curso académico en **Centro educati
 
 ## 2 — Estructurar la oferta formativa
 
-Se definen los programas de estudio (enseñanzas), los niveles dentro de cada enseñanza y los grupos. Si ya existía en un curso o centro anterior, puede importarse desde un fichero JSON exportado previamente desde la propia aplicación (no es un fichero que se descargue de Séneca).
+Se definen los **cursos** del año activo (por ejemplo, «1º ESO», «2º Bachillerato») y los **grupos** de cada uno. Cada grupo pertenece a un único curso. Lo más rápido es no hacer nada aquí e importar directamente el alumnado: los cursos y grupos se crearán solos (ver paso 5).
 
 ## 3 — Añadir docentes y grupos
 

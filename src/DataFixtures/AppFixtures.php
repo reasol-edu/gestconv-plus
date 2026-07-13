@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Entity\AcademicYear;
+use App\Entity\Course;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Service\CentreProvisioner;
@@ -45,19 +44,19 @@ class AppFixtures extends Fixture
         $mTeachers = $this->makeMonterrubioTeachers($manager, $ejemploHash);
         $manager->flush();
 
-        [$aEsoPyears, $aBachPyears, $aDawPyears] = $this->buildAdaLovelace($manager, $aTeachers);
-        [$mEsoPyears, $mBachPyears]              = $this->buildMonterrubio($manager, $mTeachers);
+        [$aEsoCourses, $aBachCourses, $aDawCourses] = $this->buildAdaLovelace($manager, $aTeachers);
+        [$mEsoCourses, $mBachCourses]               = $this->buildMonterrubio($manager, $mTeachers);
 
         // IES Ada Lovelace: dos grupos por curso en ESO, uno en Bach. y uno en DAW.
-        $this->buildGroups($manager, $aEsoPyears, $aTeachers, 'AA', 28, ' A');
-        $this->buildGroups($manager, $aEsoPyears, $aTeachers, 'AB', 27, ' B');
-        $this->buildGroups($manager, $aBachPyears, $aTeachers, 'AC', 22);
-        $this->buildGroups($manager, $aDawPyears,  $aTeachers, 'AD', 24);
+        $this->buildGroups($manager, $aEsoCourses, $aTeachers, 'AA', 28, ' A');
+        $this->buildGroups($manager, $aEsoCourses, $aTeachers, 'AB', 27, ' B');
+        $this->buildGroups($manager, $aBachCourses, $aTeachers, 'AC', 22);
+        $this->buildGroups($manager, $aDawCourses,  $aTeachers, 'AD', 24);
 
         // IES Monterrubio: dos grupos por curso en ESO, uno en Bach.
-        $this->buildGroups($manager, $mEsoPyears, $mTeachers, 'MA', 26, ' A');
-        $this->buildGroups($manager, $mEsoPyears, $mTeachers, 'MB', 26, ' B');
-        $this->buildGroups($manager, $mBachPyears, $mTeachers, 'MC', 20);
+        $this->buildGroups($manager, $mEsoCourses, $mTeachers, 'MA', 26, ' A');
+        $this->buildGroups($manager, $mEsoCourses, $mTeachers, 'MB', 26, ' B');
+        $this->buildGroups($manager, $mBachCourses, $mTeachers, 'MC', 20);
 
         $manager->flush();
     }
@@ -88,8 +87,7 @@ class AppFixtures extends Fixture
             'DELETE FROM ' . $q('group_teacher'),
             'DELETE FROM ' . $q('group'),
 
-            'DELETE FROM ' . $q('programme_year'),
-            'DELETE FROM ' . $q('programme'),
+            'DELETE FROM ' . $q('course'),
             'DELETE FROM ' . $q('teacher_academic_year'),
             'DELETE FROM ' . $q('educational_centre_admins'),
             'DELETE FROM ' . $q('academic_year'),
@@ -214,10 +212,10 @@ class AppFixtures extends Fixture
     // ── Estructura académica ──────────────────────────────────────────────────
 
     /**
-     * Devuelve [esoPyears, bachPyears, dawPyears].
+     * Devuelve [esoCourses, bachCourses, dawCourses].
      *
      * @param array<string, Teacher> $teachers
-     * @return array{ProgrammeYear[], ProgrammeYear[], ProgrammeYear[]}
+     * @return array{Course[], Course[], Course[]}
      */
     private function buildAdaLovelace(ObjectManager $manager, array $teachers): array
     {
@@ -230,34 +228,16 @@ class AppFixtures extends Fixture
             $year->addTeacher($t);
         }
 
-        // ── ESO ───────────────────────────────────────────────────────────────
-        $esoP = $this->makeProgramme($manager, 'ESO', $year);
-        [$py1, $py2, $py3, $py4] = $this->makeEsoProgrammeYears($manager, $esoP);
+        $esoCourses  = $this->makeEsoCourses($manager, $year);
+        $bachCourses = $this->makeCourses($manager, $year, ['1º Bachillerato', '2º Bachillerato']);
+        $dawCourses  = $this->makeCourses($manager, $year, ['1º DAW', '2º DAW']);
 
-        // ── Bachillerato ──────────────────────────────────────────────────────
-        $bach = $this->makeProgramme($manager, 'Bachillerato', $year);
-        $py1b = (new ProgrammeYear())->setName('1º Bachillerato')->setProgramme($bach);
-        $py2b = (new ProgrammeYear())->setName('2º Bachillerato')->setProgramme($bach);
-        $manager->persist($py1b);
-        $manager->persist($py2b);
-
-        // ── CFGS Desarrollo de Aplicaciones Web ───────────────────────────────
-        $daw  = $this->makeProgramme($manager, 'CFGS Desarrollo de Aplicaciones Web', $year);
-        $py1d = (new ProgrammeYear())->setName('1º DAW')->setProgramme($daw);
-        $py2d = (new ProgrammeYear())->setName('2º DAW')->setProgramme($daw);
-        $manager->persist($py1d);
-        $manager->persist($py2d);
-
-        return [
-            [$py1, $py2, $py3, $py4],
-            [$py1b, $py2b],
-            [$py1d, $py2d],
-        ];
+        return [$esoCourses, $bachCourses, $dawCourses];
     }
 
     /**
      * @param array<string, Teacher> $teachers
-     * @return array{ProgrammeYear[], ProgrammeYear[]}
+     * @return array{Course[], Course[]}
      */
     private function buildMonterrubio(ObjectManager $manager, array $teachers): array
     {
@@ -270,55 +250,45 @@ class AppFixtures extends Fixture
             $year->addTeacher($t);
         }
 
-        // ── ESO ───────────────────────────────────────────────────────────────
-        $esoP = $this->makeProgramme($manager, 'ESO', $year);
-        [$py1, $py2, $py3, $py4] = $this->makeEsoProgrammeYears($manager, $esoP);
+        $esoCourses  = $this->makeEsoCourses($manager, $year);
+        $bachCourses = $this->makeCourses($manager, $year, ['1º Bachillerato', '2º Bachillerato']);
 
-        // ── Bachillerato ──────────────────────────────────────────────────────
-        $bach = $this->makeProgramme($manager, 'Bachillerato', $year);
-        $py1b = (new ProgrammeYear())->setName('1º Bachillerato')->setProgramme($bach);
-        $py2b = (new ProgrammeYear())->setName('2º Bachillerato')->setProgramme($bach);
-        $manager->persist($py1b);
-        $manager->persist($py2b);
-
-        return [
-            [$py1, $py2, $py3, $py4],
-            [$py1b, $py2b],
-        ];
+        return [$esoCourses, $bachCourses];
     }
 
-    private function makeProgramme(ObjectManager $manager, string $name, AcademicYear $year): Programme
+    /** @return Course[] */
+    private function makeEsoCourses(ObjectManager $manager, AcademicYear $year): array
     {
-        $p = (new Programme())->setName($name)->setAcademicYear($year);
-        $manager->persist($p);
-        return $p;
+        return $this->makeCourses($manager, $year, ['1º ESO', '2º ESO', '3º ESO', '4º ESO']);
     }
 
-    /** @return array{ProgrammeYear, ProgrammeYear, ProgrammeYear, ProgrammeYear} */
-    private function makeEsoProgrammeYears(ObjectManager $manager, Programme $programme): array
+    /**
+     * @param string[] $names
+     * @return Course[]
+     */
+    private function makeCourses(ObjectManager $manager, AcademicYear $year, array $names): array
     {
-        $years = [];
-        foreach (['1º ESO', '2º ESO', '3º ESO', '4º ESO'] as $name) {
-            $py = (new ProgrammeYear())->setName($name)->setProgramme($programme);
-            $manager->persist($py);
-            $years[] = $py;
+        $courses = [];
+        foreach ($names as $name) {
+            $course = (new Course())->setName($name)->setAcademicYear($year);
+            $manager->persist($course);
+            $courses[] = $course;
         }
-        /** @var array{ProgrammeYear, ProgrammeYear, ProgrammeYear, ProgrammeYear} $years */
-        return $years;
+        return $courses;
     }
 
     // ── Grupos y alumnado ─────────────────────────────────────────────────────
 
     /**
-     * Crea un grupo por ProgrammeYear con el sufijo indicado y lo puebla de alumnado.
+     * Crea un grupo por Course con el sufijo indicado y lo puebla de alumnado.
      *
-     * @param ProgrammeYear[]        $pyears
+     * @param Course[]               $courses
      * @param array<string, Teacher> $teachers
      * @return Group[]
      */
     private function buildGroups(
         ObjectManager $manager,
-        array $pyears,
+        array $courses,
         array $teachers,
         string $prefix,
         int $studentsPerGroup,
@@ -330,12 +300,12 @@ class AppFixtures extends Fixture
         $groups       = [];
         $tutorIdx     = 0;
 
-        foreach ($pyears as $i => $py) {
-            $abbr  = $py->getName();
+        foreach ($courses as $i => $course) {
+            $abbr  = $course->getName();
             $abbr  = preg_replace('/[^A-ZÀ-Ÿa-zà-ÿ0-9º]/u', '', $abbr) ?? $abbr;
-            $group = (new Group())
-                ->setName($abbr . $suffix)
-                ->setProgrammeYear($py);
+            $group = new Group();
+            $group->setName($abbr . $suffix);
+            $group->setCourse($course);
 
             $tutor = $teacherList[$tutorOffset + ($tutorIdx % $tutorCount)];
             $tutorIdx++;

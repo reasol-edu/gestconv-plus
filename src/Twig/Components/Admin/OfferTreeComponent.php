@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Twig\Components\Admin;
 
+use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
 use App\Entity\Teacher;
+use App\Repository\CourseRepository;
 use App\Repository\GroupRepository;
-use App\Repository\ProgrammeRepository;
-use App\Repository\ProgrammeYearRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\TenantContext;
@@ -28,7 +26,7 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
  * Column navigation (Miller columns) for the formative offer:
- * Programmes → Levels → Groups, fully inline with no page reloads.
+ * Courses → Groups, fully inline with no page reloads.
  */
 #[AsLiveComponent]
 class OfferTreeComponent extends AbstractController
@@ -39,20 +37,14 @@ class OfferTreeComponent extends AbstractController
     public EducationalCentre $centre;
 
     #[LiveProp(writable: true)]
-    public string $programmeId = '';
-
-    #[LiveProp(writable: true)]
-    public string $levelId = '';
+    public string $courseId = '';
 
     #[LiveProp(writable: true)]
     public string $groupId = '';
 
     /** Inline "add" inputs, one per column. */
     #[LiveProp(writable: true)]
-    public string $addProgrammeName = '';
-
-    #[LiveProp(writable: true)]
-    public string $addLevelName = '';
+    public string $addCourseName = '';
 
     #[LiveProp(writable: true)]
     public string $addGroupName = '';
@@ -75,8 +67,7 @@ class OfferTreeComponent extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly TranslatorInterface $translator,
-        private readonly ProgrammeRepository $programmes,
-        private readonly ProgrammeYearRepository $levels,
+        private readonly CourseRepository $courses,
         private readonly GroupRepository $groups,
         private readonly TeacherRepository $teachers,
         private readonly TenantContext $tenantContext,
@@ -95,43 +86,29 @@ class OfferTreeComponent extends AbstractController
 
     // ── Column data ──────────────────────────────────────────────────────────
 
-    /** @return Programme[] */
-    public function getProgrammeList(): array
+    /** @return Course[] */
+    public function getCourseList(): array
     {
         $year = $this->tenantContext->getViewYear($this->centre);
         if ($year === null) {
             return [];
         }
 
-        return $this->programmes->findByAcademicYearOrdered($year);
+        return $this->courses->findByAcademicYearOrdered($year);
     }
 
     /** @return array<string, int> */
-    public function getProgrammeCounts(): array
+    public function getCourseCounts(): array
     {
-        return $this->levels->countByProgramme($this->getProgrammeList());
-    }
-
-    /** @return ProgrammeYear[] */
-    public function getLevelList(): array
-    {
-        $programme = $this->getSelectedProgramme();
-
-        return $programme === null ? [] : $this->levels->findByProgrammeOrderedByName($programme);
-    }
-
-    /** @return array<string, int> */
-    public function getLevelCounts(): array
-    {
-        return $this->groups->countByLevel($this->getLevelList());
+        return $this->courses->countByCourse($this->getCourseList());
     }
 
     /** @return Group[] */
     public function getGroupList(): array
     {
-        $level = $this->getSelectedLevel();
+        $course = $this->getSelectedCourse();
 
-        return $level === null ? [] : $this->groups->findByLevelOrderedByName($level);
+        return $course === null ? [] : $this->groups->findByCourseOrderedByName($course);
     }
 
     /** @return array<string, array{students: int, teachers: int}> */
@@ -155,49 +132,35 @@ class OfferTreeComponent extends AbstractController
 
     // ── Selected entities ────────────────────────────────────────────────────
 
-    public function getSelectedProgramme(): ?Programme
+    public function getSelectedCourse(): ?Course
     {
         $year = $this->tenantContext->getViewYear($this->centre);
-        if ($year === null || $this->programmeId === '') {
+        if ($year === null || $this->courseId === '') {
             return null;
         }
 
-        return $this->programmes->findByAcademicYearAndId($year, $this->programmeId);
-    }
-
-    public function getSelectedLevel(): ?ProgrammeYear
-    {
-        $programme = $this->getSelectedProgramme();
-        if ($programme === null || $this->levelId === '') {
-            return null;
-        }
-
-        return $this->levels->findByProgrammeAndId($programme, $this->levelId);
+        return $this->courses->findByAcademicYearAndId($year, $this->courseId);
     }
 
     public function getSelectedGroup(): ?Group
     {
-        $level = $this->getSelectedLevel();
-        if ($level === null || $this->groupId === '') {
+        if ($this->groupId === '') {
             return null;
         }
 
-        return $this->groups->findByLevelAndId($level, $this->groupId);
+        return $this->groups->findByIdAndCentre($this->groupId, $this->centre);
     }
 
     /**
-     * @return array{type: string, entity: Programme|ProgrammeYear|Group}|null
+     * @return array{type: string, entity: Course|Group}|null
      */
     public function getSelected(): ?array
     {
         if (($group = $this->getSelectedGroup()) !== null) {
             return ['type' => 'group', 'entity' => $group];
         }
-        if (($level = $this->getSelectedLevel()) !== null) {
-            return ['type' => 'level', 'entity' => $level];
-        }
-        if (($programme = $this->getSelectedProgramme()) !== null) {
-            return ['type' => 'programme', 'entity' => $programme];
+        if (($course = $this->getSelectedCourse()) !== null) {
+            return ['type' => 'course', 'entity' => $course];
         }
 
         return null;
@@ -206,18 +169,10 @@ class OfferTreeComponent extends AbstractController
     // ── Selection actions ────────────────────────────────────────────────────
 
     #[LiveAction]
-    public function selectProgramme(#[LiveArg] string $id): void
+    public function selectCourse(#[LiveArg] string $id): void
     {
-        $this->programmeId = $id;
-        $this->levelId = $this->groupId = '';
-        $this->loadDetail();
-    }
-
-    #[LiveAction]
-    public function selectLevel(#[LiveArg] string $id): void
-    {
-        $this->levelId = $id;
-        $this->groupId = '';
+        $this->courseId = $id;
+        $this->groupId  = '';
         $this->loadDetail();
     }
 
@@ -231,7 +186,7 @@ class OfferTreeComponent extends AbstractController
     #[LiveAction]
     public function clearSelection(): void
     {
-        $this->programmeId = $this->levelId = $this->groupId = '';
+        $this->courseId = $this->groupId = '';
         $this->errors = [];
     }
 
@@ -254,60 +209,39 @@ class OfferTreeComponent extends AbstractController
     // ── Add actions ──────────────────────────────────────────────────────────
 
     #[LiveAction]
-    public function addProgramme(): void
+    public function addCourse(): void
     {
         $centre = $this->requireWritableCentre();
         $year   = $centre->getActiveAcademicYear();
-        $name   = trim($this->addProgrammeName);
+        $name   = trim($this->addCourseName);
         if ($year === null || $name === '') {
             return;
         }
 
-        $programme = (new Programme())
+        $course = (new Course())
             ->setName($name)
             ->setAcademicYear($year);
 
-        $this->em->persist($programme);
+        $this->em->persist($course);
         $this->em->flush();
 
-        $this->addProgrammeName = '';
-        $this->selectProgramme($programme->getId()->toRfc4122());
-    }
-
-    #[LiveAction]
-    public function addLevel(): void
-    {
-        $this->requireWritableCentre();
-        $programme = $this->getSelectedProgramme();
-        $name      = trim($this->addLevelName);
-        if ($programme === null || $name === '') {
-            return;
-        }
-
-        $level = (new ProgrammeYear())
-            ->setName($name)
-            ->setProgramme($programme);
-
-        $this->em->persist($level);
-        $this->em->flush();
-
-        $this->addLevelName = '';
-        $this->selectLevel($level->getId()->toRfc4122());
+        $this->addCourseName = '';
+        $this->selectCourse($course->getId()->toRfc4122());
     }
 
     #[LiveAction]
     public function addGroup(): void
     {
         $this->requireWritableCentre();
-        $level = $this->getSelectedLevel();
-        $name  = trim($this->addGroupName);
-        if ($level === null || $name === '') {
+        $course = $this->getSelectedCourse();
+        $name   = trim($this->addGroupName);
+        if ($course === null || $name === '') {
             return;
         }
 
         $group = (new Group())
             ->setName($name)
-            ->setProgrammeYear($level);
+            ->setCourse($course);
 
         $this->em->persist($group);
         $this->em->flush();
@@ -379,8 +313,7 @@ class OfferTreeComponent extends AbstractController
 
         match ($type) {
             'group' => $this->groupId = '',
-            'level' => $this->levelId = '',
-            default => $this->programmeId = '',
+            default => $this->courseId = '',
         };
         $this->loadDetail();
     }

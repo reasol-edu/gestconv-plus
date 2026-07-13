@@ -19,9 +19,6 @@
     </div>
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-base font-semibold text-gray-900">{{ 'students.import.preview.title'|trans({}, 'admin') }}</h2>
-        </div>
 
         <form method="post"
               action="{{ path('app_centre_students_import', {centreId: centre.id}) }}"
@@ -30,18 +27,117 @@
             <input type="hidden" name="import_id" value="{{ importId }}">
             <input type="hidden" name="_token" value="{{ csrf_token('import_students_confirm') }}">
 
-            <div class="px-6 py-6 space-y-6">
+            <div class="divide-y divide-gray-100">
 
-                {# ── Selección de grupos ─────────────────────────────────── #}
-                {% if groupStats|length > 0 %}
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-semibold text-gray-700">{{ 'students.import.preview.groups.title'|trans({}, 'admin') }}</h3>
+                {# ── Bloque 0: grupos con nombre ambiguo (conflicto de curso) ─ #}
+                {% if conflictGroups|length > 0 %}
+                <div class="px-6 py-5">
+                    <h2 class="text-sm font-semibold text-gray-800 mb-1">{{ 'students.import.preview.conflict_groups.title'|trans({}, 'admin') }}</h2>
+                    <p class="text-xs text-gray-500 mb-4">{{ 'students.import.preview.conflict_groups.hint'|trans({}, 'admin') }}</p>
+
+                    <div class="space-y-3">
+                        {% for groupLower, conflict in conflictGroups %}
+                        {% set pickName = 'conflict_pick_' ~ loop.index %}
+                        <div class="rounded-xl border border-violet-200 bg-violet-50/60 px-4 py-3 js-conflict-block">
+                            <input type="hidden" name="conflict_group_names[]" value="{{ conflict.groupName }}">
+                            <div class="flex min-w-0 items-center gap-2 mb-3">
+                                {{ ux_icon('heroicons:question-mark-circle', {class: 'h-4 w-4 shrink-0 text-violet-500'}) }}
+                                <span class="text-sm font-medium text-violet-900">{{ conflict.groupName }}</span>
+                                {% set total = conflict.created + conflict.updated %}
+                                {% if total > 0 %}
+                                <span class="text-xs text-gray-500 shrink-0">
+                                    ({%- if conflict.created > 0 -%}<span class="text-green-700">{{ 'students.import.preview.new'|trans({'%count%': conflict.created}, 'admin') }}</span>{%- endif -%}
+                                    {%- if conflict.created > 0 and conflict.updated > 0 %}, {% endif -%}
+                                    {%- if conflict.updated > 0 -%}<span class="text-blue-700">{{ 'students.import.preview.updated'|trans({'%count%': conflict.updated}, 'admin') }}</span>{%- endif -%})
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="space-y-2 pl-6">
+                                {% for idx, courseName in conflict.courseNames %}
+                                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                                    <input type="radio"
+                                           name="{{ pickName }}"
+                                           value="{{ courseName }}"
+                                           {{ idx == 0 ? 'checked' : '' }}
+                                           class="js-conflict-radio h-4 w-4 accent-violet-600 shrink-0">
+                                    <span class="text-sm text-gray-700">{{ courseName }}</span>
+                                </label>
+                                {% endfor %}
+                                <div class="flex items-center gap-2.5">
+                                    <input type="radio"
+                                           name="{{ pickName }}"
+                                           value="__custom__"
+                                           class="js-conflict-custom h-4 w-4 accent-violet-600 shrink-0">
+                                    <input type="text"
+                                           name="conflict_group_courses[]"
+                                           value="{{ conflict.courseNames[0] ?? '' }}"
+                                           class="js-conflict-text min-w-0 flex-1 rounded-lg border border-gray-300 px-2.5 py-1 text-sm focus:border-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-400">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
-                    <p class="text-xs text-gray-500 mb-3">{{ 'students.import.preview.groups.hint'|trans({}, 'admin') }}</p>
+                </div>
+                {% endif %}
+
+                {# ── Bloque 1: cursos y grupos nuevos ─────────────────────── #}
+                {% if newCourses|length > 0 %}
+                <div class="px-6 py-5">
+                    <h2 class="text-sm font-semibold text-gray-800 mb-1">{{ 'students.import.preview.new_offer.title'|trans({}, 'admin') }}</h2>
+                    <p class="text-xs text-gray-500 mb-4">{{ 'students.import.preview.new_offer.hint'|trans({}, 'admin') }}</p>
+
+                    <div class="space-y-3">
+                        {% for courseLower, courseData in newCourses %}
+                            <div class="rounded-xl border border-amber-200 bg-amber-50/60 overflow-hidden">
+                                <div class="flex items-center gap-2 px-4 py-2.5 bg-amber-50 border-b border-amber-100">
+                                    {{ ux_icon('heroicons:rectangle-stack', {class: 'h-4 w-4 text-amber-500 shrink-0'}) }}
+                                    <span class="text-sm font-semibold text-amber-900">{{ courseData.courseName }}</span>
+                                    {% if courseData.isNew %}
+                                        <span class="ml-1 inline-flex items-center rounded-full bg-amber-200 px-2 py-0.5 text-xs font-medium text-amber-800">
+                                            {{ 'students.import.preview.course_new'|trans({}, 'admin') }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <ul class="divide-y divide-amber-100">
+                                    {% for planKey, groupData in courseData.groups %}
+                                        {% set total = groupData.created + groupData.updated %}
+                                        <li class="flex items-center gap-3 px-4 py-2.5 hover:bg-amber-50 transition-colors">
+                                            <input type="checkbox"
+                                                   id="new_group_{{ loop.parent.loop.index }}_{{ loop.index }}"
+                                                   name="new_groups[]"
+                                                   value="{{ planKey }}"
+                                                   checked
+                                                   class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500 shrink-0">
+                                            <label for="new_group_{{ loop.parent.loop.index }}_{{ loop.index }}"
+                                                   class="flex flex-1 items-center justify-between gap-4 cursor-pointer select-none">
+                                                <span class="text-sm font-medium text-gray-800">{{ groupData.groupName }}</span>
+                                                <span class="text-xs text-gray-500 shrink-0">
+                                                    {%- if groupData.created > 0 -%}
+                                                        <span class="text-green-700">{{ 'students.import.preview.new'|trans({'%count%': groupData.created}, 'admin') }}</span>
+                                                    {%- endif -%}
+                                                    {%- if groupData.created > 0 and groupData.updated > 0 %}, {% endif -%}
+                                                    {%- if groupData.updated > 0 -%}
+                                                        <span class="text-blue-700">{{ 'students.import.preview.updated'|trans({'%count%': groupData.updated}, 'admin') }}</span>
+                                                    {%- endif -%}
+                                                </span>
+                                            </label>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {# ── Bloque 2: grupos ya existentes ───────────────────────── #}
+                {% if existingGroupStats|length > 0 %}
+                <div class="px-6 py-5">
+                    <h2 class="text-sm font-semibold text-gray-800 mb-1">{{ 'students.import.preview.existing_groups.title'|trans({}, 'admin') }}</h2>
+                    <p class="text-xs text-gray-500 mb-4">{{ 'students.import.preview.existing_groups.hint'|trans({}, 'admin') }}</p>
 
                     <ul class="divide-y divide-gray-100 rounded-xl border border-gray-200 overflow-hidden">
-                        {% for groupId, stat in groupStats %}
+                        {% for groupId, stat in existingGroupStats %}
                         <li class="flex items-center gap-3 px-4 py-3 bg-white hover:bg-gray-50 transition-colors">
                             <input type="checkbox"
                                    id="group_{{ groupId }}"
@@ -49,8 +145,11 @@
                                    value="{{ groupId }}"
                                    checked
                                    class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500 shrink-0">
-                            <label for="group_{{ groupId }}" class="flex flex-1 items-center justify-between gap-4 cursor-pointer select-none">
-                                <span class="text-sm font-medium text-gray-800">{{ stat.name }}</span>
+                            <label for="group_{{ groupId }}" class="flex flex-1 items-center justify-between gap-3 cursor-pointer select-none">
+                                <div class="min-w-0">
+                                    <span class="text-sm font-medium text-gray-800">{{ stat.name }}</span>
+                                    <span class="ml-2 text-xs text-gray-400">{{ stat.courseName }}</span>
+                                </div>
                                 <span class="text-xs text-gray-500 shrink-0">
                                     {%- if stat.created > 0 -%}
                                         <span class="text-green-700">{{ 'students.import.preview.new'|trans({'%count%': stat.created}, 'admin') }}</span>
@@ -67,12 +166,12 @@
                 </div>
                 {% endif %}
 
-                {# ── Resumen total ───────────────────────────────────────── #}
-                <div>
-                    {% if groupStats|length > 0 %}
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{{ 'students.import.preview.groups.total'|trans({}, 'admin') }}</p>
+                {# ── Resumen total ─────────────────────────────────────────── #}
+                <div class="px-6 py-5">
+                    {% if newCourses|length == 0 and existingGroupStats|length == 0 and conflictGroups|length == 0 %}
+                        <p class="text-sm text-gray-600 mb-4">{{ 'students.import.preview.intro'|trans({}, 'admin') }}</p>
                     {% else %}
-                    <p class="text-sm text-gray-600 mb-3">{{ 'students.import.preview.intro'|trans({}, 'admin') }}</p>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">{{ 'students.import.preview.total'|trans({}, 'admin') }}</p>
                     {% endif %}
 
                     <ul class="space-y-2">
@@ -97,16 +196,8 @@
                     </ul>
                 </div>
 
-                {# ── Grupos no encontrados ────────────────────────────────── #}
-                {% if unknownGroups|length > 0 %}
-                <div class="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3.5 text-sm text-amber-700">
-                    {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-5 w-5 text-amber-500 shrink-0 inline-block mr-1.5 align-text-bottom'}) }}
-                    {{ 'students.import.preview.unknown_groups'|trans({'%groups%': unknownGroups|keys|join(', ')}, 'admin') }}
-                </div>
-                {% endif %}
-
-                {# ── Botones ─────────────────────────────────────────────── #}
-                <div class="flex items-center justify-between pt-2">
+                {# ── Botones ───────────────────────────────────────────────── #}
+                <div class="flex items-center justify-between px-6 py-4">
                     <a href="{{ path('app_centre_students_import', {centreId: centre.id}) }}"
                        class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
                         {{ 'students.import.preview.back'|trans({}, 'admin') }}
@@ -117,9 +208,34 @@
                         {{ 'students.import.preview.confirm'|trans({}, 'admin') }}
                     </button>
                 </div>
+
             </div>
         </form>
     </div>
 
 </div>
+
+{% if conflictGroups|length > 0 %}
+<script>
+document.querySelectorAll('.js-conflict-block').forEach(function (block) {
+    var textInput   = block.querySelector('.js-conflict-text');
+    var customRadio = block.querySelector('.js-conflict-custom');
+    block.querySelectorAll('.js-conflict-radio').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            textInput.value = this.value;
+        });
+    });
+    customRadio.addEventListener('change', function () {
+        textInput.focus();
+        textInput.select();
+    });
+    textInput.addEventListener('focus', function () {
+        customRadio.checked = true;
+    });
+    textInput.addEventListener('input', function () {
+        customRadio.checked = true;
+    });
+});
+</script>
+{% endif %}
 {% endblock %}

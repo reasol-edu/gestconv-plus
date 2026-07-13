@@ -51,9 +51,8 @@ class StudentRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('s')
             ->distinct()
             ->join('s.groups', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid');
 
@@ -106,9 +105,8 @@ class StudentRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('s')
             ->distinct()
             ->join('s.groups', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->leftJoin('s.groups', 'sg')->addSelect('sg')
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid')
@@ -172,9 +170,8 @@ class StudentRepository extends ServiceEntityRepository
         return (int) $this->createQueryBuilder('s')
             ->select('COUNT(s.id)')
             ->join('s.groups', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('s.id = :id')
             ->andWhere('ay.educationalCentre = :centre')
             ->setParameter('id', $student->getId(), 'uuid')
@@ -193,15 +190,16 @@ class StudentRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('s')
             ->select('COUNT(DISTINCT s.id)')
             ->join('s.groups', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->where('prog.academicYear = :year')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :year')
             ->setParameter('year', $year->getId(), 'uuid');
 
         if ($viewer !== null && !$viewer->isAdmin()) {
             $qb->andWhere($qb->expr()->orX(
                 'EXISTS(SELECT 1 FROM ' . AcademicYear::class . ' vay JOIN vay.educationalCentre vvec JOIN vvec.admins vadm WHERE vay.id = :year AND vadm.id = :viewer)',
-                'EXISTS(SELECT 1 FROM ' . Group::class . ' vg JOIN vg.programmeYear vgpy WHERE vgpy.programme = prog AND (:viewer MEMBER OF vg.tutors OR :viewer MEMBER OF vg.teachers))',
+                ':viewer MEMBER OF g.tutors',
+                ':viewer MEMBER OF g.teachers',
             ))->setParameter('viewer', $viewer->getId(), 'uuid');
         }
 
@@ -224,9 +222,8 @@ class StudentRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('s')
             ->distinct()
             ->join('s.groups', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid')
             ->orderBy('s.name.lastName', 'ASC')

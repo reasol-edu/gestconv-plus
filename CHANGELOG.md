@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Widget en el panel de inicio con las **sanciones notificadas y vigentes** de la semana actual y la siguiente, filtradas a los grupos donde el docente imparte clase o es tutor/a. Si el docente no pertenece a ningún grupo del curso activo, el widget no aparece.
+- **Seguimiento de sanciones**: nuevos campos opcionales en el formulario de sanción («¿Las medidas tuvieron efecto?», «¿La familia reclamó?», «Actitud de la familia» y «¿Registrada en Séneca?») que permiten completar el resultado de la sanción una vez ejecutada; solo editable por quien tenga permiso de vista sobre la sanción.
+- **Observaciones en sanciones**: cualquier docente o administrador con acceso a una sanción puede añadir anotaciones de texto enriquecido; el autor puede modificarlas o eliminarlas durante la hora siguiente a su creación, y los administradores en cualquier momento.
+- Badges de estado en el listado de sanciones bajo el nombre del alumno: **En Séneca**, **Sin efecto** y **Familia reclamó**, derivados de los nuevos campos de seguimiento.
+
+### Changed
+
+- La relación entre grupos y cursos pasa de **muchos-a-muchos a muchos-a-uno**: cada grupo pertenece ahora a un único curso. La oferta formativa muestra los cursos en la columna izquierda y los grupos del curso seleccionado en la derecha, sin casillas de verificación de pertenencia múltiple. Se eliminan las entidades `Programme` y `ProgrammeYear`, que duplicaban esta estructura (migración v29).
+- La vista previa de importación de estudiantes, cuando un mismo nombre de grupo aparece en el CSV bajo cursos distintos, muestra ahora **botones de radio** (uno por cada curso detectado) y un campo de texto editable al final; al seleccionar un radio se copia su valor en el campo para que pueda personalizarse. Antes se usaba un desplegable de búsqueda Tom Select.
+- Los desplegables de selección de tutores y docentes en la oferta formativa muestran el mensaje **«Sin resultados»** en español cuando ningún docente coincide con el texto buscado.
+
 ## [1.0.0] - 2026-07-11
 
 ### Added

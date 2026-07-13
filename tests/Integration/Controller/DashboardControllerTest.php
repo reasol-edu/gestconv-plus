@@ -14,8 +14,7 @@ use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -210,9 +209,8 @@ class DashboardControllerTest extends ControllerTestCase
         $centre    = (new EducationalCentre())->setCode('41' . substr($suffix, 0, 6))->setName('IES Test')->setCity('Sevilla');
         $teacher   = (new Teacher(new PersonName('Test', 'Teacher')))->setUsername('teacher.' . $suffix)->setAdmin($isAdmin);
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-' . $suffix);
         $centre->setActiveAcademicYear($year);
 
@@ -220,7 +218,7 @@ class DashboardControllerTest extends ControllerTestCase
             $group->addStudent($student);
         }
 
-        $this->persist($centre, $teacher, $year, $programme, $level, $group, $student);
+        $this->persist($centre, $teacher, $year, $course, $group, $student);
 
         return [$teacher, $centre, $group, $student];
     }

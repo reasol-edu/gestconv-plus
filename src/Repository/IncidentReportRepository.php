@@ -60,9 +60,8 @@ class IncidentReportRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('r')
             ->addSelect('g', 's', 't', 'beh', 'bc')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->join('r.student', 's')
             ->join('r.registeredBy', 't')
             ->leftJoin('r.behaviors', 'beh')
@@ -187,9 +186,8 @@ class IncidentReportRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('r')
             ->select('COUNT(DISTINCT r.id)')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('r.occurredAt >= :since')
@@ -224,9 +222,8 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->select('g')
             ->distinct()
             ->from(Group::class, 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->join(IncidentReport::class, 'r', 'WITH', 'r.group = g')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
@@ -273,9 +270,8 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->select('s', 'g')
             ->from(Student::class, 's')
             ->join('s.groups', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay = :year')
             ->andWhere(
                 'LOWER(s.name.firstName) LIKE LOWER(:search)
@@ -295,10 +291,12 @@ class IncidentReportRepository extends ServiceEntityRepository
         /** @var list<array{student: Student, group: Group}> $pairs */
         $pairs = [];
 
+        $seen = [];
         foreach ($students as $student) {
             foreach ($student->getGroups() as $group) {
-                // Only include groups from the active year
-                if ($group->getProgrammeYear()->getProgramme()->getAcademicYear() === $year) {
+                $key = $student->getId()->toRfc4122() . '-' . $group->getId()->toRfc4122();
+                if (!isset($seen[$key])) {
+                    $seen[$key] = true;
                     $pairs[] = ['student' => $student, 'group' => $group];
                 }
             }
@@ -350,9 +348,8 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->addSelect('s', 'g')
             ->join('r.student', 's')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('r.notifiedCommunication IS NULL')
@@ -425,9 +422,8 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->from(Student::class, 'st')
             ->join(IncidentReport::class, 'r', 'WITH', 'r.student = st')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('r.notifiedCommunication IS NULL')
@@ -460,9 +456,8 @@ class IncidentReportRepository extends ServiceEntityRepository
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('r')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('r.notifiedCommunication IS NULL')
@@ -524,9 +519,8 @@ class IncidentReportRepository extends ServiceEntityRepository
         /** @var list<IncidentReport> $result */
         $result = $this->createQueryBuilder('r')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('r.notifiedCommunication IS NULL')
             ->andWhere('r.prescribedAt IS NULL')
@@ -540,7 +534,7 @@ class IncidentReportRepository extends ServiceEntityRepository
     }
 
     /**
-     * Reports of the centre/year in the given date range, with group, programme hierarchy,
+     * Reports of the centre/year in the given date range, with group, course,
      * student, behaviors (+category) and sanction eager-loaded — the raw dataset consumed by
      * GroupStatisticsService to build the "Estadísticas por grupo" report.
      *
@@ -554,11 +548,10 @@ class IncidentReportRepository extends ServiceEntityRepository
     ): array {
         /** @var list<IncidentReport> $result */
         $result = $this->createQueryBuilder('r')
-            ->addSelect('g', 'py', 'prog', 's', 'beh', 'bc', 'sanction')
+            ->addSelect('g', 'c', 's', 'beh', 'bc', 'sanction')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->join('r.student', 's')
             ->leftJoin('r.behaviors', 'beh')
             ->leftJoin('beh.category', 'bc')
@@ -590,9 +583,8 @@ class IncidentReportRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('r')
             ->addSelect('g')
             ->join('r.group', 'g')
-            ->join('g.programmeYear', 'py')
-            ->join('py.programme', 'prog')
-            ->join('prog.academicYear', 'ay')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('r.notifiedCommunication IS NULL')
             ->andWhere('r.prescribedAt IS NULL')

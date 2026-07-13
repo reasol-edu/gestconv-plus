@@ -402,10 +402,9 @@ el centro**, no solo de sus propios grupos:
 
 - El administrador de centro **activa el año académico** con el que va a
   trabajar todo el profesorado.
-- Se define la **oferta formativa**: familias profesionales, enseñanzas y
-  cursos, mediante un editor de tres columnas encadenadas.
-- Esta estructura es la base sobre la que luego se organizan los **grupos**
-  del centro.
+- Se define la **oferta formativa**: los **cursos** del año (por ejemplo,
+  «1º ESO», «2º Bachillerato») y los **grupos** de cada curso.
+- Cada grupo pertenece a un único curso.
 
 ---
 
@@ -415,7 +414,8 @@ el centro**, no solo de sus propios grupos:
   en formato CSV, evitando la introducción manual uno a uno.
 - A partir de la oferta formativa se crean los **grupos** del curso (por
   ejemplo, 2º ESO A, 1º Bachillerato B…).
-- Cada grupo queda asociado a su enseñanza y curso correspondientes.
+- Los tutores y docentes se asignan directamente desde el panel de edición
+  del grupo.
 
 ---
 
@@ -424,8 +424,9 @@ el centro**, no solo de sus propios grupos:
 - El alumnado se importa igualmente desde un **CSV exportado de Séneca**,
   con columnas obligatorias (nombre, grupo…) y opcionales (datos de
   contacto familiar, si se quieren aprovechar).
-- La importación **valida los datos** antes de confirmarlos y avisa de
-  filas con errores para corregirlas antes de dar de alta al alumnado.
+- La importación **valida los datos** antes de confirmarlos: avisa de los
+  cursos y grupos nuevos que se van a crear, y si un grupo aparece en
+  varios cursos distintos pide elegir a cuál se asignará.
 
 ---
 
@@ -480,7 +481,7 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - El informe **Estadísticas por grupo** resume, para un rango de fechas
   elegido, los partes de cada grupo del curso —estudiantes únicos, partes
   registrados/notificados/sancionados/prescritos (normales y graves) y
-  sanciones distintas—, agrupados por enseñanza con subtotales y un total
+  sanciones distintas—, agrupados por curso con subtotales y un total
   general.
 - Se puede **exportar a PDF** (con el mismo encabezado personalizable que
   partes y sanciones) o a una **hoja de cálculo Excel**.

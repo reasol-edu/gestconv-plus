@@ -12,8 +12,7 @@ use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\IncidentReportObservationRepository;
@@ -65,9 +64,8 @@ class IncidentReportObservationRepositoryTest extends RepositoryTestCase
     {
         $centre    = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA')->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA')->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE' . uniqid('', false));
         $category  = (new IncidentBehaviorCategory())
             ->setEducationalCentre($centre)
@@ -80,7 +78,7 @@ class IncidentReportObservationRepositoryTest extends RepositoryTestCase
             ->setName('Perturbación')
             ->setPosition(0)
             ->setActive(true);
-        $this->persist($centre, $year, $programme, $level, $group, $student, $category, $behavior, $teacher);
+        $this->persist($centre, $year, $course, $group, $student, $category, $behavior, $teacher);
 
         $report = (new IncidentReport())
             ->setAcademicYear($year)

@@ -11,8 +11,7 @@ use App\Entity\EmailNotificationLog;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\SettingDefinition;
 use App\Entity\SettingType;
@@ -20,6 +19,7 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\CommunicationRepository;
 use App\Repository\IncidentReportObservationRepository;
+use App\Repository\SanctionObservationRepository;
 use App\Service\AppSettingsInterface;
 use App\Service\IncidentEmailNotifier;
 use App\Service\PdfHeaderBuilder;
@@ -517,13 +517,12 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
     {
         $centre    = (new EducationalCentre())->setCode('41000' . substr(md5($suffix), 0, 3))->setName('IES')->setCity('Sevilla');
         $year      = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $programme = (new Programme())->setName('DAW')->setAcademicYear($year);
-        $level     = (new ProgrammeYear())->setName('1º')->setProgramme($programme);
-        $group     = (new Group())->setName('1ºA' . $suffix)->setProgrammeYear($level);
+        $course    = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group     = (new Group())->setName('1ºA' . $suffix)->setCourse($course);
         $student   = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . $suffix . uniqid('', false));
         $creator   = $this->makeTeacher('creator.' . $suffix . uniqid('', false), 'creator@ejemplo.local');
 
-        $this->persist($centre, $year, $programme, $level, $group, $student, $creator);
+        $this->persist($centre, $year, $course, $group, $student, $creator);
 
         $report = (new IncidentReport())
             ->setAcademicYear($year)
@@ -621,6 +620,7 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
             self::getContainer()->get(PdfRenderer::class),
             self::getContainer()->get(PdfHeaderBuilder::class),
             self::getContainer()->get(IncidentReportObservationRepository::class),
+            self::getContainer()->get(SanctionObservationRepository::class),
             self::getContainer()->get(CommunicationRepository::class),
             'no-responder@ejemplo.local',
             'GestConv+',

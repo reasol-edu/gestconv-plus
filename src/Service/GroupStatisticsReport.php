@@ -7,12 +7,12 @@ namespace App\Service;
 final readonly class GroupStatisticsReport
 {
     /**
-     * @param list<ProgrammeStatistics> $programmes
+     * @param list<CourseStatistics> $courses
      */
     public function __construct(
         public \DateTimeImmutable $from,
         public \DateTimeImmutable $to,
-        public array $programmes,
+        public array $courses,
         public GroupStatisticsRow $grandTotal,
     ) {}
 }

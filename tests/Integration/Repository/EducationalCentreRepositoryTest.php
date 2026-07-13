@@ -8,8 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
-use App\Entity\Programme;
-use App\Entity\ProgrammeYear;
+use App\Entity\Course;
 use App\Entity\Teacher;
 use App\Repository\EducationalCentreRepository;
 use App\Tests\Integration\RepositoryTestCase;
@@ -207,11 +206,10 @@ class EducationalCentreRepositoryTest extends RepositoryTestCase
     {
         $centre  = $this->makeCentre('41000022');
         $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $prog    = (new Programme())->setName('DAM')->setAcademicYear($year);
-        $py      = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
+        $course  = (new Course())->setName('DAM')->setAcademicYear($year);
         $teacher = $this->makeTeacher('tutor.one');
-        $group   = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $this->persist($centre, $year, $prog, $py, $teacher, $group);
+        $group   = (new Group())->setName('DAM1A')->setCourse($course);
+        $this->persist($centre, $year, $course, $teacher, $group);
 
         $group->addTutor($teacher);
         $this->flush();
@@ -240,11 +238,10 @@ class EducationalCentreRepositoryTest extends RepositoryTestCase
     {
         $centre  = $this->makeCentre('41000025');
         $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
-        $prog    = (new Programme())->setName('DAM')->setAcademicYear($year);
-        $py      = (new ProgrammeYear())->setName('1.º DAM')->setProgramme($prog);
+        $course  = (new Course())->setName('DAM')->setAcademicYear($year);
         $teacher = $this->makeTeacher('teacher.group.two');
-        $group   = (new Group())->setName('DAM1A')->setProgrammeYear($py);
-        $this->persist($centre, $year, $prog, $py, $teacher, $group);
+        $group   = (new Group())->setName('DAM1A')->setCourse($course);
+        $this->persist($centre, $year, $course, $teacher, $group);
         $group->addTeacher($teacher);
         $this->flush();
 

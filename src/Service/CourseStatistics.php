@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Programme;
+use App\Entity\Course;
 
-final readonly class ProgrammeStatistics
+final readonly class CourseStatistics
 {
     /**
      * @param list<GroupStatisticsRow> $rows
      */
     public function __construct(
-        public Programme $programme,
+        public Course $course,
         public array $rows,
         public GroupStatisticsRow $total,
     ) {}
