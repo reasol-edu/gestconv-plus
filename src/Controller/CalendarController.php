@@ -97,7 +97,7 @@ class CalendarController extends AbstractController
                 'groupId'   => $group->getId()->toRfc4122(),
                 'groupName' => $group->getName(),
                 'student'   => $sanction->getStudent()->getName()->full(),
-                'details'   => trim(strip_tags($sanction->getDetails())),
+                'details'   => $sanction->getCalendarLabel() ?? trim(strip_tags($sanction->getDetails())),
                 'from'      => $from,
                 'to'        => $sanction->getEffectiveTo(),
             ];

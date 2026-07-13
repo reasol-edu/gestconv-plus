@@ -71,6 +71,29 @@
                             <td data-label="{{ 'sanction.col.student'|trans({}, 'admin')|e('html_attr') }}"
                                 class="px-6 py-4 font-medium text-gray-900">
                                 {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
+                                {% if sanction.registeredInSeneca is same as true or
+                                      (not sanction.noMeasureApplied and (sanction.measuresEffective is same as false or sanction.familyClaimed is same as true)) %}
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        {% if sanction.registeredInSeneca is same as true %}
+                                            <span class="inline-flex items-center gap-0.5 rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 text-xs font-medium">
+                                                {{ ux_icon('heroicons:check-badge', {class: 'h-3 w-3'}) }}
+                                                {{ 'sanction.badge.in_seneca'|trans({}, 'admin') }}
+                                            </span>
+                                        {% endif %}
+                                        {% if not sanction.noMeasureApplied and sanction.measuresEffective is same as false %}
+                                            <span class="inline-flex items-center gap-0.5 rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-xs font-medium">
+                                                {{ ux_icon('heroicons:x-circle', {class: 'h-3 w-3'}) }}
+                                                {{ 'sanction.badge.not_effective'|trans({}, 'admin') }}
+                                            </span>
+                                        {% endif %}
+                                        {% if not sanction.noMeasureApplied and sanction.familyClaimed is same as true %}
+                                            <span class="inline-flex items-center gap-0.5 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs font-medium">
+                                                {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3 w-3'}) }}
+                                                {{ 'sanction.badge.family_claimed'|trans({}, 'admin') }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
                             </td>
                             <td data-label="{{ 'sanction.col.group'|trans({}, 'admin')|e('html_attr') }}"
                                 class="px-6 py-4 text-gray-600">{{ sanction.group.name }}</td>

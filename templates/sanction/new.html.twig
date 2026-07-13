@@ -26,7 +26,7 @@
     <form method="post"
           action="{{ path('app_sanctions_new', {studentId: student.id.toRfc4122, groupId: group.id.toRfc4122}) }}"
           class="space-y-8"
-          data-controller="form-submit">
+          data-controller="form-submit sanction-measures">
         <input type="hidden" name="_token" value="{{ csrf_token('new_sanction') }}">
 
         {# ── Estudiante (readonly) ──────────────────────────────────────── #}
@@ -101,7 +101,7 @@
 
         {# ── Medidas disciplinarias ─────────────────────────────────────── #}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-5"
-             data-controller="sanction-measures checkbox-filter"
+             data-controller="checkbox-filter"
              data-checkbox-filter-singular-value="{{ 'checkbox_filter.selected_one'|trans({}, 'admin') }}"
              data-checkbox-filter-plural-value="{{ 'checkbox_filter.selected_many'|trans({}, 'admin') }}">
 
@@ -224,6 +224,113 @@
                 :required="true"
                 :error="errors.details ?? null"
             />
+            <div>
+                <label for="calendar_label" class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'sanction.field.calendar_label'|trans({}, 'admin') }}
+                </label>
+                <input type="text" id="calendar_label" name="calendar_label"
+                       value="{{ formData.calendarLabel ?? '' }}"
+                       maxlength="255"
+                       placeholder="{{ 'sanction.field.calendar_label_placeholder'|trans({}, 'admin') }}"
+                       class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                              focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                <p class="mt-1 text-xs text-gray-400">{{ 'sanction.field.calendar_label_help'|trans({}, 'admin') }}</p>
+            </div>
+        </div>
+
+        {# ── Seguimiento ────────────────────────────────────────────────── #}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-6"
+             data-sanction-measures-target="followupBlock">
+            <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+                {{ 'sanction.section.followup'|trans({}, 'admin') }}
+            </h2>
+
+            <div>
+                <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'sanction.field.registered_in_seneca'|trans({}, 'admin') }}</span>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
+                        <input type="radio" name="registered_in_seneca" value="0"
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.registered_in_seneca_no'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'sanction.field.registered_in_seneca_no_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
+                        <input type="radio" name="registered_in_seneca" value="1"
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.registered_in_seneca_yes'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'sanction.field.registered_in_seneca_yes_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'sanction.field.measures_effective'|trans({}, 'admin') }}</span>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
+                        <input type="radio" name="measures_effective" value="0"
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.measures_effective_no'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'sanction.field.measures_effective_no_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
+                        <input type="radio" name="measures_effective" value="1"
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.measures_effective_yes'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'sanction.field.measures_effective_yes_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'sanction.field.family_claimed'|trans({}, 'admin') }}</span>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
+                        <input type="radio" name="family_claimed" value="0"
+                               data-sanction-measures-target="familyClaimedRadio"
+                               data-action="change->sanction-measures#updateFollowup"
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.family_claimed_no'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'sanction.field.family_claimed_no_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
+                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
+                        <input type="radio" name="family_claimed" value="1"
+                               data-sanction-measures-target="familyClaimedRadio"
+                               data-action="change->sanction-measures#updateFollowup"
+                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.family_claimed_yes'|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ 'sanction.field.family_claimed_yes_help'|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div data-sanction-measures-target="familyClaimAttitudeBlock" class="hidden">
+                <twig:Form:RichEditor
+                    id="family_claim_attitude"
+                    name="family_claim_attitude"
+                    label="{{ 'sanction.field.family_claim_attitude'|trans({}, 'admin') }}"
+                    value="{{ formData.familyClaimAttitude ?? '' }}"
+                    :required="true"
+                    :error="errors.family_claim_attitude ?? null"
+                />
+            </div>
         </div>
 
         {# ── Botones ────────────────────────────────────────────────────── #}

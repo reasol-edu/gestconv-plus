@@ -17,12 +17,14 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class SanctionVoter extends Voter
 {
-    public const VIEW   = 'sanction.view';
+    public const VIEW         = 'sanction.view';
     /** Subject: EducationalCentre — the centre where the sanction would be created. */
-    public const CREATE = 'sanction.create';
-    public const EDIT   = 'sanction.edit';
-    public const DELETE = 'sanction.delete';
-    public const NOTIFY = 'sanction.notify';
+    public const CREATE       = 'sanction.create';
+    public const EDIT         = 'sanction.edit';
+    /** Edit only follow-up fields (measuresEffective, familyClaimed, familyClaimAttitude, registeredInSeneca). Granted when notified and user can VIEW. */
+    public const EDIT_FOLLOWUP = 'sanction.edit_followup';
+    public const DELETE       = 'sanction.delete';
+    public const NOTIFY       = 'sanction.notify';
 
     public function __construct(
         private readonly AppSettingsInterface $settings,
@@ -34,7 +36,7 @@ final class SanctionVoter extends Voter
             return $subject instanceof EducationalCentre;
         }
 
-        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::NOTIFY], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::EDIT_FOLLOWUP, self::DELETE, self::NOTIFY], true)
             && $subject instanceof Sanction;
     }
 
@@ -66,12 +68,15 @@ final class SanctionVoter extends Voter
             return true;
         }
 
+        $canView = $subject->getReports()->exists(
+            static fn(int $k, \App\Entity\IncidentReport $r): bool =>
+                $r->getRegisteredBy() === $user
+        ) || $subject->getGroup()->getTutors()->contains($user)
+            || $centre->getCounselors()->contains($user);
+
         return match ($attribute) {
-            self::VIEW => $subject->getReports()->exists(
-                static fn(int $k, \App\Entity\IncidentReport $r): bool =>
-                    $r->getRegisteredBy() === $user
-            ) || $subject->getGroup()->getTutors()->contains($user)
-                || $centre->getCounselors()->contains($user),
+            self::VIEW          => $canView,
+            self::EDIT_FOLLOWUP => $subject->isNotified() && $canView,
             self::NOTIFY => match ($this->settings->getForCentre('notifications.sanction_notifier', $centre)) {
                 'report_teacher' => $subject->getRegisteredBy() === $user,
                 'group_tutor'    => $subject->getGroup()->getTutors()->contains($user),

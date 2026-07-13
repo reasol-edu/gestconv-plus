@@ -49,6 +49,80 @@
     <p class="subsection-title">{{ 'sanction.field.details'|trans({}, 'admin') }}</p>
     <div class="prose-block">{{ sanction.details|sanitize_html('app.rich_text') }}</div>
 
+    <p class="subsection-title">{{ 'sanction.section.followup'|trans({}, 'admin') }}</p>
+    <table class="data-table">
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <span class="cell-sub">{{ 'sanction.field.registered_in_seneca'|trans({}, 'admin') }}</span><br>
+                    {% if sanction.registeredInSeneca is same as true %}
+                        <span class="badge badge-blue">Sí</span>
+                    {% elseif sanction.registeredInSeneca is same as false %}
+                        <span class="badge badge-gray">No</span>
+                    {% else %}
+                        &mdash;
+                    {% endif %}
+                </td>
+            </tr>
+            {% if not sanction.noMeasureApplied %}
+                <tr>
+                    <td>
+                        <span class="cell-sub">{{ 'sanction.field.measures_effective'|trans({}, 'admin') }}</span><br>
+                        {% if sanction.measuresEffective is same as true %}
+                            <span class="badge badge-green">Sí</span>
+                        {% elseif sanction.measuresEffective is same as false %}
+                            <span class="badge badge-red">No</span>
+                        {% else %}
+                            &mdash;
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="cell-sub">{{ 'sanction.field.family_claimed'|trans({}, 'admin') }}</span><br>
+                        {% if sanction.familyClaimed is same as true %}
+                            <span class="badge badge-amber">Sí</span>
+                        {% elseif sanction.familyClaimed is same as false %}
+                            <span class="badge badge-gray">No</span>
+                        {% else %}
+                            &mdash;
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if sanction.familyClaimed is same as true and sanction.familyClaimAttitude %}
+                    <tr>
+                        <td colspan="2">
+                            <span class="cell-sub">{{ 'sanction.field.family_claim_attitude'|trans({}, 'admin') }}</span><br>
+                            <div class="prose-block">{{ sanction.familyClaimAttitude|sanitize_html('app.rich_text') }}</div>
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endif %}
+        </tbody>
+    </table>
+
+    <p class="subsection-title">{{ 'sanction.observation.title'|trans({}, 'admin') }}</p>
+    {% if observations is empty %}
+        <p class="cell-sub">{{ 'sanction.observation.empty'|trans({}, 'admin') }}</p>
+    {% else %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'ui.date'|trans }}</th>
+                    <th>{{ 'sanction.col.registered_by'|trans({}, 'admin') }}</th>
+                    <th>{{ 'sanction.observation.field.text'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for observation in observations %}
+                    <tr>
+                        <td style="white-space: nowrap">{{ observation.registeredAt|date('d/m/Y H:i') }}</td>
+                        <td style="white-space: nowrap">{{ observation.registeredBy.name.lastName }}, {{ observation.registeredBy.name.firstName }}</td>
+                        <td>{{ observation.text|sanitize_html('app.rich_text') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
     <p class="subsection-title">{{ 'notification.history.title'|trans({}, 'notifications') }}</p>
     {% include 'pdf/_communication_history.html.twig' with { history: history } %}
 

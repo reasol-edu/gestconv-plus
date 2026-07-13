@@ -75,7 +75,7 @@ final class CalendarMonthGridBuilder
                     'span'     => $segment['span'],
                     'lane'     => $segment['lane'],
                     'label'    => $sanction->getStudent()->getName()->full() . ' · ' . $group->getName(),
-                    'details'  => trim(strip_tags($sanction->getDetails())),
+                    'details'  => $sanction->getCalendarLabel() ?? trim(strip_tags($sanction->getDetails())),
                     'color'    => $this->colorPalette->colorFor($group->getId()->toRfc4122()),
                 ];
             }, $layout['segments']);

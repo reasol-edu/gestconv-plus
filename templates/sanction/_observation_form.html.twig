@@ -1,0 +1,28 @@
+{# Expects: sanction #}
+{% if not is_viewing_past_year() %}
+<div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">{{ 'sanction.observation.form.title'|trans({}, 'admin') }}</h3>
+
+    <form method="post" action="{{ path('app_sanctions_add_observation', {id: sanction.id}) }}" class="space-y-5">
+        <input type="hidden" name="_token" value="{{ csrf_token('add_sanction_observation_' ~ sanction.id) }}">
+
+        <div>
+            <twig:Form:RichEditor
+                id="sanction_observation_text"
+                name="text"
+                label="{{ 'sanction.observation.field.text'|trans({}, 'admin') }}"
+                :required="true"
+            />
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'sanction.observation.submit'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endif %}

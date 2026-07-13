@@ -1,0 +1,40 @@
+{# Expects: observations, sanction #}
+{% if observations is empty %}
+    <p class="text-sm text-gray-400">{{ 'sanction.observation.empty'|trans({}, 'admin') }}</p>
+{% else %}
+    <ul class="space-y-3">
+        {% for observation in observations %}
+            <li class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5">
+                <div class="flex items-start justify-between gap-4 mb-2">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                        {{ observation.registeredAt|date('d/m/Y H:i') }} · {{ observation.registeredBy.name.lastName }}, {{ observation.registeredBy.name.firstName }}
+                    </p>
+                    {% if not is_viewing_past_year() and (is_granted('sanction_observation.edit', observation) or is_granted('sanction_observation.delete', observation)) %}
+                        <div class="flex items-center gap-1 shrink-0">
+                            {% if is_granted('sanction_observation.edit', observation) %}
+                                <a href="{{ path('app_sanctions_edit_observation', {id: sanction.id, observationId: observation.id}) }}"
+                                   class="inline-flex items-center rounded-lg p-1.5 text-gray-400 hover:text-forest-600 hover:bg-gray-50 transition-colors"
+                                   title="{{ 'sanction.observation.edit'|trans({}, 'admin') }}">
+                                    {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
+                                </a>
+                            {% endif %}
+                            {% if is_granted('sanction_observation.delete', observation) %}
+                                <form method="post" action="{{ path('app_sanctions_delete_observation', {id: sanction.id, observationId: observation.id}) }}"
+                                      class="js-confirm-form"
+                                      data-confirm="{{ 'sanction.observation.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_sanction_observation_' ~ observation.id) }}">
+                                    <button type="submit"
+                                            class="js-confirm-trigger inline-flex items-center rounded-lg p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                            title="{{ 'sanction.observation.delete'|trans({}, 'admin') }}">
+                                        {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="prose prose-sm max-w-none text-gray-700">{{ observation.text|sanitize_html('app.rich_text') }}</div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

@@ -11,6 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
+
 #[ORM\Entity(repositoryClass: SanctionRepository::class)]
 class Sanction
 {
@@ -57,6 +58,21 @@ class Sanction
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $noMeasureReason = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $measuresEffective = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $familyClaimed = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $familyClaimAttitude = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $registeredInSeneca = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $calendarLabel = null;
+
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $effectiveFrom = null;
 
@@ -71,12 +87,17 @@ class Sanction
     #[ORM\OneToMany(targetEntity: Communication::class, mappedBy: 'sanction', orphanRemoval: true)]
     private Collection $communications;
 
+    /** @var Collection<int, SanctionObservation> */
+    #[ORM\OneToMany(targetEntity: SanctionObservation::class, mappedBy: 'sanction')]
+    private Collection $observations;
+
     public function __construct()
     {
         $this->createdAt      = new \DateTimeImmutable();
         $this->reports        = new ArrayCollection();
         $this->measures       = new ArrayCollection();
         $this->communications = new ArrayCollection();
+        $this->observations   = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -257,5 +278,71 @@ class Sanction
     public function getCommunications(): Collection
     {
         return $this->communications;
+    }
+
+    public function getMeasuresEffective(): ?bool
+    {
+        return $this->measuresEffective;
+    }
+
+    public function setMeasuresEffective(?bool $measuresEffective): static
+    {
+        $this->measuresEffective = $measuresEffective;
+
+        return $this;
+    }
+
+    public function isFamilyClaimed(): ?bool
+    {
+        return $this->familyClaimed;
+    }
+
+    public function setFamilyClaimed(?bool $familyClaimed): static
+    {
+        $this->familyClaimed = $familyClaimed;
+
+        return $this;
+    }
+
+    public function getFamilyClaimAttitude(): ?string
+    {
+        return $this->familyClaimAttitude;
+    }
+
+    public function setFamilyClaimAttitude(?string $familyClaimAttitude): static
+    {
+        $this->familyClaimAttitude = $familyClaimAttitude;
+
+        return $this;
+    }
+
+    public function isRegisteredInSeneca(): ?bool
+    {
+        return $this->registeredInSeneca;
+    }
+
+    public function setRegisteredInSeneca(?bool $registeredInSeneca): static
+    {
+        $this->registeredInSeneca = $registeredInSeneca;
+
+        return $this;
+    }
+
+    public function getCalendarLabel(): ?string
+    {
+        return $this->calendarLabel;
+    }
+
+    public function setCalendarLabel(?string $calendarLabel): static
+    {
+        $this->calendarLabel = $calendarLabel;
+
+        return $this;
+    }
+
+    /** @return Collection<int, SanctionObservation> */
+    public function getObservations(): Collection
+    {
+        return $this->observations;
     }
 }
