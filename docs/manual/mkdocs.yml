@@ -52,15 +52,13 @@ plugins:
 
 nav:
   - Introducción: index.md
-  - Instalación y requisitos: 01-instalacion-y-requisitos.md
-  - Primeros pasos: 02-primeros-pasos.md
-  - Roles y permisos: 03-roles-y-permisos.md
-  - Flujo de trabajo: 04-flujo-de-trabajo.md
-  - Secciones de la aplicación: 05-secciones-de-la-aplicacion.md
-  - Notificaciones por email: 06-notificaciones-y-email.md
-  - Ajustes: 07-ajustes.md
-  - Comandos de consola: 08-comandos-de-consola.md
-  - Despliegue: 09-despliegue.md
-  - Operación y mantenimiento: 10-operacion-y-mantenimiento.md
-  - Resolución de problemas: 11-resolucion-de-problemas.md
-  - Glosario: 12-glosario.md
+  - Instalación y puesta en marcha: 01-instalacion-y-puesta-en-marcha.md
+  - Preparar el curso académico: 02-preparar-el-curso-academico.md
+  - El trabajo diario del profesorado: 03-el-trabajo-diario.md
+  - Sanciones y comisión de convivencia: 04-sanciones-y-comision.md
+  - Calendario y tablón: 05-calendario-y-tablon.md
+  - Administrar el centro educativo: 06-administrar-el-centro.md
+  - Administrar la plataforma: 07-administrar-la-plataforma.md
+  - Permisos de un vistazo: 08-permisos-de-un-vistazo.md
+  - 'Anexo: Resolución de problemas': 09-resolucion-de-problemas.md
+  - 'Anexo: Glosario': 10-glosario.md

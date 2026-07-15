@@ -20,6 +20,9 @@ Solo las conductas marcadas como *activas* pueden seleccionarse al registrar un 
 **Sanción**
 Resolución que se aplica a un estudiante a partir de uno o varios partes ya notificados a la familia. Recoge las medidas disciplinarias aplicadas (o el motivo de no aplicar ninguna), un detalle y, opcionalmente, las fechas de inicio y fin de su vigencia.
 
+**Descripción para calendario y tablón**
+Texto breve de una sanción (por ejemplo, *Expulsión* o *Aula de convivencia*) que se muestra en el calendario y en el modo tablón en lugar del detalle completo. Si se deja en blanco, se muestra el detalle.
+
 **Medida disciplinaria**
 Cada una de las actuaciones que un centro puede aplicar en una sanción (por ejemplo, una suspensión del derecho de asistencia). Se configuran por centro, organizadas en categorías, igual que las conductas contrarias.
 
@@ -44,13 +47,13 @@ Unidad organizativa principal. Cada centro tiene sus propios cursos académicos,
 Periodo lectivo (por ejemplo, 2025-2026) dentro de un centro. Puede haber varios cursos registrados; solo uno es el *activo* en un momento dado.
 
 **Oferta formativa**
-Conjunto de programas de estudio (enseñanzas) disponibles en el centro para un curso académico.
+Conjunto de cursos y grupos disponibles en el centro para un curso académico.
 
-**Nivel**
-Cada curso dentro de una enseñanza (por ejemplo, *1º* y *2º* de un ciclo formativo).
+**Curso**
+Cada uno de los estudios que se imparten en el centro (por ejemplo, *1º ESO*, *1º Bachillerato* o *2º DAW*). No confundir con el *curso académico*: un curso pertenece a la oferta formativa de un curso académico concreto.
 
 **Grupo**
-División de estudiantes dentro de un nivel (por ejemplo, *1ºA DAW*). Cada grupo puede tener uno o varios tutores y docentes asignados.
+División de estudiantes dentro de un curso (por ejemplo, *1º DAW A*). Cada grupo pertenece a un único curso y puede tener uno o varios tutores y docentes asignados.
 
 ## Roles
 

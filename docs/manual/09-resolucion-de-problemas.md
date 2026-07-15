@@ -1,8 +1,9 @@
 # Resolución de problemas
 
 Esta sección cubre los problemas más habituales al desplegar y usar GestConv+. Si no encuentras
-aquí lo que buscas, revisa también [Despliegue](09-despliegue.md) y
-[Operación y mantenimiento](10-operacion-y-mantenimiento.md).
+aquí lo que buscas, revisa también
+[Instalación y puesta en marcha](01-instalacion-y-puesta-en-marcha.md) y
+[Administrar la plataforma](07-administrar-la-plataforma.md).
 
 ## No puedo arrancar la aplicación
 
@@ -32,7 +33,7 @@ xattr -d com.apple.quarantine frankenphp
 
 Alternativamente, haz clic derecho sobre el binario (o sobre `start.command`/`demo.command`) →
 **Abrir**, y confirma en el diálogo que aparece. Ver también
-[macOS: aviso de Gatekeeper](09-despliegue.md#macos-aviso-de-gatekeeper).
+[macOS: aviso de Gatekeeper](01-instalacion-y-puesta-en-marcha.md#macos-aviso-de-gatekeeper).
 
 ### Windows bloquea el binario (SmartScreen o antivirus)
 
@@ -49,8 +50,8 @@ entornos gestionados por TI.
 ### He olvidado la contraseña de administrador
 
 Si el propio administrador tiene configurado un correo electrónico y el envío de email está activo
-(ver [Notificaciones por email](06-notificaciones-y-email.md)), usa el enlace **¿Has olvidado tu
-contraseña?** de la pantalla de acceso: recibirás un correo con un enlace de restablecimiento
+(ver [Correo electrónico del servidor](07-administrar-la-plataforma.md#correo-electronico-del-servidor)),
+usa el enlace **¿Has olvidado tu contraseña?** de la pantalla de acceso: recibirás un correo con un enlace de restablecimiento
 válido durante 1 hora.
 
 Si no hay ningún administrador accesible o el correo no está configurado, crea una cuenta de
@@ -61,7 +62,7 @@ php bin/console app:create-admin nuevo-admin
 ```
 
 (en el paquete nativo, `frankenphp php-cli bin/console app:create-admin nuevo-admin`). Ver
-[app:create-admin](08-comandos-de-consola.md#appcreate-admin).
+[app:create-admin](01-instalacion-y-puesta-en-marcha.md#appcreate-admin).
 
 ### El navegador dice «la conexión no es privada» en desarrollo
 
@@ -72,7 +73,7 @@ excepción de seguridad del navegador si solo estás probando puntualmente.
 
 Este aviso **no debe aparecer nunca en producción**: en un despliegue real, sirve siempre la
 aplicación con un certificado válido (ver
-[HTTPS con Let's Encrypt](09-despliegue.md#https-con-lets-encrypt)).
+[HTTPS con Let's Encrypt](01-instalacion-y-puesta-en-marcha.md#https-con-lets-encrypt)).
 
 ### Un docente no ve ninguna sección
 
@@ -83,7 +84,7 @@ momento: la mayoría de secciones requieren un centro seleccionado en la sesión
 Comprueba que el docente:
 
 - Está dado de alta como docente del centro (ver
-  [Añadir los docentes del curso académico](02-primeros-pasos.md#2-anadir-los-docentes-del-curso-academico-equipo-directivo)).
+  [Añadir el profesorado](02-preparar-el-curso-academico.md#2-anadir-el-profesorado)).
 - Está asignado al menos a un grupo del curso académico activo, como tutor o como docente, **o**
   tiene el rol de administrador de ese centro — un docente sin ninguna de las dos cosas no tiene el
   centro entre sus centros accesibles y no puede seleccionarlo.
@@ -96,9 +97,9 @@ Comprueba que el docente:
 
 1. Comprueba que `MAILER_DSN` está configurado con un transporte real (por defecto es
    `null://null`, que descarta todos los correos silenciosamente sin dar ningún error — ver
-   [Notificaciones por email](06-notificaciones-y-email.md)).
+   [Correo electrónico del servidor](07-administrar-la-plataforma.md#correo-electronico-del-servidor)).
 2. Comprueba que el ajuste **Activar notificaciones automáticas** no está desactivado a nivel global, de
-   centro o de docente (ver [Ajustes](07-ajustes.md#correo-electronico)).
+   centro o de docente (ver [Ajustes](07-administrar-la-plataforma.md#correo-electronico)).
 3. Salvo el correo de restablecimiento de contraseña (que se envía al momento), los correos se
    **encolan** y los procesa un *worker* en segundo plano. Comprueba que el worker está en marcha
    (el contenedor `worker` en Docker, o el proceso que lanzan los scripts de arranque del binario
@@ -109,7 +110,7 @@ Comprueba que el docente:
    php bin/console messenger:failed:show    # ver los envíos fallidos
    ```
 
-   Ver [Correos en cola (Messenger)](10-operacion-y-mantenimiento.md#correos-en-cola-messenger)
+   Ver [Correos en cola (Messenger)](07-administrar-la-plataforma.md#correos-en-cola-messenger)
    para más detalle, incluidos los reintentos automáticos.
 4. Si los mensajes aparecen como fallidos, revisa las credenciales y el host del `MAILER_DSN`
    (usuario, contraseña, servidor SMTP o proveedor) y que el firewall del servidor permite la
@@ -123,11 +124,12 @@ Comprueba que el docente:
   usa Séneca (`Estado Matrícula`, `Nº Id. Escolar`, `Nombre`, `Primer apellido`, `Segundo
   apellido`, `Unidad`): si falta alguna, la importación se cancela por completo antes de crear
   ningún registro. Ver
-  [Formato del CSV de importación](02-primeros-pasos.md#formato-del-csv-de-importacion).
-- La columna `Unidad` debe coincidir **exactamente** con el nombre de un grupo ya existente en la
-  oferta formativa del curso activo (ver
-  [Estructurar la oferta formativa](02-primeros-pasos.md#3-estructurar-la-oferta-formativa-del-curso-academico-equipo-directivo)):
-  si el grupo no existe todavía, créalo antes de repetir la importación.
+  [Qué se importa](02-preparar-el-curso-academico.md#que-se-importa).
+- Los grupos y cursos que no existan **se crean automáticamente** durante la importación, pero
+  aparecen marcados en la vista previa: si desmarcaste alguno por error, sus estudiantes se
+  omiten. Si los grupos se crearon a mano antes de importar, su nombre debe coincidir
+  **exactamente** con la columna `Unidad` (ver
+  [La oferta formativa a mano](02-preparar-el-curso-academico.md#la-oferta-formativa-a-mano)).
 - El fichero debe estar en **UTF-8 o Windows-1252**; otras codificaciones pueden producir nombres o
   apellidos con caracteres extraños en lugar de un error explícito.
 - Las filas con `Estado Matrícula` no vacío se omiten a propósito (representan bajas o matrículas no
@@ -137,12 +139,12 @@ Comprueba que el docente:
 ## Copias de seguridad y actualización
 
 Estos dos procedimientos están documentados en detalle en
-[Operación y mantenimiento](10-operacion-y-mantenimiento.md):
+[Administrar la plataforma](07-administrar-la-plataforma.md):
 
-- [Copias de seguridad](10-operacion-y-mantenimiento.md#copias-de-seguridad) — cómo respaldar la
+- [Copias de seguridad](07-administrar-la-plataforma.md#copias-de-seguridad) — cómo respaldar la
   base de datos según el tipo de despliegue (Docker/PostgreSQL o binario nativo/SQLite) y
   recomendaciones de retención.
-- [Actualización](10-operacion-y-mantenimiento.md#actualizacion) — cómo actualizar a una nueva
+- [Actualización](07-administrar-la-plataforma.md#actualizacion) — cómo actualizar a una nueva
   versión sin perder datos; las migraciones de base de datos se aplican automáticamente al
   arrancar.
 

@@ -14,7 +14,7 @@ const root    = process.env.SHOTS_OUT_ROOT ?? 'docs/manual/img';
 
 mkdirSync(`${root}/centro`, { recursive: true });
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: ['--lang=es-ES'] });
 
 async function hideToolbar(page) {
     await page.addStyleTag({ content: 'div[id^="sfwdt"] { display: none !important; }' });
@@ -34,19 +34,19 @@ async function login(page, username, password) {
     await hideToolbar(page);
 }
 
-// CSV con grupo "A" apareciendo bajo dos cursos distintos → activa el bloque de conflicto
+// CSV con la unidad "1º BACH-MX" apareciendo bajo dos cursos distintos → activa el bloque de conflicto
 const conflictCsv = [
     '"Estado Matrícula","Nº Id. Escolar","Primer apellido","Segundo apellido","Nombre","Unidad","Curso"',
-    '"","SHOT-C001","García","López","Ana","A","1º ESO"',
-    '"","SHOT-C002","Martínez","Pérez","Carlos","A","2º ESO"',
-    '"","SHOT-C003","Sánchez","Ruiz","Elena","B","1º ESO"',
+    '"","SHOT-C001","García","López","Ana","1º BACH-MX","1º Bachillerato (Ciencias)"',
+    '"","SHOT-C002","Martínez","Pérez","Carlos","1º BACH-MX","1º Bachillerato (Humanidades y Ciencias Sociales)"',
+    '"","SHOT-C003","Sánchez","Ruiz","Elena","1º BACH-A","1º Bachillerato (Ciencias)"',
 ].join('\n');
 
 const tmpCsv = join(tmpdir(), 'gestconv_conflict_preview.csv');
 writeFileSync(tmpCsv, conflictCsv, 'utf8');
 
 {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
     await login(page, 'carmen.diaz', 'ejemplo');
 
     // Extraemos el centreId de cualquier enlace /centro/{uuid} de la página de inicio
@@ -66,6 +66,10 @@ writeFileSync(tmpCsv, conflictCsv, 'utf8');
     await page.click('button[type="submit"]');
     await page.waitForLoadState('networkidle');
     await hideToolbar(page);
+
+    // Mostrar la resolución del conflicto: escribir «1º Bachillerato» en el campo libre
+    const customText = page.locator('.js-conflict-block .js-conflict-text').first();
+    await customText.fill('1º Bachillerato');
 
     await page.screenshot({
         path: `${root}/centro/centro-importar-preview.png`,

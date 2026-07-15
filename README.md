@@ -110,8 +110,9 @@ docker compose up -d
 
 Accede a **http://localhost** con `admin` / `admin`.
 
-Para el resto de modos de despliegue (binario nativo y desarrollo local) y su configuración detallada,
-consulta el capítulo [Despliegue](docs/manual/09-despliegue.md) del manual.
+Para el resto de modos de despliegue (binario nativo, Plesk, Ubuntu Server y desarrollo local) y su
+configuración detallada, consulta el capítulo
+[Instalación y puesta en marcha](docs/manual/01-instalacion-y-puesta-en-marcha.md) del manual.
 
 ---
 

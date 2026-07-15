@@ -4,8 +4,8 @@ const baseUrl = process.env.SHOTS_BASE_URL ?? 'http://127.0.0.1:8744';
 const centreId = process.env.SHOTS_CENTRE_ID;
 const imgRoot = '/Users/lrlopez/Documents/Proyectos/gestconv-plus/docs/manual/img';
 
-const browser = await chromium.launch();
-const page    = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const browser = await chromium.launch({ args: ['--lang=es-ES'] });
+const page    = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
 
 async function hideToolbar() {
     await page.addStyleTag({ content: 'div[id^="sfwdt"] { display: none !important; }' });

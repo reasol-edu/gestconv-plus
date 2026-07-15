@@ -8,7 +8,7 @@ for (const dir of ['sanciones', 'alumnado', 'buscar', 'centro', 'ajustes', 'admi
     mkdirSync(`${root}/${dir}`, { recursive: true });
 }
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: ['--lang=es-ES'] });
 
 async function hideToolbar(page) {
     await page.addStyleTag({ content: 'div[id^="sfwdt"] { display: none !important; }' });
@@ -36,7 +36,7 @@ async function fillQuill(page, mountSelector, text) {
 
 // ── Tutor/a: registrar un parte y ver la ficha del alumno ──────────────────
 {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
     await login(page, 'roberto.guerrero', 'ejemplo');
 
     // Registrar un parte para el alumno objetivo (María Rodríguez Navarro, 1ºBachillerato).
@@ -50,6 +50,12 @@ async function fillQuill(page, mountSelector, text) {
     await page.waitForTimeout(700);
     await page.locator('.ts-dropdown .option').first().click();
     await page.waitForTimeout(300);
+
+    // «Dónde sucedió» es obligatorio: elegimos la primera ubicación del desplegable
+    const locationControl = page.locator('#location-select').locator('..').locator('.ts-control');
+    await locationControl.click();
+    await page.locator('.ts-dropdown:visible .option[data-selectable]').first().click();
+    await page.waitForTimeout(200);
 
     await page.locator('input[name="behaviors[]"]').first().check();
     await fillQuill(page, '#description', 'El alumno interrumpió reiteradamente la clase y no atendió a las indicaciones del profesorado.');
@@ -89,7 +95,7 @@ async function fillQuill(page, mountSelector, text) {
 // Solo admins de centro / miembros de la comisión pueden crear sanciones (SanctionVoter::CREATE),
 // no los tutores — por eso se usa carmen.diaz (admin de IES Ada Lovelace) en vez de roberto.guerrero.
 {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
     await login(page, 'carmen.diaz', 'ejemplo');
 
     // Sanciones: buscador de alumnado con partes sancionables.
@@ -137,7 +143,7 @@ async function fillQuill(page, mountSelector, text) {
 
 // ── Búsqueda global (⌘K) ──────────────────────────────────────────────────
 {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
     await login(page, 'roberto.guerrero', 'ejemplo');
 
     await page.goto(`${baseUrl}/calendario`);
@@ -155,7 +161,7 @@ async function fillQuill(page, mountSelector, text) {
 
 // ── Equipo directivo / admin de centro: oferta, docentes, estudiantes, perfiles, medidas ──
 {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
     await login(page, 'carmen.diaz', 'ejemplo');
 
     await page.click('text=Centro educativo');
@@ -173,7 +179,7 @@ async function fillQuill(page, mountSelector, text) {
     await page.click('text=Docentes del centro');
     await page.waitForLoadState('networkidle');
     await hideToolbar(page);
-    await page.screenshot({ path: `${root}/centro/centro-docentes.png`, fullPage: true });
+    await page.screenshot({ path: `${root}/centro/centro-docentes.png` });
 
     await page.click('text=Centro educativo');
     await page.waitForLoadState('networkidle');
@@ -181,7 +187,7 @@ async function fillQuill(page, mountSelector, text) {
     await page.click('a:has-text("Estudiantes")');
     await page.waitForLoadState('networkidle');
     await hideToolbar(page);
-    await page.screenshot({ path: `${root}/centro/centro-estudiantes.png`, fullPage: true });
+    await page.screenshot({ path: `${root}/centro/centro-estudiantes.png` });
 
     await page.click('text=Centro educativo');
     await page.waitForLoadState('networkidle');
@@ -212,7 +218,7 @@ async function fillQuill(page, mountSelector, text) {
 
 // ── Admin global: ajustes (candados + personalización de informes) y registro de actividad ──
 {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
     await login(page, 'admin', 'admin');
 
     await page.goto(`${baseUrl}/admin/ajustes`);
