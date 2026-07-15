@@ -3,6 +3,12 @@
 Este fichero describe el conjunto de datos que cargan las fixtures (`AppFixtures`).
 Se genera con `php bin/console doctrine:fixtures:load` (o los scripts `demo.*` del binario).
 
+El claustro y el alumnado provienen de los CSV versionados en `src/DataFixtures/data/`
+(`docentes-*.csv` y `alumnado-*.csv`), con el mismo formato que exporta Séneca, por lo
+que también sirven para probar a mano los flujos de importación. Los nombres del
+alumnado son deterministas y sin nombres completos repetidos. La estructura de cursos
+y grupos, las tutorías y los roles se definen en `AppFixtures`.
+
 ---
 
 ## Credenciales
@@ -169,7 +175,7 @@ Todos con contraseña `ejemplo`. Los docentes son asignados automáticamente com
 
 | | IES Ada Lovelace | IES Monterrubio | Total |
 |---|---|---|---|
-| Docentes | 30 | 30 | 61 (+ `admin`) |
+| Docentes | 30 | 30 | 60 (+ `admin`) |
 | Grupos ESO | 8 | 8 | 16 |
 | Grupos Bachillerato | 2 | 2 | 4 |
 | Grupos CFGS | 2 | — | 2 |

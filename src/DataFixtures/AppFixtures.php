@@ -11,17 +11,25 @@ use App\Entity\PersonName;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Service\CentreProvisioner;
+use App\Service\CsvReader;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+/**
+ * Los datos de docentes y alumnado viven en CSVs versionados (data/) con el
+ * mismo formato que exporta Séneca, de modo que también sirven para probar a
+ * mano los flujos de importación. Aquí solo quedan la estructura (cursos,
+ * grupos, tutorías) y los roles.
+ */
 class AppFixtures extends Fixture
 {
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly Connection $connection,
         private readonly CentreProvisioner $centreProvisioner,
+        private readonly CsvReader $csvReader,
     ) {}
 
     public function load(ObjectManager $manager): void
@@ -40,23 +48,26 @@ class AppFixtures extends Fixture
         $admin->setAdmin(true);
         $manager->persist($admin);
 
-        $aTeachers = $this->makeAdaLovelaceTeachers($manager, $ejemploHash);
-        $mTeachers = $this->makeMonterrubioTeachers($manager, $ejemploHash);
+        $aTeachers = $this->loadTeachers($manager, 'docentes-ada-lovelace.csv', $ejemploHash, ['rafael.exposito']);
+        $mTeachers = $this->loadTeachers($manager, 'docentes-monterrubio.csv', $ejemploHash, ['mariajose.alvarez']);
         $manager->flush();
 
         [$aEsoCourses, $aBachCourses, $aDawCourses] = $this->buildAdaLovelace($manager, $aTeachers);
         [$mEsoCourses, $mBachCourses]               = $this->buildMonterrubio($manager, $mTeachers);
 
+        $aStudents = $this->studentsByUnit('alumnado-ada-lovelace.csv');
+        $mStudents = $this->studentsByUnit('alumnado-monterrubio.csv');
+
         // IES Ada Lovelace: dos grupos por curso en ESO, uno en Bach. y uno en DAW.
-        $this->buildGroups($manager, $aEsoCourses, $aTeachers, 'AA', 28, ' A');
-        $this->buildGroups($manager, $aEsoCourses, $aTeachers, 'AB', 27, ' B');
-        $this->buildGroups($manager, $aBachCourses, $aTeachers, 'AC', 22);
-        $this->buildGroups($manager, $aDawCourses,  $aTeachers, 'AD', 24);
+        $this->buildGroups($manager, $aEsoCourses, $aTeachers, $aStudents, ' A');
+        $this->buildGroups($manager, $aEsoCourses, $aTeachers, $aStudents, ' B');
+        $this->buildGroups($manager, $aBachCourses, $aTeachers, $aStudents);
+        $this->buildGroups($manager, $aDawCourses,  $aTeachers, $aStudents);
 
         // IES Monterrubio: dos grupos por curso en ESO, uno en Bach.
-        $this->buildGroups($manager, $mEsoCourses, $mTeachers, 'MA', 26, ' A');
-        $this->buildGroups($manager, $mEsoCourses, $mTeachers, 'MB', 26, ' B');
-        $this->buildGroups($manager, $mBachCourses, $mTeachers, 'MC', 20);
+        $this->buildGroups($manager, $mEsoCourses, $mTeachers, $mStudents, ' A');
+        $this->buildGroups($manager, $mEsoCourses, $mTeachers, $mStudents, ' B');
+        $this->buildGroups($manager, $mBachCourses, $mTeachers, $mStudents);
 
         $manager->flush();
     }
@@ -105,107 +116,50 @@ class AppFixtures extends Fixture
         }
     }
 
+    // ── Lectura de CSVs ───────────────────────────────────────────────────────
+
+    /** @return array{headers: list<string>, rows: list<array<string, string>>} */
+    private function parseCsv(string $file): array
+    {
+        $path    = __DIR__ . '/data/' . $file;
+        $content = file_get_contents($path);
+        if ($content === false) {
+            throw new \RuntimeException(sprintf('No se pudo leer el CSV de fixtures "%s".', $path));
+        }
+
+        return $this->csvReader->parse($content);
+    }
+
     // ── Creación de docentes ──────────────────────────────────────────────────
 
-    /** @return array<string, Teacher> */
-    private function makeAdaLovelaceTeachers(ObjectManager $manager, string $passwordHash): array
-    {
-        $data = [
-            // 0-1: equipo directivo (admins de centro)
-            ['rafael.exposito',   'Rafael',       'Expósito Moreno'],
-            ['carmen.diaz',       'Carmen',       'Díaz Jiménez'],
-            // 2-6: coordinadores
-            ['francisco.molina',  'Francisco',    'Molina Ruiz'],
-            ['isabel.lozano',     'Isabel',       'Lozano Herrera'],
-            ['maria.garcia',      'María Dolores','García Fernández'],
-            ['diego.romero',      'Diego',        'Romero Vega'],
-            ['manuel.perez',      'Manuel',       'Pérez Blanco'],
-            // 7+: docentes de grupo (tutores y co-docentes)
-            ['roberto.guerrero',  'Roberto',      'Guerrero Campos'],
-            ['beatriz.alonso',    'Beatriz',      'Alonso Serrano'],
-            ['rodrigo.fuentes',   'Rodrigo',      'Fuentes Parra'],
-            ['elena.caballero',   'Elena',        'Caballero Ruiz'],
-            ['julio.medina',      'Julio',        'Medina Torres'],
-            ['sofia.delgado',     'Sofía',        'Delgado Iglesias'],
-            ['marcos.herrero',    'Marcos',       'Herrero Vidal'],
-            ['alberto.cabrera',   'Alberto',      'Cabrera García'],
-            ['nuria.lopez',       'Nuria',        'López Morales'],
-            ['javier.ortega',     'Javier',       'Ortega Bravo'],
-            ['anabelen.castro',   'Ana Belén',    'Castro Fuentes'],
-            ['tomas.vazquez',     'Tomás',        'Vázquez Acosta'],
-            ['rosamaria.serrano', 'Rosa María',   'Serrano Díaz'],
-            ['fernando.ibanez',   'Fernando',     'Ibáñez Cano'],
-            ['marta.ramos',       'Marta',        'Ramos Palacios'],
-            ['sergio.gallego',    'Sergio',       'Gallego Nieto'],
-            ['veronica.mora',     'Verónica',     'Mora Espinosa'],
-            ['pablo.aguilar',     'Pablo',        'Aguilar Blanco'],
-            ['concepcion.munoz',  'Concepción',   'Muñoz Aranda'],
-            ['alvaro.suarez',     'Álvaro',       'Suárez Paredes'],
-            ['patricia.rubio',    'Patricia',     'Rubio Fernández'],
-            ['luis.carrasco',     'Luis',         'Carrasco Reyes'],
-            ['sandra.dominguez',  'Sandra',       'Domínguez Orozco'],
-        ];
-
-        return $this->persistTeachers($manager, $data, $passwordHash, isGlobalAdmin: ['rafael.exposito']);
-    }
-
-    /** @return array<string, Teacher> */
-    private function makeMonterrubioTeachers(ObjectManager $manager, string $passwordHash): array
-    {
-        $data = [
-            ['mariajose.alvarez',    'María José',    'Álvarez García'],
-            ['pedro.fernandez',      'Pedro Antonio', 'Fernández Rubio'],
-            ['rosario.soto',         'Rosario',       'Soto Merino'],
-            ['dolores.reyes',        'Dolores',       'Reyes Álvarez'],
-            ['antonia.guzman',       'Antonia',       'Guzmán Osuna'],
-            ['ignacio.crespo',       'Ignacio',       'Crespo Leal'],
-            ['piedad.torres',        'Piedad',        'Torres Velázquez'],
-            ['vicente.roldan',       'Vicente',       'Roldán Camacho'],
-            ['carmenrosa.marin',     'Carmen Rosa',   'Marín Espejo'],
-            ['josefa.naranjo',       'Josefa',        'Naranjo Hidalgo'],
-            ['remedios.calvo',       'Remedios',      'Calvo Durán'],
-            ['bartolome.morales',    'Bartolomé',     'Morales Cabello'],
-            ['francisca.giron',      'Francisca',     'Girón Padilla'],
-            ['sebastian.lara',       'Sebastián',     'Lara Nieto'],
-            ['encarnacion.baena',    'Encarnación',   'Baena Vilches'],
-            ['manuela.criado',       'Manuela',       'Criado Arroyo'],
-            ['demetrio.gallardo',    'Demetrio',      'Gallardo Cruz'],
-            ['amelia.fuentes',       'Amelia',        'Fuentes Olea'],
-            ['isidoro.bueno',        'Isidoro',       'Bueno Salas'],
-            ['remedios.ortiz',       'Remedios',      'Ortiz Pedrera'],
-            ['alfonso.serrano',      'Alfonso',       'Serrano Rico'],
-            ['montserrat.cobo',      'Montserrat',    'Cobo Rivas'],
-            ['gonzalo.torres',       'Gonzalo',       'Torres Jurado'],
-            ['esperanza.ruiz',       'Esperanza',     'Ruiz Calero'],
-            ['horacio.lopez',        'Horacio',       'López Bravo'],
-            ['natividad.moreno',     'Natividad',     'Moreno Navarro'],
-            ['dionisio.garcia',      'Dionisio',      'García Blanco'],
-            ['rosalia.campos',       'Rosalía',       'Campos Vega'],
-            ['teodoro.herrero',      'Teodoro',       'Herrero Reina'],
-            ['milagros.jimenez',     'Milagros',      'Jiménez Villar'],
-        ];
-
-        return $this->persistTeachers($manager, $data, $passwordHash, isGlobalAdmin: ['mariajose.alvarez']);
-    }
-
     /**
-     * @param array<int, array{0: string, 1: string, 2: string}> $data
-     * @param string[] $isGlobalAdmin
+     * Crea los docentes a partir de un CSV con el formato de Séneca
+     * ("Empleado/a" como "Apellidos, Nombre" y "Usuario IdEA"). El orden del
+     * CSV importa: los 7 primeros son equipo directivo/coordinación y el resto
+     * entra en el reparto rotatorio de tutorías de buildGroups().
+     *
+     * @param string[] $globalAdmins
      * @return array<string, Teacher>
      */
-    private function persistTeachers(ObjectManager $manager, array $data, string $passwordHash, array $isGlobalAdmin = []): array
+    private function loadTeachers(ObjectManager $manager, string $file, string $passwordHash, array $globalAdmins = []): array
     {
         $teachers = [];
-        foreach ($data as [$username, $first, $last]) {
+        foreach ($this->parseCsv($file)['rows'] as $row) {
+            $username = $row['Usuario IdEA'] ?? '';
+            $parts    = explode(',', $row['Empleado/a'] ?? '', 2);
+            $last     = trim($parts[0]);
+            $first    = trim($parts[1] ?? '');
+
             $t = new Teacher(new PersonName($first, $last));
             $t->setUsername($username);
             $t->setPassword($passwordHash);
-            if (in_array($username, $isGlobalAdmin, true)) {
+            if (in_array($username, $globalAdmins, true)) {
                 $t->setAdmin(true);
             }
             $manager->persist($t);
             $teachers[$username] = $t;
         }
+
         return $teachers;
     }
 
@@ -280,18 +234,34 @@ class AppFixtures extends Fixture
     // ── Grupos y alumnado ─────────────────────────────────────────────────────
 
     /**
-     * Crea un grupo por Course con el sufijo indicado y lo puebla de alumnado.
+     * Agrupa las filas del CSV de alumnado por la columna "Unidad".
      *
-     * @param Course[]               $courses
-     * @param array<string, Teacher> $teachers
+     * @return array<string, list<array<string, string>>>
+     */
+    private function studentsByUnit(string $file): array
+    {
+        $byUnit = [];
+        foreach ($this->parseCsv($file)['rows'] as $row) {
+            $byUnit[$row['Unidad'] ?? ''][] = $row;
+        }
+
+        return $byUnit;
+    }
+
+    /**
+     * Crea un grupo por Course con el sufijo indicado y lo puebla con el
+     * alumnado del CSV cuya "Unidad" coincide con el nombre del grupo.
+     *
+     * @param Course[]                                 $courses
+     * @param array<string, Teacher>                   $teachers
+     * @param array<string, list<array<string, string>>> $studentsByUnit
      * @return Group[]
      */
     private function buildGroups(
         ObjectManager $manager,
         array $courses,
         array $teachers,
-        string $prefix,
-        int $studentsPerGroup,
+        array $studentsByUnit,
         string $suffix = '',
     ): array {
         $teacherList  = array_values($teachers);
@@ -300,11 +270,12 @@ class AppFixtures extends Fixture
         $groups       = [];
         $tutorIdx     = 0;
 
-        foreach ($courses as $i => $course) {
+        foreach ($courses as $course) {
             $abbr  = $course->getName();
             $abbr  = preg_replace('/[^A-ZÀ-Ÿa-zà-ÿ0-9º]/u', '', $abbr) ?? $abbr;
+            $name  = $abbr . $suffix;
             $group = new Group();
-            $group->setName($abbr . $suffix);
+            $group->setName($name);
             $group->setCourse($course);
 
             $tutor = $teacherList[$tutorOffset + ($tutorIdx % $tutorCount)];
@@ -316,12 +287,15 @@ class AppFixtures extends Fixture
             $group->addTeacher($co);
             $manager->persist($group);
 
-            for ($s = 1; $s <= $studentsPerGroup; $s++) {
+            $rows = $studentsByUnit[$name]
+                ?? throw new \RuntimeException(sprintf('El CSV de alumnado no tiene filas para la unidad "%s".', $name));
+
+            foreach ($rows as $row) {
                 $student = new Student(new PersonName(
-                    $this->firstName($prefix, $i, $s),
-                    $this->lastName($prefix, $i, $s),
+                    $row['Nombre'] ?? '',
+                    trim(($row['Primer apellido'] ?? '') . ' ' . ($row['Segundo apellido'] ?? '')),
                 ));
-                $student->setStudentId(sprintf('%s%03d%02d', strtoupper($prefix), $i + 1, $s));
+                $student->setStudentId($row['Nº Id. Escolar'] ?? '');
                 $student->addGroup($group);
                 $manager->persist($student);
             }
@@ -330,28 +304,5 @@ class AppFixtures extends Fixture
         }
 
         return $groups;
-    }
-
-    private function firstName(string $prefix, int $groupIdx, int $studentIdx): string
-    {
-        $names = ['Laura', 'Carlos', 'María', 'David', 'Lucía', 'Alejandro', 'Ana', 'Jorge',
-                  'Sofía', 'Miguel', 'Paula', 'Adrián', 'Sara', 'Diego', 'Marta', 'Pablo',
-                  'Carla', 'Álvaro', 'Elena', 'Sergio', 'Irene', 'Rubén', 'Alba', 'Víctor',
-                  'Claudia', 'Óscar', 'Natalia', 'Raúl', 'Valeria', 'Iván'];
-        return $names[($groupIdx * 12 + $studentIdx) % count($names)];
-    }
-
-    private function lastName(string $prefix, int $groupIdx, int $studentIdx): string
-    {
-        $surnames = ['García', 'Martínez', 'López', 'Sánchez', 'González', 'Pérez', 'Rodríguez',
-                     'Fernández', 'Jiménez', 'Moreno', 'Muñoz', 'Álvarez', 'Romero', 'Díaz',
-                     'Herrera', 'Torres', 'Ruiz', 'Navarro', 'Molina', 'Blanco', 'Vega', 'Reyes'];
-        $n  = count($surnames);
-        $i1 = ($groupIdx * 7 + $studentIdx * 3) % $n;
-        $i2 = ($groupIdx * 11 + $studentIdx * 5 + 7) % $n;
-        if ($i1 === $i2) {
-            $i2 = ($i2 + 1) % $n;
-        }
-        return $surnames[$i1] . ' ' . $surnames[$i2];
     }
 }

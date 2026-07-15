@@ -1,0 +1,313 @@
+Estado Matrícula,Nº Id. Escolar,Primer apellido,Segundo apellido,Nombre,Unidad,Curso
+,AA00101,Gil,Cabrera,Carla,1ºESO A,1º ESO
+,AA00102,Rico,Fuentes,Zoe,1ºESO A,1º ESO
+,AA00103,García,Lorente,Hugo,1ºESO A,1º ESO
+,AA00104,Gálvez,Vilches,Cristina,1ºESO A,1º ESO
+,AA00105,Gómez,Ojeda,Hugo,1ºESO A,1º ESO
+,AA00106,Rueda,Contreras,Álvaro,1ºESO A,1º ESO
+,AA00107,Rosa,Peña,Guillermo,1ºESO A,1º ESO
+,AA00108,Crespo,Gallardo,Valeria,1ºESO A,1º ESO
+,AA00109,Rueda,Rivera,Mateo,1ºESO A,1º ESO
+,AA00110,Segura,Cantero,Rocío,1ºESO A,1º ESO
+,AA00111,Hurtado,Mora,Emma,1ºESO A,1º ESO
+,AA00112,Macías,Morales,Patricia,1ºESO A,1º ESO
+,AA00113,Solís,Soto,Fernando,1ºESO A,1º ESO
+,AA00114,Sáez,Gallego,Pablo,1ºESO A,1º ESO
+,AA00115,Pérez,Blanco,Sofía,1ºESO A,1º ESO
+,AA00116,Delgado,Jiménez,Valentina,1ºESO A,1º ESO
+,AA00117,Andrade,Requena,Candela,1ºESO A,1º ESO
+,AA00118,Moya,Díaz,Celia,1ºESO A,1º ESO
+,AA00119,Moreno,Ortiz,Fátima,1ºESO A,1º ESO
+,AA00120,Bravo,Sánchez,Zoe,1ºESO A,1º ESO
+,AA00121,Gálvez,Calvo,Samuel,1ºESO A,1º ESO
+,AA00122,Mena,Mora,María,1ºESO A,1º ESO
+,AA00123,Roca,Núñez,Beatriz,1ºESO A,1º ESO
+,AA00124,Cuenca,Lozano,Pedro,1ºESO A,1º ESO
+,AA00125,Ramírez,Cruz,Iris,1ºESO A,1º ESO
+,AA00126,Pardo,Bravo,Eva,1ºESO A,1º ESO
+,AA00127,Pérez,Gutiérrez,Marta,1ºESO A,1º ESO
+,AA00128,Serrano,Carmona,Luna,1ºESO A,1º ESO
+,AA00201,Mejías,Valle,Víctor,2ºESO A,2º ESO
+,AA00202,Escobar,Parra,Inés,2ºESO A,2º ESO
+,AA00203,Peralta,Torres,Inés,2ºESO A,2º ESO
+,AA00204,Medina,Rico,Paola,2ºESO A,2º ESO
+,AA00205,Palacios,Nieto,Lara,2ºESO A,2º ESO
+,AA00206,Rueda,Camacho,Lara,2ºESO A,2º ESO
+,AA00207,Rueda,Rojas,Julia,2ºESO A,2º ESO
+,AA00208,Domínguez,Aranda,Samuel,2ºESO A,2º ESO
+,AA00209,Plaza,Palomino,Vera,2ºESO A,2º ESO
+,AA00210,Cazorla,Toledo,Hugo,2ºESO A,2º ESO
+,AA00211,Zamora,Conde,Daniel,2ºESO A,2º ESO
+,AA00212,Bravo,Blanco,Paula,2ºESO A,2º ESO
+,AA00213,Calvo,Aranda,Mateo,2ºESO A,2º ESO
+,AA00214,Jiménez,Millán,Tania,2ºESO A,2º ESO
+,AA00215,Muñoz,Delgado,Fernando,2ºESO A,2º ESO
+,AA00216,Guzmán,Rivas,Carla,2ºESO A,2º ESO
+,AA00217,Salas,Millán,Natalia,2ºESO A,2º ESO
+,AA00218,Rosa,Ocaña,Óscar,2ºESO A,2º ESO
+,AA00219,Reyes,Salazar,Silvia,2ºESO A,2º ESO
+,AA00220,Carrasco,Moreno,Inés,2ºESO A,2º ESO
+,AA00221,Puente,Montes,Blanca,2ºESO A,2º ESO
+,AA00222,Soriano,Díaz,Óscar,2ºESO A,2º ESO
+,AA00223,Suárez,Leal,Marina,2ºESO A,2º ESO
+,AA00224,León,Giménez,Laia,2ºESO A,2º ESO
+,AA00225,Quintana,Toledo,Diego,2ºESO A,2º ESO
+,AA00226,Santos,Ibáñez,Hugo,2ºESO A,2º ESO
+,AA00227,Ortega,Villar,Nora,2ºESO A,2º ESO
+,AA00228,Pineda,Reyes,Manuel,2ºESO A,2º ESO
+,AA00301,Gálvez,Barranco,Olivia,3ºESO A,3º ESO
+,AA00302,Silva,Gutiérrez,Hugo,3ºESO A,3º ESO
+,AA00303,Palma,Cazorla,Patricia,3ºESO A,3º ESO
+,AA00304,Castro,Iglesias,Silvia,3ºESO A,3º ESO
+,AA00305,Gutiérrez,Baena,Patricia,3ºESO A,3º ESO
+,AA00306,Andrade,Heredia,Marcos,3ºESO A,3º ESO
+,AA00307,Manzano,Nieto,Javier,3ºESO A,3º ESO
+,AA00308,Pozo,Sánchez,Manuel,3ºESO A,3º ESO
+,AA00309,Gallego,García,Mateo,3ºESO A,3º ESO
+,AA00310,Melero,Navarro,Leire,3ºESO A,3º ESO
+,AA00311,Osuna,Delgado,Laura,3ºESO A,3º ESO
+,AA00312,Soto,Navarro,Sara,3ºESO A,3º ESO
+,AA00313,Salas,Gil,Nicolás,3ºESO A,3º ESO
+,AA00314,Villar,Heredia,Zoe,3ºESO A,3º ESO
+,AA00315,Quesada,Expósito,Fernando,3ºESO A,3º ESO
+,AA00316,Macías,Vázquez,María,3ºESO A,3º ESO
+,AA00317,Vega,Guerrero,Hugo,3ºESO A,3º ESO
+,AA00318,Salguero,Guzmán,Sara,3ºESO A,3º ESO
+,AA00319,Luque,Villalba,Diego,3ºESO A,3º ESO
+,AA00320,Utrera,Palacios,María,3ºESO A,3º ESO
+,AA00321,Madrid,Esteban,Laia,3ºESO A,3º ESO
+,AA00322,Rubio,Bermúdez,Noa,3ºESO A,3º ESO
+,AA00323,Macías,Ríos,Marc,3ºESO A,3º ESO
+,AA00324,Campos,Vázquez,Youssef,3ºESO A,3º ESO
+,AA00325,Bermúdez,Torres,Emma,3ºESO A,3º ESO
+,AA00326,Calero,Giménez,Lucía,3ºESO A,3º ESO
+,AA00327,Ocaña,Pineda,Javier,3ºESO A,3º ESO
+,AA00328,Castro,Luque,Beatriz,3ºESO A,3º ESO
+,AA00401,Calero,Lara,Ismael,4ºESO A,4º ESO
+,AA00402,Ureña,Camacho,Sara,4ºESO A,4º ESO
+,AA00403,Gómez,Alonso,Pablo,4ºESO A,4º ESO
+,AA00404,Sánchez,Ruiz,Alba,4ºESO A,4º ESO
+,AA00405,Infante,Flores,Elsa,4ºESO A,4º ESO
+,AA00406,Jurado,Lorente,Jorge,4ºESO A,4º ESO
+,AA00407,Quesada,Crespo,Andrea,4ºESO A,4º ESO
+,AA00408,Peña,Suárez,Olivia,4ºESO A,4º ESO
+,AA00409,Blanco,Alonso,Inés,4ºESO A,4º ESO
+,AA00410,Villalba,Ortiz,Marina,4ºESO A,4º ESO
+,AA00411,Salazar,Espinosa,Irene,4ºESO A,4º ESO
+,AA00412,Álvarez,Morales,Aitana,4ºESO A,4º ESO
+,AA00413,Morales,Vallejo,Sara,4ºESO A,4º ESO
+,AA00414,Rosa,Ibáñez,Daniel,4ºESO A,4º ESO
+,AA00415,Merino,Vilches,José Antonio,4ºESO A,4º ESO
+,AA00416,Millán,Otero,Candela,4ºESO A,4º ESO
+,AA00417,Palacios,Montero,Manuel,4ºESO A,4º ESO
+,AA00418,Soriano,Navarro,Samuel,4ºESO A,4º ESO
+,AA00419,Ramírez,Gallardo,Álvaro,4ºESO A,4º ESO
+,AA00420,Vaquero,Alonso,Rubén,4ºESO A,4º ESO
+,AA00421,Vidal,Mesa,Bruno,4ºESO A,4º ESO
+,AA00422,Vargas,Otero,Arturo,4ºESO A,4º ESO
+,AA00423,Reyes,Salguero,Sara,4ºESO A,4º ESO
+,AA00424,Pacheco,Robles,Ángela,4ºESO A,4º ESO
+,AA00425,Cordero,Alonso,Jorge,4ºESO A,4º ESO
+,AA00426,Silva,Vilches,Guillermo,4ºESO A,4º ESO
+,AA00427,Morilla,Zafra,Paola,4ºESO A,4º ESO
+,AA00428,Gómez,Alarcón,Andrea,4ºESO A,4º ESO
+,AB00101,Cantero,Flores,Ana,1ºESO B,1º ESO
+,AB00102,Herrera,Gallardo,Lara,1ºESO B,1º ESO
+,AB00103,Santos,Rico,Enrique,1ºESO B,1º ESO
+,AB00104,Ureña,Quintana,Mateo,1ºESO B,1º ESO
+,AB00105,Cazorla,Expósito,Víctor,1ºESO B,1º ESO
+,AB00106,Caballero,Bravo,Álvaro,1ºESO B,1º ESO
+,AB00107,Padilla,Ríos,Clara,1ºESO B,1º ESO
+,AB00108,Castro,Cabrera,Daniela,1ºESO B,1º ESO
+,AB00109,Torres,Aguilar,Álvaro,1ºESO B,1º ESO
+,AB00110,Torres,Ojeda,Irene,1ºESO B,1º ESO
+,AB00111,Carrasco,Guerrero,Luna,1ºESO B,1º ESO
+,AB00112,Padilla,Palacios,David,1ºESO B,1º ESO
+,AB00113,Salas,Ríos,Aitana,1ºESO B,1º ESO
+,AB00114,Pozo,Navarrete,Aitana,1ºESO B,1º ESO
+,AB00115,Montes,Soriano,Laia,1ºESO B,1º ESO
+,AB00116,Barranco,Vidal,Marta,1ºESO B,1º ESO
+,AB00117,Navarrete,Macías,Miriam,1ºESO B,1º ESO
+,AB00118,Cantero,Porras,Noelia,1ºESO B,1º ESO
+,AB00119,Jurado,Zapata,David,1ºESO B,1º ESO
+,AB00120,Córdoba,Cuenca,Leire,1ºESO B,1º ESO
+,AB00121,Lozano,García,Martín,1ºESO B,1º ESO
+,AB00122,Paredes,Alonso,Alicia,1ºESO B,1º ESO
+,AB00123,Salazar,Aguilar,Triana,1ºESO B,1º ESO
+,AB00124,Saavedra,Vélez,Rocío,1ºESO B,1º ESO
+,AB00125,Otero,Baena,Rubén,1ºESO B,1º ESO
+,AB00126,Nieto,Zurita,Iris,1ºESO B,1º ESO
+,AB00127,Moya,Mora,Pedro,1ºESO B,1º ESO
+,AB00201,Durán,Merino,Mar,2ºESO B,2º ESO
+,AB00202,Roldán,Moya,Miguel,2ºESO B,2º ESO
+,AB00203,Blanco,Guerrero,Noelia,2ºESO B,2º ESO
+,AB00204,Plaza,Madrid,Elsa,2ºESO B,2º ESO
+,AB00205,Vidal,Mora,Marc,2ºESO B,2º ESO
+,AB00206,Gálvez,Escobar,Gabriel,2ºESO B,2º ESO
+,AB00207,Arias,Heredia,Víctor,2ºESO B,2º ESO
+,AB00208,Conde,López,Antonio,2ºESO B,2º ESO
+,AB00209,Rosa,Gallego,Yasmina,2ºESO B,2º ESO
+,AB00210,Ocaña,Guerrero,Irene,2ºESO B,2º ESO
+,AB00211,Soriano,Galán,Miriam,2ºESO B,2º ESO
+,AB00212,Vallejo,Caballero,Blanca,2ºESO B,2º ESO
+,AB00213,Navarro,Conde,David,2ºESO B,2º ESO
+,AB00214,Leal,Parra,Raúl,2ºESO B,2º ESO
+,AB00215,Fernández,Santana,Lucas,2ºESO B,2º ESO
+,AB00216,Cantero,Hidalgo,Noelia,2ºESO B,2º ESO
+,AB00217,Padilla,Porras,Marta,2ºESO B,2º ESO
+,AB00218,Morilla,Silva,Carlos,2ºESO B,2º ESO
+,AB00219,Saavedra,Iglesias,Erik,2ºESO B,2º ESO
+,AB00220,Reina,Aguilera,Elsa,2ºESO B,2º ESO
+,AB00221,Mendoza,Jurado,Yasmina,2ºESO B,2º ESO
+,AB00222,Cantero,Alarcón,Álvaro,2ºESO B,2º ESO
+,AB00223,Calvo,Pérez,Naia,2ºESO B,2º ESO
+,AB00224,Mendoza,Velasco,Héctor,2ºESO B,2º ESO
+,AB00225,Palacios,Lozano,David,2ºESO B,2º ESO
+,AB00226,Infante,Domínguez,Gonzalo,2ºESO B,2º ESO
+,AB00227,Sánchez,Iglesias,Candela,2ºESO B,2º ESO
+,AB00301,Roldán,Lozano,Mar,3ºESO B,3º ESO
+,AB00302,Manzano,Melero,Clara,3ºESO B,3º ESO
+,AB00303,Iglesias,Crespo,Daniel,3ºESO B,3º ESO
+,AB00304,Rosa,Arias,Marc,3ºESO B,3º ESO
+,AB00305,Flores,Blanco,Yasmina,3ºESO B,3º ESO
+,AB00306,Pozo,García,Leo,3ºESO B,3º ESO
+,AB00307,Castillo,Gálvez,Salma,3ºESO B,3º ESO
+,AB00308,Prieto,Lara,Irene,3ºESO B,3º ESO
+,AB00309,Castro,Fernández,Mateo,3ºESO B,3º ESO
+,AB00310,Pineda,Otero,Carlos,3ºESO B,3º ESO
+,AB00311,Mendoza,Morales,Daniela,3ºESO B,3º ESO
+,AB00312,Herrera,Cabrera,Fátima,3ºESO B,3º ESO
+,AB00313,Soriano,Castillo,Tania,3ºESO B,3º ESO
+,AB00314,Mejías,Roca,Zoe,3ºESO B,3º ESO
+,AB00315,Bravo,Saavedra,Candela,3ºESO B,3º ESO
+,AB00316,Castillo,Calvo,José Antonio,3ºESO B,3º ESO
+,AB00317,Salas,Pardo,Fátima,3ºESO B,3º ESO
+,AB00318,Gil,Andrade,Isaac,3ºESO B,3º ESO
+,AB00319,Rubio,Trujillo,Alicia,3ºESO B,3º ESO
+,AB00320,Macías,Salas,Alicia,3ºESO B,3º ESO
+,AB00321,Gil,Guzmán,Esther,3ºESO B,3º ESO
+,AB00322,Escobar,Linares,Isaac,3ºESO B,3º ESO
+,AB00323,Barranco,Vilches,Alba,3ºESO B,3º ESO
+,AB00324,Zapata,Gutiérrez,Valeria,3ºESO B,3º ESO
+,AB00325,Conde,Zurita,Pedro,3ºESO B,3º ESO
+,AB00326,Paredes,Rico,Joel,3ºESO B,3º ESO
+,AB00327,Villalba,Silva,Mar,3ºESO B,3º ESO
+,AB00401,Villalba,Cabrera,Elena,4ºESO B,4º ESO
+,AB00402,Rojas,Requena,Alejandro,4ºESO B,4º ESO
+,AB00403,Palma,Iglesias,Lucas,4ºESO B,4º ESO
+,AB00404,Ortiz,Velasco,Sofía,4ºESO B,4º ESO
+,AB00405,Cobo,Morales,Leire,4ºESO B,4º ESO
+,AB00406,Velasco,Navarro,Inés,4ºESO B,4º ESO
+,AB00407,Porras,Maldonado,Sofía,4ºESO B,4º ESO
+,AB00408,Carmona,Palacios,Marina,4ºESO B,4º ESO
+,AB00409,Rosa,Hidalgo,Celia,4ºESO B,4º ESO
+,AB00410,Polo,Rojas,Nora,4ºESO B,4º ESO
+,AB00411,Toledo,Salguero,Vera,4ºESO B,4º ESO
+,AB00412,Ordóñez,Parra,Natalia,4ºESO B,4º ESO
+,AB00413,Vallejo,Lara,Jesús,4ºESO B,4º ESO
+,AB00414,Aranda,Suárez,Laura,4ºESO B,4º ESO
+,AB00415,Merino,Ramírez,María,4ºESO B,4º ESO
+,AB00416,Cabrera,Cruz,Clara,4ºESO B,4º ESO
+,AB00417,Puente,Silva,Martín,4ºESO B,4º ESO
+,AB00418,Melero,Gil,Pablo,4ºESO B,4º ESO
+,AB00419,Tejada,Conde,Sara,4ºESO B,4º ESO
+,AB00420,Conde,Durán,Marta,4ºESO B,4º ESO
+,AB00421,Ibáñez,Pardo,Irene,4ºESO B,4º ESO
+,AB00422,Cabrera,Morilla,Andrea,4ºESO B,4º ESO
+,AB00423,Requena,Lozano,Rodrigo,4ºESO B,4º ESO
+,AB00424,Sáez,Ocaña,Clara,4ºESO B,4º ESO
+,AB00425,Hidalgo,Navarrete,Laia,4ºESO B,4º ESO
+,AB00426,Conde,Cazorla,Noelia,4ºESO B,4º ESO
+,AB00427,Conde,Benítez,Isaac,4ºESO B,4º ESO
+,AC00101,Olmedo,Segura,Hugo,1ºBachillerato,1º Bachillerato
+,AC00102,Osuna,Martín,Lucas,1ºBachillerato,1º Bachillerato
+,AC00103,Vázquez,Salas,Candela,1ºBachillerato,1º Bachillerato
+,AC00104,González,Nieto,Martín,1ºBachillerato,1º Bachillerato
+,AC00105,Rodríguez,Navarro,María,1ºBachillerato,1º Bachillerato
+,AC00106,Córdoba,Muñoz,José Antonio,1ºBachillerato,1º Bachillerato
+,AC00107,Peña,Rodríguez,Inés,1ºBachillerato,1º Bachillerato
+,AC00108,Nieto,Ramos,Enrique,1ºBachillerato,1º Bachillerato
+,AC00109,Vallejo,Ortega,Mar,1ºBachillerato,1º Bachillerato
+,AC00110,Zapata,Robles,Francisco Javier,1ºBachillerato,1º Bachillerato
+,AC00111,Rivas,Toro,Juan Manuel,1ºBachillerato,1º Bachillerato
+,AC00112,Cortés,Aguilera,Diego,1ºBachillerato,1º Bachillerato
+,AC00113,Delgado,Esteban,Blanca,1ºBachillerato,1º Bachillerato
+,AC00114,Cortés,Rueda,Raúl,1ºBachillerato,1º Bachillerato
+,AC00115,Cortés,González,Arturo,1ºBachillerato,1º Bachillerato
+,AC00116,Cabello,Mendoza,Fátima,1ºBachillerato,1º Bachillerato
+,AC00117,Morilla,Espinosa,Youssef,1ºBachillerato,1º Bachillerato
+,AC00118,Castillo,Conde,Sergio,1ºBachillerato,1º Bachillerato
+,AC00119,Redondo,Solís,David,1ºBachillerato,1º Bachillerato
+,AC00120,Puente,Gálvez,Manuel,1ºBachillerato,1º Bachillerato
+,AC00121,Mendoza,Polo,Arturo,1ºBachillerato,1º Bachillerato
+,AC00122,Fuentes,Mejías,Nicolás,1ºBachillerato,1º Bachillerato
+,AC00201,Zapata,Barranco,Gonzalo,2ºBachillerato,2º Bachillerato
+,AC00202,Morales,Gámez,Elsa,2ºBachillerato,2º Bachillerato
+,AC00203,Carrillo,Gallardo,Isaac,2ºBachillerato,2º Bachillerato
+,AC00204,Cordero,Madrid,Nicolás,2ºBachillerato,2º Bachillerato
+,AC00205,Méndez,Lozano,María,2ºBachillerato,2º Bachillerato
+,AC00206,Castro,Maldonado,Noelia,2ºBachillerato,2º Bachillerato
+,AC00207,Iglesias,Cobo,Teresa,2ºBachillerato,2º Bachillerato
+,AC00208,Salazar,Linares,Laura,2ºBachillerato,2º Bachillerato
+,AC00209,Saavedra,Mateo,Nicolás,2ºBachillerato,2º Bachillerato
+,AC00210,Vélez,Espinosa,Lorena,2ºBachillerato,2º Bachillerato
+,AC00211,Caballero,Infante,Tania,2ºBachillerato,2º Bachillerato
+,AC00212,Torres,Cobo,Teresa,2ºBachillerato,2º Bachillerato
+,AC00213,López,Rico,Eva,2ºBachillerato,2º Bachillerato
+,AC00214,Heredia,González,Raúl,2ºBachillerato,2º Bachillerato
+,AC00215,Orozco,Villalba,Beatriz,2ºBachillerato,2º Bachillerato
+,AC00216,Ruiz,Gallardo,Blanca,2ºBachillerato,2º Bachillerato
+,AC00217,Requena,Vélez,Olivia,2ºBachillerato,2º Bachillerato
+,AC00218,Palma,Cruz,Marina,2ºBachillerato,2º Bachillerato
+,AC00219,Márquez,Hidalgo,Francisco Javier,2ºBachillerato,2º Bachillerato
+,AC00220,Ortega,Navarro,Lorena,2ºBachillerato,2º Bachillerato
+,AC00221,Jiménez,Garrido,Beatriz,2ºBachillerato,2º Bachillerato
+,AC00222,Saavedra,Moya,Jorge,2ºBachillerato,2º Bachillerato
+,AD00101,Díaz,Lara,Manuel,1ºDAW,1º DAW
+,AD00102,Montero,Porras,Pablo,1ºDAW,1º DAW
+,AD00103,Infante,Gálvez,Violeta,1ºDAW,1º DAW
+,AD00104,Cruz,Campos,Sergio,1ºDAW,1º DAW
+,AD00105,Infante,Castro,Ismael,1ºDAW,1º DAW
+,AD00106,Reyes,Salguero,Leo,1ºDAW,1º DAW
+,AD00107,Conde,Ojeda,Ariadna,1ºDAW,1º DAW
+,AD00108,Quintana,Álvarez,Martín,1ºDAW,1º DAW
+,AD00109,Montilla,Vélez,Silvia,1ºDAW,1º DAW
+,AD00110,Calvo,Caballero,Jimena,1ºDAW,1º DAW
+,AD00111,Expósito,Rivera,Rocío,1ºDAW,1º DAW
+,AD00112,Padilla,Blanco,Blanca,1ºDAW,1º DAW
+,AD00113,Rodríguez,Ramírez,Miguel,1ºDAW,1º DAW
+,AD00114,Torres,Linares,Miriam,1ºDAW,1º DAW
+,AD00115,Vélez,López,Guillermo,1ºDAW,1º DAW
+,AD00116,Bermúdez,Pozo,Erik,1ºDAW,1º DAW
+,AD00117,Pino,Santiago,Daniela,1ºDAW,1º DAW
+,AD00118,Vallejo,González,Laia,1ºDAW,1º DAW
+,AD00119,Alarcón,Pastor,César,1ºDAW,1º DAW
+,AD00120,Morilla,Cabrera,Marta,1ºDAW,1º DAW
+,AD00121,Infante,Cobo,César,1ºDAW,1º DAW
+,AD00122,Puente,Santiago,Laura,1ºDAW,1º DAW
+,AD00123,Roldán,Hidalgo,Candela,1ºDAW,1º DAW
+,AD00124,Calvo,Rubio,Lucía,1ºDAW,1º DAW
+,AD00201,Vidal,Santos,Javier,2ºDAW,2º DAW
+,AD00202,Barranco,Fuentes,Nora,2ºDAW,2º DAW
+,AD00203,Osuna,Tapia,Lorena,2ºDAW,2º DAW
+,AD00204,Jurado,Robles,Esther,2ºDAW,2º DAW
+,AD00205,Rubio,Bueno,Mario,2ºDAW,2º DAW
+,AD00206,Padilla,Montes,Alicia,2ºDAW,2º DAW
+,AD00207,Porras,Zapata,Bruno,2ºDAW,2º DAW
+,AD00208,Toledo,Ruiz,Olivia,2ºDAW,2º DAW
+,AD00209,Cazorla,Pacheco,Javier,2ºDAW,2º DAW
+,AD00210,Montes,Vélez,Juan Manuel,2ºDAW,2º DAW
+,AD00211,Naranjo,Cortés,Erik,2ºDAW,2º DAW
+,AD00212,Navarrete,Silva,Valeria,2ºDAW,2º DAW
+,AD00213,Garrido,Gálvez,Triana,2ºDAW,2º DAW
+,AD00214,Castillo,Gil,Nicolás,2ºDAW,2º DAW
+,AD00215,Mena,Córdoba,Triana,2ºDAW,2º DAW
+,AD00216,Suárez,Vélez,Nora,2ºDAW,2º DAW
+,AD00217,Mesa,Villalba,Jorge,2ºDAW,2º DAW
+,AD00218,Maldonado,Baena,Andrea,2ºDAW,2º DAW
+,AD00219,Ríos,Peralta,Samuel,2ºDAW,2º DAW
+,AD00220,Nieto,Salas,Tania,2ºDAW,2º DAW
+,AD00221,Lorente,Suárez,Paola,2ºDAW,2º DAW
+,AD00222,Tejada,Tapia,Leire,2ºDAW,2º DAW
+,AD00223,Trujillo,Gómez,Alicia,2ºDAW,2º DAW
+,AD00224,Contreras,Blanco,Carmen,2ºDAW,2º DAW
