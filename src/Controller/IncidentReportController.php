@@ -268,10 +268,7 @@ class IncidentReportController extends AbstractController
                     }
 
                     $academicYear = $group->getAcademicYear();
-                    if ($academicYear === null) {
-                        continue;
-                    }
-                    $yearKey = $academicYear->getId()->toRfc4122();
+                    $yearKey      = $academicYear->getId()->toRfc4122();
 
                     if (!array_key_exists($yearKey, $nextNumbers)) {
                         $nextNumbers[$yearKey] = $this->reports->nextNumberForYear($academicYear);
@@ -901,8 +898,7 @@ class IncidentReportController extends AbstractController
 
     private function centreFor(IncidentReport $report): EducationalCentre
     {
-        return $report->getGroup()->getAcademicYear()?->getEducationalCentre()
-            ?? throw new \LogicException('Report group has no course with an academic year.');
+        return $report->getGroup()->getAcademicYear()->getEducationalCentre();
     }
 
     private function denyIfViewingPastYear(EducationalCentre $centre): void

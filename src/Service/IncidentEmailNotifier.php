@@ -459,8 +459,7 @@ final class IncidentEmailNotifier
 
     private function centreForGroup(Group $group): EducationalCentre
     {
-        return $group->getAcademicYear()?->getEducationalCentre()
-            ?? throw new \LogicException('Group has no course with an academic year.');
+        return $group->getAcademicYear()->getEducationalCentre();
     }
 
     private function fullName(Teacher|Student $person): string

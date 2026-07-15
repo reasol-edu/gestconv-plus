@@ -149,10 +149,8 @@ class EducationalCentreRepository extends ServiceEntityRepository
             ->distinct()
             ->getQuery()
             ->getResult() as $group) {
-            $ec = $group->getAcademicYear()?->getEducationalCentre();
-            if ($ec !== null) {
-                $merged[$ec->getId()->toRfc4122()] = $ec;
-            }
+            $ec = $group->getAcademicYear()->getEducationalCentre();
+            $merged[$ec->getId()->toRfc4122()] = $ec;
         }
 
         $centres = array_values($merged);

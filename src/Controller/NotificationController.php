@@ -342,8 +342,7 @@ class NotificationController extends AbstractController
 
     private function centreFor(IncidentReport|Sanction $target): EducationalCentre
     {
-        return $target->getGroup()->getAcademicYear()?->getEducationalCentre()
-            ?? throw new \LogicException('Group has no course with an academic year.');
+        return $target->getGroup()->getAcademicYear()->getEducationalCentre();
     }
 
     private function denyIfViewingPastYear(EducationalCentre $centre): void

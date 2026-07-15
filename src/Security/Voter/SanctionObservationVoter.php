@@ -38,10 +38,7 @@ final class SanctionObservationVoter extends Voter
             return true;
         }
 
-        $centre = $subject->getSanction()->getGroup()->getAcademicYear()?->getEducationalCentre();
-        if ($centre === null) {
-            return false;
-        }
+        $centre = $subject->getSanction()->getGroup()->getAcademicYear()->getEducationalCentre();
 
         if ($centre->getAdmins()->contains($user) || $centre->getCommitteeMembers()->contains($user)) {
             return true;

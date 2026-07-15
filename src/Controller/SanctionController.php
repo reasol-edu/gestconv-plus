@@ -211,9 +211,6 @@ class SanctionController extends AbstractController
 
                 if (empty($errors)) {
                     $academicYear = $group->getAcademicYear();
-                    if ($academicYear === null) {
-                        throw $this->createNotFoundException();
-                    }
 
                     $sanction = (new Sanction())
                         ->setAcademicYear($academicYear)
@@ -845,8 +842,7 @@ class SanctionController extends AbstractController
 
     private function centreFor(Sanction $sanction): EducationalCentre
     {
-        return $sanction->getGroup()->getAcademicYear()?->getEducationalCentre()
-            ?? throw new \LogicException('Sanction group has no course with an academic year.');
+        return $sanction->getGroup()->getAcademicYear()->getEducationalCentre();
     }
 
     private function denyIfViewingPastYear(EducationalCentre $centre): void
