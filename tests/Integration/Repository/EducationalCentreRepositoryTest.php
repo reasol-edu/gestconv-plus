@@ -242,7 +242,7 @@ class EducationalCentreRepositoryTest extends RepositoryTestCase
         $teacher = $this->makeTeacher('teacher.group.two');
         $group   = (new Group())->setName('DAM1A')->setCourse($course);
         $this->persist($centre, $year, $course, $teacher, $group);
-        $group->addTeacher($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
         $this->flush();
 
         $results = $this->repo->findAccessibleByTeacher($teacher);

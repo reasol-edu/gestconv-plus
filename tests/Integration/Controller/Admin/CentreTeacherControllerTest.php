@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller\Admin;
 
 use App\Entity\AcademicYear;
+use App\Entity\Course;
 use App\Entity\EducationalCentre;
+use App\Entity\Group;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -220,7 +222,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
-        file_put_contents($tmpFile, "\"Unidad\",\"Profesor/a\"\n\"DAW1A\",\"Garcia, Juan\"\n");
+        file_put_contents($tmpFile, "\"Unidad\",\"Profesor/a\",\"Materia\"\n\"DAW1A\",\"Garcia, Juan\",\"Matemáticas\"\n");
         $file = new UploadedFile($tmpFile, 'assignments.csv', 'text/csv', null, true);
 
         $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/importar-asignaciones', [
@@ -247,6 +249,64 @@ class CentreTeacherControllerTest extends ControllerTestCase
         ]);
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testImportAssignmentsPostWithoutMateriaColumnRedirectsWithMissingColumnError(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $this->persist($admin, $centre, $year);
+        $centre->setActiveAcademicYear($year);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/importar-asignaciones');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
+        file_put_contents($tmpFile, "\"Unidad\",\"Profesor/a\"\n\"DAW1A\",\"Garcia, Juan\"\n");
+        $file = new UploadedFile($tmpFile, 'assignments.csv', 'text/csv', null, true);
+
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/importar-asignaciones', [
+            '_token' => $token,
+        ], ['csv' => $file]);
+
+        self::assertResponseRedirects('/centro/' . $centreId . '/docentes-curso/importar-asignaciones');
+
+        @unlink($tmpFile);
+    }
+
+    public function testImportAssignmentsPostSkipsRowWhenTeacherAlreadyHasSubjectInGroup(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $course  = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group   = (new Group())->setName('DAW1A')->setCourse($course);
+        $teacher = (new Teacher(new PersonName('Juan', 'Garcia')))->setUsername('garcia.juan');
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->persist($admin, $centre, $year, $course, $group, $teacher);
+        $centre->setActiveAcademicYear($year);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/importar-asignaciones');
+        $token    = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gestconv_test_');
+        file_put_contents($tmpFile, "\"Unidad\",\"Profesor/a\",\"Materia\"\n\"DAW1A\",\"Garcia, Juan\",\"Matemáticas\"\n");
+        $file = new UploadedFile($tmpFile, 'assignments.csv', 'text/csv', null, true);
+
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/importar-asignaciones', [
+            '_token' => $token,
+        ], ['csv' => $file]);
+
+        self::assertResponseRedirects();
+
+        $this->em->clear();
+        $reloadedGroup = $this->em->getRepository(Group::class)->find($group->getId());
+        self::assertCount(1, $reloadedGroup->getTeacherAssignments());
+
+        @unlink($tmpFile);
     }
 
     // ── register ──────────────────────────────────────────────────────────────

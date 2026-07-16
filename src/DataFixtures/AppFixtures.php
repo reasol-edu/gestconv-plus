@@ -284,7 +284,7 @@ class AppFixtures extends Fixture
             $tutorIdx++;
 
             $group->addTutor($tutor);
-            $group->addTeacher($co);
+            $group->addTeacher($co, 'Cotutoría');
             $manager->persist($group);
 
             $rows = $studentsByUnit[$name]

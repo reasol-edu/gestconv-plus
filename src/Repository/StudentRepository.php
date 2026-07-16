@@ -196,11 +196,12 @@ class StudentRepository extends ServiceEntityRepository
             ->setParameter('year', $year->getId(), 'uuid');
 
         if ($viewer !== null && !$viewer->isAdmin()) {
-            $qb->andWhere($qb->expr()->orX(
-                'EXISTS(SELECT 1 FROM ' . AcademicYear::class . ' vay JOIN vay.educationalCentre vvec JOIN vvec.admins vadm WHERE vay.id = :year AND vadm.id = :viewer)',
-                ':viewer MEMBER OF g.tutors',
-                ':viewer MEMBER OF g.teachers',
-            ))->setParameter('viewer', $viewer->getId(), 'uuid');
+            $qb->leftJoin('g.groupTeachers', 'gt')
+                ->andWhere($qb->expr()->orX(
+                    'EXISTS(SELECT 1 FROM ' . AcademicYear::class . ' vay JOIN vay.educationalCentre vvec JOIN vvec.admins vadm WHERE vay.id = :year AND vadm.id = :viewer)',
+                    ':viewer MEMBER OF g.tutors',
+                    'gt.teacher = :viewer',
+                ))->setParameter('viewer', $viewer->getId(), 'uuid');
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
@@ -240,7 +241,7 @@ class StudentRepository extends ServiceEntityRepository
         if ($viewer !== null && !$viewer->isAdmin() && !$centre->getAdmins()->contains($viewer)) {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    'EXISTS (SELECT 1 FROM ' . Group::class . ' vg JOIN vg.teachers vgt WHERE vg.id = g.id AND vgt.id = :viewerId)',
+                    'EXISTS (SELECT 1 FROM ' . Group::class . ' vg JOIN vg.groupTeachers vgt WHERE vg.id = g.id AND vgt.teacher = :viewerId)',
                     'EXISTS (SELECT 1 FROM ' . Group::class . ' vg2 JOIN vg2.tutors vgtu WHERE vg2.id = g.id AND vgtu.id = :viewerId)',
                 )
             )->setParameter('viewerId', $viewer->getId(), 'uuid');

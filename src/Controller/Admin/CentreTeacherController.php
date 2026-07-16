@@ -190,7 +190,7 @@ class CentreTeacherController extends AbstractController
             return $this->redirectToRoute('app_centre_teachers_import_assignments', ['centreId' => $centre->getId()]);
         }
 
-        $required = ['Unidad', 'Profesor/a'];
+        $required = ['Unidad', 'Profesor/a', 'Materia'];
         $missing  = $this->csvReader->findMissingColumn($parsed['headers'], $required);
         if ($missing !== null) {
             $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.missing_column') . ' «' . $missing . '»');
@@ -214,11 +214,12 @@ class CentreTeacherController extends AbstractController
         foreach ($parsed['rows'] as $row) {
             $groupName  = $row['Unidad'] ?? '';
             $fullName   = $row['Profesor/a'] ?? '';
+            $subject    = trim($row['Materia'] ?? '');
             $nameParts  = explode(', ', $fullName, 2);
             $lastName   = $nameParts[0];
             $firstName  = $nameParts[1] ?? '';
 
-            if ($groupName === '' || $firstName === '' || $lastName === '') {
+            if ($groupName === '' || $firstName === '' || $lastName === '' || $subject === '') {
                 $skipped++;
                 continue;
             }
@@ -235,8 +236,8 @@ class CentreTeacherController extends AbstractController
                 continue;
             }
 
-            if (!$group->getTeachers()->contains($teacher)) {
-                $group->addTeacher($teacher);
+            if (!$group->hasTeacherSubject($teacher, $subject)) {
+                $group->addTeacher($teacher, $subject);
                 $linked++;
             }
         }
@@ -347,13 +348,14 @@ class CentreTeacherController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        $allGroups      = $this->groups->findByActiveYearOfCentreWithCourse($centre);
-        $currentGroupIds = [];
-        foreach ($allGroups as $group) {
-            if ($group->getTeachers()->contains($teacher)) {
-                $currentGroupIds[] = $group->getId()->toRfc4122();
-            }
-        }
+        $allGroups = array_values(array_filter(
+            $this->groups->findByActiveYearOfCentreWithCourse($centre),
+            static fn (Group $group): bool => $group->getTeachers()->contains($teacher),
+        ));
+        $currentGroupIds = array_map(
+            static fn (Group $group): string => $group->getId()->toRfc4122(),
+            $allGroups,
+        );
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('edit_centre_teacher_groups_' . $teacherId, $request->request->getString('_token'))) {
@@ -364,13 +366,8 @@ class CentreTeacherController extends AbstractController
             $submittedIds = array_filter(array_map(static fn (mixed $v): string => is_string($v) ? $v : '', $submittedIds));
 
             foreach ($allGroups as $group) {
-                $id       = $group->getId()->toRfc4122();
-                $isIn     = $group->getTeachers()->contains($teacher);
-                $selected = in_array($id, $submittedIds, true);
-
-                if ($selected && !$isIn) {
-                    $group->addTeacher($teacher);
-                } elseif (!$selected && $isIn) {
+                $id = $group->getId()->toRfc4122();
+                if (!in_array($id, $submittedIds, true)) {
                     $group->removeTeacher($teacher);
                 }
             }

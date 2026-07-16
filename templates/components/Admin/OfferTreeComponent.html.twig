@@ -220,17 +220,60 @@
                                         </select>
                                     </div>
 
-                                    {% set teacher_ids = [] %}
-                                    {% for te in sel_group.teachers %}{% set teacher_ids = teacher_ids|merge([te.id.toRfc4122]) %}{% endfor %}
                                     <div class="border-t border-gray-100 pt-4 sm:col-span-3">
                                         <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'group.field.teachers'|trans({}, 'admin') }}</label>
-                                        <select id="staff-teachers" multiple class="js-staff-select w-full"
-                                                data-staff-action="setGroupTeachers" data-staff-arg="ids"
-                                                data-placeholder="{{ 'group.field.teachers_help'|trans({}, 'admin') }}">
-                                            {% for t in teacher_options %}
-                                                <option value="{{ t.id.toRfc4122 }}" {{ t.id.toRfc4122 in teacher_ids ? 'selected' : '' }}>{{ t.name.lastName }}, {{ t.name.firstName }}</option>
-                                            {% endfor %}
-                                        </select>
+
+                                        {% if sel_group.teacherAssignments is empty %}
+                                            <p class="text-xs italic text-gray-400">{{ 'group.field.teachers_empty'|trans({}, 'admin') }}</p>
+                                        {% else %}
+                                            <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
+                                                {% for gt in sel_group.teacherAssignments %}
+                                                    <li class="flex items-center gap-2 px-3 py-2 text-sm">
+                                                        <span class="flex-1 min-w-0 truncate text-gray-800">
+                                                            {{ gt.teacher.name.lastName }}, {{ gt.teacher.name.firstName }}
+                                                            <span class="text-gray-400">·</span>
+                                                            <span class="text-gray-500">{{ gt.subject }}</span>
+                                                        </span>
+                                                        {% if can_write %}
+                                                            <button type="button" data-action="live#action"
+                                                                    data-live-action-param="removeGroupTeacher" data-live-id-param="{{ gt.id }}"
+                                                                    class="shrink-0 inline-flex items-center justify-center rounded-lg p-1 text-gray-400
+                                                                           hover:bg-red-50 hover:text-red-600 transition-colors"
+                                                                    title="{{ 'group.action.remove_teacher'|trans({}, 'admin') }}">
+                                                                {{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}
+                                                            </button>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+
+                                        {% if can_write %}
+                                            <form data-action="submit->live#action:prevent" data-live-action-param="addGroupTeacher"
+                                                  class="mt-2 flex flex-wrap items-center gap-2">
+                                                <select data-model="norender|newTeacherId"
+                                                        class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm
+                                                               focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                                                    <option value="">{{ 'group.field.teacher_select_placeholder'|trans({}, 'admin') }}</option>
+                                                    {% for t in teacher_options %}
+                                                        <option value="{{ t.id.toRfc4122 }}" {{ t.id.toRfc4122 == newTeacherId ? 'selected' : '' }}>{{ t.name.lastName }}, {{ t.name.firstName }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <input type="text"
+                                                       data-model="norender|newTeacherSubject"
+                                                       value="{{ newTeacherSubject }}"
+                                                       placeholder="{{ 'group.field.teacher_subject_placeholder'|trans({}, 'admin') }}"
+                                                       class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm
+                                                              placeholder-gray-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                                                <button type="submit"
+                                                        class="inline-flex shrink-0 items-center justify-center rounded-lg bg-forest-600 p-1.5 text-white
+                                                               hover:bg-forest-700 transition-colors"
+                                                        title="{{ 'group.action.add_teacher'|trans({}, 'admin') }}">
+                                                    {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                                                </button>
+                                            </form>
+                                            {% if errors.teachers is defined %}<p class="mt-1 text-xs text-red-600">{{ errors.teachers }}</p>{% endif %}
+                                        {% endif %}
                                     </div>
 
                                     <div class="border-t border-gray-100 pt-4 sm:col-span-3">

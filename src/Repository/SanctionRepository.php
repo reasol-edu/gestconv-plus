@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
+use App\Entity\GroupTeacher;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\Student;
@@ -403,7 +404,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->addOrderBy('st.name.lastName', 'ASC');
 
         $qb->andWhere($qb->expr()->orX(
-            ':viewer MEMBER OF g.teachers',
+            'EXISTS (SELECT 1 FROM ' . GroupTeacher::class . ' xgt WHERE xgt.group = g AND xgt.teacher = :viewer)',
             ':viewer MEMBER OF g.tutors',
         ));
 

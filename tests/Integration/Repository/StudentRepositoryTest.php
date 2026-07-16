@@ -249,7 +249,7 @@ class StudentRepositoryTest extends RepositoryTestCase
 
         $teacher = $this->makeTeacher('groupteacher');
         $year->addTeacher($teacher);
-        $groupA2->addTeacher($teacher);
+        $groupA2->addTeacher($teacher, 'Matemáticas');
         $this->persist($teacher);
         $this->flush();
 

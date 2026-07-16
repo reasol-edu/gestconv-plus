@@ -7,6 +7,7 @@ namespace App\Twig\Components\Admin;
 use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
+use App\Entity\GroupTeacher;
 use App\Entity\Teacher;
 use App\Repository\CourseRepository;
 use App\Repository\GroupRepository;
@@ -48,6 +49,13 @@ class OfferTreeComponent extends AbstractController
 
     #[LiveProp(writable: true)]
     public string $addGroupName = '';
+
+    /** Inline "add teacher" mini-form in the group detail panel. */
+    #[LiveProp(writable: true)]
+    public string $newTeacherId = '';
+
+    #[LiveProp(writable: true)]
+    public string $newTeacherSubject = '';
 
     /** Detail-panel fields for the deepest selected item. */
     #[LiveProp(writable: true)]
@@ -194,6 +202,7 @@ class OfferTreeComponent extends AbstractController
     {
         $this->errors = [];
         $this->confirmingDelete = false;
+        $this->newTeacherId = $this->newTeacherSubject = '';
         $selected = $this->getSelected();
         if ($selected === null) {
             $this->editName = $this->editDetails = '';
@@ -340,9 +349,39 @@ class OfferTreeComponent extends AbstractController
         $this->addFlash('success', $this->t('group.flash.saved'));
     }
 
-    /** @param string[] $ids */
     #[LiveAction]
-    public function setGroupTeachers(#[LiveArg] array $ids): void
+    public function addGroupTeacher(): void
+    {
+        $this->requireWritableCentre();
+        $group   = $this->getSelectedGroup();
+        $subject = trim($this->newTeacherSubject);
+        if ($group === null) {
+            return;
+        }
+
+        $teacher = Uuid::isValid($this->newTeacherId) ? $this->resolveTeacher($this->newTeacherId) : null;
+        if ($teacher === null || $subject === '') {
+            $this->errors = ['teachers' => $this->t('group.error.teacher_subject_required')];
+
+            return;
+        }
+
+        if ($group->hasTeacherSubject($teacher, $subject)) {
+            $this->errors = ['teachers' => $this->t('group.error.teacher_subject_duplicate')];
+
+            return;
+        }
+
+        $group->addTeacher($teacher, $subject);
+        $this->em->flush();
+
+        $this->newTeacherId = $this->newTeacherSubject = '';
+        $this->errors = [];
+        $this->addFlash('success', $this->t('group.flash.saved'));
+    }
+
+    #[LiveAction]
+    public function removeGroupTeacher(#[LiveArg] string $id): void
     {
         $this->requireWritableCentre();
         $group = $this->getSelectedGroup();
@@ -350,12 +389,14 @@ class OfferTreeComponent extends AbstractController
             return;
         }
 
-        $this->syncTeachers(
-            $group->getTeachers(),
-            $ids,
-            fn (Teacher $t) => $group->addTeacher($t),
-            fn (Teacher $t) => $group->removeTeacher($t),
+        $assignment = $group->getTeacherAssignments()->findFirst(
+            static fn (int $i, GroupTeacher $gt): bool => $gt->getId()->toRfc4122() === $id
         );
+        if ($assignment === null) {
+            return;
+        }
+
+        $group->removeTeacherAssignment($assignment);
         $this->em->flush();
         $this->addFlash('success', $this->t('group.flash.saved'));
     }

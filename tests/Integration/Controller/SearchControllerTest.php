@@ -91,7 +91,7 @@ class SearchControllerTest extends ControllerTestCase
 
         $teacher = (new Teacher(new PersonName('Profe', 'Normal')))->setUsername('search.teacher.78');
         $teacher->setPassword('x');
-        $group->addTeacher($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
 
         $this->persist($group, $student, $teacher);
 
@@ -122,7 +122,7 @@ class SearchControllerTest extends ControllerTestCase
 
         $teacher = (new Teacher(new PersonName('Profe', 'Normal')))->setUsername('search.teacher.79');
         $teacher->setPassword('x');
-        $ownGroup->addTeacher($teacher);
+        $ownGroup->addTeacher($teacher, 'Matemáticas');
 
         $this->persist($ownGroup, $otherGroup, $ownStudent, $otherStudent, $teacher);
 

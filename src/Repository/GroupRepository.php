@@ -27,9 +27,9 @@ class GroupRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('g')
             ->select('1')
             ->join('g.course', 'c')
-            ->leftJoin('g.teachers', 't')
+            ->leftJoin('g.groupTeachers', 'gt')
             ->where('c = :course')
-            ->andWhere(':teacher MEMBER OF g.tutors OR t.id = :teacher')
+            ->andWhere(':teacher MEMBER OF g.tutors OR gt.teacher = :teacher')
             ->setParameter('course', $course->getId(), 'uuid')
             ->setParameter('teacher', $teacher->getId(), 'uuid')
             ->setMaxResults(1)
@@ -175,9 +175,10 @@ class GroupRepository extends ServiceEntityRepository
         $qb->select('1')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
+            ->leftJoin('g.groupTeachers', 'gt')
             ->where('ay = :year')
             ->andWhere($qb->expr()->orX(
-                ':viewer MEMBER OF g.teachers',
+                'gt.teacher = :viewer',
                 ':viewer MEMBER OF g.tutors',
             ))
             ->setParameter('year', $year->getId(), 'uuid')
@@ -205,12 +206,12 @@ class GroupRepository extends ServiceEntityRepository
             ->createQuery('
                 SELECT g.id AS gid,
                        COUNT(DISTINCT s.id) AS students,
-                       COUNT(DISTINCT t.id) AS teachers
+                       COUNT(DISTINCT IDENTITY(gt.teacher)) AS teachers
                 FROM App\Entity\Group g
                 JOIN g.course c
                 JOIN c.academicYear ay
                 LEFT JOIN g.students s
-                LEFT JOIN g.teachers t
+                LEFT JOIN g.groupTeachers gt
                 WHERE ay = :year
                 GROUP BY g.id
             ')

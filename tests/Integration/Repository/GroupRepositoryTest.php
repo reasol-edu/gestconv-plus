@@ -199,7 +199,7 @@ class GroupRepositoryTest extends RepositoryTestCase
         $teacher = $this->makeTeacher('teacher.one');
         $group   = $this->makeGroup($course, 'DAM1A');
         $this->persist($teacher, $group);
-        $group->addTeacher($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
         $this->flush();
 
         self::assertTrue($this->repo->isTeacherInCourse($teacher, $course));
@@ -238,7 +238,7 @@ class GroupRepositoryTest extends RepositoryTestCase
         $student = new Student(new PersonName('Ana', 'Garcia'));
         $student->setStudentId('ST001');
         $this->persist($group, $teacher, $student);
-        $group->addTeacher($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
         $student->addGroup($group);
         $this->flush();
 

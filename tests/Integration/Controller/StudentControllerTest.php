@@ -59,7 +59,7 @@ class StudentControllerTest extends ControllerTestCase
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
         $other = $this->makeTeacher('student.plain.2');
-        $group->addTeacher($other);
+        $group->addTeacher($other, 'Matemáticas');
         $student->setTutorName1('María Tutora');
         $this->persist($other);
         $report = $this->makeReport($student, $group, $teacher, $behavior);
