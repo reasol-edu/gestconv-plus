@@ -1,0 +1,335 @@
+<div {{ attributes }} class="js-time-slot-board">
+    {% if centre.activeAcademicYear is null %}
+        <div class="px-6 py-16 text-center">
+            {{ ux_icon('heroicons:exclamation-circle', {class: 'mx-auto h-10 w-10 text-amber-300 mb-3'}) }}
+            <p class="text-sm text-gray-500">{{ 'time_slot.no_active_year'|trans({}, 'admin') }}</p>
+        </div>
+    {% else %}
+        {% set can_write       = this.canWrite %}
+        {% set columns         = this.columns %}
+        {% set sel             = this.selectedTimeSlot %}
+        {% set teacher_options = this.teacherOptions %}
+
+        <div data-loading="addClass(opacity-50 pointer-events-none)" class="transition-opacity space-y-4 p-4">
+
+            {# ── Añadir un tramo a todos los días laborables a la vez ────────── #}
+            {% if can_write %}
+                {% if addingAllDays %}
+                    <form data-action="submit->live#action:prevent"
+                          data-live-action-param="saveAddAllDays"
+                          class="overflow-hidden rounded-xl border border-forest-200 bg-forest-50/40 p-3 sm:flex sm:items-end sm:gap-2">
+                        <div class="flex-1">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.name'|trans({}, 'admin') }}</label>
+                            <input type="text"
+                                   data-model="norender|addName"
+                                   value="{{ addName }}"
+                                   placeholder="{{ 'time_slot.field.name_placeholder'|trans({}, 'admin') }}"
+                                   class="block w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm
+                                          placeholder-gray-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5 sm:mt-0">
+                            <input type="time"
+                                   data-model="norender|addStart"
+                                   value="{{ addStart }}"
+                                   class="min-w-0 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm
+                                          focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                            <span class="text-gray-300">–</span>
+                            <input type="time"
+                                   data-model="norender|addEnd"
+                                   value="{{ addEnd }}"
+                                   class="min-w-0 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm
+                                          focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                        </div>
+                        <div class="mt-2 flex items-center gap-2 sm:mt-0">
+                            <button type="submit"
+                                    class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-forest-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-forest-700 transition-colors">
+                                {{ ux_icon('heroicons:check', {class: 'h-3.5 w-3.5'}) }}{{ 'time_slot.detail.save'|trans({}, 'admin') }}
+                            </button>
+                            <button type="button" data-action="live#action" data-live-action-param="cancelAddAllDays"
+                                    class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                                {{ 'time_slot.detail.cancel'|trans({}, 'admin') }}
+                            </button>
+                        </div>
+                        {% if errors.add is defined %}<p class="mt-2 w-full text-xs text-red-600">{{ errors.add }}</p>{% endif %}
+                    </form>
+                {% else %}
+                    <button type="button" data-action="live#action" data-live-action-param="startAddAllDays"
+                            class="flex items-center gap-1.5 rounded-xl border border-dashed border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-500 hover:border-forest-400 hover:text-forest-700 transition-colors">
+                        {{ ux_icon('heroicons:calendar-days', {class: 'h-3.5 w-3.5'}) }}{{ 'time_slot.col.add_all_days'|trans({}, 'admin') }}
+                    </button>
+                {% endif %}
+            {% endif %}
+
+            {# ── Tablero: cinco columnas, lunes a viernes ──────────────────── #}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {% for day in 0..4 %}
+                    {% set slots = columns[day] ?? [] %}
+                    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white flex flex-col">
+                        <div class="flex items-center gap-2 bg-gray-50/70 px-3 py-2.5 border-b border-gray-100">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ ('weekday.' ~ (day + 1))|trans({}, 'calendar') }}</span>
+                            <span class="ml-auto text-xs text-gray-400">{{ slots|length }}</span>
+                        </div>
+
+                        {% if slots is empty %}
+                            <p class="px-3 py-4 text-center text-xs italic text-gray-400">{{ 'time_slot.col.empty'|trans({}, 'admin') }}</p>
+                        {% else %}
+                            <ul class="divide-y divide-gray-50">
+                                {% for ts in slots %}
+                                    {% set is_sel = selectedId == ts.id.toRfc4122 %}
+                                    <li>
+                                        <button type="button"
+                                                data-action="live#action"
+                                                data-live-action-param="selectTimeSlot"
+                                                data-live-id-param="{{ ts.id }}"
+                                                class="flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left transition-colors
+                                                       {{ is_sel ? 'bg-forest-50 ring-1 ring-inset ring-forest-200' : 'hover:bg-gray-50' }}">
+                                            <span class="text-sm truncate w-full {{ is_sel ? 'font-semibold text-forest-800' : 'text-gray-800' }}">{{ ts.name }}</span>
+                                            <span class="text-xs text-gray-400">{{ ts.startTime|date('H:i') }}–{{ ts.endTime|date('H:i') }}</span>
+                                            {% if ts.guards is not empty %}
+                                                <span class="mt-1 flex items-center -space-x-1.5">
+                                                    {% for g in ts.guards|slice(0, 6) %}
+                                                        <span title="{{ g.name.firstName }} {{ g.name.lastName }}"
+                                                              class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-[10px] font-semibold uppercase text-amber-700 ring-2 ring-white">
+                                                            {{ g.name.firstName|slice(0, 1) }}{{ g.name.lastName|slice(0, 1) }}
+                                                        </span>
+                                                    {% endfor %}
+                                                    {% if ts.guards|length > 6 %}
+                                                        <span title="{{ 'time_slot.field.guards'|trans({}, 'admin') }}: {% for g in ts.guards|slice(6) %}{{ g.name.lastName }}, {{ g.name.firstName }}{{ not loop.last ? '; ' : '' }}{% endfor %}"
+                                                              class="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[10px] font-semibold text-gray-600 ring-2 ring-white">
+                                                            +{{ ts.guards|length - 6 }}
+                                                        </span>
+                                                    {% endif %}
+                                                </span>
+                                            {% endif %}
+                                        </button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        {% if can_write %}
+                            {% if addDayOfWeek is same as(day) %}
+                                <form data-action="submit->live#action:prevent"
+                                      data-live-action-param="saveAdd"
+                                      class="space-y-2 border-t border-gray-100 bg-gray-50/40 px-3 py-2.5">
+                                    <input type="text"
+                                           data-model="norender|addName"
+                                           value="{{ addName }}"
+                                           placeholder="{{ 'time_slot.field.name_placeholder'|trans({}, 'admin') }}"
+                                           class="block w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm
+                                                  placeholder-gray-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                                    <div class="flex items-center gap-1.5">
+                                        <input type="time"
+                                               data-model="norender|addStart"
+                                               value="{{ addStart }}"
+                                               class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm
+                                                      focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                                        <span class="text-gray-300">–</span>
+                                        <input type="time"
+                                               data-model="norender|addEnd"
+                                               value="{{ addEnd }}"
+                                               class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm
+                                                      focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                                    </div>
+                                    {% if errors.add is defined %}<p class="text-xs text-red-600">{{ errors.add }}</p>{% endif %}
+                                    <div class="flex items-center gap-2">
+                                        <button type="submit"
+                                                class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-forest-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-forest-700 transition-colors">
+                                            {{ ux_icon('heroicons:check', {class: 'h-3.5 w-3.5'}) }}{{ 'time_slot.detail.save'|trans({}, 'admin') }}
+                                        </button>
+                                        <button type="button" data-action="live#action" data-live-action-param="cancelAdd"
+                                                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                                            {{ 'time_slot.detail.cancel'|trans({}, 'admin') }}
+                                        </button>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <button type="button"
+                                        data-action="live#action"
+                                        data-live-action-param="startAdd"
+                                        data-live-day-param="{{ day }}"
+                                        class="flex items-center justify-center gap-1.5 border-t border-gray-100 bg-gray-50/40 px-3 py-2 text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-forest-700 transition-colors">
+                                    {{ ux_icon('heroicons:plus', {class: 'h-3.5 w-3.5'}) }}{{ 'time_slot.col.add'|trans({}, 'admin') }}
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# ── Detalle del tramo seleccionado ─────────────────────────────── #}
+            {% if sel %}
+                <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                    <div class="flex items-center gap-2 bg-gray-50/70 px-4 py-2.5 border-b border-gray-100">
+                        {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4 text-gray-400'}) }}
+                        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'time_slot.detail.title'|trans({}, 'admin') }}</span>
+                        <button type="button" data-action="live#action" data-live-action-param="clearSelection"
+                                class="ml-auto text-gray-300 hover:text-gray-500 transition-colors">
+                            {{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}
+                        </button>
+                    </div>
+
+                    <div class="px-4 py-4 sm:px-6">
+                        {% if can_write %}
+                            <form data-action="submit->live#action:prevent" data-live-action-param="saveDetail"
+                                  class="grid grid-cols-1 gap-3 sm:grid-cols-4">
+
+                                <div class="sm:col-span-2">
+                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.name'|trans({}, 'admin') }}</label>
+                                    <input type="text"
+                                           data-model="norender|editName"
+                                           value="{{ editName }}"
+                                           class="block w-full rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2
+                                                  {{ errors.edit is defined ? 'border-red-300 focus:ring-red-400/20' : 'border-gray-200 focus:border-forest-500 focus:ring-forest-500/20' }}">
+                                </div>
+
+                                <div class="sm:col-span-1">
+                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.day'|trans({}, 'admin') }}</label>
+                                    <select data-model="norender|editDayOfWeek"
+                                            class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm
+                                                   focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                                        {% for day in 0..4 %}
+                                            <option value="{{ day }}" {{ editDayOfWeek == day ? 'selected' : '' }}>{{ ('weekday.' ~ (day + 1))|trans({}, 'calendar') }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="sm:col-span-1">
+                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.start'|trans({}, 'admin') }}</label>
+                                    <input type="time"
+                                           data-model="norender|editStart"
+                                           value="{{ editStart }}"
+                                           class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm
+                                                  focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                                </div>
+
+                                <div class="sm:col-span-1">
+                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.end'|trans({}, 'admin') }}</label>
+                                    <input type="time"
+                                           data-model="norender|editEnd"
+                                           value="{{ editEnd }}"
+                                           class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm
+                                                  focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
+                                </div>
+
+                                {% if errors.edit is defined %}
+                                    <p class="text-xs text-red-600 sm:col-span-4">{{ errors.edit }}</p>
+                                {% endif %}
+
+                                <div class="border-t border-gray-100 pt-4 sm:col-span-4">
+                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.guards'|trans({}, 'admin') }}</label>
+                                    {% set guard_ids = [] %}
+                                    {% for g in sel.guards %}{% set guard_ids = guard_ids|merge([g.id.toRfc4122]) %}{% endfor %}
+                                    <select id="staff-guards" multiple class="js-staff-select w-full"
+                                            data-staff-action="setGuards" data-staff-arg="ids"
+                                            data-placeholder="{{ 'time_slot.field.guards_help'|trans({}, 'admin') }}">
+                                        {% for t in teacher_options %}
+                                            <option value="{{ t.id.toRfc4122 }}" {{ t.id.toRfc4122 in guard_ids ? 'selected' : '' }}>{{ t.name.lastName }}, {{ t.name.firstName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4 sm:col-span-4">
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-1.5 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                                        {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}{{ 'time_slot.detail.save'|trans({}, 'admin') }}
+                                    </button>
+
+                                    <span class="ml-auto"></span>
+
+                                    {% if confirmingDelete %}
+                                        <span class="text-xs text-gray-600">{{ 'time_slot.delete_confirm'|trans({}, 'admin') }}</span>
+                                        <button type="button" data-action="live#action" data-live-action-param="deleteSelected"
+                                                class="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
+                                            {{ 'time_slot.detail.confirm_yes'|trans({}, 'admin') }}
+                                        </button>
+                                        <button type="button" data-action="live#action" data-live-action-param="cancelDelete"
+                                                class="inline-flex items-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                                            {{ 'time_slot.detail.cancel'|trans({}, 'admin') }}
+                                        </button>
+                                    {% else %}
+                                        <button type="button" data-action="live#action" data-live-action-param="askDelete"
+                                                class="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors">
+                                            {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}{{ 'time_slot.detail.delete'|trans({}, 'admin') }}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        {% else %}
+                            <p class="text-sm text-gray-700">{{ editName }}</p>
+                            <p class="mt-1 text-xs text-gray-500">{{ editStart }}–{{ editEnd }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+    {% endif %}
+
+    <style>
+    .ts-wrapper { font-size: 0.875rem; }
+    .ts-control { border-radius: 0.75rem !important; border-color: #e5e7eb !important; background-color: #fff !important; padding: 0.5rem 0.875rem !important; box-shadow: none !important; gap: 0.25rem; }
+    .ts-control:focus-within { border-color: #876baf !important; box-shadow: 0 0 0 3px rgb(135 107 175 / 0.2) !important; }
+    .ts-control .item { background: #ece6f4; color: #574a68; border: 1px solid #d8cce8; border-radius: 0.5rem; padding: 0.125rem 0.375rem; font-size: 0.8125rem; }
+    .ts-control .item .remove { color: #876baf; border-left-color: #d8cce8; }
+    .ts-dropdown { border-radius: 0.75rem; border-color: #e5e7eb; box-shadow: 0 4px 12px rgb(0 0 0 / 0.08); overflow: hidden; }
+    .ts-dropdown .option { padding: 0.5rem 0.875rem; }
+    .ts-dropdown .option.active { background-color: #f6f3f9; color: #1f192a; }
+    </style>
+
+    <script type="module" data-live-ignore>
+    import TomSelect from 'tom-select';
+    import { getComponent } from '@symfony/ux-live-component';
+
+    let liveEl   = null;
+    let liveComp = null;
+
+    function initStaffSelect(select) {
+        if (select.tomselect) return;
+        const multiple   = select.multiple;
+        const actionName = select.dataset.staffAction;
+        const argName    = select.dataset.staffArg;
+        let ready = false;
+
+        new TomSelect(select, {
+            plugins: multiple ? ['remove_button'] : [],
+            valueField: 'value', labelField: 'text', searchField: ['text'],
+            maxOptions: null, create: false, dropdownParent: 'body',
+            allowEmptyOption: !multiple,
+            placeholder: select.dataset.placeholder || '',
+            render: {
+                no_results: function () {
+                    return '<div class="no-results">{{ 'tom_select.no_results'|trans({}, 'admin') }}</div>';
+                },
+            },
+            onInitialize: function () { requestAnimationFrame(function () { ready = true; }); },
+            onChange: function (value) {
+                if (!ready || !liveComp) return;
+                const params = {};
+                params[argName] = multiple ? (value || []) : (value || '');
+                liveComp.action(actionName, params);
+            },
+        });
+    }
+
+    function destroyAll() {
+        liveEl.querySelectorAll('.js-staff-select').forEach(function (select) {
+            if (select.tomselect) select.tomselect.destroy();
+        });
+    }
+
+    function onRender() {
+        liveEl.querySelectorAll('select.js-staff-select').forEach(initStaffSelect);
+    }
+
+    liveEl = document.querySelector('.js-time-slot-board');
+    if (liveEl) {
+        getComponent(liveEl).then(function (component) {
+            liveComp = component;
+            onRender();
+            component.on('render:started', destroyAll);
+            component.on('render:finished', onRender);
+        });
+    }
+    </script>
+</div>

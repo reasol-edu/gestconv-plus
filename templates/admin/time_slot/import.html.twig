@@ -1,0 +1,70 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'time_slot.import.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-2xl mx-auto space-y-8">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <a href="{{ path('app_centre_time_slots_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'time_slot.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'time_slot.import.title'|trans({}, 'admin') }}</h1>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'time_slot.import.title'|trans({}, 'admin') }}</h2>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="px-6 py-6 space-y-6">
+            <input type="hidden" name="_token" value="{{ csrf_token('import_time_slots') }}">
+
+            <div>
+                <label for="json"
+                       class="flex flex-col items-center justify-center gap-3 w-full rounded-xl border-2 border-dashed
+                              border-gray-300 bg-gray-50 px-6 py-8 cursor-pointer
+                              hover:border-forest-400 hover:bg-forest-50/40 transition-colors group mt-4 mb-2">
+                    {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-8 w-8 text-gray-400 group-hover:text-forest-500 transition-colors'}) }}
+                    <span class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2
+                                 text-sm font-medium text-gray-700 shadow-xs group-hover:border-forest-300 group-hover:text-forest-700 transition-colors">
+                        {{ 'time_slot.import.choose_file'|trans({}, 'admin') }}
+                    </span>
+                    <span id="json-filename" class="text-xs text-gray-400">
+                        {{ 'time_slot.import.no_file_chosen'|trans({}, 'admin') }}
+                    </span>
+                </label>
+                <input type="file" id="json" name="json" accept=".json,application/json" class="sr-only hidden"
+                       onchange="document.getElementById('json-filename').textContent = this.files[0]?.name ?? '{{ 'time_slot.import.no_file_chosen'|trans({}, 'admin') }}'">
+            </div>
+
+            <fieldset class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <label class="flex items-start gap-2 text-sm text-amber-900">
+                    <input type="checkbox" name="replace_existing" value="1"
+                           class="mt-0.5 rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                    <span>
+                        <span class="font-medium">{{ 'time_slot.import.option.replace'|trans({}, 'admin') }}</span>
+                        <span class="block text-xs text-amber-700 mt-0.5">{{ 'time_slot.import.option.replace_help'|trans({}, 'admin') }}</span>
+                    </span>
+                </label>
+            </fieldset>
+
+            <div class="flex items-center justify-between pt-2">
+                <a href="{{ path('app_centre_time_slots_index', {centreId: centre.id}) }}"
+                   class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                    {{ 'time_slot.import.cancel'|trans({}, 'admin') }}
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
+                    {{ 'time_slot.import.submit'|trans({}, 'admin') }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
