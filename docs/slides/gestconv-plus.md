@@ -123,6 +123,8 @@ Sin ningún rol especial, todo docente puede:
 - Consultar la **ficha del estudiante** con la información básica de su historial
   de convivencia.
 - Ver su **calendario** y las **notificaciones pendientes** que le afectan.
+- **Planificar sus ausencias previstas**, con instrucciones y material para
+  quien cubra sus clases.
 
 Todo lo que sigue en este bloque está disponible para cualquier docente, sin
 necesidad de ser tutor/a ni de pertenecer a la comisión de convivencia.
@@ -211,6 +213,32 @@ El parte pasa a **"Notificado"** y queda en el historial.
 - Acceso directo para registrar un nuevo parte sobre ese mismo estudiante.
 - Un docente normal ve aquí **la misma información que en sus listados**: solo
   lo relativo a los grupos donde imparte docencia.
+
+---
+
+## Ausencias: planificar las clases que vas a perder
+
+- Cualquier docente puede registrar sus propias **ausencias previstas** (días
+  fuera del aula) desde el menú lateral, sección **Ausencias**.
+- Cada ausencia tiene un **rango de fechas** y, dentro de ella, una o varias
+  **actividades**: qué trabajar, en qué grupo y en qué tramo horario.
+- Solo tú puedes crear, editar o eliminar tus propias ausencias; nadie más
+  las ve, salvo la administración del centro, que solo puede consultarlas.
+
+---
+
+<!-- _class: tight -->
+
+## Actividades y ficheros adjuntos
+
+- Cada actividad indica **fecha**, **tramo horario**, **grupo** (de entre los
+  que impartes) y una **descripción** con las instrucciones para quien cubra
+  la clase.
+- Se pueden adjuntar **ficheros** de hasta 10 MB cada uno (PDF, imágenes,
+  Word, Excel, PowerPoint, texto o ZIP) con el material necesario.
+- Los adjuntos se conservan solo un tiempo limitado tras la fecha de la
+  actividad; pasado ese plazo se eliminan automáticamente y queda una nota en
+  la descripción con lo que se eliminó y cuándo.
 
 ---
 

@@ -153,8 +153,8 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 ## Ajustes disponibles
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
-Visualización, Correo electrónico, Modo tablón, Notificaciones a familias, Avisos por correo y
-Personalización de informes.
+Visualización, Correo electrónico, Modo tablón, Notificaciones a familias, Avisos por correo,
+Personalización de informes y Ausencias.
 
 ### Visualización
 
@@ -303,6 +303,21 @@ texto enriquecido de la categoría.
 | `{current_day}` | Día del mes de generación del PDF, sin ceros a la izquierda | Todos |
 | `{current_month_name}` | Nombre del mes de generación del PDF, en minúscula (p. ej. «julio») | Todos |
 | `{current_year}` | Año de generación del PDF | Todos |
+
+### Ausencias
+
+| Ajuste | Ámbito | Tipo | Rango | Por defecto |
+|---|---|---|---|---|
+| Retención de adjuntos de actividades | Global, centro | Entero (días) | 0-3650 | 7 |
+
+Controla cuántos días se conservan los ficheros adjuntos a las actividades registradas durante una
+ausencia. Una vez transcurridos desde la fecha de la actividad, una tarea programada semanal
+(domingos a las 5:00) los elimina automáticamente; la actividad y su descripción no se ven
+afectadas. Un valor de 0 desactiva esta eliminación automática para ese ámbito.
+
+Al eliminar un adjunto, la tarea añade al final de la descripción de la actividad una nota con la
+fecha y hora de la eliminación y el nombre y tamaño del fichero eliminado, para dejar constancia
+de que existió.
 
 ## Copias de seguridad
 

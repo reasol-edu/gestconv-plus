@@ -70,6 +70,22 @@ La cola de pendientes muestra a cada docente los elementos que puede ver según 
 visibilidad de partes y sanciones; el botón **Notificar** solo aparece en los que además puede
 notificar.
 
+## Ausencias
+
+Las [ausencias](03-el-trabajo-diario.md#ausencias) son estrictamente privadas: cada docente solo
+gestiona las suyas.
+
+| Acción | Docente propietario | Otro docente | Admin de centro | Admin global |
+|---|:---:|:---:|:---:|:---:|
+| Ver la propia ausencia y sus actividades | ✓ | — | ✓ | ✓ |
+| Crear, editar o eliminar la propia ausencia | ✓ | — | — | ✓ |
+| Añadir, editar o eliminar actividades y adjuntos | ✓ | — | — | ✓ |
+
+Los administradores de centro pueden consultar las ausencias de cualquier docente de su centro,
+pero no modificarlas ni eliminarlas. Los administradores globales tienen acceso completo, igual
+que a cualquier otro dato de la plataforma. Ningún otro docente, ni siquiera compartiendo grupo,
+puede ver las ausencias de otra persona.
+
 ## Centro educativo
 
 | Acción | Docente | Admin de centro | Admin global |

@@ -1,8 +1,9 @@
 # El trabajo diario del profesorado
 
 Este capítulo es para todo el profesorado: cómo moverse por la aplicación, registrar un parte de
-convivencia cuando se produce un incidente, comunicarlo a la familia y consultar la trayectoria
-de un estudiante. No hace falta ningún permiso especial para nada de lo que se explica aquí.
+convivencia cuando se produce un incidente, comunicarlo a la familia, consultar la trayectoria
+de un estudiante y organizar el trabajo de las clases durante una ausencia. No hace falta ningún
+permiso especial para nada de lo que se explica aquí.
 
 !!! warning "La regla de oro"
     Un parte **sin comunicación a la familia no puede incorporarse a una sanción** y, pasado un
@@ -241,6 +242,71 @@ estudiante:
 
 Se llega a la ficha desde el buscador global, los listados y detalles de partes y sanciones, y la
 lista *Alumnado con partes pendientes de sanción* del inicio.
+
+## Ausencias
+
+La sección **Ausencias** del menú lateral permite a cualquier docente dejar organizado el trabajo
+de sus grupos cuando sabe que va a faltar: qué debe trabajarse en cada clase afectada, con las
+instrucciones y el material necesarios para quien la cubra.
+
+Cada ausencia es un **rango de fechas** (por ejemplo, los días de una baja o de un permiso) y
+contiene una o varias **actividades**: una por cada clase que se ve afectada, con su propio tramo
+horario, grupo y descripción.
+
+Una ausencia es **privada**: solo quien la registra puede crearla, editarla o eliminarla. Los
+administradores globales y los de centro pueden consultarla si lo necesitan, pero no modificarla;
+ningún otro docente tiene acceso a las ausencias de otra persona, ni siquiera si comparte grupo
+con quien las registró (ver [Permisos de un vistazo](08-permisos-de-un-vistazo.md#ausencias)).
+
+### Registrar una ausencia
+
+1. Pulsa **Nueva ausencia** en la esquina superior derecha del listado.
+2. Indica la **fecha de inicio** y la **fecha de fin** del periodo en el que se estará ausente.
+   Ambas son obligatorias y la fecha de fin no puede ser anterior a la de inicio.
+3. Guarda: se abre el detalle de la ausencia, todavía sin actividades.
+
+### Añadir actividades
+
+Desde el detalle de la ausencia, pulsa **Nueva actividad** para indicar qué hacer en una de las
+clases afectadas:
+
+1. **Fecha** — debe estar dentro del rango de la ausencia.
+2. **Tramo horario** — uno de los tramos del centro cuyo día de la semana coincida con la fecha
+   elegida.
+3. **Grupo o asignatura** — se marca al menos uno de los grupos o asignaturas que imparte quien
+   registra la actividad; puede marcarse más de uno si la misma instrucción sirve para varias
+   clases del mismo tramo.
+4. **Descripción** — instrucciones para quien cubra la clase, con formato de texto enriquecido.
+   Es obligatoria.
+5. **Adjuntar ficheros** (opcional) — fichas de trabajo, presentaciones u otro material de apoyo.
+   Se pueden seleccionar varios ficheros a la vez, de hasta 10 MB cada uno; los formatos admitidos
+   son PDF, imágenes (PNG, JPG, GIF), documentos de Word, Excel y PowerPoint, texto plano y ZIP.
+   Un fichero que supere el tamaño máximo o no esté en un formato admitido se rechaza, indicando el
+   motivo, sin afectar al resto de la actividad.
+
+Una misma ausencia puede tener tantas actividades como clases afectadas, incluso varias el mismo
+día si hay más de un tramo horario implicado.
+
+### Consultar, editar y eliminar
+
+El listado de **Ausencias** muestra las propias, con sus fechas y el número de actividades de cada
+una. Su detalle reúne todas las actividades en orden cronológico, cada una con su tramo horario,
+grupo, descripción y, si los tiene, los ficheros adjuntos disponibles para descargar.
+
+Quien registró la ausencia puede editar sus fechas (siempre que el nuevo rango siga cubriendo
+todas sus actividades), editar o eliminar cualquiera de sus actividades, y eliminar la ausencia
+completa. Eliminar una ausencia elimina también todas sus actividades y ficheros adjuntos; es una
+acción irreversible que pide confirmación.
+
+Al editar una actividad ya existente, cada fichero adjunto puede marcarse individualmente para
+eliminarlo, además de poder añadir otros nuevos.
+
+!!! note "Los adjuntos no se conservan indefinidamente"
+    Pasado un número de días configurable desde la fecha de la actividad (ver
+    [Ausencias](07-administrar-la-plataforma.md#ausencias)), una tarea programada elimina
+    automáticamente sus ficheros adjuntos para no acumular documentos obsoletos. La actividad y su
+    descripción no se ven afectadas: queda una nota al final indicando qué fichero se eliminó, y
+    cuándo.
 
 ## Búsqueda global y paleta de comandos
 

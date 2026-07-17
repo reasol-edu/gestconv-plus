@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Nueva sección **Ausencias** en el menú lateral, disponible para cualquier docente: permite registrar las propias ausencias previstas (un rango de fechas) y, dentro de cada una, una o varias **actividades** —fecha, tramo horario, grupo/asignatura de entre los que imparte y una descripción con instrucciones en texto enriquecido— para dejar organizado el trabajo de quien cubra la clase. Cada actividad admite adjuntar ficheros (hasta 10 MB cada uno; PDF, imágenes, Word, Excel, PowerPoint, texto o ZIP) con el material necesario, descargables desde el propio detalle de la actividad. Solo la persona docente propietaria puede crear, editar o eliminar sus ausencias; los administradores globales y los de centro pueden consultarlas (estos últimos sin poder modificarlas), y el resto del profesorado no tiene acceso. La escritura queda bloqueada mientras se consulta un curso académico distinto del activo, igual que en el resto de la aplicación. Todas las altas, modificaciones y bajas quedan reflejadas en el registro de actividad.
+- Los ficheros adjuntos a las actividades de una ausencia se purgan automáticamente cada semana (domingos a las 5:00), según el número de días transcurridos desde la fecha de la actividad indicado en el nuevo ajuste **Retención de adjuntos de actividades** (global y de centro, 0-3650, 7 por defecto; 0 desactiva la purga para ese ámbito). La actividad y su descripción no se eliminan: al purgar un adjunto se añade al final de la descripción una nota con la fecha, hora, nombre y tamaño del fichero eliminado, para dejar constancia de que existió.
+
 ## [1.0.0] - 2026-07-13
 
 ### Added
