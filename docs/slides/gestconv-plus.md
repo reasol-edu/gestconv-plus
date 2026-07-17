@@ -234,9 +234,9 @@ El parte pasa a **"Notificado"** y queda en el historial.
 
 ## Actividades y ficheros adjuntos
 
-- Cada actividad indica **fecha**, **tramo horario**, **grupo** (de entre los
-  que impartes) y una **descripción** con las instrucciones para quien cubra
-  la clase.
+- Cada actividad indica **fecha**, **tramo horario** (filtrado según el día de
+  la semana), **grupo** opcional (de entre los que impartes) y una
+  **descripción** con las instrucciones para quien cubra la clase.
 - Se pueden adjuntar **ficheros** de hasta 10 MB cada uno (PDF, imágenes,
   Word, Excel, PowerPoint, texto o ZIP) con el material necesario.
 - Los adjuntos se conservan solo un tiempo limitado tras la fecha de la
@@ -404,9 +404,19 @@ el centro**, no solo de sus propios grupos:
 
 ![bg right:40% fit](../manual/img/calendario/calendario.png)
 
-- Muestra la actividad de convivencia distribuida por fechas: seguimientos,
-  firmas y tareas pendientes de cada grupo.
-- Filtra por grupo o por estudiante para preparar una reunión o una tutoría.
+- Vista mensual con las **sanciones ya comunicadas** del curso activo, cada
+  una como una barra de color por grupo con el estudiante y una descripción
+  breve.
+- Solo días lectivos (lunes a viernes), con el día actual resaltado.
+
+---
+
+## Calendario de ausencias
+
+- Segunda pestaña, **solo para administradores**: reutiliza la misma vista
+  mensual para mostrar las **ausencias del profesorado** en lugar de las
+  sanciones.
+- Cada barra muestra únicamente el **nombre del docente**, sin más detalle.
 
 ---
 

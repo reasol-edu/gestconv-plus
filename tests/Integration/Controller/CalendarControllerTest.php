@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\Absence;
 use App\Entity\CentreSettingValue;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
@@ -145,6 +146,117 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertStringNotContainsString('Sin fechas asociadas', (string) $this->client->getResponse()->getContent());
+    }
+
+    // ── Pestañas ─────────────────────────────────────────────────────────────
+
+    public function testShowsBothTabsToAdmin(): void
+    {
+        $centre = $this->makeCentre('46000060');
+        $admin  = $this->makeAdmin('calendar.tabs.admin');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Calendario de sanciones', $content);
+        self::assertStringContainsString('Calendario de ausencias', $content);
+    }
+
+    public function testHidesTabsFromNonAdmin(): void
+    {
+        $centre  = $this->makeCentre('46000061');
+        $teacher = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.tabs.noadmin');
+        $this->persist($teacher);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringNotContainsString('Calendario de ausencias', $content);
+    }
+
+    public function testNonAdminCannotSwitchToAbsencesTabViaQueryParam(): void
+    {
+        $world   = $this->makeScenario();
+        $viewer  = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.tabs.noadmin.query');
+        $absent  = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('calendar.tabs.noadmin.absent');
+        $this->persist($viewer, $absent);
+        $absence = (new Absence())
+            ->setTeacher($absent)
+            ->setAcademicYear($world['year'])
+            ->setStartDate($this->weekdayInCurrentMonth())
+            ->setEndDate($this->weekdayInCurrentMonth());
+        $this->persist($absence);
+        $this->loginAs($viewer, $world['centre']);
+
+        $this->client->request('GET', '/calendario?tab=absences');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringNotContainsString('Marta Ruiz', $content);
+    }
+
+    // ── Barras de ausencias ──────────────────────────────────────────────────
+
+    public function testAbsencesTabShowsOnlyTeacherNameOnTheBar(): void
+    {
+        $world   = $this->makeScenario();
+        $teacher = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('calendar.absence.bar');
+        $this->persist($teacher);
+        $admin = $this->makeAdmin('calendar.absence.bar.admin');
+
+        $absence = (new Absence())
+            ->setTeacher($teacher)
+            ->setAcademicYear($world['year'])
+            ->setStartDate($this->weekdayInCurrentMonth())
+            ->setEndDate($this->weekdayInCurrentMonth());
+        $this->persist($absence);
+
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario?tab=absences');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Marta Ruiz', $content);
+    }
+
+    public function testAbsencesTabShowsBoardModeLinkToAdmin(): void
+    {
+        $centre = $this->makeCentre('46000062');
+        $admin  = $this->makeAdmin('calendar.absence.tablon.admin');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario?tab=absences');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('/calendario/tablon', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testSanctionsTabIsShownByDefaultAndDoesNotIncludeAbsences(): void
+    {
+        $world   = $this->makeScenario();
+        $teacher = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('calendar.absence.default');
+        $this->persist($teacher);
+        $admin = $this->makeAdmin('calendar.absence.default.admin');
+
+        $absence = (new Absence())
+            ->setTeacher($teacher)
+            ->setAcademicYear($world['year'])
+            ->setStartDate($this->weekdayInCurrentMonth())
+            ->setEndDate($this->weekdayInCurrentMonth());
+        $this->persist($absence);
+
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringNotContainsString('Marta Ruiz', $content);
     }
 
     // ── Modo tablón ──────────────────────────────────────────────────────────

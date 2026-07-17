@@ -28,6 +28,22 @@ activo que tienen fecha de inicio (y, opcionalmente, de fin).
 - Solo se muestran los días de lunes a viernes; los fines de semana no aparecen en la cuadrícula.
 - El día actual se resalta con un color de fondo distinto en toda su columna.
 
+### Calendario de ausencias (solo administradores)
+
+Los administradores de centro ven, junto a la pestaña **Calendario de sanciones**, una segunda
+pestaña: **Calendario de ausencias**. Reutiliza la misma vista mensual, pero en lugar de sanciones
+muestra las ausencias del profesorado registradas para el curso activo (ver
+[Ausencias](03-el-trabajo-diario.md#ausencias)).
+
+- Cada ausencia aparece como una barra horizontal con **únicamente el nombre del docente**, sin
+  grupo ni descripción.
+- El color de la barra depende del docente, no del grupo.
+- El resto del comportamiento (solo días lectivos, día actual resaltado, navegación por mes) es
+  idéntico al calendario de sanciones. El botón **Modo tablón** también está disponible aquí, pero
+  siempre lleva al tablón de sanciones: no existe un modo tablón específico para ausencias.
+- El resto del profesorado no ve esta pestaña ni puede acceder a ella cambiando la URL: solo se
+  muestra el calendario de sanciones.
+
 ## Modo tablón
 
 El botón **Modo tablón**, junto al botón *Hoy* del calendario, abre una vista a pantalla completa

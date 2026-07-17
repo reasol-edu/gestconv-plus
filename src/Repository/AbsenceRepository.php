@@ -32,6 +32,22 @@ class AbsenceRepository extends ServiceEntityRepository
         return $result instanceof Absence ? $result : null;
     }
 
+    /** @return list<Absence> */
+    public function findWithDatesForAcademicYear(AcademicYear $year): array
+    {
+        /** @var list<Absence> $result */
+        $result = $this->createQueryBuilder('a')
+            ->addSelect('t')
+            ->join('a.teacher', 't')
+            ->where('a.academicYear = :year')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->orderBy('a.startDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
     /** @return Absence[] */
     public function findByTeacherAndYearOrderedByStartDate(Teacher $teacher, AcademicYear $year): array
     {

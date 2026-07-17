@@ -4,29 +4,41 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Sanction;
-
 /**
- * Builds the week-by-week grid (days + sanction segments) for a given month,
- * for the admin calendar (CalendarComponent). Weekends are excluded from the
- * grid since there is no class on Saturday/Sunday.
+ * Builds the week-by-week grid (days + segments) for a given month, for the
+ * admin calendar (CalendarComponent / AbsenceCalendarComponent). Weekends are
+ * excluded from the grid since there is no class on Saturday/Sunday.
+ *
+ * Decoupled from any specific entity: callers provide the items plus two
+ * callables to turn each item into a date range and into the segment's
+ * visual decoration (label, details, color).
  */
 final class CalendarMonthGridBuilder
 {
     public function __construct(
         private readonly CalendarSegmentBuilder $segmentBuilder,
-        private readonly GroupColorPalette $colorPalette,
     ) {}
 
     /**
-     * @param list<Sanction> $sanctions
+     * @template T of object
+     *
+     * @param list<T> $items
+     * @param callable(T): (array{id: string, start: \DateTimeImmutable, end: \DateTimeImmutable}|null) $toRange returns null to skip an item (e.g. missing dates)
+     * @param callable(T): array{label: string, details: string, color: array{bg: string, text: string, border: string}} $toSegment
+     *
      * @return list<array{days: list<\DateTimeImmutable>, segments: list<array<string, mixed>>, maxLane: int}>
      */
-    public function build(int $year, int $month, array $sanctions): array
+    public function build(int $year, int $month, array $items, callable $toRange, callable $toSegment): array
     {
-        $sanctionsById = [];
-        foreach ($sanctions as $sanction) {
-            $sanctionsById[$sanction->getId()->toRfc4122()] = $sanction;
+        $rangesById = [];
+        $itemsById  = [];
+        foreach ($items as $item) {
+            $range = $toRange($item);
+            if ($range === null) {
+                continue;
+            }
+            $rangesById[$range['id']] = $range;
+            $itemsById[$range['id']]  = $item;
         }
 
         $firstDay  = (new \DateTimeImmutable())->setDate($year, $month, 1)->setTime(0, 0, 0);
@@ -53,30 +65,24 @@ final class CalendarMonthGridBuilder
             $weekEnd   = $days[count($days) - 1];
 
             $events = [];
-            foreach ($sanctions as $sanction) {
-                $start = $sanction->getEffectiveFrom();
-                if ($start === null) {
+            foreach ($rangesById as $range) {
+                if ($range['end'] < $weekStart || $range['start'] > $weekEnd) {
                     continue;
                 }
-                $end = $sanction->getEffectiveTo() ?? $start;
-                if ($end < $weekStart || $start > $weekEnd) {
-                    continue;
-                }
-                $events[] = ['id' => $sanction->getId()->toRfc4122(), 'start' => $start, 'end' => $end];
+                $events[] = $range;
             }
 
             $layout   = $this->segmentBuilder->build($events, $days);
-            $segments = array_map(function (array $segment) use ($sanctionsById): array {
-                $sanction = $sanctionsById[$segment['id']];
-                $group    = $sanction->getGroup();
+            $segments = array_map(function (array $segment) use ($itemsById, $toSegment): array {
+                $decoration = $toSegment($itemsById[$segment['id']]);
 
                 return [
                     'startCol' => $segment['startCol'],
                     'span'     => $segment['span'],
                     'lane'     => $segment['lane'],
-                    'label'    => $sanction->getStudent()->getName()->full() . ' · ' . $group->getName(),
-                    'details'  => $sanction->getCalendarLabel() ?? trim(strip_tags($sanction->getDetails())),
-                    'color'    => $this->colorPalette->colorFor($group->getId()->toRfc4122()),
+                    'label'    => $decoration['label'],
+                    'details'  => $decoration['details'],
+                    'color'    => $decoration['color'],
                 ];
             }, $layout['segments']);
 

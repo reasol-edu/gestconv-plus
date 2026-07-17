@@ -12,6 +12,7 @@ use App\Service\CalendarBoardBuilder;
 use App\Service\KioskMode;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -23,14 +24,20 @@ class CalendarController extends AbstractController
     ) {}
 
     #[Route('/calendario', name: 'app_calendar')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $centre = $this->tenantContext->getSelectedCentre();
         if ($centre === null) {
             return $this->redirectToRoute('app_select_centre');
         }
 
-        return $this->render('calendar/index.html.twig');
+        $isAdmin = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
+        $tab     = $isAdmin && $request->query->getString('tab') === 'absences' ? 'absences' : 'sanctions';
+
+        return $this->render('calendar/index.html.twig', [
+            'isAdmin' => $isAdmin,
+            'tab'     => $tab,
+        ]);
     }
 
     #[Route('/calendario/tablon', name: 'app_calendar_board')]

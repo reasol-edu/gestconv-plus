@@ -92,6 +92,22 @@ class AbsenceRepositoryTest extends RepositoryTestCase
         self::assertSame($earlier->getId()->toRfc4122(), $results[1]->getId()->toRfc4122());
     }
 
+    public function testFindWithDatesForAcademicYearIsScopedToTheGivenYearAndOrderedByStartDate(): void
+    {
+        $yearA = $this->makeYear();
+        $yearB = $this->makeYear();
+        $teacher = $this->makeTeacher('with.dates');
+        $this->makeAbsence($yearB, $teacher);
+        $later   = $this->makeAbsence($yearA, $teacher, '2026-02-01', '2026-02-05');
+        $earlier = $this->makeAbsence($yearA, $teacher, '2026-01-01', '2026-01-05');
+
+        $results = $this->repo->findWithDatesForAcademicYear($yearA);
+
+        self::assertCount(2, $results);
+        self::assertSame($earlier->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+        self::assertSame($later->getId()->toRfc4122(), $results[1]->getId()->toRfc4122());
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private function makeYear(): AcademicYear
