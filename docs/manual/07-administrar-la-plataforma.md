@@ -256,20 +256,25 @@ global o de centro, y por defecto no se envía ningún correo. El detalle de cad
 | Encabezado izquierdo (estadísticas por grupo) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (estadísticas por grupo) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (estadísticas por grupo) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Encabezado izquierdo (profesorado de guardia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (profesorado de guardia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (profesorado de guardia) | Global, centro | Entero (mm) | 10-80 | 22 |
 | Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
 Los ajustes de **encabezado** controlan el contenido que se repite en cada página de los PDF de
-partes, sanciones y del informe de estadísticas por grupo (ver
-[Informes](06-administrar-el-centro.md#informes)). Cada tipo de informe tiene dos zonas
-—izquierda y derecha, en la misma línea— que se editan con un editor de texto enriquecido
+partes, sanciones, del informe de estadísticas por grupo y del informe de profesorado de guardia
+(ver [Informes](06-administrar-el-centro.md#informes) y
+[Tramos horarios](06-administrar-el-centro.md#tramos-horarios)). Cada tipo de informe tiene dos
+zonas —izquierda y derecha, en la misma línea— que se editan con un editor de texto enriquecido
 (negrita, cursiva, subrayado, títulos, listas, citas y enlaces). El margen superior determina, en
 milímetros, a qué altura empieza el cuerpo del documento en cada página: conviene aumentarlo si
 el encabezado personalizado ocupa más líneas que el original.
 
 Los ajustes de **pie de contenido** (uno para partes y otro para sanciones, sin equivalente en
-estadísticas por grupo) añaden un bloque de texto enriquecido al final del documento, una sola
-vez. Por defecto muestran la fecha y localidad de generación del PDF (por ejemplo, «En Sevilla a
-10 de julio de 2026»); se pueden sustituir por cualquier otro texto o vaciar por completo.
+estadísticas por grupo ni en profesorado de guardia) añaden un bloque de texto enriquecido al
+final del documento, una sola vez. Por defecto muestran la fecha y localidad de generación del
+PDF (por ejemplo, «En Sevilla a 10 de julio de 2026»); se pueden sustituir por cualquier otro
+texto o vaciar por completo.
 
 La **marca de agua de borrador**, cuando está activada, superpone el texto «BORRADOR» en diagonal
 sobre el PDF de un parte o una sanción mientras no se haya notificado a la familia; desaparece en
@@ -285,7 +290,7 @@ texto enriquecido de la categoría.
 
 | Marcador | Se sustituye por | Disponible en |
 |---|---|---|
-| `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo») | Todos |
+| `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo» / «Profesorado de guardia») | Todos |
 | `{report_nr}` | Número del parte | Solo partes |
 | `{student_name}` | Nombre completo del estudiante | Partes y sanciones |
 | `{group_name}` | Nombre del grupo | Partes y sanciones |

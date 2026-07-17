@@ -451,6 +451,8 @@ el centro**, no solo de sus propios grupos:
   el alta.
 - Cada tramo admite asignar varios **docentes de guardia**, mostrados en el tablero como avatares
   con iniciales; a partir de seis se resumen en una burbuja **+N**.
+- El botón **Generar PDF** exporta el profesorado de guardia de toda la semana en una tabla
+  apaisada, con encabezado personalizable como el resto de informes.
 
 ---
 

@@ -79,6 +79,12 @@ Al igual que los catálogos del centro, los tramos horarios se pueden **exportar
 JSON** para copiar la configuración entre centros, con la opción de vaciar los tramos existentes
 antes de importar.
 
+El botón **Generar PDF** descarga un informe apaisado de una sola tabla: una fila por cada
+combinación de hora de inicio y fin que exista en la semana, con una columna por día de lunes a
+viernes y el nombre completo de cada docente de guardia en una línea distinta dentro de su celda.
+El encabezado admite el mismo tipo de personalización que el resto de informes (ver
+[Personalización de informes](07-administrar-la-plataforma.md#personalizacion-de-informes)).
+
 ### Perfiles
 
 La tarjeta **Perfiles** asigna los dos roles especiales a docentes concretos del centro:
