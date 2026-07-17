@@ -17,6 +17,7 @@ use App\Service\EntityChangeTracker;
 use App\Service\IncidentBehaviorSeeder;
 use App\Service\LocationOptionSeeder;
 use App\Service\SanctionMeasureSeeder;
+use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -45,6 +46,7 @@ class EducationalCentreController extends AbstractController
         private readonly LocationOptionSeeder $locationOptionSeeder,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
+        private readonly TenantContext $tenantContext,
     ) {}
 
     #[Route('', name: 'app_admin_centres_index')]
@@ -95,6 +97,10 @@ class EducationalCentreController extends AbstractController
                 $this->communicationMethodSeeder->seedForCentre($centre);
                 $this->locationOptionSeeder->seedForCentre($centre);
                 $this->em->flush();
+
+                if (!$this->tenantContext->isSelected()) {
+                    $this->tenantContext->selectCentre($centre);
+                }
 
                 $this->activityLog->log('educational_centre.created', [
                     'entityId' => $centre->getId()->toRfc4122(),
@@ -219,6 +225,9 @@ class EducationalCentreController extends AbstractController
             throw $this->createNotFoundException();
         }
 
+        $selectedCentre = $this->tenantContext->getSelectedCentre();
+        $wasSelected    = $selectedCentre !== null && $selectedCentre->getId()->toRfc4122() === $id;
+
         try {
             $centre->setActiveAcademicYear(null);
             $this->em->flush();
@@ -228,6 +237,18 @@ class EducationalCentreController extends AbstractController
             $this->em->remove($centre);
             $this->em->flush();
             $this->addFlash('success', $this->t('centre.flash.deleted'));
+
+            if ($wasSelected) {
+                $this->tenantContext->clear();
+
+                $user = $this->getUser();
+                if ($user instanceof Teacher) {
+                    $remaining = $this->centres->findAccessibleByTeacher($user);
+                    if (\count($remaining) === 1) {
+                        $this->tenantContext->selectCentre($remaining[0]);
+                    }
+                }
+            }
         } catch (\Exception) {
             $this->addFlash('error', $this->t('centre.flash.delete_error'));
         }

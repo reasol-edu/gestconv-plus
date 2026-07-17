@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - El modo tablón bloqueaba la descarga de los adjuntos de una actividad de ausencia al no tener su ruta en la lista de rutas permitidas dentro de esa sesión.
 - La descarga de un adjunto con nombre de archivo no-ASCII fallaba por falta de un nombre de reserva válido para la cabecera `Content-Disposition`.
+- Al crear un centro educativo desde el panel de administración no se sembraba su catálogo de ubicaciones por defecto, a diferencia del resto de catálogos (conductas contrarias, medidas y vías de comunicación).
+- La barra lateral no reflejaba las secciones del centro educativo al crear el primer centro (cuando no existía ninguno) ni al eliminar el centro activo mientras quedaba otro registrado: en ambos casos había que navegar manualmente a otra pantalla para que se seleccionara el centro correspondiente.
 
 ## [1.0.0] - 2026-07-13
 

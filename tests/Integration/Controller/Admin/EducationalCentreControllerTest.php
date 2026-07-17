@@ -80,6 +80,56 @@ class EducationalCentreControllerTest extends ControllerTestCase
         self::assertNotEmpty($this->em->getRepository(LocationOption::class)->findBy(['educationalCentre' => $centre]));
     }
 
+    public function testNewPostSelectsCentreWhenNoneWasSelectedBefore(): void
+    {
+        $admin = $this->makeAdmin('admin.1');
+        $this->persist($admin);
+        $this->loginAs($admin);
+
+        $crawler = $this->client->request('GET', '/admin/centros/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/admin/centros/nuevo', [
+            '_token' => $token,
+            'code'   => '41000001',
+            'name'   => 'IES Test',
+            'city'   => 'Sevilla',
+        ]);
+
+        self::assertResponseRedirects();
+
+        $centre = $this->em->getRepository(EducationalCentre::class)->findOneBy(['code' => '41000001']);
+        self::assertNotNull($centre);
+        self::assertSame(
+            $centre->getId()->toRfc4122(),
+            $this->client->getRequest()->getSession()->get('tenant.centre_id')
+        );
+    }
+
+    public function testNewPostKeepsExistingSelectionWhenAnotherCentreIsCreated(): void
+    {
+        $admin    = $this->makeAdmin('admin.1');
+        $existing = $this->makeCentre('41000001');
+        $this->persist($admin, $existing);
+        $this->loginAs($admin, $existing);
+
+        $crawler = $this->client->request('GET', '/admin/centros/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/admin/centros/nuevo', [
+            '_token' => $token,
+            'code'   => '41000002',
+            'name'   => 'IES Nuevo',
+            'city'   => 'Sevilla',
+        ]);
+
+        self::assertResponseRedirects();
+        self::assertSame(
+            $existing->getId()->toRfc4122(),
+            $this->client->getRequest()->getSession()->get('tenant.centre_id')
+        );
+    }
+
     public function testNewPostWithInvalidCsrfIsDenied(): void
     {
         $admin = $this->makeAdmin('admin.1');
@@ -214,6 +264,67 @@ class EducationalCentreControllerTest extends ControllerTestCase
 
         $this->em->clear();
         self::assertNull($this->em->find(EducationalCentre::class, $centre->getId()));
+    }
+
+    public function testDeleteActiveCentreAutoSelectsTheOnlyRemainingOne(): void
+    {
+        $admin   = $this->makeAdmin('admin.1');
+        $active  = $this->makeCentre('41000001');
+        $other   = $this->makeCentre('41000002');
+        $this->persist($admin, $active, $other);
+        $this->loginAs($admin, $active);
+
+        $centreId = $active->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId);
+        $token    = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/admin/centros/' . $centreId . '/eliminar', ['_token' => $token]);
+
+        self::assertResponseRedirects();
+        self::assertSame(
+            $other->getId()->toRfc4122(),
+            $this->client->getRequest()->getSession()->get('tenant.centre_id')
+        );
+    }
+
+    public function testDeleteActiveCentreClearsSelectionWhenSeveralRemain(): void
+    {
+        $admin  = $this->makeAdmin('admin.1');
+        $active = $this->makeCentre('41000001');
+        $other1 = $this->makeCentre('41000002');
+        $other2 = $this->makeCentre('41000003');
+        $this->persist($admin, $active, $other1, $other2);
+        $this->loginAs($admin, $active);
+
+        $centreId = $active->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/admin/centros/' . $centreId);
+        $token    = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/admin/centros/' . $centreId . '/eliminar', ['_token' => $token]);
+
+        self::assertResponseRedirects();
+        self::assertFalse($this->client->getRequest()->getSession()->has('tenant.centre_id'));
+    }
+
+    public function testDeleteNonActiveCentreKeepsExistingSelection(): void
+    {
+        $admin  = $this->makeAdmin('admin.1');
+        $active = $this->makeCentre('41000001');
+        $other  = $this->makeCentre('41000002');
+        $this->persist($admin, $active, $other);
+        $this->loginAs($admin, $active);
+
+        $otherId = $other->getId()->toRfc4122();
+        $crawler = $this->client->request('GET', '/admin/centros/' . $otherId);
+        $token   = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/admin/centros/' . $otherId . '/eliminar', ['_token' => $token]);
+
+        self::assertResponseRedirects();
+        self::assertSame(
+            $active->getId()->toRfc4122(),
+            $this->client->getRequest()->getSession()->get('tenant.centre_id')
+        );
     }
 
     public function testDeleteCentreWithInvalidCsrfIsDenied(): void
