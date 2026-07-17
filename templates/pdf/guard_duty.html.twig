@@ -1,0 +1,47 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+    <p class="section-title">
+        {{ 'pdf.guard_duty.title'|trans({}, 'admin') }} · {{ year.name }}
+    </p>
+
+    <table class="data-table" style="table-layout:fixed;">
+        <colgroup>
+            <col style="width:15%;">
+            {% for day in 0..4 %}
+                <col style="width:17%;">
+            {% endfor %}
+        </colgroup>
+        <thead>
+            <tr>
+                <th>{{ 'time_slot.field.name'|trans({}, 'admin') }}</th>
+                {% for day in 0..4 %}
+                    <th>{{ ('weekday.' ~ (day + 1))|trans({}, 'calendar') }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in report.rows %}
+                <tr>
+                    <td>
+                        <strong>{{ row.label }}</strong><br>
+                        <span class="cell-sub">{{ row.startTime|date('H:i') }} – {{ row.endTime|date('H:i') }}</span>
+                    </td>
+                    {% for day in 0..4 %}
+                        <td>
+                            {% for guard in row.guardsByDay[day] %}
+                                {{ guard.name.lastName }}, {{ guard.name.firstName }}{% if not loop.last %}<br>{% endif %}
+                            {% else %}
+                                <span class="cell-sub">—</span>
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6"><span class="cell-sub">{{ 'time_slot.col.empty'|trans({}, 'admin') }}</span></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

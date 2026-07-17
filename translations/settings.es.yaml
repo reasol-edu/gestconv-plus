@@ -175,6 +175,15 @@ settings.key.reports_group_stats_header_right.description: 'Contenido alineado a
 settings.key.reports_group_stats_header_margin.label: 'Margen para encabezado de estadísticas por grupo'
 settings.key.reports_group_stats_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
 
+settings.key.reports_guard_duty_header_left.label: 'Encabezado de profesorado de guardia (izquierda)'
+settings.key.reports_guard_duty_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de profesorado de guardia. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_guard_duty_header_right.label: 'Encabezado de profesorado de guardia (derecha)'
+settings.key.reports_guard_duty_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_guard_duty_header_margin.label: 'Margen para encabezado de profesorado de guardia'
+settings.key.reports_guard_duty_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
+
 # ── Ayuda de marcadores de informes ─────────────────────────────────────────
 settings.placeholder_help.title: 'Marcadores disponibles'
 settings.placeholder_help.intro: 'Puedes usar estos marcadores en el texto; se sustituyen por su valor real al generar el PDF. Un marcador desconocido (por ejemplo, uno con una errata) no rompe el informe: se muestra tal cual, lo que facilita detectar el error.'

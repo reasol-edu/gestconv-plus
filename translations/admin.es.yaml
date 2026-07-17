@@ -645,6 +645,7 @@ time_slot.delete_confirm: '¿Eliminar este tramo horario? Se perderá también l
 time_slot.error.invalid: 'Revisa el nombre, el día y el horario: la hora de inicio debe ser anterior a la de fin.'
 time_slot.flash.saved: 'Tramo horario guardado.'
 time_slot.flash.deleted: 'Tramo horario eliminado.'
+time_slot.pdf.button: 'Generar PDF'
 time_slot.export.button: 'Exportar JSON'
 time_slot.import.button: 'Importar JSON'
 time_slot.import.title: 'Importar tramos horarios'
@@ -966,6 +967,7 @@ pdf.incident_report.title: 'Informe de parte de convivencia'
 pdf.sanction.title: 'Informe de sanción de convivencia'
 pdf.watermark.draft: 'Borrador'
 pdf.group_stats.title: 'Estadísticas por grupo'
+pdf.guard_duty.title: 'Profesorado de guardia'
 
 # Informe "Estadísticas por grupo"
 group_stats.title: 'Estadísticas por grupo'

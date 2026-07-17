@@ -26,6 +26,7 @@ class PdfRenderer
      * @param array<string, mixed> $context        Must include 'centre' (EducationalCentre); merged into header/footer/content.
      * @param PdfHeader|null       $header         Custom header content and top margin; falls back to pdfTitle / centre name.
      * @param bool                 $draftWatermark Shows a diagonal "BORRADOR" watermark on every page; used while the report/sanction hasn't been notified to the family yet.
+     * @param 'P'|'L'               $orientation    'P' (portrait, default) or 'L' (landscape).
      */
     public function render(
         string $template,
@@ -35,6 +36,7 @@ class PdfRenderer
         bool $inline = true,
         ?PdfHeader $header = null,
         bool $draftWatermark = false,
+        string $orientation = 'P',
     ): Response {
         $context += [
             'pdfTitle'       => $title,
@@ -45,6 +47,7 @@ class PdfRenderer
 
         $mpdf = new Mpdf([
             'format'        => 'A4',
+            'orientation'   => $orientation,
             'margin_left'   => 15,
             'margin_right'  => 15,
             'margin_top'    => $header->marginTopMm ?? 22,

@@ -19,6 +19,13 @@
             {% endif %}
         </div>
         <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ path('app_centre_time_slots_pdf', {centreId: centre.id}) }}"
+               target="_blank"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:document-text', {class: 'h-4 w-4'}) }}
+                {{ 'time_slot.pdf.button'|trans({}, 'admin') }}
+            </a>
             <a href="{{ path('app_centre_time_slots_import', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
                       hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">

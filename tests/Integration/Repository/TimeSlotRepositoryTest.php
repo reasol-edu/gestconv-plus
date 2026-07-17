@@ -6,6 +6,8 @@ namespace App\Tests\Integration\Repository;
 
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
+use App\Entity\PersonName;
+use App\Entity\Teacher;
 use App\Entity\TimeSlot;
 use App\Repository\TimeSlotRepository;
 use App\Tests\Integration\RepositoryTestCase;
@@ -58,6 +60,47 @@ class TimeSlotRepositoryTest extends RepositoryTestCase
         );
 
         $results = $this->repo->findByAcademicYearOrdered($this->year);
+
+        self::assertCount(1, $results);
+        self::assertSame('Propio', $results[0]->getName());
+    }
+
+    // ── findByAcademicYearOrderedWithGuards ──────────────────────────────────
+
+    public function testFindByAcademicYearOrderedWithGuardsSortsAndEagerFetchesGuards(): void
+    {
+        $teacher = (new Teacher(new PersonName('Ana', 'Pérez')))->setUsername('ana.perez.' . uniqid('', false));
+        $this->persist($teacher);
+
+        $slot = $this->makeSlot('1ª hora', 0, '08:00', '08:55');
+        $slot->addGuard($teacher);
+        $this->persist(
+            $this->makeSlot('Recreo', 0, '11:00', '11:30'),
+            $slot,
+        );
+
+        $results = $this->repo->findByAcademicYearOrderedWithGuards($this->year);
+
+        self::assertCount(2, $results);
+        self::assertSame('1ª hora', $results[0]->getName());
+        self::assertCount(1, $results[0]->getGuards());
+        self::assertSame('Ana', $results[0]->getGuards()->first()->getName()->getFirstName());
+        self::assertSame('Recreo', $results[1]->getName());
+        self::assertCount(0, $results[1]->getGuards());
+    }
+
+    public function testFindByAcademicYearOrderedWithGuardsOnlyReturnsSlotsForGivenYear(): void
+    {
+        $otherCentre = (new EducationalCentre())->setCode('43000004')->setName('IES Otro')->setCity('Cádiz');
+        $otherYear   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($otherCentre);
+        $this->persist($otherCentre, $otherYear);
+
+        $this->persist(
+            $this->makeSlot('Propio', 0, '08:00', '08:55'),
+            $this->makeSlotForYear($otherYear, 'Ajeno', 0, '08:00', '08:55'),
+        );
+
+        $results = $this->repo->findByAcademicYearOrderedWithGuards($this->year);
 
         self::assertCount(1, $results);
         self::assertSame('Propio', $results[0]->getName());

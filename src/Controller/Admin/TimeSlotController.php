@@ -7,6 +7,9 @@ namespace App\Controller\Admin;
 use App\Entity\EducationalCentre;
 use App\Repository\EducationalCentreRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\GuardDutyReportBuilder;
+use App\Service\PdfHeaderBuilder;
+use App\Service\PdfRenderer;
 use App\Service\TenantContext;
 use App\Service\TimeSlotExporter;
 use App\Service\TimeSlotImporter;
@@ -26,6 +29,9 @@ class TimeSlotController extends AbstractController
         private readonly TenantContext $tenantContext,
         private readonly TimeSlotExporter $exporter,
         private readonly TimeSlotImporter $importer,
+        private readonly GuardDutyReportBuilder $guardDutyReport,
+        private readonly PdfRenderer $pdfRenderer,
+        private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly TranslatorInterface $translator,
     ) {}
 
@@ -53,6 +59,38 @@ class TimeSlotController extends AbstractController
         return new JsonResponse($json, Response::HTTP_OK, [
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ], true);
+    }
+
+    #[Route('/pdf', name: 'app_centre_time_slots_pdf', methods: ['GET'])]
+    public function pdf(string $centreId): Response
+    {
+        $centre = $this->requireCentre($centreId);
+        $year   = $this->tenantContext->getViewYear($centre);
+        if ($year === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $report = $this->guardDutyReport->build($year);
+        $title  = $this->t('pdf.guard_duty.title');
+
+        $header = $this->pdfHeaderBuilder->build('guard_duty', $centre, [
+            'title'         => $title,
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $year->getName(),
+        ]);
+
+        return $this->pdfRenderer->render(
+            'pdf/guard_duty.html.twig',
+            [
+                'centre' => $centre,
+                'year'   => $year,
+                'report' => $report,
+            ],
+            $title,
+            sprintf('profesorado-de-guardia-%s.pdf', $centre->getCode()),
+            header: $header,
+            orientation: 'L',
+        );
     }
 
     #[Route('/importar', name: 'app_centre_time_slots_import')]

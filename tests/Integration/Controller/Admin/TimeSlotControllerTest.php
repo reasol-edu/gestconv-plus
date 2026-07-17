@@ -75,6 +75,45 @@ class TimeSlotControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    // ── pdf ───────────────────────────────────────────────────────────────────
+
+    public function testPdfReturnsAPdfDocument(): void
+    {
+        [$cadmin, $centre] = $this->makeScenarioWithSlot();
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPdfReturns404WithoutActiveYear(): void
+    {
+        $cadmin = (new Teacher(new PersonName('Admin', 'Centre')))->setUsername('cadmin.ts.pdf.' . uniqid('', false))->setAdmin(true);
+        $centre = (new EducationalCentre())->setCode('43' . substr(uniqid('', false), 0, 6))->setName('IES Sin Curso')->setCity('Sevilla');
+        $centre->addAdmin($cadmin);
+        $this->persist($cadmin, $centre);
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testPdfIsDeniedToNonAdmin(): void
+    {
+        [, $centre] = $this->makeScenario();
+        $teacher = $this->makeTeacher('teacher.no.priv.ts.pdf');
+        $this->persist($teacher);
+        $this->loginAs($teacher);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
     // ── import ────────────────────────────────────────────────────────────────
 
     public function testImportGetRendersForm(): void

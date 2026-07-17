@@ -46,6 +46,20 @@ class TimeSlotRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return TimeSlot[] */
+    public function findByAcademicYearOrderedWithGuards(AcademicYear $year): array
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.guards', 'g')
+            ->addSelect('g')
+            ->where('t.academicYear = :year')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->orderBy('t.dayOfWeek', 'ASC')
+            ->addOrderBy('t.startTime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findByAcademicYearAndId(AcademicYear $year, string $id): ?TimeSlot
     {
         $result = $this->createQueryBuilder('t')

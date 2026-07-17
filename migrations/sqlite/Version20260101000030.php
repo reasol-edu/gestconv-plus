@@ -12,7 +12,7 @@ final class Version20260101000030 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Añade id propio y materia (subject) a group_teacher, y crea time_slot / time_slot_teacher para los tramos horarios (SQLite)';
+        return 'Añade id propio y materia (subject) a group_teacher, crea time_slot / time_slot_teacher para los tramos horarios, y añade los ajustes de encabezado del informe de profesorado de guardia (SQLite)';
     }
 
     public function up(Schema $schema): void
@@ -73,6 +73,12 @@ final class Version20260101000030 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_tst_teacher   ON time_slot_teacher (teacher_id)');
 
         $this->addSql('PRAGMA foreign_keys = ON');
+
+        $this->addSql("INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, category, category_order, position) VALUES
+            ('00000000-0000-4000-8000-000000000023', 'reports.guard_duty_header_left',   'richtext', '<p><strong>{title}</strong></p>', 1, 1, 0, 0, 5000, 'settings.category.reports', 60, 130),
+            ('00000000-0000-4000-8000-000000000024', 'reports.guard_duty_header_right',  'richtext', '<p>{centre_name}</p>',            1, 1, 0, 0, 5000, 'settings.category.reports', 60, 140),
+            ('00000000-0000-4000-8000-000000000025', 'reports.guard_duty_header_margin', 'integer',  '22',                              1, 1, 0, 10, 80,  'settings.category.reports', 60, 150)
+        ");
     }
 
     public function down(Schema $schema): void
@@ -81,6 +87,8 @@ final class Version20260101000030 extends AbstractMigration
             !$this->connection->getDatabasePlatform() instanceof SqlitePlatform,
             'Esta migración sólo puede ejecutarse en SQLite.'
         );
+
+        $this->addSql("DELETE FROM setting_definition WHERE key IN ('reports.guard_duty_header_left', 'reports.guard_duty_header_right', 'reports.guard_duty_header_margin')");
 
         $this->addSql('PRAGMA foreign_keys = OFF');
 
