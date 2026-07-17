@@ -23,6 +23,7 @@ settings.category.board.label: 'Modo tablón'
 settings.category.notifications.label: 'Notificaciones a familias'
 settings.category.email_alerts.label: 'Avisos por correo'
 settings.category.reports.label: 'Personalización de informes'
+settings.category.absences.label: 'Ausencias'
 
 # ── Definiciones de ajustes ───────────────────────────────────────────────────
 settings.key.page_size.label: 'Resultados por página'
@@ -183,6 +184,9 @@ settings.key.reports_guard_duty_header_right.description: 'Contenido alineado a 
 
 settings.key.reports_guard_duty_header_margin.label: 'Margen para encabezado de profesorado de guardia'
 settings.key.reports_guard_duty_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
+
+settings.key.absences_attachment_retention_days.label: 'Retención de adjuntos de actividades'
+settings.key.absences_attachment_retention_days.description: 'Días transcurridos desde la fecha de una actividad a partir de los cuales una tarea programada semanal elimina automáticamente sus ficheros adjuntos (no la actividad ni su descripción). Un valor de 0 desactiva esta eliminación automática.'
 
 # ── Ayuda de marcadores de informes ─────────────────────────────────────────
 settings.placeholder_help.title: 'Marcadores disponibles'

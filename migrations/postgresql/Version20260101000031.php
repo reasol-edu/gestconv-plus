@@ -12,7 +12,7 @@ final class Version20260101000031 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Crea absence, activity, activity_attachment y activity_group_teacher para la gestión de ausencias previstas del profesorado (PostgreSQL)';
+        return 'Crea absence, activity, activity_attachment y activity_group_teacher para la gestión de ausencias previstas del profesorado, y añade el ajuste de retención de adjuntos de actividades (PostgreSQL)';
     }
 
     public function up(Schema $schema): void
@@ -77,6 +77,11 @@ final class Version20260101000031 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_agt_group_teacher ON activity_group_teacher (group_teacher_id)');
         $this->addSql('ALTER TABLE activity_group_teacher ADD CONSTRAINT FK_agt_activity      FOREIGN KEY (activity_id)      REFERENCES activity(id)      ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE activity_group_teacher ADD CONSTRAINT FK_agt_group_teacher FOREIGN KEY (group_teacher_id) REFERENCES group_teacher(id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
+
+        $this->addSql(<<<'SQL'
+            INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, category, category_order, position) VALUES
+                (gen_random_uuid(), 'absences.attachment_retention_days', 'integer', '7', TRUE, TRUE, FALSE, 0, 3650, 'settings.category.absences', 70, 10)
+        SQL);
     }
 
     public function down(Schema $schema): void
@@ -85,6 +90,8 @@ final class Version20260101000031 extends AbstractMigration
             !$this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform,
             'Esta migración sólo puede ejecutarse en PostgreSQL.'
         );
+
+        $this->addSql("DELETE FROM setting_definition WHERE key = 'absences.attachment_retention_days'");
 
         $this->addSql('ALTER TABLE activity_group_teacher DROP CONSTRAINT FK_agt_activity');
         $this->addSql('ALTER TABLE activity_group_teacher DROP CONSTRAINT FK_agt_group_teacher');

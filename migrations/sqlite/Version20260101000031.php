@@ -12,7 +12,7 @@ final class Version20260101000031 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Crea absence, activity, activity_attachment y activity_group_teacher para la gestión de ausencias previstas del profesorado (SQLite)';
+        return 'Crea absence, activity, activity_attachment y activity_group_teacher para la gestión de ausencias previstas del profesorado, y añade el ajuste de retención de adjuntos de actividades (SQLite)';
     }
 
     public function up(Schema $schema): void
@@ -77,6 +77,10 @@ final class Version20260101000031 extends AbstractMigration
         SQL);
         $this->addSql('CREATE INDEX IDX_agt_activity      ON activity_group_teacher (activity_id)');
         $this->addSql('CREATE INDEX IDX_agt_group_teacher ON activity_group_teacher (group_teacher_id)');
+
+        $this->addSql("INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, category, category_order, position) VALUES
+            ('00000000-0000-4000-8000-000000000026', 'absences.attachment_retention_days', 'integer', '7', 1, 1, 0, 0, 3650, 'settings.category.absences', 70, 10)
+        ");
     }
 
     public function down(Schema $schema): void
@@ -85,6 +89,8 @@ final class Version20260101000031 extends AbstractMigration
             !$this->connection->getDatabasePlatform() instanceof SqlitePlatform,
             'Esta migración sólo puede ejecutarse en SQLite.'
         );
+
+        $this->addSql("DELETE FROM setting_definition WHERE key = 'absences.attachment_retention_days'");
 
         $this->addSql('DROP TABLE activity_group_teacher');
         $this->addSql('DROP TABLE activity_attachment');

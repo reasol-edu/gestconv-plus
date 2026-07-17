@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Message\AutoPrescribeIncidentReportsMessage;
+use App\Message\PurgeActivityAttachmentsMessage;
 use App\Message\PurgeActivityLogMessage;
 use App\Message\PurgeEmailNotificationLogMessage;
 use App\Message\WarnUpcomingReportPrescriptionsMessage;
@@ -30,6 +31,7 @@ class Schedule implements ScheduleProviderInterface
                 RecurringMessage::cron('30 3 * * 0', new PurgeEmailNotificationLogMessage()),
                 RecurringMessage::cron('0 4 * * *', new AutoPrescribeIncidentReportsMessage()),
                 RecurringMessage::cron('30 4 * * *', new WarnUpcomingReportPrescriptionsMessage()),
+                RecurringMessage::cron('0 5 * * 0', new PurgeActivityAttachmentsMessage()),
             )
             ->stateful($this->cache)
             ->processOnlyLastMissedRun(true)

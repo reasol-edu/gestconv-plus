@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Activity;
+use App\Entity\EducationalCentre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -27,5 +28,21 @@ class ActivityRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
 
         return $result instanceof Activity ? $result : null;
+    }
+
+    /** @return Activity[] */
+    public function findWithAttachmentsOlderThan(EducationalCentre $centre, \DateTimeImmutable $cutoff): array
+    {
+        return $this->createQueryBuilder('act')
+            ->join('act.absence', 'ab')
+            ->join('ab.academicYear', 'y')
+            ->join('act.attachments', 'att')
+            ->addSelect('att')
+            ->where('y.educationalCentre = :centre')
+            ->andWhere('act.date < :cutoff')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('cutoff', $cutoff)
+            ->getQuery()
+            ->getResult();
     }
 }

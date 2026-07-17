@@ -598,6 +598,7 @@ activity.error.attachment_type_not_allowed: 'Alguno de los ficheros adjuntos tie
 activity.flash.created: 'Actividad registrada correctamente.'
 activity.flash.updated: 'Actividad actualizada correctamente.'
 activity.flash.deleted: 'Actividad eliminada.'
+activity.attachment_purged_note: 'Adjunto eliminado automáticamente: «%filename%» (%size%) — %datetime%'
 
 # Conductas contrarias a la convivencia
 behavior.title: 'Conductas contrarias a la convivencia'
