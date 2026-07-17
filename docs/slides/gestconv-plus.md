@@ -238,7 +238,7 @@ El parte pasa a **"Notificado"** y queda en el historial.
   la semana), **grupo** opcional (de entre los que impartes) y una
   **descripción** con las instrucciones para quien cubra la clase.
 - Se pueden adjuntar **ficheros** de hasta 10 MB cada uno (PDF, imágenes,
-  Word, Excel, PowerPoint, texto o ZIP) con el material necesario.
+  Word, Excel, PowerPoint, OpenDocument, texto o ZIP) con el material necesario.
 - Los adjuntos se conservan solo un tiempo limitado tras la fecha de la
   actividad; pasado ese plazo se eliminan automáticamente y queda una nota en
   la descripción con lo que se eliminó y cuándo.

@@ -266,7 +266,8 @@ visualizado, la sección muestra dos pestañas:
 
 - **Mis ausencias** — las propias, igual que para cualquier docente.
 - **Ausencias del centro** — todas las registradas en el curso, con filtros por fecha (hoy o un
-  rango) y por docente, ordenadas por fecha de fin de más reciente a más antigua.
+  rango) y por docente, ordenadas por fecha de fin de más reciente a más antigua. El filtro de
+  docente solo ofrece a quienes tienen alguna ausencia registrada en el curso visualizado.
 
 Un administrador que no pertenezca al curso (por ejemplo, solo administra el centro pero no da
 clase) ve directamente el listado de ausencias del centro, sin pestañas.
@@ -285,17 +286,19 @@ clase) ve directamente el listado de ausencias del centro, sin pestañas.
 Desde el detalle de la ausencia, pulsa **Nueva actividad** para indicar qué hacer en una de las
 clases afectadas:
 
-1. **Fecha** — debe estar dentro del rango de la ausencia.
+1. **Fecha** — debe estar dentro del rango de la ausencia; por defecto se sugiere la fecha de
+   inicio de esta.
 2. **Tramo horario** — uno de los tramos del centro cuyo día de la semana coincida con la fecha
-   elegida.
-3. **Grupo o asignatura** — se marca al menos uno de los grupos o asignaturas que imparte quien
-   registra la actividad; puede marcarse más de uno si la misma instrucción sirve para varias
-   clases del mismo tramo.
+   elegida; la lista se actualiza automáticamente al cambiar la fecha.
+3. **Grupo o asignatura** (opcional) — puede marcarse más de uno de los grupos o asignaturas que
+   imparte quien registra la actividad, si la misma instrucción sirve para varias clases del mismo
+   tramo.
 4. **Descripción** — instrucciones para quien cubra la clase, con formato de texto enriquecido.
    Es obligatoria.
 5. **Adjuntar ficheros** (opcional) — fichas de trabajo, presentaciones u otro material de apoyo.
    Se pueden seleccionar varios ficheros a la vez, de hasta 10 MB cada uno; los formatos admitidos
-   son PDF, imágenes (PNG, JPG, GIF), documentos de Word, Excel y PowerPoint, texto plano y ZIP.
+   son PDF, imágenes (PNG, JPG, GIF), documentos de Word, Excel, PowerPoint y OpenDocument, texto
+   plano y ZIP.
    Un fichero que supere el tamaño máximo o no esté en un formato admitido se rechaza, indicando el
    motivo, sin afectar al resto de la actividad.
 
@@ -307,7 +310,7 @@ día si hay más de un tramo horario implicado.
 El listado de **Ausencias** muestra las propias (o las del centro, en la pestaña
 correspondiente), con sus fechas y el número de actividades de cada una. Su detalle reúne todas
 las actividades en orden cronológico, cada una con su tramo horario, grupo, descripción y, si los
-tiene, los ficheros adjuntos disponibles para descargar.
+tiene, los ficheros adjuntos disponibles para descargar junto a su tamaño.
 
 Quien registró la ausencia puede editar sus fechas (siempre que el nuevo rango siga cubriendo
 todas sus actividades), editar o eliminar cualquiera de sus actividades, y eliminar la ausencia

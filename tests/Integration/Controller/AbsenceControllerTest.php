@@ -331,7 +331,20 @@ class AbsenceControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('input[name="subjects[]"]');
-        self::assertSelectorExists('select[name="time_slot_id"] option[value]:not([value=""])');
+        self::assertSelectorExists('select[name="time_slot_id"] option[value]:not([value=""])[data-day-of-week]');
+        self::assertSelectorExists('[data-controller="activity-time-slot"]');
+    }
+
+    public function testActivityNewGetPrefillsDateWithAbsenceStartDate(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence = $this->makeAbsence($teacher, $year);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame($this->futureDateString(30), $crawler->filter('input[name="date"]')->attr('value'));
     }
 
     public function testActivityNewPostCreatesActivityWithAttachment(): void
@@ -365,6 +378,52 @@ class AbsenceControllerTest extends ControllerTestCase
         self::assertSame('ejercicio.txt', $activities[0]->getAttachments()->first()->getFilename());
 
         @unlink($tmpFile);
+    }
+
+    public function testActivityNewPostWithoutSubjectsSucceeds(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence  = $this->makeAbsence($teacher, $year);
+        $timeSlot = $this->makeTimeSlot($year, dayOfWeek: (int) $this->futureDate(31)->format('N') - 1);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva', [
+            '_token'       => $token,
+            'date'         => $this->futureDateString(31),
+            'time_slot_id' => $timeSlot->getId()->toRfc4122(),
+            'description'  => '<p>Sin materia asociada.</p>',
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $activities = $this->em->getRepository(Activity::class)->findAll();
+        self::assertCount(1, $activities);
+        self::assertCount(0, $activities[0]->getSubjects());
+    }
+
+    public function testActivityNewShowsAbsenceOwnersSubjectsWhenAdminActsOnTheirBehalf(): void
+    {
+        [$admin, $centre, $year] = $this->makeScenario();
+        $admin->setAdmin(true);
+        $this->flush();
+
+        $owner = $this->makeTeacher('activity.owner.' . uniqid('', false));
+        $year->addTeacher($owner);
+        $this->persist($owner, $year);
+
+        $absence      = $this->makeAbsence($owner, $year);
+        $groupTeacher = $this->makeGroupTeacher($owner, $year);
+        $this->makeTimeSlot($year);
+
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('input[name="subjects[]"][value="' . $groupTeacher->getId()->toRfc4122() . '"]');
     }
 
     public function testActivityNewPostWithDateOutsideRangeShowsError(): void

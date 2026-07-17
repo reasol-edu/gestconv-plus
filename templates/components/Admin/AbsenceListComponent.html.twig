@@ -37,7 +37,7 @@
                 <label class="text-xs font-medium text-gray-500">{{ 'absence.list.col.teacher'|trans({}, 'admin') }}</label>
                 <select data-model="teacherId"
                         data-controller="symfony--ux-autocomplete--autocomplete"
-                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: year.id}) }}"
+                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'absence_teacher', academicYearId: year.id}) }}"
                         data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
                         data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                         data-symfony--ux-autocomplete--autocomplete-placeholder-value="{{ 'absence.list.teacher_placeholder'|trans({}, 'admin') }}"

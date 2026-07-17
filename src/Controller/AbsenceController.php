@@ -45,6 +45,9 @@ class AbsenceController extends AbstractController
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'application/vnd.ms-powerpoint',
         'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/vnd.oasis.opendocument.text',
+        'application/vnd.oasis.opendocument.spreadsheet',
+        'application/vnd.oasis.opendocument.presentation',
         'text/plain',
         'application/zip',
     ];
@@ -335,22 +338,21 @@ class AbsenceController extends AbstractController
         $this->denyAccessUnlessGranted(AbsenceVoter::EDIT, $absence);
         $this->denyIfViewingPastYear($centre);
 
-        $user = $this->getUser();
-        \assert($user instanceof Teacher);
+        $owner = $absence->getTeacher();
 
         $year               = $absence->getAcademicYear();
-        $availableSubjects  = $this->groupTeachers->findByTeacherAndAcademicYearOrdered($user, $year);
+        $availableSubjects  = $this->groupTeachers->findByTeacherAndAcademicYearOrdered($owner, $year);
         $availableTimeSlots = $this->timeSlots->findByAcademicYearOrdered($year);
 
         $errors   = [];
-        $formData = ['date' => '', 'time_slot_id' => '', 'description' => '', 'subject_ids' => []];
+        $formData = ['date' => $absence->getStartDate()->format('Y-m-d'), 'time_slot_id' => '', 'description' => '', 'subject_ids' => []];
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_activity_' . $id, $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
             }
 
-            $result   = $this->parseActivityFields($request, $absence, $user, $year);
+            $result   = $this->parseActivityFields($request, $absence, $owner, $year);
             $errors   = $result['errors'];
             $formData = $result['formData'];
 
@@ -415,11 +417,10 @@ class AbsenceController extends AbstractController
         $this->denyAccessUnlessGranted(AbsenceVoter::EDIT, $absence);
         $this->denyIfViewingPastYear($centre);
 
-        $user = $this->getUser();
-        \assert($user instanceof Teacher);
+        $owner = $absence->getTeacher();
 
         $year               = $absence->getAcademicYear();
-        $availableSubjects  = $this->groupTeachers->findByTeacherAndAcademicYearOrdered($user, $year);
+        $availableSubjects  = $this->groupTeachers->findByTeacherAndAcademicYearOrdered($owner, $year);
         $availableTimeSlots = $this->timeSlots->findByAcademicYearOrdered($year);
 
         $errors   = [];
@@ -438,7 +439,7 @@ class AbsenceController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $result   = $this->parseActivityFields($request, $absence, $user, $year);
+            $result   = $this->parseActivityFields($request, $absence, $owner, $year);
             $errors   = $result['errors'];
             $formData = $result['formData'];
 
@@ -561,7 +562,7 @@ class AbsenceController extends AbstractController
     /**
      * @return array{errors: array<string,string>, formData: array<string,mixed>, date: ?\DateTimeImmutable, timeSlot: ?\App\Entity\TimeSlot, description: string, subjects: list<\App\Entity\GroupTeacher>}
      */
-    private function parseActivityFields(Request $request, Absence $absence, Teacher $user, AcademicYear $year): array
+    private function parseActivityFields(Request $request, Absence $absence, Teacher $owner, AcademicYear $year): array
     {
         $errors = [];
 
@@ -602,14 +603,11 @@ class AbsenceController extends AbstractController
             }
             $groupTeacher = $this->groupTeachers->findById($subjectId);
             if ($groupTeacher !== null
-                && $groupTeacher->getTeacher() === $user
+                && $groupTeacher->getTeacher() === $owner
                 && $groupTeacher->getGroup()->getAcademicYear() === $year
             ) {
                 $subjects[] = $groupTeacher;
             }
-        }
-        if ($subjects === []) {
-            $errors['subjects'] = $this->t('activity.error.subjects_required');
         }
 
         return [
