@@ -74,7 +74,7 @@ class AbsenceVoterTest extends RepositoryTestCase
         }
     }
 
-    public function testCentreAdminIsGrantedViewOnly(): void
+    public function testCentreAdminIsGrantedEverything(): void
     {
         [$absence, $centre] = $this->makeScenario();
         $cadmin              = $this->makeTeacher('centre.admin');
@@ -82,18 +82,58 @@ class AbsenceVoterTest extends RepositoryTestCase
         $centre->addAdmin($cadmin);
         $this->flush();
 
+        foreach ([AbsenceVoter::VIEW, AbsenceVoter::EDIT, AbsenceVoter::DELETE] as $attribute) {
+            self::assertSame(
+                VoterInterface::ACCESS_GRANTED,
+                $this->voter->vote($this->token($cadmin), $absence, [$attribute])
+            );
+        }
+    }
+
+    public function testOwnerCannotEditOrDeleteAbsenceWithPastEndDate(): void
+    {
+        [$absence] = $this->makeScenario(pastDates: true);
+
         self::assertSame(
             VoterInterface::ACCESS_GRANTED,
-            $this->voter->vote($this->token($cadmin), $absence, [AbsenceVoter::VIEW])
+            $this->voter->vote($this->token($absence->getTeacher()), $absence, [AbsenceVoter::VIEW])
         );
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
-            $this->voter->vote($this->token($cadmin), $absence, [AbsenceVoter::EDIT])
+            $this->voter->vote($this->token($absence->getTeacher()), $absence, [AbsenceVoter::EDIT])
         );
         self::assertSame(
             VoterInterface::ACCESS_DENIED,
-            $this->voter->vote($this->token($cadmin), $absence, [AbsenceVoter::DELETE])
+            $this->voter->vote($this->token($absence->getTeacher()), $absence, [AbsenceVoter::DELETE])
         );
+    }
+
+    public function testGlobalAdminOwnerIsNotBlockedByPastEndDate(): void
+    {
+        [$absence] = $this->makeScenario(pastDates: true, ownerIsAdmin: true);
+
+        foreach ([AbsenceVoter::VIEW, AbsenceVoter::EDIT, AbsenceVoter::DELETE] as $attribute) {
+            self::assertSame(
+                VoterInterface::ACCESS_GRANTED,
+                $this->voter->vote($this->token($absence->getTeacher()), $absence, [$attribute])
+            );
+        }
+    }
+
+    public function testCentreAdminIsNotBlockedByPastEndDateOfAnotherTeachersAbsence(): void
+    {
+        [$absence, $centre] = $this->makeScenario(pastDates: true);
+        $cadmin              = $this->makeTeacher('centre.admin.past');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        foreach ([AbsenceVoter::VIEW, AbsenceVoter::EDIT, AbsenceVoter::DELETE] as $attribute) {
+            self::assertSame(
+                VoterInterface::ACCESS_GRANTED,
+                $this->voter->vote($this->token($cadmin), $absence, [$attribute])
+            );
+        }
     }
 
     public function testCentreAdminOfDifferentCentreIsDenied(): void
@@ -135,18 +175,23 @@ class AbsenceVoterTest extends RepositoryTestCase
     }
 
     /** @return array{0: Absence, 1: EducationalCentre} */
-    private function makeScenario(): array
+    private function makeScenario(bool $pastDates = false, bool $ownerIsAdmin = false): array
     {
         $centre  = (new EducationalCentre())->setCode('41000' . substr(md5(uniqid('', true)), 0, 3))->setName('IES')->setCity('Sevilla');
         $year    = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
-        $teacher = $this->makeTeacher('owner.' . uniqid('', true));
+        $teacher = $this->makeTeacher('owner.' . uniqid('', true), admin: $ownerIsAdmin);
         $this->persist($centre, $year, $teacher);
+
+        $today = new \DateTimeImmutable('today');
+        [$start, $end] = $pastDates
+            ? [$today->modify('-14 days'), $today->modify('-12 days')]
+            : [$today->modify('+12 days'), $today->modify('+14 days')];
 
         $absence = (new Absence())
             ->setTeacher($teacher)
             ->setAcademicYear($year)
-            ->setStartDate(new \DateTimeImmutable('2026-01-12'))
-            ->setEndDate(new \DateTimeImmutable('2026-01-14'));
+            ->setStartDate($start)
+            ->setEndDate($end);
         $this->persist($absence);
 
         return [$absence, $centre];

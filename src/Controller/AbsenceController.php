@@ -14,6 +14,7 @@ use App\Repository\AbsenceRepository;
 use App\Repository\ActivityAttachmentRepository;
 use App\Repository\ActivityRepository;
 use App\Repository\GroupTeacherRepository;
+use App\Repository\TeacherRepository;
 use App\Repository\TimeSlotRepository;
 use App\Security\Voter\AbsenceVoter;
 use App\Service\ActivityLogService;
@@ -55,13 +56,14 @@ class AbsenceController extends AbstractController
         private readonly ActivityRepository $activities,
         private readonly ActivityAttachmentRepository $attachmentRepository,
         private readonly GroupTeacherRepository $groupTeachers,
+        private readonly TeacherRepository $teachers,
         private readonly TimeSlotRepository $timeSlots,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
     ) {}
 
     #[Route('', name: 'app_absences_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $centre = $this->tenantContext->getSelectedCentre();
         if ($centre === null) {
@@ -73,12 +75,33 @@ class AbsenceController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $year     = $this->tenantContext->getViewYear($centre);
-        $absences = $year !== null ? $this->absences->findByTeacherAndYearOrderedByStartDate($user, $year) : [];
+        $year          = $this->tenantContext->getViewYear($centre);
+        $isAdmin       = $user->isAdmin() || $centre->getAdmins()->contains($user);
+        $belongsToYear = $year !== null && $year->getTeachers()->contains($user);
+
+        if (!$isAdmin && !$belongsToYear) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $requestedTab = $request->query->getString('tab');
+        $tab          = match (true) {
+            $requestedTab === 'centre' && $isAdmin       => 'centre',
+            $requestedTab === 'mine' && $belongsToYear    => 'mine',
+            $belongsToYear                                => 'mine',
+            default                                        => 'centre',
+        };
+
+        $absences = $tab === 'mine' && $year !== null
+            ? $this->absences->findByTeacherAndYearOrderedByStartDate($user, $year)
+            : [];
 
         return $this->render('absence/index.html.twig', [
-            'centre'   => $centre,
-            'absences' => $absences,
+            'centre'        => $centre,
+            'year'          => $year,
+            'tab'           => $tab,
+            'isAdmin'       => $isAdmin,
+            'belongsToYear' => $belongsToYear,
+            'absences'      => $absences,
         ]);
     }
 
@@ -99,13 +122,16 @@ class AbsenceController extends AbstractController
 
         $year = $centre->getActiveAcademicYear();
         if ($year === null) {
-            $this->addFlash('error', $this->t('absence.error.no_active_year'));
+            $this->addFlash('error', $this->t('absence.no_active_year'));
 
             return $this->redirectToRoute('app_absences_index');
         }
 
-        $errors   = [];
-        $formData = ['start_date' => '', 'end_date' => ''];
+        $isAdmin = $user->isAdmin() || $centre->getAdmins()->contains($user);
+
+        $errors           = [];
+        $formData         = ['start_date' => '', 'end_date' => '', 'teacher_id' => $isAdmin ? '' : $user->getId()->toRfc4122()];
+        $selectedTeacher  = null;
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_absence', $request->request->getString('_token'))) {
@@ -114,10 +140,16 @@ class AbsenceController extends AbstractController
 
             $startDateRaw = trim($request->request->getString('start_date'));
             $endDateRaw   = trim($request->request->getString('end_date'));
-            $formData     = ['start_date' => $startDateRaw, 'end_date' => $endDateRaw];
+            $teacherIdRaw = $isAdmin ? trim($request->request->getString('teacher_id')) : $user->getId()->toRfc4122();
+            $formData     = ['start_date' => $startDateRaw, 'end_date' => $endDateRaw, 'teacher_id' => $teacherIdRaw];
 
             $startDate = self::parseDate($startDateRaw);
             $endDate   = self::parseDate($endDateRaw);
+
+            $targetTeacher = $isAdmin
+                ? ($teacherIdRaw !== '' ? $this->teachers->findByAcademicYearAndId($year, $teacherIdRaw) : null)
+                : $user;
+            $selectedTeacher = $targetTeacher;
 
             if ($startDate === null) {
                 $errors['start_date'] = $this->t('absence.error.start_date_required');
@@ -128,10 +160,13 @@ class AbsenceController extends AbstractController
             if ($startDate !== null && $endDate !== null && $endDate < $startDate) {
                 $errors['end_date'] = $this->t('absence.error.end_before_start');
             }
+            if ($targetTeacher === null) {
+                $errors['teacher_id'] = $this->t('absence.error.teacher_required');
+            }
 
-            if (empty($errors) && $endDate instanceof \DateTimeImmutable) {
+            if (empty($errors) && $endDate instanceof \DateTimeImmutable && $targetTeacher !== null) {
                 $absence = new Absence();
-                $absence->setTeacher($user)
+                $absence->setTeacher($targetTeacher)
                         ->setAcademicYear($year)
                         ->setStartDate($startDate)
                         ->setEndDate($endDate);
@@ -140,7 +175,8 @@ class AbsenceController extends AbstractController
                 $this->em->flush();
 
                 $this->activityLog->log('absence.created', [
-                    'entityId' => $absence->getId()->toRfc4122(),
+                    'entityId'  => $absence->getId()->toRfc4122(),
+                    'teacherId' => $targetTeacher->getId()->toRfc4122(),
                 ]);
 
                 $this->addFlash('success', $this->t('absence.flash.created'));
@@ -150,9 +186,12 @@ class AbsenceController extends AbstractController
         }
 
         return $this->render('absence/new.html.twig', [
-            'centre'   => $centre,
-            'errors'   => $errors,
-            'formData' => $formData,
+            'centre'          => $centre,
+            'year'            => $year,
+            'isAdmin'         => $isAdmin,
+            'errors'          => $errors,
+            'formData'        => $formData,
+            'selectedTeacher' => $selectedTeacher,
         ]);
     }
 

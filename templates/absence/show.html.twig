@@ -19,6 +19,9 @@
             <p class="mt-1 text-sm text-gray-500">
                 {{ absence.teacher.name.lastName }}, {{ absence.teacher.name.firstName }}
             </p>
+            {% if not is_granted('absence.edit', absence) and absence.endDate < date() %}
+                <p class="mt-1 text-xs text-gray-400">{{ 'absence.locked_past_end_date'|trans({}, 'admin') }}</p>
+            {% endif %}
         </div>
         <div class="flex items-center gap-2 shrink-0">
             {% if is_granted('absence.edit', absence) and not is_viewing_past_year() %}

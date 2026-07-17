@@ -53,6 +53,50 @@ class AbsenceControllerTest extends ControllerTestCase
         self::assertStringContainsString('login', (string) $this->client->getResponse()->headers->get('Location'));
     }
 
+    public function testIndexDeniesNonEnrolledNonAdminTeacher(): void
+    {
+        $suffix  = (string) ++self::$scenarioCounter;
+        $teacher = $this->makeTeacher('teacher.' . uniqid('', false) . $suffix);
+        $centre  = (new EducationalCentre())->setCode('4' . str_pad($suffix, 7, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
+        $year    = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
+        $centre->setActiveAcademicYear($year);
+        // Deliberately not enrolled in the year's roster and not an admin.
+        $this->persist($teacher, $centre, $year);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/ausencias');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testCentreTabAccessibleToAdminAndShowsListComponent(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $teacher->setAdmin(true);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/ausencias?tab=centre');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('input[data-model="dateFrom"]');
+    }
+
+    public function testIndexForAdminWithoutActiveYearShowsNoYearMessageInstead(): void
+    {
+        $suffix  = (string) ++self::$scenarioCounter;
+        $admin   = $this->makeTeacher('admin.no.year.' . uniqid('', false) . $suffix);
+        $admin->setAdmin(true);
+        $centre = (new EducationalCentre())->setCode('4' . str_pad($suffix, 7, '0', STR_PAD_LEFT))->setName('IES Sin Curso')->setCity('Sevilla');
+        // Deliberately no active academic year is set on the centre.
+        $this->persist($admin, $centre);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/ausencias');
+
+        self::assertResponseIsSuccessful();
+    }
+
     // ── new ──────────────────────────────────────────────────────────────────
 
     public function testNewGetRendersForm(): void
@@ -77,15 +121,15 @@ class AbsenceControllerTest extends ControllerTestCase
 
         $this->client->request('POST', '/ausencias/nuevo', [
             '_token'     => $token,
-            'start_date' => '2026-02-02',
-            'end_date'   => '2026-02-06',
+            'start_date' => $this->futureDateString(30),
+            'end_date'   => $this->futureDateString(34),
         ]);
 
         self::assertResponseRedirects();
         $this->em->clear();
         $absences = $this->em->getRepository(Absence::class)->findAll();
         self::assertCount(1, $absences);
-        self::assertSame('2026-02-02', $absences[0]->getStartDate()->format('Y-m-d'));
+        self::assertSame($this->futureDateString(30), $absences[0]->getStartDate()->format('Y-m-d'));
         self::assertSame($teacher->getId()->toRfc4122(), $absences[0]->getTeacher()->getId()->toRfc4122());
     }
 
@@ -99,8 +143,58 @@ class AbsenceControllerTest extends ControllerTestCase
 
         $this->client->request('POST', '/ausencias/nuevo', [
             '_token'     => $token,
-            'start_date' => '2026-02-06',
-            'end_date'   => '2026-02-02',
+            'start_date' => $this->futureDateString(34),
+            'end_date'   => $this->futureDateString(30),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(Absence::class)->findAll());
+    }
+
+    public function testAdminCanCreateAbsenceForAnotherTeacher(): void
+    {
+        [$admin, $centre, $year] = $this->makeScenario();
+        $admin->setAdmin(true);
+        $other = $this->makeTeacher('other.' . uniqid('', false));
+        $year->addTeacher($other);
+        $this->persist($admin, $other, $year);
+
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/ausencias/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/ausencias/nuevo', [
+            '_token'     => $token,
+            'start_date' => $this->futureDateString(30),
+            'end_date'   => $this->futureDateString(34),
+            'teacher_id' => $other->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $absences = $this->em->getRepository(Absence::class)->findAll();
+        self::assertCount(1, $absences);
+        self::assertSame($other->getId()->toRfc4122(), $absences[0]->getTeacher()->getId()->toRfc4122());
+    }
+
+    public function testAdminNewPostWithoutTeacherShowsError(): void
+    {
+        [$admin, $centre] = $this->makeScenario();
+        $admin->setAdmin(true);
+        $this->flush();
+
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/ausencias/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/ausencias/nuevo', [
+            '_token'     => $token,
+            'start_date' => $this->futureDateString(30),
+            'end_date'   => $this->futureDateString(34),
+            'teacher_id' => '',
         ]);
 
         self::assertResponseIsSuccessful();
@@ -145,14 +239,14 @@ class AbsenceControllerTest extends ControllerTestCase
 
         $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/editar', [
             '_token'     => $token,
-            'start_date' => '2026-02-03',
-            'end_date'   => '2026-02-07',
+            'start_date' => $this->futureDateString(31),
+            'end_date'   => $this->futureDateString(35),
         ]);
 
         self::assertResponseRedirects();
         $this->em->clear();
         $updated = $this->em->getRepository(Absence::class)->find($absence->getId());
-        self::assertSame('2026-02-03', $updated->getStartDate()->format('Y-m-d'));
+        self::assertSame($this->futureDateString(31), $updated->getStartDate()->format('Y-m-d'));
     }
 
     public function testDeletePostRemovesAbsence(): void
@@ -171,6 +265,56 @@ class AbsenceControllerTest extends ControllerTestCase
         self::assertResponseRedirects('/ausencias');
         $this->em->clear();
         self::assertCount(0, $this->em->getRepository(Absence::class)->findAll());
+    }
+
+    public function testOwnerCannotEditAbsenceWithPastEndDate(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence = $this->makePastAbsence($teacher, $year);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testOwnerCannotDeleteAbsenceWithPastEndDate(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence = $this->makePastAbsence($teacher, $year);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/eliminar', [
+            '_token' => 'irrelevant-since-denied-before-csrf-check',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testOwnerCanStillViewAbsenceWithPastEndDate(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence = $this->makePastAbsence($teacher, $year);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/editar"]');
+    }
+
+    public function testCentreAdminCanEditAbsenceWithPastEndDate(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence = $this->makePastAbsence($teacher, $year);
+        $admin   = $this->makeTeacher('centre.admin.' . uniqid('', false));
+        $centre->addAdmin($admin);
+        $this->persist($admin, $centre);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseIsSuccessful();
     }
 
     // ── activities ───────────────────────────────────────────────────────────
@@ -195,7 +339,7 @@ class AbsenceControllerTest extends ControllerTestCase
         [$teacher, $centre, $year] = $this->makeScenario();
         $absence     = $this->makeAbsence($teacher, $year);
         $groupTeacher = $this->makeGroupTeacher($teacher, $year);
-        $timeSlot    = $this->makeTimeSlot($year, dayOfWeek: (int) (new \DateTimeImmutable('2026-02-03'))->format('N') - 1);
+        $timeSlot    = $this->makeTimeSlot($year, dayOfWeek: (int) $this->futureDate(31)->format('N') - 1);
         $this->loginAs($teacher, $centre);
 
         $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva');
@@ -207,7 +351,7 @@ class AbsenceControllerTest extends ControllerTestCase
 
         $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva', [
             '_token'       => $token,
-            'date'         => '2026-02-03',
+            'date'         => $this->futureDateString(31),
             'time_slot_id' => $timeSlot->getId()->toRfc4122(),
             'subjects'     => [$groupTeacher->getId()->toRfc4122()],
             'description'  => '<p>Ejercicios de repaso.</p>',
@@ -236,7 +380,7 @@ class AbsenceControllerTest extends ControllerTestCase
 
         $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva', [
             '_token'       => $token,
-            'date'         => '2026-03-15',
+            'date'         => $this->futureDateString(60),
             'time_slot_id' => $timeSlot->getId()->toRfc4122(),
             'subjects'     => [$groupTeacher->getId()->toRfc4122()],
             'description'  => '<p>Fuera de rango.</p>',
@@ -252,8 +396,10 @@ class AbsenceControllerTest extends ControllerTestCase
         [$teacher, $centre, $year] = $this->makeScenario();
         $absence     = $this->makeAbsence($teacher, $year);
         $groupTeacher = $this->makeGroupTeacher($teacher, $year);
-        // 2026-02-03 is a Tuesday (dayOfWeek = 1); force a mismatching Monday slot (0).
-        $timeSlot = $this->makeTimeSlot($year, dayOfWeek: 0);
+        // Force a slot whose day of week never matches the activity date's actual weekday.
+        $actualDayOfWeek = (int) $this->futureDate(31)->format('N') - 1;
+        $mismatchDay     = ($actualDayOfWeek + 1) % 7;
+        $timeSlot        = $this->makeTimeSlot($year, dayOfWeek: $mismatchDay);
         $this->loginAs($teacher, $centre);
 
         $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva');
@@ -261,7 +407,7 @@ class AbsenceControllerTest extends ControllerTestCase
 
         $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva', [
             '_token'       => $token,
-            'date'         => '2026-02-03',
+            'date'         => $this->futureDateString(31),
             'time_slot_id' => $timeSlot->getId()->toRfc4122(),
             'subjects'     => [$groupTeacher->getId()->toRfc4122()],
             'description'  => '<p>Día no coincide.</p>',
@@ -277,8 +423,8 @@ class AbsenceControllerTest extends ControllerTestCase
         [$teacher, $centre, $year] = $this->makeScenario();
         $absence      = $this->makeAbsence($teacher, $year);
         $groupTeacher = $this->makeGroupTeacher($teacher, $year);
-        $timeSlot     = $this->makeTimeSlot($year, dayOfWeek: (int) (new \DateTimeImmutable('2026-02-03'))->format('N') - 1);
-        $activity     = $this->makeActivity($absence, $timeSlot, $groupTeacher, '2026-02-03');
+        $timeSlot     = $this->makeTimeSlot($year, dayOfWeek: (int) $this->futureDate(31)->format('N') - 1);
+        $activity     = $this->makeActivity($absence, $timeSlot, $groupTeacher, $this->futureDateString(31));
         $this->loginAs($teacher, $centre);
 
         $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122());
@@ -300,8 +446,8 @@ class AbsenceControllerTest extends ControllerTestCase
         [$teacher, $centre, $year] = $this->makeScenario();
         $absence      = $this->makeAbsence($teacher, $year);
         $groupTeacher = $this->makeGroupTeacher($teacher, $year);
-        $timeSlot     = $this->makeTimeSlot($year, dayOfWeek: (int) (new \DateTimeImmutable('2026-02-03'))->format('N') - 1);
-        $activity     = $this->makeActivity($absence, $timeSlot, $groupTeacher, '2026-02-03');
+        $timeSlot     = $this->makeTimeSlot($year, dayOfWeek: (int) $this->futureDate(31)->format('N') - 1);
+        $activity     = $this->makeActivity($absence, $timeSlot, $groupTeacher, $this->futureDateString(31));
 
         $attachment = new \App\Entity\ActivityAttachment($activity, 'notas.txt', 'text/plain', 4, 'test');
         $activity->addAttachment($attachment);
@@ -330,6 +476,7 @@ class AbsenceControllerTest extends ControllerTestCase
         $centre  = (new EducationalCentre())->setCode('4' . str_pad($suffix, 7, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
         $year    = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
         $centre->setActiveAcademicYear($year);
+        $year->addTeacher($teacher);
 
         $this->persist($teacher, $centre, $year);
 
@@ -341,13 +488,40 @@ class AbsenceControllerTest extends ControllerTestCase
         return (new Teacher(new PersonName('Test', 'Teacher')))->setUsername($username);
     }
 
+    /**
+     * Dates are computed relative to "today" (instead of hard-coded) so the
+     * fixture keeps producing a future, non-locked absence regardless of when
+     * the test suite runs.
+     */
+    private function futureDate(int $daysFromToday): \DateTimeImmutable
+    {
+        return (new \DateTimeImmutable('today'))->modify(sprintf('+%d days', $daysFromToday));
+    }
+
+    private function futureDateString(int $daysFromToday): string
+    {
+        return $this->futureDate($daysFromToday)->format('Y-m-d');
+    }
+
     private function makeAbsence(Teacher $teacher, AcademicYear $year): Absence
     {
         $absence = (new Absence())
             ->setTeacher($teacher)
             ->setAcademicYear($year)
-            ->setStartDate(new \DateTimeImmutable('2026-02-02'))
-            ->setEndDate(new \DateTimeImmutable('2026-02-06'));
+            ->setStartDate($this->futureDate(30))
+            ->setEndDate($this->futureDate(34));
+        $this->persist($absence);
+
+        return $absence;
+    }
+
+    private function makePastAbsence(Teacher $teacher, AcademicYear $year): Absence
+    {
+        $absence = (new Absence())
+            ->setTeacher($teacher)
+            ->setAcademicYear($year)
+            ->setStartDate(new \DateTimeImmutable('2020-02-02'))
+            ->setEndDate(new \DateTimeImmutable('2020-02-06'));
         $this->persist($absence);
 
         return $absence;

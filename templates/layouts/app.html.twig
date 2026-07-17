@@ -137,8 +137,8 @@
                 </a>
             {% endif %}
 
-            {# Ausencias — todos los docentes con centro activo #}
-            {% if active_centre %}
+            {# Ausencias — administradores del centro y docentes del curso visualizado #}
+            {% if active_centre and (is_centre_admin() or belongs_to_view_year()) %}
                 {% set absences_active = current_route starts with 'app_absences' %}
                 <a href="{{ path('app_absences_index') }}"
                     {{ absences_active ? 'aria-current="page"' : '' }}

@@ -39,14 +39,23 @@ final class AbsenceVoter extends Voter
             return true;
         }
 
-        // Owner: full access
-        if ($subject->getTeacher() === $user) {
+        // Centre admin: full access over any absence of the centre
+        $centre = $subject->getAcademicYear()->getEducationalCentre();
+        if ($centre->getAdmins()->contains($user)) {
             return true;
         }
 
-        // Centre admin: view-only oversight
-        $centre = $subject->getAcademicYear()->getEducationalCentre();
+        // Not the owner and not an admin: no access
+        if ($subject->getTeacher() !== $user) {
+            return false;
+        }
 
-        return $attribute === self::VIEW && $centre->getAdmins()->contains($user);
+        // Owner: full access, except edit/delete once the end date has passed
+        if (in_array($attribute, [self::EDIT, self::DELETE], true)
+            && $subject->getEndDate() < new \DateTimeImmutable('today')) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -27,6 +27,8 @@ final class TenantContextExtension extends AbstractExtension
             new TwigFunction('view_year', $this->getViewYear(...)),
             new TwigFunction('can_switch_year', $this->canSwitchYear(...)),
             new TwigFunction('is_viewing_past_year', $this->isViewingPastYear(...)),
+            new TwigFunction('is_centre_admin', $this->isCentreAdmin(...)),
+            new TwigFunction('belongs_to_view_year', $this->belongsToViewYear(...)),
         ];
     }
 
@@ -57,6 +59,21 @@ final class TenantContextExtension extends AbstractExtension
 
     public function canSwitchYear(): bool
     {
+        return $this->isCentreAdmin();
+    }
+
+    public function isViewingPastYear(): bool
+    {
+        $centre = $this->context->getSelectedCentre();
+        if ($centre === null) {
+            return false;
+        }
+
+        return $this->context->isViewingNonActiveYear($centre);
+    }
+
+    public function isCentreAdmin(): bool
+    {
         $centre = $this->context->getSelectedCentre();
         if ($centre === null) {
             return false;
@@ -70,13 +87,20 @@ final class TenantContextExtension extends AbstractExtension
         return $user->isAdmin() || $centre->getAdmins()->contains($user);
     }
 
-    public function isViewingPastYear(): bool
+    public function belongsToViewYear(): bool
     {
         $centre = $this->context->getSelectedCentre();
         if ($centre === null) {
             return false;
         }
 
-        return $this->context->isViewingNonActiveYear($centre);
+        $user = $this->security->getUser();
+        if (!$user instanceof Teacher) {
+            return false;
+        }
+
+        $year = $this->context->getViewYear($centre);
+
+        return $year !== null && $year->getTeachers()->contains($user);
     }
 }
