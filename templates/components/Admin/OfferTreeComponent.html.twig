@@ -341,6 +341,13 @@
 
     function initStaffSelect(select) {
         if (select.tomselect) return;
+        // Once a <select>'s selectedness has been set via script (TomSelect does this on
+        // every init), the browser marks it "dirty": from then on, freshly inserted
+        // <option selected> nodes only get the selected ATTRIBUTE, not the .selected
+        // PROPERTY that TomSelect actually reads. Re-sync it explicitly before init.
+        Array.from(select.options).forEach(function (opt) {
+            opt.selected = opt.hasAttribute('selected');
+        });
         const multiple   = select.multiple;
         const actionName = select.dataset.staffAction;
         const argName    = select.dataset.staffArg;
@@ -369,7 +376,15 @@
 
     function destroyAll() {
         liveEl.querySelectorAll('.js-staff-select').forEach(function (select) {
-            if (select.tomselect) select.tomselect.destroy();
+            if (select.tomselect) {
+                select.tomselect.destroy();
+                // TomSelect's destroy() reverts <option>s to their init-time snapshot, which
+                // then confuses Idiomorph's diff against the server's fresh markup and makes
+                // it duplicate every <option> instead of updating it in place. Emptying the
+                // select first leaves Idiomorph nothing stale to pair, so it just inserts the
+                // fresh options cleanly.
+                select.innerHTML = '';
+            }
         });
     }
 

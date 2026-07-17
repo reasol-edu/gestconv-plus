@@ -61,7 +61,7 @@
             {% endif %}
 
             {# ── Tablero: cinco columnas, lunes a viernes ──────────────────── #}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
                 {% for day in 0..4 %}
                     {% set slots = columns[day] ?? [] %}
                     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white flex flex-col">
@@ -86,7 +86,7 @@
                                             <span class="text-sm truncate w-full {{ is_sel ? 'font-semibold text-forest-800' : 'text-gray-800' }}">{{ ts.name }}</span>
                                             <span class="text-xs text-gray-400">{{ ts.startTime|date('H:i') }}–{{ ts.endTime|date('H:i') }}</span>
                                             {% if ts.guards is not empty %}
-                                                <span class="mt-1 flex items-center -space-x-1.5">
+                                                <span class="mt-1 flex items-center -space-x-0.5">
                                                     {% for g in ts.guards|slice(0, 6) %}
                                                         <span title="{{ g.name.firstName }} {{ g.name.lastName }}"
                                                               class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-[10px] font-semibold uppercase text-amber-700 ring-2 ring-white">
@@ -286,6 +286,13 @@
 
     function initStaffSelect(select) {
         if (select.tomselect) return;
+        // Once a <select>'s selectedness has been set via script (TomSelect does this on
+        // every init), the browser marks it "dirty": from then on, freshly inserted
+        // <option selected> nodes only get the selected ATTRIBUTE, not the .selected
+        // PROPERTY that TomSelect actually reads. Re-sync it explicitly before init.
+        Array.from(select.options).forEach(function (opt) {
+            opt.selected = opt.hasAttribute('selected');
+        });
         const multiple   = select.multiple;
         const actionName = select.dataset.staffAction;
         const argName    = select.dataset.staffArg;
@@ -314,7 +321,15 @@
 
     function destroyAll() {
         liveEl.querySelectorAll('.js-staff-select').forEach(function (select) {
-            if (select.tomselect) select.tomselect.destroy();
+            if (select.tomselect) {
+                select.tomselect.destroy();
+                // TomSelect's destroy() reverts <option>s to their init-time snapshot, which
+                // then confuses Idiomorph's diff against the server's fresh markup and makes
+                // it duplicate every <option> instead of updating it in place. Emptying the
+                // select first leaves Idiomorph nothing stale to pair, so it just inserts the
+                // fresh options cleanly.
+                select.innerHTML = '';
+            }
         });
     }
 
