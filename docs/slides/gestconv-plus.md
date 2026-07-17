@@ -441,6 +441,19 @@ el centro**, no solo de sus propios grupos:
 
 ---
 
+## Tramos horarios y docentes de guardia
+
+![bg right:35% fit](../manual/img/centro/centro-tramos.png)
+
+- Tablero de cinco columnas (lunes a viernes) para definir los **tramos horarios** del curso: 1ª
+  hora, recreo, 2ª hora…
+- El botón **Añadir todos los días** crea el mismo tramo en los cinco días a la vez, sin repetir
+  el alta.
+- Cada tramo admite asignar varios **docentes de guardia**, mostrados en el tablero como avatares
+  con iniciales; a partir de seis se resumen en una burbuja **+N**.
+
+---
+
 ## Configurar quién notifica partes y sanciones
 
 ![bg right:35% fit](../manual/img/notificaciones/ajustes-notificaciones.png)

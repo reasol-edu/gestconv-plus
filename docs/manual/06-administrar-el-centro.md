@@ -10,8 +10,8 @@ automáticos por correo.
 
 La sección **Centro educativo** del menú lateral es el panel de configuración del centro,
 reservado a los administradores. Sus tarjetas dan acceso a los cursos académicos, los docentes,
-la oferta formativa, los estudiantes, los catálogos del centro, los perfiles especiales, los
-ajustes y el registro de avisos por correo.
+la oferta formativa, los estudiantes, los tramos horarios, los catálogos del centro, los perfiles
+especiales, los ajustes y el registro de avisos por correo.
 
 Las tarjetas de **Docentes** y **Estudiantes** —altas e importaciones desde Séneca— se explican
 paso a paso en [Preparar el curso académico](02-preparar-el-curso-academico.md); el resto, a
@@ -53,6 +53,31 @@ al instante, sin recargar la página.
 Si el centro no tiene un curso académico activo, la sección muestra un aviso y no permite
 gestionar la oferta formativa. El paso a paso completo está en
 [Preparar el curso académico](02-preparar-el-curso-academico.md#la-oferta-formativa-a-mano).
+
+### Tramos horarios
+
+La tarjeta **Tramos horarios** define los tramos en los que se organiza la jornada (1ª hora,
+recreo, 2ª hora…) y quién está de guardia en cada uno, dentro del curso académico activo. El
+editor muestra un tablero de cinco columnas, una por día lectivo de lunes a viernes.
+
+![Tablero de tramos horarios con guardias asignadas](img/centro/centro-tramos.png)
+
+- **Añadir tramo** — al pie de cada columna, crea un tramo solo para ese día: nombre, hora de
+  inicio y hora de fin.
+- **Añadir todos los días** — el botón situado sobre el tablero crea el mismo tramo (mismo
+  nombre y horario) en los cinco días a la vez, para no repetir el alta cinco veces cuando el
+  horario es igual toda la semana.
+- Al seleccionar un tramo se abre su formulario de edición, con el campo **Docentes de
+  guardia**: un buscador con autocompletado que admite varios docentes a la vez. Eliminar un
+  tramo borra también su asignación de guardias, y pide confirmación porque no se puede deshacer.
+- El tablero muestra, bajo el nombre y el horario de cada tramo, un grupo de avatares con las
+  iniciales de los docentes de guardia (nombre completo al pasar el ratón por encima). A partir
+  de seis docentes en un mismo tramo, los siguientes se resumen en una burbuja **+N** en vez de
+  seguir añadiendo avatares.
+
+Al igual que los catálogos del centro, los tramos horarios se pueden **exportar** e **importar en
+JSON** para copiar la configuración entre centros, con la opción de vaciar los tramos existentes
+antes de importar.
 
 ### Perfiles
 
