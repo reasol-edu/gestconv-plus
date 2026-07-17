@@ -253,17 +253,32 @@ Cada ausencia es un **rango de fechas** (por ejemplo, los días de una baja o de
 contiene una o varias **actividades**: una por cada clase que se ve afectada, con su propio tramo
 horario, grupo y descripción.
 
-Una ausencia es **privada**: solo quien la registra puede crearla, editarla o eliminarla. Los
-administradores globales y los de centro pueden consultarla si lo necesitan, pero no modificarla;
-ningún otro docente tiene acceso a las ausencias de otra persona, ni siquiera si comparte grupo
-con quien las registró (ver [Permisos de un vistazo](08-permisos-de-un-vistazo.md#ausencias)).
+Una ausencia es **privada**: solo quien la registra puede editarla o eliminarla, y solo mientras no
+haya pasado su fecha de fin (después queda **bloqueada** para ese docente, aunque sigue pudiendo
+consultarla). Ningún otro docente tiene acceso a las ausencias de otra persona, ni siquiera si
+comparte grupo con quien las registró. Los administradores globales y los de centro son la
+excepción: tienen acceso completo —crear, consultar, editar y eliminar— a las ausencias de
+cualquier docente del curso, sin que el bloqueo por fecha les afecte (ver
+[Permisos de un vistazo](08-permisos-de-un-vistazo.md#ausencias)).
+
+Si quien accede es administrador (global o de centro) y además pertenece al curso escolar
+visualizado, la sección muestra dos pestañas:
+
+- **Mis ausencias** — las propias, igual que para cualquier docente.
+- **Ausencias del centro** — todas las registradas en el curso, con filtros por fecha (hoy o un
+  rango) y por docente, ordenadas por fecha de fin de más reciente a más antigua.
+
+Un administrador que no pertenezca al curso (por ejemplo, solo administra el centro pero no da
+clase) ve directamente el listado de ausencias del centro, sin pestañas.
 
 ### Registrar una ausencia
 
 1. Pulsa **Nueva ausencia** en la esquina superior derecha del listado.
-2. Indica la **fecha de inicio** y la **fecha de fin** del periodo en el que se estará ausente.
+2. Si quien registra es administrador, elige primero el **docente** para el que se registra la
+   ausencia (por defecto, uno mismo).
+3. Indica la **fecha de inicio** y la **fecha de fin** del periodo en el que se estará ausente.
    Ambas son obligatorias y la fecha de fin no puede ser anterior a la de inicio.
-3. Guarda: se abre el detalle de la ausencia, todavía sin actividades.
+4. Guarda: se abre el detalle de la ausencia, todavía sin actividades.
 
 ### Añadir actividades
 
@@ -289,14 +304,15 @@ día si hay más de un tramo horario implicado.
 
 ### Consultar, editar y eliminar
 
-El listado de **Ausencias** muestra las propias, con sus fechas y el número de actividades de cada
-una. Su detalle reúne todas las actividades en orden cronológico, cada una con su tramo horario,
-grupo, descripción y, si los tiene, los ficheros adjuntos disponibles para descargar.
+El listado de **Ausencias** muestra las propias (o las del centro, en la pestaña
+correspondiente), con sus fechas y el número de actividades de cada una. Su detalle reúne todas
+las actividades en orden cronológico, cada una con su tramo horario, grupo, descripción y, si los
+tiene, los ficheros adjuntos disponibles para descargar.
 
 Quien registró la ausencia puede editar sus fechas (siempre que el nuevo rango siga cubriendo
 todas sus actividades), editar o eliminar cualquiera de sus actividades, y eliminar la ausencia
-completa. Eliminar una ausencia elimina también todas sus actividades y ficheros adjuntos; es una
-acción irreversible que pide confirmación.
+completa, siempre que no haya pasado ya su fecha de fin. Eliminar una ausencia elimina también
+todas sus actividades y ficheros adjuntos; es una acción irreversible que pide confirmación.
 
 Al editar una actividad ya existente, cada fichero adjunto puede marcarse individualmente para
 eliminarlo, además de poder añadir otros nuevos.

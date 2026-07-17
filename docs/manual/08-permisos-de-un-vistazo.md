@@ -72,19 +72,23 @@ notificar.
 
 ## Ausencias
 
-Las [ausencias](03-el-trabajo-diario.md#ausencias) son estrictamente privadas: cada docente solo
-gestiona las suyas.
+Las [ausencias](03-el-trabajo-diario.md#ausencias) son privadas para el profesorado normal: cada
+docente solo gestiona las suyas, y deja de poder modificarlas en cuanto pasa su fecha de fin. Los
+administradores, en cambio, tienen acceso completo a las de cualquier docente del centro.
 
-| Acción | Docente propietario | Otro docente | Admin de centro | Admin global |
-|---|:---:|:---:|:---:|:---:|
-| Ver la propia ausencia y sus actividades | ✓ | — | ✓ | ✓ |
-| Crear, editar o eliminar la propia ausencia | ✓ | — | — | ✓ |
-| Añadir, editar o eliminar actividades y adjuntos | ✓ | — | — | ✓ |
+| Acción | Propietario (antes de la fecha de fin) | Propietario (tras la fecha de fin) | Otro docente | Admin de centro | Admin global |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Ver la sección Ausencias | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Ver la pestaña *Ausencias del centro* | — | — | — | ✓ | ✓ |
+| Ver una ausencia y sus actividades | ✓ | ✓ | — | ✓ | ✓ |
+| Crear una ausencia (propia o de otro docente) | ✓ | — | — | ✓ | ✓ |
+| Editar o eliminar la ausencia | ✓ | — | — | ✓ | ✓ |
+| Añadir, editar o eliminar actividades y adjuntos | ✓ | — | — | ✓ | ✓ |
 
-Los administradores de centro pueden consultar las ausencias de cualquier docente de su centro,
-pero no modificarlas ni eliminarlas. Los administradores globales tienen acceso completo, igual
-que a cualquier otro dato de la plataforma. Ningún otro docente, ni siquiera compartiendo grupo,
-puede ver las ausencias de otra persona.
+Los administradores de centro y globales pueden registrar una ausencia para cualquier docente que
+pertenezca al curso escolar visualizado, y su acceso no se ve afectado por el bloqueo de fecha que
+sí aplica al profesorado normal. Ningún otro docente, ni siquiera compartiendo grupo, puede ver
+las ausencias de otra persona.
 
 ## Centro educativo
 

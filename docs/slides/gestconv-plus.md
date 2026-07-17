@@ -222,8 +222,11 @@ El parte pasa a **"Notificado"** y queda en el historial.
   fuera del aula) desde el menú lateral, sección **Ausencias**.
 - Cada ausencia tiene un **rango de fechas** y, dentro de ella, una o varias
   **actividades**: qué trabajar, en qué grupo y en qué tramo horario.
-- Solo tú puedes crear, editar o eliminar tus propias ausencias; nadie más
-  las ve, salvo la administración del centro, que solo puede consultarlas.
+- Puedes editar o eliminar tus ausencias hasta que pase su fecha de fin;
+  después solo quedan consultables. Nadie más ve tus ausencias, salvo la
+  administración del centro, que puede registrar, editar o eliminar la
+  ausencia de cualquier docente en cualquier momento desde la pestaña
+  **Ausencias del centro**.
 
 ---
 
