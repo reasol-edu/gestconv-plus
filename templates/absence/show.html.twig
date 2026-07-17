@@ -1,0 +1,129 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'absence.show_title'|trans({}, 'admin') }} · {{ absence.startDate|date('d/m/Y') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+                {% include 'components/_breadcrumb_home.html.twig' %}
+                <a href="{{ path('app_absences_index') }}" class="hover:text-forest-600 transition-colors">{{ 'absence.title'|trans({}, 'admin') }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+                <span aria-current="page" class="text-gray-700 font-medium">{{ 'absence.show_title'|trans({}, 'admin') }}</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {{ absence.startDate|date('d/m/Y') }} — {{ absence.endDate|date('d/m/Y') }}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                {{ absence.teacher.name.lastName }}, {{ absence.teacher.name.firstName }}
+            </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            {% if is_granted('absence.edit', absence) and not is_viewing_past_year() %}
+                <a href="{{ path('app_absences_edit', {id: absence.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
+                    {{ 'absence.edit'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
+            {% if is_granted('absence.delete', absence) and not is_viewing_past_year() %}
+                <form method="post" action="{{ path('app_absences_delete', {id: absence.id}) }}"
+                      class="js-confirm-form"
+                      data-confirm="{{ 'absence.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_absence_' ~ absence.id) }}">
+                    <button type="submit"
+                            class="js-confirm-trigger inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600
+                                   hover:bg-red-50 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}
+                        {{ 'absence.delete'|trans({}, 'admin') }}
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="flex items-center justify-between gap-4 mb-3">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'activity.title'|trans({}, 'admin') }}</h2>
+            {% if is_granted('absence.edit', absence) and not is_viewing_past_year() %}
+                <a href="{{ path('app_absences_activity_new', {id: absence.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-3.5 py-2 text-sm font-semibold text-white
+                          hover:bg-forest-700 transition-colors shadow-xs shrink-0">
+                    {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                    {{ 'activity.new'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
+        </div>
+
+        {% if absence.activities is empty %}
+            <p class="text-sm text-gray-400">{{ 'activity.empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <ul class="space-y-3">
+                {% for activity in absence.activities %}
+                    <li class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5">
+                        <div class="flex items-start justify-between gap-4 mb-3">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">
+                                    {{ activity.date|date('d/m/Y') }}
+                                    <span class="text-gray-400 font-normal">·</span>
+                                    {{ activity.timeSlot.name }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    {{ ('weekday.' ~ (activity.timeSlot.dayOfWeek + 1))|trans({}, 'calendar') }}
+                                    {{ activity.timeSlot.startTime|date('H:i') }}–{{ activity.timeSlot.endTime|date('H:i') }}
+                                </p>
+                            </div>
+                            {% if is_granted('absence.edit', absence) and not is_viewing_past_year() %}
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <a href="{{ path('app_absences_activity_edit', {id: absence.id, activityId: activity.id}) }}"
+                                       class="inline-flex items-center rounded-lg p-1.5 text-gray-400 hover:text-forest-600 hover:bg-gray-50 transition-colors"
+                                       title="{{ 'activity.edit'|trans({}, 'admin') }}">
+                                        {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
+                                    </a>
+                                    <form method="post" action="{{ path('app_absences_activity_delete', {id: absence.id, activityId: activity.id}) }}"
+                                          class="js-confirm-form"
+                                          data-confirm="{{ 'activity.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_activity_' ~ activity.id) }}">
+                                        <button type="submit"
+                                                class="js-confirm-trigger inline-flex items-center rounded-lg p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                                title="{{ 'activity.delete'|trans({}, 'admin') }}">
+                                            {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex flex-wrap gap-1.5 mb-3">
+                            {% for subject in activity.subjects %}
+                                <span class="inline-flex items-center rounded-full bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-0.5 text-xs font-medium">
+                                    {{ subject.subject }} <span class="text-forest-500 font-normal ml-1">{{ subject.group.name }}</span>
+                                </span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="prose prose-sm max-w-none text-gray-700">{{ activity.description|sanitize_html('app.rich_text') }}</div>
+
+                        {% if activity.attachments is not empty %}
+                            <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2">
+                                {% for attachment in activity.attachments %}
+                                    <a href="{{ path('app_absences_attachment_download', {id: absence.id, activityId: activity.id, attachmentId: attachment.id}) }}"
+                                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                              hover:border-forest-300 hover:text-forest-700 hover:bg-forest-50 transition-colors">
+                                        {{ ux_icon('heroicons:paper-clip', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                                        {{ attachment.filename }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

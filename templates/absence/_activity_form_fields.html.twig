@@ -1,0 +1,111 @@
+{# Expects: absence, availableSubjects, availableTimeSlots, errors, formData, and optionally activity #}
+<div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-5">
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label for="date" class="block text-sm font-medium text-gray-700 mb-1.5">
+                {{ 'activity.field.date'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+            </label>
+            <input type="date" id="date" name="date" value="{{ formData.date }}" required
+                   min="{{ absence.startDate|date('Y-m-d') }}" max="{{ absence.endDate|date('Y-m-d') }}"
+                   {% if errors.date is defined %}aria-invalid="true"{% endif %}
+                   class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                          focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            {% if errors.date is defined %}
+                <p class="mt-1 text-xs text-red-600">{{ errors.date }}</p>
+            {% else %}
+                <p class="mt-1 text-xs text-gray-400">
+                    {{ 'activity.field.date_help'|trans({start: absence.startDate|date('d/m/Y'), end: absence.endDate|date('d/m/Y')}, 'admin') }}
+                </p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="time_slot_id" class="block text-sm font-medium text-gray-700 mb-1.5">
+                {{ 'activity.field.time_slot'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+            </label>
+            <select id="time_slot_id" name="time_slot_id" required
+                    {% if errors.time_slot_id is defined %}aria-invalid="true"{% endif %}
+                    class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                           focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                <option value="">{{ 'activity.field.time_slot_placeholder'|trans({}, 'admin') }}</option>
+                {% for timeSlot in availableTimeSlots %}
+                    <option value="{{ timeSlot.id }}" {{ formData.time_slot_id == timeSlot.id.toRfc4122 ? 'selected' : '' }}>
+                        {{ ('weekday.' ~ (timeSlot.dayOfWeek + 1))|trans({}, 'calendar') }}
+                        {{ timeSlot.startTime|date('H:i') }}–{{ timeSlot.endTime|date('H:i') }} · {{ timeSlot.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if errors.time_slot_id is defined %}
+                <p class="mt-1 text-xs text-red-600">{{ errors.time_slot_id }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div {% if errors.subjects is defined %}aria-invalid="true" tabindex="-1"{% endif %}>
+        <p class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'activity.field.subjects'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+        </p>
+        {% if errors.subjects is defined %}
+            <p class="mb-2 text-xs text-red-600">{{ errors.subjects }}</p>
+        {% endif %}
+        {% if availableSubjects is empty %}
+            <p class="text-sm text-gray-500">{{ 'activity.no_subjects'|trans({}, 'admin') }}</p>
+        {% else %}
+            <div class="space-y-2">
+                {% for subject in availableSubjects %}
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" name="subjects[]" value="{{ subject.id.toRfc4122 }}"
+                               {{ subject.id.toRfc4122 in (formData.subject_ids ?? []) ? 'checked' : '' }}
+                               class="mt-0.5 h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span class="text-sm text-gray-700 group-hover:text-gray-900">
+                            {{ subject.subject }} <span class="text-gray-400">· {{ subject.group.name }}</span>
+                        </span>
+                    </label>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div>
+        <twig:Form:RichEditor
+            id="description"
+            name="description"
+            label="{{ 'activity.field.description'|trans({}, 'admin') }}"
+            value="{{ formData.description ?? '' }}"
+            :required="true"
+            :error="errors.description ?? null"
+        />
+    </div>
+
+    {% if activity is defined and activity.attachments is not empty %}
+        <div>
+            <p class="block text-sm font-medium text-gray-700 mb-2">{{ 'activity.field.existing_attachments'|trans({}, 'admin') }}</p>
+            <div class="space-y-2">
+                {% for attachment in activity.attachments %}
+                    <label class="flex items-center gap-3 cursor-pointer group rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5">
+                        <input type="checkbox" name="remove_attachments[]" value="{{ attachment.id.toRfc4122 }}"
+                               class="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500">
+                        {{ ux_icon('heroicons:paper-clip', {class: 'h-4 w-4 text-gray-400 shrink-0'}) }}
+                        <span class="text-sm text-gray-700 flex-1 truncate">{{ attachment.filename }}</span>
+                        <span class="text-xs text-gray-400 group-has-[:checked]:text-red-600">{{ 'activity.field.remove'|trans({}, 'admin') }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div>
+        <label for="attachments" class="block text-sm font-medium text-gray-700 mb-1.5">
+            {{ 'activity.field.attachments'|trans({}, 'admin') }}
+        </label>
+        <input type="file" id="attachments" name="attachments[]" multiple
+               {% if errors.attachments is defined %}aria-invalid="true"{% endif %}
+               class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900 file:mr-3 file:rounded-lg
+                      file:border-0 file:bg-forest-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-forest-700
+                      hover:file:bg-forest-100 focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+        {% if errors.attachments is defined %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.attachments }}</p>
+        {% else %}
+            <p class="mt-1 text-xs text-gray-400">{{ 'activity.field.attachments_help'|trans({}, 'admin') }}</p>
+        {% endif %}
+    </div>
+</div>

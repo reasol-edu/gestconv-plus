@@ -137,6 +137,18 @@
                 </a>
             {% endif %}
 
+            {# Ausencias — todos los docentes con centro activo #}
+            {% if active_centre %}
+                {% set absences_active = current_route starts with 'app_absences' %}
+                <a href="{{ path('app_absences_index') }}"
+                    {{ absences_active ? 'aria-current="page"' : '' }}
+                   class="{{ absences_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:user-minus', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'absences'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
             {# Calendario #}
             {{ _self.nav_item(
                 'calendar'|trans({}, 'navigation'),

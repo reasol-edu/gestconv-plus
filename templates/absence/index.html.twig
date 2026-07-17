@@ -1,0 +1,61 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'absence.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-5xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ 'absence.title'|trans({}, 'admin') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ centre.name }}</p>
+        </div>
+        {% if not is_viewing_past_year() %}
+            <a href="{{ path('app_absences_new') }}"
+               class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                      hover:bg-forest-700 transition-colors shadow-xs shrink-0">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'absence.new'|trans({}, 'admin') }}
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        {% if absences is empty %}
+            <p class="px-6 py-8 text-sm text-gray-400 text-center">{{ 'absence.empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 text-left">
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'absence.col.start_date'|trans({}, 'admin') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'absence.col.end_date'|trans({}, 'admin') }}</th>
+                        <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'absence.col.activities'|trans({}, 'admin') }}</th>
+                        <th class="px-6 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for absence in absences %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-3.5">
+                                <a href="{{ path('app_absences_show', {id: absence.id}) }}" class="font-medium text-forest-700 hover:text-forest-900 transition-colors">
+                                    {{ absence.startDate|date('d/m/Y') }}
+                                </a>
+                            </td>
+                            <td class="px-6 py-3.5 text-gray-700">{{ absence.endDate|date('d/m/Y') }}</td>
+                            <td class="px-6 py-3.5 text-gray-700">{{ absence.activities|length }}</td>
+                            <td class="px-6 py-3.5 text-right">
+                                <a href="{{ path('app_absences_show', {id: absence.id}) }}"
+                                   class="inline-flex items-center rounded-lg p-1.5 text-gray-400 hover:text-forest-600 hover:bg-gray-100 transition-colors"
+                                   title="{{ 'absence.view'|trans({}, 'admin') }}">
+                                    {{ ux_icon('heroicons:eye', {class: 'h-4 w-4'}) }}
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
