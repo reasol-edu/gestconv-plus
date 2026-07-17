@@ -132,8 +132,9 @@ class AbsenceController extends AbstractController
 
         $isAdmin = $user->isAdmin() || $centre->getAdmins()->contains($user);
 
+        $today            = (new \DateTimeImmutable())->format('Y-m-d');
         $errors           = [];
-        $formData         = ['start_date' => '', 'end_date' => '', 'teacher_id' => $isAdmin ? '' : $user->getId()->toRfc4122()];
+        $formData         = ['start_date' => $today, 'end_date' => $today, 'teacher_id' => $isAdmin ? '' : $user->getId()->toRfc4122()];
         $selectedTeacher  = null;
 
         if ($request->isMethod('POST')) {
