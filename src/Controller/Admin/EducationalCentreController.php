@@ -15,6 +15,7 @@ use App\Service\ActivityLogService;
 use App\Service\CommunicationMethodSeeder;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentBehaviorSeeder;
+use App\Service\LocationOptionSeeder;
 use App\Service\SanctionMeasureSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,6 +42,7 @@ class EducationalCentreController extends AbstractController
         private readonly IncidentBehaviorSeeder $behaviorSeeder,
         private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
         private readonly CommunicationMethodSeeder $communicationMethodSeeder,
+        private readonly LocationOptionSeeder $locationOptionSeeder,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
     ) {}
@@ -91,6 +93,7 @@ class EducationalCentreController extends AbstractController
                 $this->behaviorSeeder->seedForCentre($centre);
                 $this->sanctionMeasureSeeder->seedForCentre($centre);
                 $this->communicationMethodSeeder->seedForCentre($centre);
+                $this->locationOptionSeeder->seedForCentre($centre);
                 $this->em->flush();
 
                 $this->activityLog->log('educational_centre.created', [

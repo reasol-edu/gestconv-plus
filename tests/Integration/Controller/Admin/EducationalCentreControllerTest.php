@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Controller\Admin;
 
+use App\Entity\CommunicationMethod;
 use App\Entity\EducationalCentre;
+use App\Entity\IncidentBehavior;
+use App\Entity\LocationOption;
 use App\Entity\PersonName;
+use App\Entity\SanctionMeasure;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
 
@@ -67,6 +71,13 @@ class EducationalCentreControllerTest extends ControllerTestCase
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/admin/centros', (string) $this->client->getResponse()->headers->get('Location'));
+
+        $centre = $this->em->getRepository(EducationalCentre::class)->findOneBy(['code' => '41000001']);
+        self::assertNotNull($centre);
+        self::assertNotEmpty($this->em->getRepository(IncidentBehavior::class)->findBy(['educationalCentre' => $centre]));
+        self::assertNotEmpty($this->em->getRepository(SanctionMeasure::class)->findBy(['educationalCentre' => $centre]));
+        self::assertNotEmpty($this->em->getRepository(CommunicationMethod::class)->findBy(['educationalCentre' => $centre]));
+        self::assertNotEmpty($this->em->getRepository(LocationOption::class)->findBy(['educationalCentre' => $centre]));
     }
 
     public function testNewPostWithInvalidCsrfIsDenied(): void
