@@ -21,6 +21,7 @@ final class KioskModeSubscriber
         'app_logout',
         'app_login',
         'app_force_password_change',
+        'app_absences_attachment_download',
     ];
 
     public function __construct(

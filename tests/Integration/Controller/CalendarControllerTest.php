@@ -6,18 +6,22 @@ namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
 use App\Entity\Absence;
+use App\Entity\Activity;
+use App\Entity\ActivityAttachment;
 use App\Entity\CentreSettingValue;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
+use App\Entity\GroupTeacher;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Entity\TimeSlot;
 use App\Tests\Integration\ControllerTestCase;
 
 class CalendarControllerTest extends ControllerTestCase
@@ -64,6 +68,20 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('/calendario/tablon', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testCalendarBoardModeLinkOpensConfirmationDialogBeforeNavigating(): void
+    {
+        $centre = $this->makeCentre('46000076');
+        $admin  = $this->makeAdmin('calendar.link.confirm.admin');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-action="dialog#open"', $content);
+        self::assertStringContainsString('salir de este modo y volver a iniciar sesión', $content);
     }
 
     public function testCalendarHidesBoardModeLinkFromNonAdmin(): void
@@ -310,6 +328,31 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testBoardShowsAbsencesAndSanctionsTitle(): void
+    {
+        $centre = $this->makeCentre('46000077');
+        $admin  = $this->makeAdmin('calendar.board.title');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Tablón de ausencias y sanciones', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testBoardPrependsEducationalCentreNameToTheTitle(): void
+    {
+        $centre = $this->makeCentre('46000078');
+        $admin  = $this->makeAdmin('calendar.board.centrename');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString($centre->getName() . ' · Tablón de ausencias y sanciones', $content);
+    }
+
     public function testBoardShowsSanctionGroupedByGroupWithStartAndEndDates(): void
     {
         $world   = $this->makeScenario();
@@ -379,7 +422,7 @@ class CalendarControllerTest extends ControllerTestCase
         );
     }
 
-    public function testBoardShowsNextWeekTargetWithDefaultDurations(): void
+    public function testBoardShowsTodayAndCurrentWeekPanelsByDefaultButOmitsNextWeek(): void
     {
         $centre = $this->makeCentre('46000045');
         $admin  = $this->makeAdmin('calendar.board.defaults');
@@ -389,16 +432,51 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $content = (string) $this->client->getResponse()->getContent();
-        self::assertStringContainsString('data-board-current-seconds-value="15"', $content);
-        self::assertStringContainsString('data-board-next-seconds-value="5"', $content);
-        self::assertStringContainsString('data-board-target="currentWeek"', $content);
-        self::assertStringContainsString('data-board-target="nextWeek"', $content);
+        self::assertStringContainsString('data-seconds="60"', $content);
+        self::assertStringContainsString('data-seconds="10"', $content);
+        self::assertStringNotContainsString('data-seconds="0"', $content);
+        self::assertMatchesRegularExpression('/>\s*Hoy\s*</', $content);
+        self::assertStringContainsString('Esta semana', $content);
+        self::assertStringNotContainsString('Semana que viene', $content);
     }
 
-    public function testBoardHidesNextWeekWhenNextWeekSecondsIsZero(): void
+    public function testBoardShowsNextWeekWhenItsSecondsIsSetAboveZero(): void
     {
         $centre = $this->makeCentre('46000046');
-        $admin  = $this->makeAdmin('calendar.board.nonext');
+        $admin  = $this->makeAdmin('calendar.board.withnext');
+        $this->seedCentreValue('board.next_week_seconds', '20', $centre);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-seconds="20"', $content);
+        self::assertStringContainsString('Semana que viene', $content);
+    }
+
+    public function testBoardOmitsCurrentWeekWhenItsSecondsIsZero(): void
+    {
+        $centre = $this->makeCentre('46000047');
+        $admin  = $this->makeAdmin('calendar.board.nocurrent');
+        $this->seedCentreValue('board.current_week_seconds', '0', $centre);
+        $this->seedCentreValue('board.next_week_seconds', '20', $centre);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringNotContainsString('Esta semana', $content);
+        self::assertStringContainsString('Semana que viene', $content);
+    }
+
+    public function testBoardShowsOnlyTodayWhenAllScreensAreZero(): void
+    {
+        $centre = $this->makeCentre('46000048');
+        $admin  = $this->makeAdmin('calendar.board.allzero');
+        $this->seedCentreValue('board.today_seconds', '0', $centre);
+        $this->seedCentreValue('board.current_week_seconds', '0', $centre);
         $this->seedCentreValue('board.next_week_seconds', '0', $centre);
         $this->loginAs($admin, $centre);
 
@@ -406,28 +484,49 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $content = (string) $this->client->getResponse()->getContent();
-        self::assertStringContainsString('data-board-target="currentWeek"', $content);
-        self::assertStringNotContainsString('data-board-target="nextWeek"', $content);
+        self::assertSame(1, substr_count($content, 'data-board-target="panel"'));
+        self::assertStringContainsString('data-seconds="0"', $content);
+        self::assertMatchesRegularExpression('/>\s*Hoy\s*</', $content);
+        self::assertStringNotContainsString('Esta semana', $content);
+        self::assertStringNotContainsString('Semana que viene', $content);
     }
 
-    public function testBoardHidesNextWeekWhenCurrentWeekSecondsIsZero(): void
+    public function testBoardHidesPrevNextButtonsWhenThereIsOnlyOneScreen(): void
     {
-        $centre = $this->makeCentre('46000047');
-        $admin  = $this->makeAdmin('calendar.board.nocurrent');
+        $centre = $this->makeCentre('46000072');
+        $admin  = $this->makeAdmin('calendar.board.onescreen');
+        $this->seedCentreValue('board.today_seconds', '0', $centre);
         $this->seedCentreValue('board.current_week_seconds', '0', $centre);
+        $this->seedCentreValue('board.next_week_seconds', '0', $centre);
         $this->loginAs($admin, $centre);
 
         $this->client->request('GET', '/calendario/tablon');
 
         self::assertResponseIsSuccessful();
         $content = (string) $this->client->getResponse()->getContent();
-        self::assertStringNotContainsString('data-board-target="nextWeek"', $content);
+        self::assertStringNotContainsString('data-action="board#prev"', $content);
+        self::assertStringNotContainsString('data-action="board#next"', $content);
+    }
+
+    public function testBoardShowsPrevNextButtonsWhenThereAreMultipleScreens(): void
+    {
+        $centre = $this->makeCentre('46000073');
+        $admin  = $this->makeAdmin('calendar.board.multiscreen');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-action="board#prev"', $content);
+        self::assertStringContainsString('data-action="board#next"', $content);
     }
 
     public function testBoardReflectsCustomDurationSettings(): void
     {
-        $centre = $this->makeCentre('46000048');
+        $centre = $this->makeCentre('46000071');
         $admin  = $this->makeAdmin('calendar.board.custom');
+        $this->seedCentreValue('board.today_seconds', '45', $centre);
         $this->seedCentreValue('board.current_week_seconds', '30', $centre);
         $this->seedCentreValue('board.next_week_seconds', '10', $centre);
         $this->loginAs($admin, $centre);
@@ -436,8 +535,9 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $content = (string) $this->client->getResponse()->getContent();
-        self::assertStringContainsString('data-board-current-seconds-value="30"', $content);
-        self::assertStringContainsString('data-board-next-seconds-value="10"', $content);
+        self::assertStringContainsString('data-seconds="45"', $content);
+        self::assertStringContainsString('data-seconds="30"', $content);
+        self::assertStringContainsString('data-seconds="10"', $content);
     }
 
     public function testBoardUsesLightThemeByDefault(): void
@@ -467,7 +567,310 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertStringContainsString('data-board-theme-mode-value="dark"', $content);
     }
 
+    // ── Pantalla "Hoy" ───────────────────────────────────────────────────────
+
+    public function testBoardTodayShowsFormattedDateHeader(): void
+    {
+        $centre = $this->makeCentre('46000072');
+        $admin  = $this->makeAdmin('calendar.board.today.date');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        $today   = new \DateTimeImmutable('today');
+        self::assertStringContainsString($this->weekdayLabel($today) . ', ' . $today->format('d/m/Y'), $content);
+    }
+
+    public function testBoardTodayShowsGuardDutyForTodaysTimeSlots(): void
+    {
+        $world = $this->makeScenario();
+        $guard = (new Teacher(new PersonName('Luis', 'Navas')))->setUsername('calendar.board.today.guard');
+        $this->persist($guard);
+
+        $timeSlot = $this->makeTimeSlot($world['year'], $this->todayDayOfWeek());
+        $timeSlot->addGuard($guard);
+        $this->flush();
+
+        $admin = $this->makeAdmin('calendar.board.today.guard.admin');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Luis Navas', $content);
+        self::assertStringContainsString($timeSlot->getName(), $content);
+    }
+
+    public function testBoardTodayShowsActivityWithSubjectGroupDialogAndAttachment(): void
+    {
+        $world  = $this->makeScenario();
+        $absent = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('calendar.board.today.absent');
+        $this->persist($absent);
+
+        $groupTeacher = new GroupTeacher($world['group'], $absent, 'Programación');
+        $this->persist($groupTeacher);
+
+        $timeSlot = $this->makeTimeSlot($world['year'], $this->todayDayOfWeek());
+        $today    = new \DateTimeImmutable('today');
+
+        $absence = (new Absence())
+            ->setTeacher($absent)
+            ->setAcademicYear($world['year'])
+            ->setStartDate($today)
+            ->setEndDate($today);
+        $this->persist($absence);
+
+        $activity = (new Activity())
+            ->setAbsence($absence)
+            ->setDate($today)
+            ->setTimeSlot($timeSlot)
+            ->setDescription('<p>Repaso de unidad 3.</p>');
+        $activity->addSubject($groupTeacher);
+        $this->persist($activity);
+
+        $attachment = new ActivityAttachment($activity, 'ejercicios.pdf', 'application/pdf', 4, 'test');
+        $activity->addAttachment($attachment);
+        $this->persist($activity, $attachment);
+        $this->flush();
+
+        $admin = $this->makeAdmin('calendar.board.today.activity.admin');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Marta Ruiz', $content);
+        self::assertStringContainsString('Programación', $content);
+        self::assertStringContainsString($world['group']->getName(), $content);
+        self::assertStringContainsString('Repaso de unidad 3.', $content);
+        self::assertStringContainsString('data-controller="dialog"', $content);
+        self::assertStringContainsString('ejercicios.pdf', $content);
+        self::assertStringContainsString(
+            '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/' . $activity->getId()->toRfc4122() . '/adjuntos/' . $attachment->getId()->toRfc4122(),
+            $content
+        );
+    }
+
+    public function testBoardTodayListsAbsentTeachersSortedByLastNameAtTheBottom(): void
+    {
+        $world = $this->makeScenario();
+        $bravo = (new Teacher(new PersonName('Ana', 'Bravo')))->setUsername('calendar.board.today.bravo');
+        $ruiz  = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('calendar.board.today.ruiz');
+        $this->persist($bravo, $ruiz);
+
+        $today = new \DateTimeImmutable('today');
+        foreach ([$ruiz, $bravo] as $teacher) {
+            $absence = (new Absence())
+                ->setTeacher($teacher)
+                ->setAcademicYear($world['year'])
+                ->setStartDate($today)
+                ->setEndDate($today);
+            $this->persist($absence);
+        }
+        $this->flush();
+
+        $admin = $this->makeAdmin('calendar.board.today.sorted.admin');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Ana Bravo, Marta Ruiz', $content);
+    }
+
+    public function testBoardTodayShowsEmptyStateWhenNoAbsences(): void
+    {
+        $centre = $this->makeCentre('46000073');
+        $admin  = $this->makeAdmin('calendar.board.today.noabsences');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Ningún docente ausente', $content);
+    }
+
+    public function testBoardTodayLabelsTimeSlotActivityListWithAusencias(): void
+    {
+        $world  = $this->makeScenario();
+        $absent = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('calendar.board.today.slotlabel');
+        $this->persist($absent);
+
+        $timeSlot = $this->makeTimeSlot($world['year'], $this->todayDayOfWeek());
+        $today    = new \DateTimeImmutable('today');
+
+        $absence = (new Absence())
+            ->setTeacher($absent)
+            ->setAcademicYear($world['year'])
+            ->setStartDate($today)
+            ->setEndDate($today);
+        $this->persist($absence);
+
+        $activity = (new Activity())
+            ->setAbsence($absence)
+            ->setDate($today)
+            ->setTimeSlot($timeSlot)
+            ->setDescription('<p>Repaso.</p>');
+        $this->persist($activity);
+        $this->flush();
+
+        $admin = $this->makeAdmin('calendar.board.today.slotlabel.admin');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Ausencias con actividades:', $content);
+    }
+
+    public function testBoardTodayMarksTimeSlotCardsWithStartAndEndForCurrentTimeHighlighting(): void
+    {
+        $world    = $this->makeScenario();
+        $timeSlot = $this->makeTimeSlot($world['year'], $this->todayDayOfWeek());
+
+        $admin = $this->makeAdmin('calendar.board.today.currentslot.admin');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-controller="current-time-slot"', $content);
+        self::assertStringContainsString('data-current-time-slot-target="slot"', $content);
+        self::assertStringContainsString('data-start="' . $timeSlot->getStartTime()->format('H:i') . '"', $content);
+        self::assertStringContainsString('data-end="' . $timeSlot->getEndTime()->format('H:i') . '"', $content);
+    }
+
+    public function testBoardTodayShowsSanctionedStudentsWithGroupAndCalendarLabel(): void
+    {
+        $world   = $this->makeScenario();
+        $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.board.today.sanction.label');
+        $this->persist($creator);
+
+        $today    = new \DateTimeImmutable('today');
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('Detalle largo que no debería mostrarse')
+            ->setCalendarLabel('Sin recreo')
+            ->setNoMeasureApplied(true)
+            ->setEffectiveFrom($today);
+        $this->persist($sanction);
+        $this->notifySanction($sanction, $world['centre'], $creator);
+
+        $admin = $this->makeAdmin('calendar.board.today.sanction.label.admin');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Alumnado sancionado hoy', $content);
+        self::assertStringContainsString('Ana García', $content);
+        self::assertStringContainsString('1ºA', $content);
+        self::assertStringContainsString('Sin recreo', $content);
+        self::assertStringNotContainsString('Detalle largo', $content);
+    }
+
+    public function testBoardTodayFallsBackToTruncatedDetailsWhenNoCalendarLabel(): void
+    {
+        $world   = $this->makeScenario();
+        $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.board.today.sanction.details');
+        $this->persist($creator);
+
+        $today    = new \DateTimeImmutable('today');
+        $longText = str_repeat('Comportamiento disruptivo en clase de matemáticas. ', 3);
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('<p>' . $longText . '</p>')
+            ->setNoMeasureApplied(true)
+            ->setEffectiveFrom($today);
+        $this->persist($sanction);
+        $this->notifySanction($sanction, $world['centre'], $creator);
+
+        $admin = $this->makeAdmin('calendar.board.today.sanction.details.admin');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('…', $content);
+        self::assertStringNotContainsString($longText, $content);
+        self::assertStringNotContainsString('<p>', $content);
+    }
+
+    public function testBoardTodayShowsEmptyStateWhenNoSanctions(): void
+    {
+        $centre = $this->makeCentre('46000074');
+        $admin  = $this->makeAdmin('calendar.board.today.nosanctions');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Ningún alumno sancionado', $content);
+    }
+
+    public function testBoardTodayShowsLiveClockAfterDate(): void
+    {
+        $centre = $this->makeCentre('46000075');
+        $admin  = $this->makeAdmin('calendar.board.today.clock');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('data-controller="clock"', $content);
+        self::assertStringContainsString('data-clock-target="display"', $content);
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
+
+    private function todayDayOfWeek(): int
+    {
+        return ((int) (new \DateTimeImmutable('today'))->format('N')) - 1;
+    }
+
+    private function weekdayLabel(\DateTimeImmutable $date): string
+    {
+        return match ((int) $date->format('N')) {
+            1       => 'Lunes',
+            2       => 'Martes',
+            3       => 'Miércoles',
+            4       => 'Jueves',
+            5       => 'Viernes',
+            6       => 'Sábado',
+            default => 'Domingo',
+        };
+    }
+
+    private function makeTimeSlot(AcademicYear $year, int $dayOfWeek): TimeSlot
+    {
+        $timeSlot = (new TimeSlot())
+            ->setName('Tramo 1')
+            ->setDayOfWeek($dayOfWeek)
+            ->setStartTime(new \DateTimeImmutable('08:00'))
+            ->setEndTime(new \DateTimeImmutable('09:00'))
+            ->setAcademicYear($year);
+        $this->persist($timeSlot);
+
+        return $timeSlot;
+    }
 
     private function seedCentreValue(string $key, string $value, EducationalCentre $centre): CentreSettingValue
     {

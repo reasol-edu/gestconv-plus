@@ -424,10 +424,16 @@ el centro**, no solo de sus propios grupos:
 
 ![bg right:40% fit](../manual/img/calendario/calendario-tablon.png)
 
-- Vista simplificada del calendario, pensada para **pantallas compartidas**
-  en sala de profesores o pasillos.
-- No muestra datos sensibles de estudiantes: solo la actividad agregada del
-  centro.
+- Vista a pantalla completa, pensada para dejarse fija en una pantalla del
+  centro (por ejemplo, la sala de profesorado). Solo lo activan los
+  administradores, y pide confirmación antes de entrar.
+- Rota entre hasta tres pantallas — **Hoy**, **esta semana** y **semana que
+  viene** — con botones para avanzar o retroceder sin esperar a la rotación.
+- La pantalla **Hoy** muestra el profesorado de guardia por tramo horario
+  (con el tramo actual resaltado en vivo), las ausencias con actividad
+  encomendada y, al pie, el resto de ausencias y las sanciones del día.
+- Es una sesión sin salida: solo se puede abandonar cerrando sesión con el
+  botón de encendido/apagado.
 
 ---
 

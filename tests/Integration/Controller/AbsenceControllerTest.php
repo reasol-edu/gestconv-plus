@@ -525,6 +525,58 @@ class AbsenceControllerTest extends ControllerTestCase
         self::assertSame('test', $this->client->getResponse()->getContent());
     }
 
+    public function testAttachmentDownloadAcceptsFilenamesWithNonAsciiCharacters(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence      = $this->makeAbsence($teacher, $year);
+        $groupTeacher = $this->makeGroupTeacher($teacher, $year);
+        $timeSlot     = $this->makeTimeSlot($year, dayOfWeek: (int) $this->futureDate(31)->format('N') - 1);
+        $activity     = $this->makeActivity($absence, $timeSlot, $groupTeacher, $this->futureDateString(31));
+
+        $attachment = new \App\Entity\ActivityAttachment($activity, 'Presentación del módulo.pdf', 'application/pdf', 4, 'test');
+        $activity->addAttachment($attachment);
+        $this->persist($activity, $attachment);
+
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request(
+            'GET',
+            '/ausencias/' . $absence->getId()->toRfc4122()
+                . '/actividades/' . $activity->getId()->toRfc4122()
+                . '/adjuntos/' . $attachment->getId()->toRfc4122(),
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('test', $this->client->getResponse()->getContent());
+        self::assertStringContainsString('filename="Presentacion del modulo.pdf"', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+        self::assertStringContainsString("filename*=utf-8''Presentaci%C3%B3n", (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+    }
+
+    public function testAttachmentDownloadAcceptsFilenamesWithCharactersThatCannotBeTransliterated(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence      = $this->makeAbsence($teacher, $year);
+        $groupTeacher = $this->makeGroupTeacher($teacher, $year);
+        $timeSlot     = $this->makeTimeSlot($year, dayOfWeek: (int) $this->futureDate(31)->format('N') - 1);
+        $activity     = $this->makeActivity($absence, $timeSlot, $groupTeacher, $this->futureDateString(31));
+
+        $attachment = new \App\Entity\ActivityAttachment($activity, '📎 tarea.pdf', 'application/pdf', 4, 'test');
+        $activity->addAttachment($attachment);
+        $this->persist($activity, $attachment);
+
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request(
+            'GET',
+            '/ausencias/' . $absence->getId()->toRfc4122()
+                . '/actividades/' . $activity->getId()->toRfc4122()
+                . '/adjuntos/' . $attachment->getId()->toRfc4122(),
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('test', $this->client->getResponse()->getContent());
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /** @return array{0: Teacher, 1: EducationalCentre, 2: AcademicYear} */

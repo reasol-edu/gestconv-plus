@@ -14,6 +14,7 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use Symfony\Component\Uid\Uuid;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -410,6 +411,34 @@ class SanctionRepository extends ServiceEntityRepository
 
         /** @var list<Sanction> */
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Returns notified sanctions in effect on the given date. Not filtered by viewer: the board
+     * shows every active sanction of the day to any teacher.
+     *
+     * @return list<Sanction>
+     */
+    public function findActiveOn(AcademicYear $year, \DateTimeImmutable $date): array
+    {
+        /** @var list<Sanction> $result */
+        $result = $this->createQueryBuilder('s')
+            ->addSelect('st', 'g')
+            ->join('s.student', 'st')
+            ->join('s.group', 'g')
+            ->where('s.academicYear = :year')
+            ->andWhere('s.notifiedCommunication IS NOT NULL')
+            ->andWhere('s.effectiveFrom <= :date')
+            ->andWhere('s.effectiveTo IS NULL OR s.effectiveTo >= :date')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('date', $date, Types::DATE_IMMUTABLE)
+            ->orderBy('g.name', 'ASC')
+            ->addOrderBy('st.name.lastName', 'ASC')
+            ->addOrderBy('st.name.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
     }
 
     /** @return list<Sanction> */

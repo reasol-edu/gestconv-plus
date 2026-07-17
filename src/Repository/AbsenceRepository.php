@@ -8,6 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\Absence;
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -42,6 +43,40 @@ class AbsenceRepository extends ServiceEntityRepository
             ->where('a.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('a.startDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /** @return list<Teacher> */
+    public function findTeachersAbsentOn(AcademicYear $year, \DateTimeImmutable $date): array
+    {
+        $em = $this->getEntityManager();
+
+        /** @var list<string> $teacherIds */
+        $teacherIds = $this->createQueryBuilder('a')
+            ->select('IDENTITY(a.teacher)')
+            ->where('a.academicYear = :year')
+            ->andWhere('a.startDate <= :date')
+            ->andWhere('a.endDate >= :date')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('date', $date, Types::DATE_IMMUTABLE)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        if ($teacherIds === []) {
+            return [];
+        }
+
+        /** @var list<Teacher> $result */
+        $result = $em->createQueryBuilder()
+            ->select('t')
+            ->from(Teacher::class, 't')
+            ->where('t.id IN (:ids)')
+            ->setParameter('ids', array_unique($teacherIds))
+            ->orderBy('t.name.lastName', 'ASC')
+            ->addOrderBy('t.name.firstName', 'ASC')
             ->getQuery()
             ->getResult();
 

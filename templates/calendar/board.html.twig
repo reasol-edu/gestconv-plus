@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ 'board_title'|trans({}, 'calendar') }} · {{ app_name }}{% endblock %}
+{% block title %}{{ centreName }} · {{ 'board_title'|trans({}, 'calendar') }} · {{ app_name }}{% endblock %}
 
 {% block body %}
 <div class="fixed inset-0 flex flex-col bg-gray-50 text-gray-900 dark:bg-forest-950 dark:text-white overflow-hidden"
@@ -27,61 +27,222 @@
 
     <header class="shrink-0 px-8 py-5 border-b border-gray-200 dark:border-white/10 flex items-center gap-3">
         {{ ux_icon('heroicons:rectangle-stack', {class: 'h-6 w-6 text-forest-600 dark:text-forest-300'}) }}
-        <h1 class="text-xl font-bold">{{ 'board_title'|trans({}, 'calendar') }}</h1>
+        <h1 class="text-xl font-bold">{{ centreName }} · {{ 'board_title'|trans({}, 'calendar') }}</h1>
     </header>
 
     <div class="flex-1 relative overflow-hidden"
          data-controller="board"
-         data-board-current-seconds-value="{{ currentSeconds }}"
-         data-board-next-seconds-value="{{ nextSeconds }}">
-        {% for week in weeks %}
+         data-action="dialog:open->board#pause dialog:close->board#resume">
+        {% if screens|length > 1 %}
+            <button type="button"
+                    data-action="board#prev"
+                    title="{{ 'board_prev_screen'|trans({}, 'calendar') }}"
+                    aria-label="{{ 'board_prev_screen'|trans({}, 'calendar') }}"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/5 text-gray-700 hover:bg-black/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 transition-colors">
+                {{ ux_icon('heroicons:chevron-left', {class: 'h-6 w-6'}) }}
+            </button>
+            <button type="button"
+                    data-action="board#next"
+                    title="{{ 'board_next_screen'|trans({}, 'calendar') }}"
+                    aria-label="{{ 'board_next_screen'|trans({}, 'calendar') }}"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/5 text-gray-700 hover:bg-black/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 transition-colors">
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-6 w-6'}) }}
+            </button>
+        {% endif %}
+        {% for screen in screens %}
             <section class="absolute inset-0 flex flex-col transition-opacity duration-700 ease-in-out {{ loop.first ? 'opacity-100' : 'opacity-0 pointer-events-none' }}"
-                      data-board-target="{{ week.target }}">
-                <h2 class="shrink-0 bg-gray-100 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-gray-600 border-b border-gray-200 dark:bg-forest-900 dark:text-forest-200 dark:border-white/10">
-                    {{ week.label|trans({}, 'calendar') }}
-                </h2>
-                <div class="flex-1 grid grid-cols-5 divide-x divide-gray-200 dark:divide-white/10 overflow-hidden">
-                    {% for day in week.days %}
-                        {% set is_today = day.day.format('Y-m-d') == today.format('Y-m-d') %}
-                        <div class="flex flex-col overflow-hidden">
-                            <h3 class="shrink-0 px-4 pt-4 pb-2 text-sm font-semibold {{ is_today ? 'text-amber-600 dark:text-amber-300' : 'text-gray-600 dark:text-forest-200' }}">
-                                {{ ('weekday.' ~ day.day.format('N'))|trans({}, 'calendar') }}
-                                {{ day.day.format('j') }} {{ 'de'|trans({}, 'calendar') }}
-                                {{ ('month.' ~ day.day.format('n'))|trans({}, 'calendar')|lower }}
-                            </h3>
+                     data-board-target="panel"
+                     data-seconds="{{ screen.seconds }}">
+                {% if screen.type == 'today' %}
+                    {% set report = screen.report %}
+                    <h2 class="shrink-0 bg-gray-100 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-gray-600 border-b border-gray-200 dark:bg-forest-900 dark:text-forest-200 dark:border-white/10">
+                        {{ screen.label|trans({}, 'calendar') }}
+                    </h2>
+                    <div class="shrink-0 px-8 py-6 text-center border-b border-gray-200 dark:border-white/10" data-controller="clock">
+                        <p class="text-3xl font-bold">
+                            {{ ('weekday.' ~ report.date.format('N'))|trans({}, 'calendar') }}, {{ report.date|date('d/m/Y') }}
+                            · <span data-clock-target="display" class="tabular-nums"></span>
+                        </p>
+                    </div>
 
-                            <div class="flex-1 overflow-hidden px-4 pb-4" data-controller="board-column">
-                                {% if day.groups is empty %}
-                                    <p class="text-xs text-gray-400 dark:text-forest-400">{{ 'board_no_sanctions'|trans({}, 'calendar') }}</p>
-                                {% else %}
-                                    <div class="space-y-3">
-                                        {% for group in day.groups %}
-                                            <div>
-                                                <p class="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold {{ group.color.bg }} {{ group.color.text }}">
-                                                    {{ group.name }}
-                                                </p>
-                                                <ul class="space-y-1.5 pl-1 text-sm">
-                                                    {% for item in group.items %}
-                                                        <li>
-                                                            <span class="font-medium">{{ item.student }}</span>
-                                                            {% if item.details %}
-                                                                <span class="text-gray-500 dark:text-forest-300"> — {{ item.details }}</span>
-                                                            {% endif %}
-                                                            <span class="block text-xs text-gray-400 dark:text-forest-400">
-                                                                {{ 'board_start_date'|trans({}, 'calendar') }}: {{ item.from|date('d/m/Y') }}
-                                                                · {{ 'board_end_date'|trans({}, 'calendar') }}: {{ (item.to ?? item.from)|date('d/m/Y') }}
-                                                            </span>
-                                                        </li>
-                                                    {% endfor %}
-                                                </ul>
+                    <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4"
+                         data-controller="current-time-slot"
+                         data-current-time-slot-current-class="bg-amber-50 border-amber-300 ring-2 ring-amber-300 dark:bg-amber-900/20 dark:border-amber-500/40 dark:ring-amber-500/40">
+                        {% if report.timeSlots is empty %}
+                            <p class="text-center text-sm text-gray-400 dark:text-forest-400">{{ 'board_today_no_time_slots'|trans({}, 'calendar') }}</p>
+                        {% else %}
+                            {% for row in report.timeSlots|batch(7) %}
+                                <div class="grid gap-3" style="grid-template-columns: repeat({{ row|length }}, minmax(0, 1fr));">
+                                    {% for entry in row %}
+                                        <div class="rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 flex flex-col overflow-hidden min-h-40 max-h-64 transition-colors"
+                                             data-current-time-slot-target="slot"
+                                             data-start="{{ entry.timeSlot.startTime|date('H:i') }}"
+                                             data-end="{{ entry.timeSlot.endTime|date('H:i') }}">
+                                            <div class="shrink-0 px-3 py-2 bg-gray-50 dark:bg-white/10 border-b border-gray-200 dark:border-white/10">
+                                                <p class="text-xs font-semibold text-gray-700 dark:text-forest-100 truncate">{{ entry.timeSlot.name }}</p>
+                                                <p class="text-[11px] text-gray-400 dark:text-forest-400">{{ entry.timeSlot.startTime|date('H:i') }}–{{ entry.timeSlot.endTime|date('H:i') }}</p>
                                             </div>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                                            <div class="flex-1 px-3 py-2 overflow-hidden" data-controller="board-column">
+                                                {% if entry.timeSlot.guards is empty and entry.activities is empty %}
+                                                    <p class="text-xs text-gray-400 dark:text-forest-400">{{ 'board_today_no_guards'|trans({}, 'calendar') }}</p>
+                                                {% else %}
+                                                    {% if entry.timeSlot.guards is not empty %}
+                                                        <ul class="space-y-1 text-xs text-gray-700 dark:text-forest-100">
+                                                            {% for guard in entry.timeSlot.guards %}
+                                                                <li>{{ guard.name.full() }}</li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="text-xs text-gray-400 dark:text-forest-400">{{ 'board_today_no_guards'|trans({}, 'calendar') }}</p>
+                                                    {% endif %}
+
+                                                    {% if entry.activities is not empty %}
+                                                        <p class="mt-2 pt-2 border-t border-gray-100 dark:border-white/10 text-[11px] font-semibold text-gray-500 dark:text-forest-300">
+                                                            {{ 'board_today_slot_absences_label'|trans({}, 'calendar') }}:
+                                                        </p>
+                                                        <ul class="mt-1 space-y-1.5">
+                                                            {% for activity in entry.activities %}
+                                                                <li class="flex items-start gap-1.5" data-controller="dialog">
+                                                                    <button type="button"
+                                                                            data-action="dialog#open"
+                                                                            class="mt-0.5 shrink-0 text-forest-600 hover:text-forest-800 dark:text-forest-300"
+                                                                            title="{{ 'board_today_view_activity'|trans({}, 'calendar') }}"
+                                                                            aria-label="{{ 'board_today_view_activity'|trans({}, 'calendar') }}">
+                                                                        {{ ux_icon('heroicons:information-circle', {class: 'h-4 w-4'}) }}
+                                                                    </button>
+                                                                    <span class="text-xs text-gray-700 dark:text-forest-100">
+                                                                        <span class="font-medium">{{ activity.absence.teacher.name.full() }}</span>
+                                                                        {% if activity.subjects is not empty %}
+                                                                            <span class="text-gray-500 dark:text-forest-300">
+                                                                                — {% for subject in activity.subjects %}{{ subject.subject }}{% if subject.group %} ({{ subject.group.name }}){% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+                                                                            </span>
+                                                                        {% endif %}
+                                                                    </span>
+
+                                                                    <dialog data-dialog-target="dialog"
+                                                                            class="m-auto w-full max-w-lg rounded-2xl border border-gray-200 p-0 backdrop:bg-black/50 dark:bg-forest-900 dark:text-white dark:border-white/10">
+                                                                        <div class="p-6">
+                                                                            <div class="flex items-start justify-between gap-4 mb-4">
+                                                                                <div>
+                                                                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ activity.absence.teacher.name.full() }}</p>
+                                                                                    <p class="text-xs text-gray-500 dark:text-forest-300 mt-0.5">
+                                                                                        {{ activity.timeSlot.name }} · {{ activity.timeSlot.startTime|date('H:i') }}–{{ activity.timeSlot.endTime|date('H:i') }}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <button type="button"
+                                                                                        data-action="dialog#close"
+                                                                                        title="{{ 'board_today_close_activity'|trans({}, 'calendar') }}"
+                                                                                        aria-label="{{ 'board_today_close_activity'|trans({}, 'calendar') }}"
+                                                                                        class="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                                                                                    {{ ux_icon('heroicons:x-mark', {class: 'h-5 w-5'}) }}
+                                                                                </button>
+                                                                            </div>
+
+                                                                            {% if activity.subjects is not empty %}
+                                                                                <div class="flex flex-wrap gap-1.5 mb-3">
+                                                                                    {% for subject in activity.subjects %}
+                                                                                        <span class="inline-flex items-center rounded-full bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-0.5 text-xs font-medium dark:bg-forest-800 dark:text-forest-100 dark:border-forest-700">
+                                                                                            {{ subject.subject }} <span class="text-forest-500 dark:text-forest-300 font-normal ml-1">{{ subject.group.name }}</span>
+                                                                                        </span>
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                            {% endif %}
+
+                                                                            <div class="prose prose-sm max-w-none text-gray-700 dark:text-forest-100 dark:prose-invert">{{ activity.description|sanitize_html('app.rich_text') }}</div>
+
+                                                                            {% if activity.attachments is not empty %}
+                                                                                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-white/10 flex flex-wrap gap-2">
+                                                                                    {% for attachment in activity.attachments %}
+                                                                                        <a href="{{ path('app_absences_attachment_download', {id: activity.absence.id, activityId: activity.id, attachmentId: attachment.id}) }}"
+                                                                                           class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                                                                                  hover:border-forest-300 hover:text-forest-700 hover:bg-forest-50 transition-colors
+                                                                                                  dark:bg-white/5 dark:border-white/10 dark:text-forest-100 dark:hover:bg-white/10">
+                                                                                            {{ ux_icon('heroicons:paper-clip', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                                                                                            {{ attachment.filename }}
+                                                                                            <span class="text-gray-400 dark:text-forest-400">({{ attachment.size|file_size }})</span>
+                                                                                        </a>
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </dialog>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="shrink-0 px-6 py-3 border-t border-gray-200 dark:border-white/10 text-lg text-gray-600 dark:text-forest-300 text-center">
+                        <span class="font-semibold">{{ 'board_today_absences_label'|trans({}, 'calendar') }}:</span>
+                        {% if report.absentTeachers is empty %}
+                            <span class="text-gray-400 dark:text-forest-400">{{ 'board_today_no_absences'|trans({}, 'calendar') }}</span>
+                        {% else %}
+                            {% for teacher in report.absentTeachers %}{{ teacher.name.full() }}{% if not loop.last %}, {% endif %}{% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="shrink-0 px-6 py-3 border-t border-gray-200 dark:border-white/10 text-lg text-gray-600 dark:text-forest-300 text-center">
+                        <span class="font-semibold">{{ 'board_today_sanctions_label'|trans({}, 'calendar') }}:</span>
+                        {% if report.sanctionedStudents is empty %}
+                            <span class="text-gray-400 dark:text-forest-400">{{ 'board_today_no_sanctions'|trans({}, 'calendar') }}</span>
+                        {% else %}
+                            {% for sanction in report.sanctionedStudents %}{{ sanction.student.name.full() }} ({{ sanction.group.name }}){% if sanction.label %} — {{ sanction.label }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <h2 class="shrink-0 bg-gray-100 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-gray-600 border-b border-gray-200 dark:bg-forest-900 dark:text-forest-200 dark:border-white/10">
+                        {{ screen.label|trans({}, 'calendar') }}
+                    </h2>
+                    <div class="flex-1 grid grid-cols-5 divide-x divide-gray-200 dark:divide-white/10 overflow-hidden">
+                        {% for day in screen.days %}
+                            {% set is_today = day.day.format('Y-m-d') == today.format('Y-m-d') %}
+                            <div class="flex flex-col overflow-hidden">
+                                <h3 class="shrink-0 px-4 pt-4 pb-2 text-sm font-semibold {{ is_today ? 'text-amber-600 dark:text-amber-300' : 'text-gray-600 dark:text-forest-200' }}">
+                                    {{ ('weekday.' ~ day.day.format('N'))|trans({}, 'calendar') }}
+                                    {{ day.day.format('j') }} {{ 'de'|trans({}, 'calendar') }}
+                                    {{ ('month.' ~ day.day.format('n'))|trans({}, 'calendar')|lower }}
+                                </h3>
+
+                                <div class="flex-1 overflow-hidden px-4 pb-4" data-controller="board-column">
+                                    {% if day.groups is empty %}
+                                        <p class="text-xs text-gray-400 dark:text-forest-400">{{ 'board_no_sanctions'|trans({}, 'calendar') }}</p>
+                                    {% else %}
+                                        <div class="space-y-3">
+                                            {% for group in day.groups %}
+                                                <div>
+                                                    <p class="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold {{ group.color.bg }} {{ group.color.text }}">
+                                                        {{ group.name }}
+                                                    </p>
+                                                    <ul class="space-y-1.5 pl-1 text-sm">
+                                                        {% for item in group.items %}
+                                                            <li>
+                                                                <span class="font-medium">{{ item.student }}</span>
+                                                                {% if item.details %}
+                                                                    <span class="text-gray-500 dark:text-forest-300"> — {{ item.details }}</span>
+                                                                {% endif %}
+                                                                <span class="block text-xs text-gray-400 dark:text-forest-400">
+                                                                    {{ 'board_start_date'|trans({}, 'calendar') }}: {{ item.from|date('d/m/Y') }}
+                                                                    · {{ 'board_end_date'|trans({}, 'calendar') }}: {{ (item.to ?? item.from)|date('d/m/Y') }}
+                                                                </span>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
-                </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </section>
         {% endfor %}
     </div>

@@ -8,6 +8,8 @@ use App\Entity\Sanction;
 use App\Repository\SanctionRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\AppSettings;
+use App\Service\BoardTodayBuilder;
+use App\Service\BoardTodayReport;
 use App\Service\CalendarBoardBuilder;
 use App\Service\KioskMode;
 use App\Service\TenantContext;
@@ -44,6 +46,7 @@ class CalendarController extends AbstractController
     public function board(
         SanctionRepository $sanctionRepository,
         CalendarBoardBuilder $boardBuilder,
+        BoardTodayBuilder $boardTodayBuilder,
         KioskMode $kioskMode,
     ): Response {
         $centre = $this->tenantContext->getSelectedCentre();
@@ -63,25 +66,36 @@ class CalendarController extends AbstractController
         // sesión del navegador: solo se podrá salir cerrando sesión.
         $kioskMode->activate();
 
+        $todaySeconds   = $this->appSettings->getInt('board.today_seconds');
         $currentSeconds = $this->appSettings->getInt('board.current_week_seconds');
         $nextSeconds    = $this->appSettings->getInt('board.next_week_seconds');
-        $showNextWeek   = $currentSeconds > 0 && $nextSeconds > 0;
         $theme          = $this->appSettings->get('board.theme');
 
-        $weeks = [
-            ['label' => 'board_this_week', 'target' => 'currentWeek', 'days' => $boardBuilder->build($items, $this->weekdaysOf($today))],
-        ];
-        if ($showNextWeek) {
-            $weeks[] = ['label' => 'board_next_week', 'target' => 'nextWeek', 'days' => $boardBuilder->build($items, $this->weekdaysOf($today->modify('+7 days')))];
+        $todayReport = $academicYear !== null
+            ? $boardTodayBuilder->build($academicYear, $today)
+            : new BoardTodayReport($today, [], [], []);
+
+        // Un valor de 0 en la duración de una pantalla la omite. Si todas
+        // las pantallas están omitidas, se muestra solo "Hoy" sin rotación.
+        $screens = [];
+        if ($todaySeconds > 0) {
+            $screens[] = ['type' => 'today', 'label' => 'board_today', 'seconds' => $todaySeconds, 'report' => $todayReport];
+        }
+        if ($currentSeconds > 0) {
+            $screens[] = ['type' => 'week', 'label' => 'board_this_week', 'seconds' => $currentSeconds, 'days' => $boardBuilder->build($items, $this->weekdaysOf($today))];
+        }
+        if ($nextSeconds > 0) {
+            $screens[] = ['type' => 'week', 'label' => 'board_next_week', 'seconds' => $nextSeconds, 'days' => $boardBuilder->build($items, $this->weekdaysOf($today->modify('+7 days')))];
+        }
+        if ($screens === []) {
+            $screens[] = ['type' => 'today', 'label' => 'board_today', 'seconds' => 0, 'report' => $todayReport];
         }
 
         return $this->render('calendar/board.html.twig', [
-            'weeks'          => $weeks,
-            'today'          => $today,
-            'currentSeconds' => $currentSeconds,
-            'nextSeconds'    => $nextSeconds,
-            'showNextWeek'   => $showNextWeek,
-            'theme'          => $theme,
+            'screens'    => $screens,
+            'today'      => $today,
+            'theme'      => $theme,
+            'centreName' => $centre->getName(),
         ]);
     }
 

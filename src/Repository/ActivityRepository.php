@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\AcademicYear;
 use App\Entity\Activity;
 use App\Entity\EducationalCentre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -28,6 +30,25 @@ class ActivityRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
 
         return $result instanceof Activity ? $result : null;
+    }
+
+    /** @return Activity[] */
+    public function findByAcademicYearAndDate(AcademicYear $year, \DateTimeImmutable $date): array
+    {
+        return $this->createQueryBuilder('act')
+            ->join('act.absence', 'ab')
+            ->join('ab.teacher', 't')
+            ->addSelect('ab', 't')
+            ->leftJoin('act.subjects', 's')
+            ->addSelect('s')
+            ->where('ab.academicYear = :year')
+            ->andWhere('act.date = :date')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('date', $date, Types::DATE_IMMUTABLE)
+            ->orderBy('t.name.lastName', 'ASC')
+            ->addOrderBy('t.name.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     /** @return Activity[] */

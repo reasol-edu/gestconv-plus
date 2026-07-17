@@ -387,6 +387,89 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertCount(0, $results);
     }
 
+    // ── findActiveOn ───────────────────────────────────────────────────────
+
+    public function testFindActiveOnReturnsNotifiedSanctionInRange(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('active.on.range');
+        $this->persist($teacher);
+        $sanction = $this->makeSanction($world, $teacher);
+        $sanction->setEffectiveFrom(new \DateTimeImmutable('2026-02-08'))
+                 ->setEffectiveTo(new \DateTimeImmutable('2026-02-12'));
+        $this->flush();
+
+        $results = $this->repo->findActiveOn($world['year'], new \DateTimeImmutable('2026-02-10'));
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testFindActiveOnExcludesSanctionsOutsideRange(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('active.on.outside');
+        $this->persist($teacher);
+        $sanction = $this->makeSanction($world, $teacher);
+        $sanction->setEffectiveFrom(new \DateTimeImmutable('2026-02-01'))
+                 ->setEffectiveTo(new \DateTimeImmutable('2026-02-05'));
+        $this->flush();
+
+        $results = $this->repo->findActiveOn($world['year'], new \DateTimeImmutable('2026-02-10'));
+
+        self::assertCount(0, $results);
+    }
+
+    public function testFindActiveOnIncludesOpenEndedSanctions(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('active.on.openended');
+        $this->persist($teacher);
+        $sanction = $this->makeSanction($world, $teacher);
+        $sanction->setEffectiveFrom(new \DateTimeImmutable('2026-02-01'));
+        $this->flush();
+
+        $results = $this->repo->findActiveOn($world['year'], new \DateTimeImmutable('2026-06-15'));
+
+        self::assertCount(1, $results);
+        self::assertSame($sanction->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testFindActiveOnExcludesUnnotifiedSanctions(): void
+    {
+        $world    = $this->makeWorld();
+        $teacher  = $this->makeTeacher('active.on.unnotified');
+        $this->persist($teacher);
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($teacher)
+            ->setDetails('Sin notificar')
+            ->setNoMeasureApplied(false)
+            ->setEffectiveFrom(new \DateTimeImmutable('2026-02-01'));
+        $this->persist($sanction);
+
+        $results = $this->repo->findActiveOn($world['year'], new \DateTimeImmutable('2026-02-10'));
+
+        self::assertCount(0, $results);
+    }
+
+    public function testFindActiveOnIsScopedToTheGivenYear(): void
+    {
+        $worldA   = $this->makeWorld('A');
+        $worldB   = $this->makeWorld('B');
+        $teacher  = $this->makeTeacher('active.on.scope');
+        $this->persist($teacher);
+        $sanction = $this->makeSanction($worldA, $teacher);
+        $sanction->setEffectiveFrom(new \DateTimeImmutable('2026-02-01'));
+        $this->flush();
+
+        $results = $this->repo->findActiveOn($worldB['year'], new \DateTimeImmutable('2026-02-10'));
+
+        self::assertCount(0, $results);
+    }
+
     // ── findEligibleReports ──────────────────────────────────────────────────
 
     public function testFindEligibleReportsReturnsUnprescribedUnsanctionedReports(): void
