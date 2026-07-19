@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\Communication;
+use App\Entity\CommunicationMethod;
+use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
+use App\Entity\IncidentBehavior;
+use App\Entity\IncidentBehaviorCategory;
+use App\Entity\IncidentReport;
 use App\Entity\PersonName;
 use App\Entity\Course;
+use App\Entity\Sanction;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\StudentRepository;
@@ -17,6 +24,8 @@ use App\Tests\Integration\RepositoryTestCase;
 class StudentRepositoryTest extends RepositoryTestCase
 {
     private StudentRepository $repo;
+
+    private int $nextReportNumber = 0;
 
     protected function setUp(): void
     {
@@ -274,6 +283,234 @@ class StudentRepositoryTest extends RepositoryTestCase
         self::assertSame(0, $this->repo->countByActiveYear($centre, $unrelated));
     }
 
+    // ── findTutoredSummary ───────────────────────────────────────────────────
+
+    public function testFindTutoredSummaryReturnsOnlyGroupsTutoredByViewer(): void
+    {
+        $world  = $this->makeTutorshipWorld('41002001');
+        $tutor  = $this->makeTeacher('tutored.tutor.1');
+        $this->persist($tutor);
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year']);
+
+        self::assertCount(1, $rows);
+        self::assertSame($world['student']->getId()->toRfc4122(), $rows[0]['studentId']);
+        self::assertSame($world['group']->getId()->toRfc4122(), $rows[0]['groupId']);
+    }
+
+    public function testFindTutoredSummaryExcludesGroupsWherViewerIsOnlyTeacher(): void
+    {
+        $world   = $this->makeTutorshipWorld('41002002');
+        $teacher = $this->makeTeacher('tutored.plain.2');
+        $this->persist($teacher);
+        $world['group']->addTeacher($teacher, 'Matemáticas');
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $rows = $this->repo->findTutoredSummary($teacher, $world['year']);
+
+        self::assertCount(0, $rows);
+    }
+
+    public function testFindTutoredSummaryCountsReportsScopedToStudentAndGroup(): void
+    {
+        $world = $this->makeTutorshipWorld('41002003');
+        $tutor = $this->makeTeacher('tutored.counts.3');
+        $this->persist($tutor);
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $this->makeTutoredReport($world);
+        $this->makeTutoredReport($world);
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year']);
+
+        self::assertCount(1, $rows);
+        self::assertSame(2, $rows[0]['reportsTotal']);
+    }
+
+    public function testFindTutoredSummaryCountsSeriousReportsSeparately(): void
+    {
+        $world = $this->makeTutorshipWorld('41002004');
+        $tutor = $this->makeTeacher('tutored.serious.4');
+        $this->persist($tutor);
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $this->makeTutoredReport($world);
+        $this->makeTutoredReport($world, serious: true);
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year']);
+
+        self::assertSame(2, $rows[0]['reportsTotal']);
+        self::assertSame(1, $rows[0]['reportsSerious']);
+    }
+
+    public function testFindTutoredSummaryCountsUnnotifiedReports(): void
+    {
+        $world = $this->makeTutorshipWorld('41002005');
+        $tutor = $this->makeTeacher('tutored.unnotified.5');
+        $this->persist($tutor);
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $this->makeTutoredReport($world, notified: true);
+        $this->makeTutoredReport($world, notified: false);
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year']);
+
+        self::assertSame(2, $rows[0]['reportsTotal']);
+        self::assertSame(1, $rows[0]['reportsUnnotified']);
+    }
+
+    public function testFindTutoredSummaryCountsPrescribedReports(): void
+    {
+        $world = $this->makeTutorshipWorld('41002006');
+        $tutor = $this->makeTeacher('tutored.prescribed.6');
+        $this->persist($tutor);
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $this->makeTutoredReport($world);
+        $prescribed = $this->makeTutoredReport($world);
+        $prescribed->setPrescribedAt(new \DateTimeImmutable());
+        $this->flush();
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year']);
+
+        self::assertSame(1, $rows[0]['reportsPrescribed']);
+    }
+
+    public function testFindTutoredSummaryCountsSanctionsAndUnnotifiedSanctions(): void
+    {
+        $world = $this->makeTutorshipWorld('41002007');
+        $tutor = $this->makeTeacher('tutored.sanctions.7');
+        $this->persist($tutor);
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $this->flush();
+
+        $this->makeTutoredSanction($world, notified: true);
+        $this->makeTutoredSanction($world, notified: false);
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year']);
+
+        self::assertSame(2, $rows[0]['sanctionsTotal']);
+        self::assertSame(1, $rows[0]['sanctionsUnnotified']);
+    }
+
+    public function testFindTutoredSummaryStudentInTwoTutoredGroupsAppearsTwice(): void
+    {
+        $world  = $this->makeTutorshipWorld('41002008');
+        $tutor  = $this->makeTeacher('tutored.twogroups.8');
+        $this->persist($tutor);
+        $groupB = (new Group())->setName('1ºB')->setCourse($world['group']->getCourse());
+        $this->persist($groupB);
+
+        $world['group']->addTutor($tutor);
+        $groupB->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $groupB->addStudent($world['student']);
+        $this->flush();
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year']);
+
+        self::assertCount(2, $rows);
+    }
+
+    public function testFindTutoredSummaryFiltersBySearch(): void
+    {
+        $world  = $this->makeTutorshipWorld('41002009');
+        $tutor  = $this->makeTeacher('tutored.search.9');
+        $this->persist($tutor);
+        $studentB = (new Student(new PersonName('Pedro', 'Martínez')))->setStudentId('NIE-TUT-' . uniqid('', false));
+        $this->persist($studentB);
+
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $world['group']->addStudent($studentB);
+        $this->flush();
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year'], ['search' => 'García']);
+
+        self::assertCount(1, $rows);
+        self::assertSame('García', $rows[0]['lastName']);
+    }
+
+    public function testFindTutoredSummaryFiltersByGroupId(): void
+    {
+        $world  = $this->makeTutorshipWorld('41002010');
+        $tutor  = $this->makeTeacher('tutored.groupfilter.10');
+        $this->persist($tutor);
+        $groupB   = (new Group())->setName('1ºB')->setCourse($world['group']->getCourse());
+        $studentB = (new Student(new PersonName('Pedro', 'Martínez')))->setStudentId('NIE-TUT-' . uniqid('', false));
+        $this->persist($groupB, $studentB);
+
+        $world['group']->addTutor($tutor);
+        $groupB->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $groupB->addStudent($studentB);
+        $this->flush();
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year'], ['groupId' => $world['group']->getId()->toRfc4122()]);
+
+        self::assertCount(1, $rows);
+        self::assertSame($world['student']->getId()->toRfc4122(), $rows[0]['studentId']);
+    }
+
+    public function testFindTutoredSummarySortsByReportsTotalDescending(): void
+    {
+        $world    = $this->makeTutorshipWorld('41002011');
+        $tutor    = $this->makeTeacher('tutored.sort.11');
+        $this->persist($tutor);
+        $studentB = (new Student(new PersonName('Bea', 'López')))->setStudentId('NIE-TUT-' . uniqid('', false));
+        $this->persist($studentB);
+
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']);
+        $world['group']->addStudent($studentB);
+        $this->flush();
+
+        $this->makeTutoredReport($world);
+        $worldB = $world;
+        $worldB['student'] = $studentB;
+        $this->makeTutoredReport($worldB);
+        $this->makeTutoredReport($worldB);
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year'], ['sort' => 'reportsTotal', 'sortDir' => 'desc']);
+
+        self::assertSame('López', $rows[0]['lastName']);
+        self::assertSame(2, $rows[0]['reportsTotal']);
+        self::assertSame('García', $rows[1]['lastName']);
+        self::assertSame(1, $rows[1]['reportsTotal']);
+    }
+
+    public function testFindTutoredSummaryDefaultSortIsByLastNameThenFirstName(): void
+    {
+        $world    = $this->makeTutorshipWorld('41002012');
+        $tutor    = $this->makeTeacher('tutored.defaultsort.12');
+        $this->persist($tutor);
+        $studentB = (new Student(new PersonName('Bea', 'Alonso')))->setStudentId('NIE-TUT-' . uniqid('', false));
+        $this->persist($studentB);
+
+        $world['group']->addTutor($tutor);
+        $world['group']->addStudent($world['student']); // García
+        $world['group']->addStudent($studentB);          // Alonso
+        $this->flush();
+
+        $rows = $this->repo->findTutoredSummary($tutor, $world['year']);
+
+        self::assertSame('Alonso', $rows[0]['lastName']);
+        self::assertSame('García', $rows[1]['lastName']);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
@@ -326,5 +563,109 @@ class StudentRepositoryTest extends RepositoryTestCase
 
         $this->persist($centre, $year, $courseA, $groupA, $courseB, $groupB);
         return [$centre, $year, $groupA, $groupB, $courseA];
+    }
+
+    /**
+     * Builds and persists Centre → Year → Course → Group → Student, plus a
+     * non-serious behavior category/behavior, for the findTutoredSummary() tests.
+     *
+     * @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, seriousBehavior: IncidentBehavior, method: CommunicationMethod}
+     */
+    private function makeTutorshipWorld(string $centreCode): array
+    {
+        $centre   = (new EducationalCentre())->setCode($centreCode)->setName('IES ' . $centreCode)->setCity('Sevilla');
+        $year     = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
+        $course   = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group    = (new Group())->setName('1ºA')->setCourse($course);
+        $student  = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-TUT-' . uniqid('', false));
+        $category = (new IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)
+            ->setName('Contrarias')
+            ->setSerious(false)
+            ->setPosition(0);
+        $behavior = (new IncidentBehavior())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName('Perturbación')
+            ->setPosition(0)
+            ->setActive(true);
+        $seriousCategory = (new IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)
+            ->setName('Graves')
+            ->setSerious(true)
+            ->setPosition(1);
+        $seriousBehavior = (new IncidentBehavior())
+            ->setEducationalCentre($centre)
+            ->setCategory($seriousCategory)
+            ->setName('Agresión')
+            ->setPosition(0)
+            ->setActive(true);
+        $method = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+
+        $centre->setActiveAcademicYear($year);
+        $this->persist($centre, $year, $course, $group, $student, $category, $behavior, $seriousCategory, $seriousBehavior, $method);
+
+        return compact('centre', 'year', 'group', 'student', 'behavior', 'seriousBehavior', 'method');
+    }
+
+    /**
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, seriousBehavior: IncidentBehavior, method: CommunicationMethod} $world
+     */
+    private function makeTutoredReport(array $world, bool $serious = false, bool $notified = true): IncidentReport
+    {
+        $creator = $this->makeTeacher('tutored.report.creator.' . uniqid('', false));
+        $this->persist($creator);
+
+        $report = (new IncidentReport())
+            ->setAcademicYear($world['year'])
+            ->setNumber(++$this->nextReportNumber)
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Test.</p>')
+            ->setExpelledFromClass(false);
+        $report->addBehavior($serious ? $world['seriousBehavior'] : $world['behavior']);
+        $this->persist($report);
+
+        if ($notified) {
+            $communication = Communication::forIncidentReport($report, $world['method'], $creator, new \DateTimeImmutable(), CommunicationResult::Notified);
+            $this->persist($communication);
+            $report->setNotifiedCommunication($communication);
+            $this->flush();
+        }
+
+        return $report;
+    }
+
+    /**
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, behavior: IncidentBehavior, seriousBehavior: IncidentBehavior, method: CommunicationMethod} $world
+     */
+    private function makeTutoredSanction(array $world, bool $notified = true): Sanction
+    {
+        $creator = $this->makeTeacher('tutored.sanction.creator.' . uniqid('', false));
+        $this->persist($creator);
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('Detalles de prueba.')
+            ->setNoMeasureApplied(false);
+        $this->persist($sanction);
+
+        if ($notified) {
+            $communication = Communication::forSanction($sanction, $world['method'], $creator, new \DateTimeImmutable(), CommunicationResult::Notified);
+            $this->persist($communication);
+            $sanction->setNotifiedCommunication($communication);
+            $this->flush();
+        }
+
+        return $sanction;
     }
 }
