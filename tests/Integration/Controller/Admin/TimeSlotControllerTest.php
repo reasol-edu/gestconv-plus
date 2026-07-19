@@ -48,6 +48,17 @@ class TimeSlotControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testIndexPreselectsTimeSlotFromQueryParam(): void
+    {
+        [$cadmin, $centre, , $slot] = $this->makeScenarioWithSlot();
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios?slot=' . $slot->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('input[value="1ª hora"]');
+    }
+
     // ── export ────────────────────────────────────────────────────────────────
 
     public function testExportReturnsJsonWithTimeSlots(): void

@@ -1,0 +1,91 @@
+<section id="slot-{{ item.timeSlot.id }}"
+         class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden transition-colors"
+         {% if isToday %}data-current-time-slot-target="slot" data-start="{{ item.timeSlot.startTime|date('H:i') }}" data-end="{{ item.timeSlot.endTime|date('H:i') }}"{% endif %}>
+    <div class="px-6 py-4 border-b border-gray-100 flex items-start justify-between gap-3">
+        <div>
+            <h2 class="text-base font-semibold text-gray-900">{{ item.timeSlot.name }}</h2>
+            <p class="text-xs text-gray-500 mt-0.5">{{ item.timeSlot.startTime|date('H:i') }}–{{ item.timeSlot.endTime|date('H:i') }}</p>
+        </div>
+        {% if isAdmin %}
+            <a href="{{ path('app_centre_time_slots_index', {centreId: centre.id, slot: item.timeSlot.id}) }}"
+               class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:border-forest-300 hover:text-forest-700 transition-colors"
+               title="{{ 'guards.edit_time_slot'|trans({}, 'admin') }}" aria-label="{{ 'guards.edit_time_slot'|trans({}, 'admin') }}">
+                {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'guards.on_duty_title'|trans({}, 'admin') }}</h3>
+        {% if item.timeSlot.guards is empty %}
+            <p class="text-sm text-gray-400">{{ 'guards.on_duty_empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <p class="text-sm text-gray-700">
+                {% for guard in item.timeSlot.guards %}{{ guard.name.full() }}{{ not loop.last ? ', ' : '' }}{% endfor %}
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="px-6 py-4">
+        <div class="flex items-center justify-between gap-3 mb-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'guards.absences_title'|trans({}, 'admin') }}</h3>
+            {% if item.hasAttachments %}
+                <a href="{{ path('app_guards_time_slot_attachments_zip', {timeSlotId: item.timeSlot.id, date: date|date('Y-m-d')}) }}"
+                   class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 hover:border-forest-300 hover:text-forest-700 transition-colors"
+                   title="{{ 'guards.download_zip'|trans({}, 'admin') }}" aria-label="{{ 'guards.download_zip'|trans({}, 'admin') }}">
+                    {{ ux_icon('heroicons:archive-box-arrow-down', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                    {{ 'guards.download_zip'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
+        </div>
+        {% if item.rows is empty %}
+            <p class="text-sm text-gray-400">{{ 'board_today_no_absences'|trans({}, 'calendar') }}</p>
+        {% else %}
+            <ul class="space-y-4">
+                {% for row in item.rows %}
+                    <li>
+                        <p class="text-sm font-medium text-gray-900">{{ row.teacher.name.full() }}</p>
+                        {% if row.activity %}
+                            {% set activity = row.activity %}
+                            <div class="mt-3 pl-4 border-l-2 border-gray-100">
+                                {% if activity.subjects is not empty %}
+                                    <div class="flex flex-wrap gap-1.5 mb-2">
+                                        {% for subject in activity.subjects %}
+                                            <span class="inline-flex items-center rounded-full bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-0.5 text-xs font-medium">
+                                                {{ subject.subject }} <span class="text-forest-500 font-normal ml-1">{{ subject.group.name }}</span>
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="prose prose-sm max-w-none text-gray-700">{{ activity.description|sanitize_html('app.rich_text') }}</div>
+                                {% if activity.attachments is not empty %}
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        {% for attachment in activity.attachments %}
+                                            <a href="{{ path('app_guards_activity_attachment_download', {absenceId: activity.absence.id, activityId: activity.id, attachmentId: attachment.id}) }}"
+                                               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                                      hover:border-forest-300 hover:text-forest-700 hover:bg-forest-50 transition-colors">
+                                                {{ ux_icon('heroicons:paper-clip', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                                                {{ attachment.filename }}
+                                            </a>
+                                        {% endfor %}
+                                        {% if activity.attachments|length > 1 %}
+                                            <a href="{{ path('app_guards_activity_attachments_zip', {absenceId: activity.absence.id, activityId: activity.id}) }}"
+                                               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                                      hover:border-forest-300 hover:text-forest-700 hover:bg-forest-50 transition-colors"
+                                               title="{{ 'guards.download_zip'|trans({}, 'admin') }}" aria-label="{{ 'guards.download_zip'|trans({}, 'admin') }}">
+                                                {{ ux_icon('heroicons:archive-box-arrow-down', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                                                {{ 'guards.download_zip'|trans({}, 'admin') }}
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <p class="text-sm text-gray-400 mt-0.5">{{ 'guards.no_activity'|trans({}, 'admin') }}</p>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</section>

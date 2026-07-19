@@ -379,11 +379,17 @@ ven además **todos** los tramos, no solo los propios (ver
 La cabecera muestra el día activo, precedido de «Hoy: » cuando corresponde a la fecha actual, junto
 con dos flechas para navegar al día anterior y siguiente. Si el día visualizado es hoy, el tramo
 horario en curso se resalta automáticamente, igual que en el modo tablón de las pantallas de sala de
-profesores. Cuando hay más de un tramo ese día, un grupo de botones al principio de la página
-permite saltar directamente a cada uno.
+profesores. Cuando hay más de un tramo ese día, o alumnado sancionado que mostrar, un grupo de
+botones al principio de la página permite saltar directamente a cada tramo y a **Alumnado
+sancionado**.
 
 Para cada tramo horario se muestran, una detrás de otra:
 
+- **Profesorado de guardia** — el nombre completo de cada docente asignado a ese tramo, o un aviso
+  si no hay ninguno. Quien administra el centro ve además, junto al título del tramo, un botón para
+  modificar sus datos (nombre, horario y día, y la propia asignación de docentes de guardia), que
+  abre el editor de [tramos horarios](06-administrar-el-centro.md#tramos-horarios) con ese tramo ya
+  seleccionado.
 - **Ausencias** — el docente ausente y, si dejó una actividad registrada para ese tramo, su
   descripción completa junto con los ficheros adjuntos disponibles para descargar. Si no dejó
   actividad, aparece un aviso indicándolo.
@@ -392,10 +398,15 @@ Para cada tramo horario se muestran, una detrás de otra:
   nombre completo y las fechas de la sanción; un desplegable permite consultar, materia por materia,
   el estado de su tarea de sanción, el trabajo asignado y sus adjuntos.
 
-!!! note "La descarga conjunta en ZIP queda pendiente"
-    Por ahora, los ficheros adjuntos —tanto de actividades como de tareas de sanción— se descargan
-    de uno en uno. La descarga conjunta en un único archivo ZIP (por actividad, por tramo horario o
-    por sanción) está prevista para una fase posterior.
+Cuando hay varios ficheros que descargar juntos, aparece además un botón que los agrupa en un único
+archivo ZIP:
+
+- Junto al título **Ausencias** de cada tramo, si al menos una actividad de ese tramo tiene
+  adjuntos: descarga los adjuntos de **todas** las actividades del tramo ese día, en carpetas
+  separadas por docente.
+- Junto a la descripción de una actividad, cuando tiene más de un adjunto: descarga solo los suyos.
+- Junto a cada sanción del listado de alumnado sancionado, si alguna de sus tareas tiene adjuntos:
+  descarga los adjuntos de **todas** las tareas de esa sanción, en carpetas separadas por materia.
 
 ## Tareas de sanción
 

@@ -252,12 +252,16 @@ El parte pasa a **"Notificado"** y queda en el historial.
   **Guardias** a secas para la administración, que ve todos los tramos.
 - Navegación día a día, con el tramo en curso resaltado en vivo al
   visualizar el día de hoy, igual que en el modo tablón.
-- Para cada tramo: las **ausencias del día** con la actividad encomendada
-  (descripción y adjuntos descargables) o un aviso de que no hay nada
-  registrado.
+- Para cada tramo: el **profesorado de guardia** asignado y las
+  **ausencias del día** con la actividad encomendada (descripción y
+  adjuntos descargables) o un aviso de que no hay nada registrado. La
+  administración puede modificar los datos del tramo con un botón junto
+  a su título, sin salir de la pantalla.
 - Al final, una sola vez para todo el día: el **alumnado sancionado**,
   agrupado por grupo, con sus **tareas de sanción** desplegables (materia,
   estado, detalle y adjuntos) — para poder entregárselas sobre la marcha.
+- Cuando hay varios adjuntos que descargar juntos (de un tramo, una
+  actividad o una sanción), un botón los agrupa en un único **`.zip`**.
 - Acceso rápido desde el panel de inicio, junto a **Registrar un parte**.
 
 ---

@@ -101,6 +101,30 @@
 
             <div class="my-3 h-px bg-white/8"></div>
 
+            {# Mi tutoría — solo para docentes que tutorizan algún grupo del curso visualizado #}
+            {% if active_centre and tutors_any_group() %}
+                {% set tutorship_active = current_route starts with 'app_tutorship' %}
+                <a href="{{ path('app_tutorship_index') }}"
+                    {{ tutorship_active ? 'aria-current="page"' : '' }}
+                   class="{{ tutorship_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:academic-cap', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'tutorship'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
+            {# Guardias — administradores del centro y docentes con guardia en algún tramo del curso visualizado #}
+            {% if active_centre and (is_centre_admin() or is_guard_any_time_slot()) %}
+                {% set guards_active = current_route starts with 'app_guards' %}
+                <a href="{{ path('app_guards_index') }}"
+                    {{ guards_active ? 'aria-current="page"' : '' }}
+                   class="{{ guards_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:shield-check', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ (is_centre_admin() ? 'guards' : 'my_guards')|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
             {# Partes de convivencia — todos los docentes #}
             {% if active_centre %}
                 {% set incidents_active = current_route starts with 'app_incidents' %}
@@ -146,30 +170,6 @@
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:user-minus', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'absences'|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
-
-            {# Mi tutoría — solo para docentes que tutorizan algún grupo del curso visualizado #}
-            {% if active_centre and tutors_any_group() %}
-                {% set tutorship_active = current_route starts with 'app_tutorship' %}
-                <a href="{{ path('app_tutorship_index') }}"
-                    {{ tutorship_active ? 'aria-current="page"' : '' }}
-                   class="{{ tutorship_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:academic-cap', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'tutorship'|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
-
-            {# Guardias — administradores del centro y docentes con guardia en algún tramo del curso visualizado #}
-            {% if active_centre and (is_centre_admin() or is_guard_any_time_slot()) %}
-                {% set guards_active = current_route starts with 'app_guards' %}
-                <a href="{{ path('app_guards_index') }}"
-                    {{ guards_active ? 'aria-current="page"' : '' }}
-                   class="{{ guards_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:shield-check', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ (is_centre_admin() ? 'guards' : 'my_guards')|trans({}, 'navigation') }}</span>
                 </a>
             {% endif %}
 
@@ -323,32 +323,45 @@
             {# Flash messages — región live para lectores de pantalla. Los success
                se anuncian con polite (no interrumpen); los error con assertive. #}
             {% set flashes = app.flashes(['success', 'error']) %}
-            {% if flashes is not empty %}
-                <div class="px-6 pt-6 space-y-2"
-                     role="status"
-                     aria-live="{{ flashes.error is defined ? 'assertive' : 'polite' }}"
-                     aria-atomic="true">
-                    {% for type, messages in flashes %}
-                        {% for message in messages %}
-                            <div data-flash="{{ type }}"
-                                 class="flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-opacity duration-500
-                                        {{ type == 'success'
-                                            ? 'bg-green-50 border-green-200 text-green-800'
-                                            : 'bg-red-50 border-red-200 text-red-800' }}">
-                                {{ ux_icon(type == 'success' ? 'heroicons:check-circle' : 'heroicons:exclamation-circle',
-                                    {class: 'h-4.5 w-4.5 shrink-0'}) }}
-                                <span class="flex-1">{{ message }}</span>
-                                <button type="button"
-                                        data-flash-close
-                                        class="shrink-0 rounded p-0.5 opacity-50 hover:opacity-100 transition-opacity"
-                                        aria-label="{{ 'ui.close'|trans }}">
-                                    {{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}
-                                </button>
-                            </div>
-                        {% endfor %}
+            <div data-flash-container
+                 class="px-6 pt-6 space-y-2 {{ flashes is empty ? 'hidden' : '' }}"
+                 role="status"
+                 aria-live="{{ flashes.error is defined ? 'assertive' : 'polite' }}"
+                 aria-atomic="true">
+                {% for type, messages in flashes %}
+                    {% for message in messages %}
+                        <div data-flash="{{ type }}"
+                             class="flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-opacity duration-500
+                                    {{ type == 'success'
+                                        ? 'bg-green-50 border-green-200 text-green-800'
+                                        : 'bg-red-50 border-red-200 text-red-800' }}">
+                            {{ ux_icon(type == 'success' ? 'heroicons:check-circle' : 'heroicons:exclamation-circle',
+                                {class: 'h-4.5 w-4.5 shrink-0'}) }}
+                            <span class="flex-1">{{ message }}</span>
+                            <button type="button"
+                                    data-flash-close
+                                    class="shrink-0 rounded p-0.5 opacity-50 hover:opacity-100 transition-opacity"
+                                    aria-label="{{ 'ui.close'|trans }}">
+                                {{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}
+                            </button>
+                        </div>
                     {% endfor %}
-                </div>
-            {% endif %}
+                {% endfor %}
+            </div>
+
+            {# Plantillas ocultas para que el JS de abajo pueda montar flashes
+               dinámicos (p. ej. tras una LiveAction) sin duplicar SVGs ni
+               cadenas traducidas fuera de Twig. #}
+            <template data-flash-icon-template="success">{{ ux_icon('heroicons:check-circle', {class: 'h-4.5 w-4.5 shrink-0'}) }}</template>
+            <template data-flash-icon-template="error">{{ ux_icon('heroicons:exclamation-circle', {class: 'h-4.5 w-4.5 shrink-0'}) }}</template>
+            <template data-flash-close-template>
+                <button type="button"
+                        data-flash-close
+                        class="shrink-0 rounded p-0.5 opacity-50 hover:opacity-100 transition-opacity"
+                        aria-label="{{ 'ui.close'|trans }}">
+                    {{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}
+                </button>
+            </template>
 
             {# Banner de año histórico #}
             {% if viewing_past and vy %}
@@ -393,6 +406,44 @@
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('[data-flash-close]');
         if (btn) dismissFlash(btn.closest('[data-flash]'));
+    });
+
+    // Los LiveComponents (Symfony UX) solo repintan su propio fragmento, no
+    // el layout: sus addFlash() no se veían hasta la siguiente navegación
+    // completa. Este listener recibe el evento dispatchBrowserEvent()
+    // equivalente y monta el flash a mano, reutilizando las plantillas
+    // ocultas de arriba para no duplicar SVGs ni cadenas traducidas en JS.
+    document.addEventListener('flash:show', function (e) {
+        var container = document.querySelector('[data-flash-container]');
+        if (!container) return;
+
+        var type = e.detail && e.detail.type === 'error' ? 'error' : 'success';
+        container.classList.remove('hidden');
+        if (type === 'error') container.setAttribute('aria-live', 'assertive');
+
+        var div = document.createElement('div');
+        div.setAttribute('data-flash', type);
+        div.className = 'flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-opacity duration-500 '
+            + (type === 'success'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800');
+
+        var iconTemplate = document.querySelector('[data-flash-icon-template="' + type + '"]');
+        if (iconTemplate) div.appendChild(iconTemplate.content.cloneNode(true));
+
+        var span = document.createElement('span');
+        span.className = 'flex-1';
+        span.textContent = e.detail && e.detail.message ? e.detail.message : '';
+        div.appendChild(span);
+
+        var closeTemplate = document.querySelector('[data-flash-close-template]');
+        if (closeTemplate) div.appendChild(closeTemplate.content.cloneNode(true));
+
+        container.appendChild(div);
+
+        if (type === 'success') {
+            setTimeout(function () { dismissFlash(div); }, 4000);
+        }
     });
 }());
 </script>

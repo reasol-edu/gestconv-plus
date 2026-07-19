@@ -378,7 +378,7 @@ class DashboardControllerTest extends ControllerTestCase
         self::assertSelectorExists('#quick-actions a[href$="/guardias"]');
     }
 
-    public function testQuickActionsGuardsIsShownForAdmin(): void
+    public function testQuickActionsGuardsIsHiddenForAdminWithoutGuardDuty(): void
     {
         [$teacher, $centre] = $this->makeScenarioWithActiveYear(true);
         $this->loginAs($teacher, $centre);
@@ -386,7 +386,7 @@ class DashboardControllerTest extends ControllerTestCase
         $crawler = $this->client->request('GET', '/');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists('#quick-actions a[href$="/guardias"]');
+        self::assertCount(0, $crawler->filter('#quick-actions a[href$="/guardias"]'));
     }
 
     public function testPendingPrescriptionCardShowsZeroWhenNothingPending(): void

@@ -20,6 +20,7 @@ use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Symfony\UX\LiveComponent\ComponentToolsTrait;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
@@ -31,6 +32,7 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 class TimeSlotComponent extends AbstractController
 {
     use DefaultActionTrait;
+    use ComponentToolsTrait;
 
     /** Monday(0) .. Friday(4). */
     public const DAYS = [0, 1, 2, 3, 4];
@@ -86,10 +88,14 @@ class TimeSlotComponent extends AbstractController
         private readonly TenantContext $tenantContext,
     ) {}
 
-    public function mount(EducationalCentre $centre): void
+    public function mount(EducationalCentre $centre, string $selectedId = ''): void
     {
         $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
         $this->centre = $centre;
+
+        if ($selectedId !== '') {
+            $this->selectTimeSlot($selectedId);
+        }
     }
 
     public function canWrite(): bool
@@ -236,7 +242,7 @@ class TimeSlotComponent extends AbstractController
         $this->addDayOfWeek = null;
         $this->errors = [];
         $this->selectTimeSlot($timeSlot->getId()->toRfc4122());
-        $this->addFlash('success', $this->t('time_slot.flash.saved'));
+        $this->flashSuccess($this->t('time_slot.flash.saved'));
     }
 
     #[LiveAction]
@@ -272,7 +278,7 @@ class TimeSlotComponent extends AbstractController
 
         $this->addingAllDays = false;
         $this->errors = [];
-        $this->addFlash('success', $this->t('time_slot.flash.saved'));
+        $this->flashSuccess($this->t('time_slot.flash.saved'));
     }
 
     // ── Detail save / delete ─────────────────────────────────────────────────
@@ -305,7 +311,7 @@ class TimeSlotComponent extends AbstractController
 
         $this->em->flush();
         $this->errors = [];
-        $this->addFlash('success', $this->t('time_slot.flash.saved'));
+        $this->flashSuccess($this->t('time_slot.flash.saved'));
     }
 
     #[LiveAction]
@@ -334,7 +340,7 @@ class TimeSlotComponent extends AbstractController
         $this->em->flush();
 
         $this->selectedId = '';
-        $this->addFlash('success', $this->t('time_slot.flash.deleted'));
+        $this->flashSuccess($this->t('time_slot.flash.deleted'));
     }
 
     // ── Guard teachers ───────────────────────────────────────────────────────
@@ -356,7 +362,7 @@ class TimeSlotComponent extends AbstractController
             fn (Teacher $t) => $timeSlot->removeGuard($t),
         );
         $this->em->flush();
-        $this->addFlash('success', $this->t('time_slot.flash.saved'));
+        $this->flashSuccess($this->t('time_slot.flash.saved'));
     }
 
     private function resolveTeacher(string $id): ?Teacher
@@ -414,5 +420,16 @@ class TimeSlotComponent extends AbstractController
     private function t(string $key): string
     {
         return $this->translator->trans($key, [], 'admin');
+    }
+
+    /**
+     * LiveAction responses only re-render this component's fragment, not the
+     * layout, so a plain addFlash() never reaches the page until the next
+     * full navigation. Dispatch a browser event instead so the layout's JS
+     * can render the flash immediately.
+     */
+    private function flashSuccess(string $message): void
+    {
+        $this->dispatchBrowserEvent('flash:show', ['type' => 'success', 'message' => $message]);
     }
 }

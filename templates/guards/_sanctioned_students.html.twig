@@ -1,0 +1,23 @@
+<div id="sanctioned-students" class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+    <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
+        {{ ux_icon('heroicons:scale', {class: 'h-5 w-5 text-gray-400'}) }}
+        <h2 class="text-base font-semibold text-gray-900">{{ 'guards.sanctioned_title'|trans({}, 'admin') }}</h2>
+    </div>
+
+    {% if sanctionsByGroup is empty %}
+        <p class="px-6 py-8 text-sm text-gray-400 text-center">{{ 'guards.sanctioned_empty'|trans({}, 'admin') }}</p>
+    {% else %}
+        <div class="divide-y divide-gray-100">
+            {% for groupName, entries in sanctionsByGroup %}
+                <div class="px-6 py-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ groupName }}</p>
+                    <ul class="space-y-3">
+                        {% for entry in entries %}
+                            {% include 'guards/_sanction.html.twig' with { entry: entry } %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

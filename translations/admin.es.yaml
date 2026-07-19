@@ -1022,6 +1022,10 @@ guards.absences_title: 'Ausencias'
 guards.no_activity: 'Sin actividad registrada para este tramo.'
 guards.sanctioned_title: 'Alumnado sancionado'
 guards.sanctioned_empty: 'Ningún alumno sancionado este día.'
+guards.download_zip: 'Descargar todo en .zip'
+guards.on_duty_title: 'Profesorado de guardia'
+guards.on_duty_empty: 'Ningún docente asignado a este tramo.'
+guards.edit_time_slot: 'Modificar tramo horario'
 
 # Medidas disciplinarias (admin)
 sanction_measure.title: 'Medidas disciplinarias'

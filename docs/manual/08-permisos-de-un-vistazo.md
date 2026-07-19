@@ -123,6 +123,7 @@ visualizados, las ausencias con sus actividades y el alumnado sancionado del cen
 | Ver los tramos horarios propios de un día | ✓ | — | ✓ | ✓ |
 | Ver todos los tramos horarios de un día (no solo los propios) | — | — | ✓ | ✓ |
 | Descargar adjuntos de actividades y tareas de sanción mostrados en la pantalla | ✓ | — | ✓ | ✓ |
+| Modificar los datos de un tramo horario desde el botón junto a su título | — | — | ✓ | ✓ |
 
 El acceso a la sección no depende de tener guardia justo el día que se está viendo, sino de tener
 guardia en **algún** tramo horario del curso académico visualizado; eso permite navegar a otros días

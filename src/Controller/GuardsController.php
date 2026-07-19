@@ -15,12 +15,14 @@ use App\Repository\SanctionTaskAttachmentRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Repository\TimeSlotRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\AttachmentDownloadResponder;
+use App\Service\AttachmentZipExporter;
 use App\Service\BoardTodayBuilder;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/guardias')]
@@ -36,6 +38,8 @@ class GuardsController extends AbstractController
         private readonly ActivityRepository $activities,
         private readonly ActivityAttachmentRepository $activityAttachments,
         private readonly SanctionTaskAttachmentRepository $taskAttachments,
+        private readonly AttachmentDownloadResponder $downloadResponder,
+        private readonly AttachmentZipExporter $zipExporter,
     ) {}
 
     #[Route('', name: 'app_guards_index')]
@@ -73,7 +77,8 @@ class GuardsController extends AbstractController
                 continue;
             }
 
-            $rows = [];
+            $rows           = [];
+            $hasAttachments = false;
             foreach ($report->absentTeachers as $absentTeacher) {
                 $activity = null;
                 foreach ($item->activities as $candidate) {
@@ -82,21 +87,35 @@ class GuardsController extends AbstractController
                         break;
                     }
                 }
+                if ($activity !== null && !$activity->getAttachments()->isEmpty()) {
+                    $hasAttachments = true;
+                }
                 $rows[] = ['teacher' => $absentTeacher, 'activity' => $activity];
             }
 
             $slots[] = [
-                'timeSlot' => $item->timeSlot,
-                'rows'     => $rows,
+                'timeSlot'       => $item->timeSlot,
+                'rows'           => $rows,
+                'hasAttachments' => $hasAttachments,
             ];
         }
 
-        /** @var array<string, list<array{sanction: \App\Entity\Sanction, tasks: list<\App\Entity\SanctionTask>}>> $sanctionsByGroup */
+        /** @var array<string, list<array{sanction: \App\Entity\Sanction, tasks: list<\App\Entity\SanctionTask>, hasAttachments: bool}>> $sanctionsByGroup */
         $sanctionsByGroup = [];
         foreach ($this->sanctions->findActiveOn($year, $date) as $sanction) {
+            $tasks          = $this->tasks->findBySanction($sanction);
+            $hasAttachments = false;
+            foreach ($tasks as $task) {
+                if (!$task->getAttachments()->isEmpty()) {
+                    $hasAttachments = true;
+                    break;
+                }
+            }
+
             $sanctionsByGroup[$sanction->getGroup()->getName()][] = [
-                'sanction' => $sanction,
-                'tasks'    => $this->tasks->findBySanction($sanction),
+                'sanction'       => $sanction,
+                'tasks'          => $tasks,
+                'hasAttachments' => $hasAttachments,
             ];
         }
         ksort($sanctionsByGroup);
@@ -134,7 +153,68 @@ class GuardsController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        return $this->downloadResponse($attachment->getContent(), $attachment->getMimeType(), $attachment->getFilename());
+        return $this->downloadResponder->respond($attachment->getContent(), $attachment->getMimeType(), $attachment->getFilename());
+    }
+
+    #[Route('/ausencias/{absenceId}/actividades/{activityId}/adjuntos.zip', name: 'app_guards_activity_attachments_zip', methods: ['GET'])]
+    public function activityAttachmentsZip(string $absenceId, string $activityId): BinaryFileResponse
+    {
+        $absence = $this->absences->findById($absenceId);
+        if ($absence === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $activity = $this->activities->findById($activityId);
+        if ($activity === null || $activity->getAbsence() !== $absence) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->assertAccess($absence->getAcademicYear()->getEducationalCentre(), $absence->getAcademicYear());
+
+        $entries = [];
+        foreach ($activity->getAttachments() as $attachment) {
+            $entries[] = ['name' => $attachment->getFilename(), 'content' => $attachment->getContent()];
+        }
+
+        return $this->zipExporter->createResponse(
+            sprintf('adjuntos-actividad-%s.zip', $activity->getDate()->format('Y-m-d')),
+            $entries,
+        );
+    }
+
+    #[Route('/tramos/{timeSlotId}/adjuntos.zip', name: 'app_guards_time_slot_attachments_zip', methods: ['GET'])]
+    public function timeSlotAttachmentsZip(string $timeSlotId, Request $request): BinaryFileResponse
+    {
+        $timeSlot = $this->timeSlots->findById($timeSlotId);
+        if ($timeSlot === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $year = $timeSlot->getAcademicYear();
+        $this->assertAccess($year->getEducationalCentre(), $year);
+
+        $date   = self::parseDate($request->query->getString('date')) ?? new \DateTimeImmutable('today');
+        $report = $this->boardTodayBuilder->build($year, $date);
+
+        $entries = [];
+        foreach ($report->timeSlots as $item) {
+            if ($item->timeSlot !== $timeSlot) {
+                continue;
+            }
+
+            foreach ($item->activities as $activity) {
+                $teacher = $activity->getAbsence()->getTeacher();
+                $folder  = sprintf('%s, %s', $teacher->getName()->getLastName(), $teacher->getName()->getFirstName());
+                foreach ($activity->getAttachments() as $attachment) {
+                    $entries[] = ['name' => sprintf('%s/%s', $folder, $attachment->getFilename()), 'content' => $attachment->getContent()];
+                }
+            }
+        }
+
+        return $this->zipExporter->createResponse(
+            sprintf('adjuntos-guardia-%s.zip', $date->format('Y-m-d')),
+            $entries,
+        );
     }
 
     #[Route('/sanciones/{sanctionId}/tareas/{taskId}/adjuntos/{attachmentId}', name: 'app_guards_task_attachment_download', methods: ['GET'])]
@@ -157,7 +237,31 @@ class GuardsController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        return $this->downloadResponse($attachment->getContent(), $attachment->getMimeType(), $attachment->getFilename());
+        return $this->downloadResponder->respond($attachment->getContent(), $attachment->getMimeType(), $attachment->getFilename());
+    }
+
+    #[Route('/sanciones/{sanctionId}/adjuntos.zip', name: 'app_guards_sanction_attachments_zip', methods: ['GET'])]
+    public function sanctionAttachmentsZip(string $sanctionId): BinaryFileResponse
+    {
+        $sanction = $this->sanctions->findById($sanctionId);
+        if ($sanction === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->assertAccess($sanction->getAcademicYear()->getEducationalCentre(), $sanction->getAcademicYear());
+
+        $entries = [];
+        foreach ($this->tasks->findBySanction($sanction) as $task) {
+            $folder = $task->getGroupTeacher()->getSubject();
+            foreach ($task->getAttachments() as $attachment) {
+                $entries[] = ['name' => sprintf('%s/%s', $folder, $attachment->getFilename()), 'content' => $attachment->getContent()];
+            }
+        }
+
+        return $this->zipExporter->createResponse(
+            sprintf('adjuntos-sancion-%s.zip', $sanction->getId()->toRfc4122()),
+            $entries,
+        );
     }
 
     private function assertAccess(EducationalCentre $centre, AcademicYear $year): void
@@ -172,35 +276,6 @@ class GuardsController extends AbstractController
         }
 
         throw $this->createAccessDeniedException();
-    }
-
-    private function downloadResponse(string $content, string $mimeType, string $filename): Response
-    {
-        $response = new Response($content);
-        $response->headers->set('Content-Type', $mimeType);
-        $response->headers->set(
-            'Content-Disposition',
-            $response->headers->makeDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $filename,
-                $this->asciiFilenameFallback($filename),
-            ),
-        );
-
-        return $response;
-    }
-
-    /**
-     * makeDisposition() exige un nombre de reserva ASCII: el nombre original
-     * del adjunto proviene del archivo subido por el usuario y puede
-     * contener acentos u otros caracteres no ASCII.
-     */
-    private function asciiFilenameFallback(string $filename): string
-    {
-        $ascii = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $filename);
-        $ascii = preg_replace('/[^A-Za-z0-9 ._-]/', '', $ascii === false ? $filename : $ascii);
-
-        return $ascii === '' || $ascii === null ? 'adjunto' : $ascii;
     }
 
     private static function parseDate(string $raw): ?\DateTimeImmutable

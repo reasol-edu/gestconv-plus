@@ -18,13 +18,13 @@ use App\Repository\TeacherRepository;
 use App\Repository\TimeSlotRepository;
 use App\Security\Voter\AbsenceVoter;
 use App\Service\ActivityLogService;
+use App\Service\AttachmentDownloadResponder;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -63,6 +63,7 @@ class AbsenceController extends AbstractController
         private readonly TimeSlotRepository $timeSlots,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
+        private readonly AttachmentDownloadResponder $downloadResponder,
     ) {}
 
     #[Route('', name: 'app_absences_index')]
@@ -550,31 +551,7 @@ class AbsenceController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        $response = new Response($attachment->getContent());
-        $response->headers->set('Content-Type', $attachment->getMimeType());
-        $response->headers->set(
-            'Content-Disposition',
-            $response->headers->makeDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $attachment->getFilename(),
-                $this->asciiFilenameFallback($attachment->getFilename()),
-            ),
-        );
-
-        return $response;
-    }
-
-    /**
-     * makeDisposition() exige un nombre de reserva ASCII: el nombre original
-     * del adjunto proviene del archivo subido por el usuario y puede
-     * contener acentos u otros caracteres no ASCII.
-     */
-    private function asciiFilenameFallback(string $filename): string
-    {
-        $ascii = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $filename);
-        $ascii = preg_replace('/[^A-Za-z0-9 ._-]/', '', $ascii === false ? $filename : $ascii);
-
-        return $ascii === '' || $ascii === null ? 'adjunto' : $ascii;
+        return $this->downloadResponder->respond($attachment->getContent(), $attachment->getMimeType(), $attachment->getFilename());
     }
 
     /**

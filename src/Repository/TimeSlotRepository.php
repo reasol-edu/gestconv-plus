@@ -21,6 +21,17 @@ class TimeSlotRepository extends ServiceEntityRepository
         parent::__construct($registry, TimeSlot::class);
     }
 
+    public function findById(string $id): ?TimeSlot
+    {
+        $result = $this->createQueryBuilder('t')
+            ->where('t.id = :id')
+            ->setParameter('id', $id, 'uuid')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof TimeSlot ? $result : null;
+    }
+
     /** @return TimeSlot[] */
     public function findByAcademicYearOrdered(AcademicYear $year): array
     {

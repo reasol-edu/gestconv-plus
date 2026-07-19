@@ -42,7 +42,7 @@
     </div>
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
-        <twig:Admin:TimeSlotComponent :centre="centre" />
+        <twig:Admin:TimeSlotComponent :centre="centre" :selectedId="app.request.query.get('slot', '')" />
     </div>
 
 </div>
