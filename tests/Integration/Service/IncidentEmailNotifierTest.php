@@ -13,6 +13,7 @@ use App\Entity\IncidentReport;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\Sanction;
+use App\Entity\SanctionTask;
 use App\Entity\SettingDefinition;
 use App\Entity\SettingType;
 use App\Entity\Student;
@@ -384,6 +385,125 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         self::assertEmailCount(0);
     }
 
+    // ── sanction_task_assigned ────────────────────────────────────────────────
+
+    public function testSanctionTasksAssignedGroupsSeveralSubjectsIntoOneEmailPerTeacher(): void
+    {
+        [, $centre, $group, $creator] = $this->makeScenario('task.assigned.group');
+        $teacher = $this->makeTeacher('teacher.task.assigned', 'teacher.ta@ejemplo.local');
+        $this->persist($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $group->addTeacher($teacher, 'Física');
+        $this->flush();
+
+        $this->setBooleanSetting('notifications.email_sanction_task_assigned', $centre, true);
+
+        $sanction = $this->makeSanction($group, $creator);
+        $tasks    = [];
+        foreach ($group->getTeacherAssignments() as $groupTeacher) {
+            $task = new SanctionTask($sanction, $groupTeacher);
+            $this->persist($task);
+            $tasks[] = $task;
+        }
+        $this->flush();
+
+        $this->notifier->sanctionTasksAssigned($sanction, $tasks);
+
+        self::assertEmailCount(1);
+        self::assertEmailAddressContains($this->sentMessage(0), 'To', 'teacher.ta@ejemplo.local');
+        self::assertEmailSubjectContains($this->sentMessage(0), '2');
+        self::assertEmailHtmlBodyContains($this->sentMessage(0), 'Matemáticas');
+        self::assertEmailHtmlBodyContains($this->sentMessage(0), 'Física');
+    }
+
+    public function testSanctionTasksAssignedRespectsSettingOff(): void
+    {
+        [, $centre, $group, $creator] = $this->makeScenario('task.assigned.off');
+        $teacher = $this->makeTeacher('teacher.task.assigned.off', 'teacher.taoff@ejemplo.local');
+        $this->persist($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+
+        $this->setBooleanSetting('notifications.email_sanction_task_assigned', $centre, false);
+
+        $sanction = $this->makeSanction($group, $creator);
+        $task     = new SanctionTask($sanction, $group->getTeacherAssignments()->first());
+        $this->persist($task);
+        $this->flush();
+
+        $this->notifier->sanctionTasksAssigned($sanction, [$task]);
+
+        self::assertEmailCount(0);
+    }
+
+    public function testSanctionTasksAssignedSkipsTeacherWithoutEmail(): void
+    {
+        [, $centre, $group, $creator] = $this->makeScenario('task.assigned.noemail');
+        $teacher = $this->makeTeacher('teacher.task.assigned.noemail');
+        $this->persist($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+
+        $this->setBooleanSetting('notifications.email_sanction_task_assigned', $centre, true);
+
+        $sanction = $this->makeSanction($group, $creator);
+        $task     = new SanctionTask($sanction, $group->getTeacherAssignments()->first());
+        $this->persist($task);
+        $this->flush();
+
+        $this->notifier->sanctionTasksAssigned($sanction, [$task]);
+
+        self::assertEmailCount(0);
+    }
+
+    public function testSanctionTasksAssignedSendsNothingWhenTasksIsEmpty(): void
+    {
+        [, $centre, $group, $creator] = $this->makeScenario('task.assigned.empty');
+        $this->setBooleanSetting('notifications.email_sanction_task_assigned', $centre, true);
+
+        $sanction = $this->makeSanction($group, $creator);
+        $this->flush();
+
+        $this->notifier->sanctionTasksAssigned($sanction, []);
+
+        self::assertEmailCount(0);
+    }
+
+    // ── sanction_task_reminder ────────────────────────────────────────────────
+
+    public function testSanctionTasksReminderSendsOneDigestEmailWithAllItems(): void
+    {
+        [, , $group, $creator] = $this->makeScenario('task.reminder.multi');
+        $teacher = $this->makeTeacher('teacher.task.reminder', 'teacher.tr@ejemplo.local');
+        $this->persist($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $group->getTeacherAssignments()->first();
+
+        $sanction1 = $this->makeSanction($group, $creator, new \DateTimeImmutable('+1 day'));
+        $sanction2 = $this->makeSanction($group, $creator, new \DateTimeImmutable('+3 days'));
+        $task1     = new SanctionTask($sanction1, $groupTeacher);
+        $task2     = new SanctionTask($sanction2, $groupTeacher);
+        $this->persist($task1, $task2);
+        $this->flush();
+
+        $this->notifier->sanctionTasksReminder($teacher, [$task1, $task2]);
+
+        self::assertEmailCount(1);
+        self::assertEmailAddressContains($this->sentMessage(0), 'To', 'teacher.tr@ejemplo.local');
+        self::assertEmailSubjectContains($this->sentMessage(0), '2');
+        self::assertEmailHtmlBodyContains($this->sentMessage(0), 'Matemáticas');
+    }
+
+    public function testSanctionTasksReminderSendsNothingWhenItemsIsEmpty(): void
+    {
+        [, , , $creator] = $this->makeScenario('task.reminder.empty');
+
+        $this->notifier->sanctionTasksReminder($creator, []);
+
+        self::assertEmailCount(0);
+    }
+
     // ── adjuntar PDF (parte/sanción) ─────────────────────────────────────────
 
     public function testReportAttachPdfSettingAttachesReportPdf(): void
@@ -537,6 +657,31 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         $this->persist($report);
 
         return [$report, $centre, $group, $creator];
+    }
+
+    /** Builds a bare Sanction (no reports, "no measure applied") for the given group, ready to attach tasks to. */
+    private function makeSanction(Group $group, Teacher $registeredBy, ?\DateTimeImmutable $effectiveFrom = null): Sanction
+    {
+        $sanction = (new Sanction())
+            ->setAcademicYear($group->getAcademicYear())
+            ->setStudent($this->makeStudent())
+            ->setGroup($group)
+            ->setRegisteredBy($registeredBy)
+            ->setDetails('Detalle')
+            ->setNoMeasureApplied($effectiveFrom === null)
+            ->setNoMeasureReason($effectiveFrom === null ? 'Sin medida' : null)
+            ->setEffectiveFrom($effectiveFrom);
+        $this->persist($sanction);
+
+        return $sanction;
+    }
+
+    private function makeStudent(): Student
+    {
+        $student = (new Student(new PersonName('Ana', 'García')))->setStudentId('nie-' . uniqid('', true));
+        $this->persist($student);
+
+        return $student;
     }
 
     private function makeTeacher(string $username, ?string $email = null): Teacher

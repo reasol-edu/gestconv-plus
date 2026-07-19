@@ -32,6 +32,7 @@ final class TenantContextExtension extends AbstractExtension
             new TwigFunction('is_centre_admin', $this->isCentreAdmin(...)),
             new TwigFunction('belongs_to_view_year', $this->belongsToViewYear(...)),
             new TwigFunction('tutors_any_group', $this->tutorsAnyGroup(...)),
+            new TwigFunction('teaches_any_group', $this->teachesAnyGroup(...)),
         ];
     }
 
@@ -122,5 +123,22 @@ final class TenantContextExtension extends AbstractExtension
         $year = $this->context->getViewYear($centre);
 
         return $year !== null && $this->groups->hasTutoredGroupsInYear($centre, $user, $year);
+    }
+
+    public function teachesAnyGroup(): bool
+    {
+        $centre = $this->context->getSelectedCentre();
+        if ($centre === null) {
+            return false;
+        }
+
+        $user = $this->security->getUser();
+        if (!$user instanceof Teacher) {
+            return false;
+        }
+
+        $year = $this->context->getViewYear($centre);
+
+        return $year !== null && $this->groups->hasTeachingGroupsInYear($centre, $user, $year);
     }
 }

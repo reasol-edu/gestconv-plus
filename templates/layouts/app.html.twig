@@ -161,6 +161,18 @@
                 </a>
             {% endif %}
 
+            {# Tareas de sanción — solo para docentes con materia en algún grupo del curso visualizado #}
+            {% if active_centre and teaches_any_group() %}
+                {% set sanction_tasks_active = current_route starts with 'app_sanction_tasks' %}
+                <a href="{{ path('app_sanction_tasks_index') }}"
+                    {{ sanction_tasks_active ? 'aria-current="page"' : '' }}
+                   class="{{ sanction_tasks_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:clipboard-document-list', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'sanction_tasks'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
             {# Calendario #}
             {{ _self.nav_item(
                 'calendar'|trans({}, 'navigation'),

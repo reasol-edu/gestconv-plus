@@ -6,10 +6,12 @@ namespace App\Controller\Admin;
 
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
+use App\Entity\GroupTeacher;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\GroupRepository;
+use App\Repository\SanctionTaskRepository;
 use App\Repository\TeacherRepository;
 use App\Service\CsvReader;
 use App\Service\TenantContext;
@@ -35,6 +37,7 @@ class CentreTeacherController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly TenantContext $tenantContext,
         private readonly CsvReader $csvReader,
+        private readonly SanctionTaskRepository $sanctionTasks,
     ) {}
 
     #[Route('', name: 'app_centre_teachers_index')]
@@ -365,14 +368,40 @@ class CentreTeacherController extends AbstractController
             $submittedIds = $request->request->all('group_ids');
             $submittedIds = array_filter(array_map(static fn (mixed $v): string => is_string($v) ? $v : '', $submittedIds));
 
+            $blockedGroupNames = [];
             foreach ($allGroups as $group) {
                 $id = $group->getId()->toRfc4122();
-                if (!in_array($id, $submittedIds, true)) {
-                    $group->removeTeacher($teacher);
+                if (in_array($id, $submittedIds, true)) {
+                    continue;
                 }
+
+                $assignments = $group->getTeacherAssignments()->filter(
+                    static fn (GroupTeacher $gt): bool => $gt->getTeacher() === $teacher
+                );
+                $hasSanctionTasks = false;
+                foreach ($assignments as $assignment) {
+                    if ($this->sanctionTasks->existsForGroupTeacher($assignment)) {
+                        $hasSanctionTasks = true;
+                        break;
+                    }
+                }
+
+                if ($hasSanctionTasks) {
+                    $blockedGroupNames[] = $group->getName();
+
+                    continue;
+                }
+
+                $group->removeTeacher($teacher);
             }
 
             $this->em->flush();
+
+            if ($blockedGroupNames !== []) {
+                $this->addFlash('error', $this->translator->trans('centre_teachers.error.groups_have_sanction_tasks', [
+                    '%groups%' => implode(', ', $blockedGroupNames),
+                ], 'admin'));
+            }
             $this->addFlash('success', $this->t('centre_teachers.flash.groups_updated'));
 
             return $this->redirectToRoute('app_centre_teachers_edit', [

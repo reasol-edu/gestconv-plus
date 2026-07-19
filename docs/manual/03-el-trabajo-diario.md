@@ -25,6 +25,15 @@ En la parte superior hay cuatro tarjetas:
   se muestra siempre: en rojo cuando hay elementos pendientes y en verde cuando no queda nada por
   comunicar.
 
+Dos tarjetas adicionales, en rojo o verde según si queda algo pendiente, están relacionadas con las
+[tareas de sanción](#tareas-de-sancion):
+
+- **Tareas de sanción pendientes** — visible para cualquier docente con grupos de materia: cuántas
+  de sus propias tareas todavía no ha cumplimentado.
+- **Sanciones con materias pendientes** — visible para administradores, comisión de convivencia,
+  orientación y tutores/as: cuántas sanciones del curso tienen alguna materia sin cumplimentar.
+  Enlaza al listado de sanciones con el filtro correspondiente ya aplicado.
+
 Debajo de las tarjetas:
 
 - **Accesos rápidos** — botones grandes pensados para el móvil: **Nuevo parte** (todo el
@@ -349,6 +358,46 @@ eliminarlo, además de poder añadir otros nuevos.
     automáticamente sus ficheros adjuntos para no acumular documentos obsoletos. La actividad y su
     descripción no se ven afectadas: queda una nota al final indicando qué fichero se eliminó, y
     cuándo.
+
+## Tareas de sanción
+
+Cuando una sanción incluye una medida con **rango de fechas** (el estudiante pasa un periodo fuera
+de su aula habitual, por ejemplo una expulsión al aula de convivencia o a casa), la aplicación
+genera automáticamente una **tarea de sanción** por cada docente que le imparte alguna materia en
+ese grupo, para que cada uno deje constancia del trabajo que le corresponde asignar — o indique
+que no procede — y el estudiante no se quede atrás.
+
+La sección **Tareas de sanción** del menú lateral aparece para cualquier docente que imparta
+materia a algún grupo en el curso visualizado, y lista sus propias tareas (pendientes primero),
+con el estudiante, la materia y el periodo de la sanción de cada una.
+
+!!! note "Solo tu propia tarea"
+    Un docente ve y cumplimenta únicamente las tareas de sus propias materias. No tiene acceso a
+    la pantalla completa de la sanción (datos de contacto familiar, observaciones o historial de
+    notificación), que sigue reservada a quien ya la veía antes de esta funcionalidad —
+    normalmente el tutor/a, la comisión de convivencia, orientación y los administradores (ver
+    [Permisos de un vistazo](08-permisos-de-un-vistazo.md#tareas-de-sancion)).
+
+Pulsa sobre cualquier tarea de la lista (el nombre del estudiante o el icono de lápiz) para abrir
+su formulario, que muestra también, a modo de contexto, el nombre del estudiante, las fechas de la
+sanción, su descripción (si la tiene) y el estado del resto de materias de esa misma sanción (sin
+enlace a su contenido). Desde ahí se puede:
+
+- Redactar el **trabajo asignado** en el editor de texto enriquecido y, opcionalmente, **adjuntar
+  ficheros** — mismo límite de tamaño (10 MB por fichero) y formatos admitidos que en las
+  actividades de ausencia.
+- Marcar **No procede dejar trabajo para esta materia**, si por el motivo que sea no corresponde
+  asignar nada; en ese caso se vacía cualquier descripción o adjunto que hubiera.
+
+Una tarea queda **cumplimentada** la primera vez que se guarda con una descripción o marcando que
+no procede, pero sigue siendo editable después sin límite de tiempo: se puede volver a abrir para
+corregir el trabajo asignado, añadir o quitar adjuntos, tantas veces como haga falta.
+
+!!! note "Los adjuntos tampoco se conservan indefinidamente"
+    Igual que en las actividades de ausencia, un número de días configurable desde el fin de la
+    sanción (ver [Tareas de sanción](07-administrar-la-plataforma.md#tareas-de-sancion)) determina
+    cuándo una tarea programada elimina automáticamente sus ficheros adjuntos, dejando una nota en
+    la descripción con lo que se eliminó y cuándo.
 
 ## Búsqueda global y paleta de comandos
 

@@ -16,6 +16,7 @@ use App\Entity\IncidentReport;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\Sanction;
+use App\Entity\SanctionTask;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\SanctionRepository;
@@ -222,6 +223,33 @@ class SanctionRepositoryTest extends RepositoryTestCase
 
         self::assertCount(1, $results);
         self::assertSame($pending->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testCreateFilteredQueryPendingTasksOnlyReturnsOnlySanctionsWithIncompleteTasks(): void
+    {
+        $world = $this->makeWorld();
+        $admin = $this->makeTeacher('filter.pending.tasks', admin: true);
+        $teacher = $this->makeTeacher('filter.pending.tasks.subject');
+        $this->persist($admin, $teacher);
+        $world['group']->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $world['group']->getTeacherAssignments()->first();
+
+        $withPendingTask = $this->makeSanctionWithReport($world, $admin);
+        $this->persist(new SanctionTask($withPendingTask, $groupTeacher));
+
+        $withCompletedTask = $this->makeSanctionWithReport($world, $admin);
+        $completedTask     = new SanctionTask($withCompletedTask, $groupTeacher);
+        $completedTask->setNotApplicable(true)->setCompletedAt(new \DateTimeImmutable());
+        $this->persist($completedTask);
+
+        $this->makeSanctionWithReport($world, $admin);
+        $this->flush();
+
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'], ['pendingTasksOnly' => true])->getResult();
+
+        self::assertCount(1, $results);
+        self::assertSame($withPendingTask->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
     public function testCreateFilteredQueryEffectiveTodayReturnsOnlyNotifiedSanctionsInRange(): void

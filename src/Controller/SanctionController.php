@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\EducationalCentre;
+use App\Entity\GroupTeacher;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\SanctionObservation;
+use App\Entity\SanctionTask;
 use App\Entity\Teacher;
 use App\Repository\CommunicationRepository;
 use App\Repository\GroupRepository;
@@ -25,6 +27,7 @@ use App\Service\IncidentEmailNotifier;
 use App\Service\AppSettingsInterface;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
+use App\Service\SanctionTaskGenerator;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -71,10 +74,11 @@ class SanctionController extends AbstractController
         private readonly PdfRenderer $pdfRenderer,
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly AppSettingsInterface $settings,
+        private readonly SanctionTaskGenerator $taskGenerator,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $centre = $this->tenantContext->getSelectedCentre();
         if ($centre === null) {
@@ -87,7 +91,8 @@ class SanctionController extends AbstractController
         }
 
         return $this->render('sanction/index.html.twig', [
-            'centre' => $centre,
+            'centre'           => $centre,
+            'pendingTasksOnly' => $request->query->getBoolean('pendingTasksOnly'),
         ]);
     }
 
@@ -259,6 +264,8 @@ class SanctionController extends AbstractController
                         $this->notifier->reportSanctioned($linkedReport, $user);
                     }
 
+                    $tasks = $this->taskGenerator->generateFor($sanction);
+
                     $this->activityLog->log('sanction.created', [
                         'entityId'  => $sanction->getId()->toRfc4122(),
                         'studentId' => $student->getId()->toRfc4122(),
@@ -267,6 +274,7 @@ class SanctionController extends AbstractController
                             static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
                             $linkedReports,
                         ),
+                        'taskCount' => count($tasks),
                     ]);
 
                     $this->addFlash('success', $this->t('sanction.flash.created'));
@@ -571,6 +579,8 @@ class SanctionController extends AbstractController
                         $this->notifier->reportSanctioned($newlyLinkedReport, $user);
                     }
 
+                    $this->taskGenerator->generateFor($sanction);
+
                     $currentLinkedIds = array_map(
                         static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
                         $sanction->getReports()->toArray(),
@@ -663,6 +673,114 @@ class SanctionController extends AbstractController
         $this->addFlash('success', $this->t('sanction.flash.deleted'));
 
         return $this->redirectToRoute('app_sanctions_index');
+    }
+
+    #[Route('/{id}/tareas/refrescar', name: 'app_sanction_tasks_refresh_preview', methods: ['GET'])]
+    public function refreshTasksPreview(string $id): Response
+    {
+        $sanction = $this->sanctions->findById($id);
+        if ($sanction === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(SanctionVoter::EDIT, $sanction);
+        $this->denyIfViewingPastYear($this->centreFor($sanction));
+
+        $diff = $this->computeTaskRefreshDiff($sanction);
+
+        return $this->render('sanction/tasks_refresh_preview.html.twig', [
+            'sanction'         => $sanction,
+            'toAdd'            => $diff['toAdd'],
+            'toRemoveWithData' => $diff['toRemoveWithData'],
+            'toRemoveEmpty'    => $diff['toRemoveEmpty'],
+        ]);
+    }
+
+    #[Route('/{id}/tareas/refrescar', name: 'app_sanction_tasks_refresh_confirm', methods: ['POST'])]
+    public function refreshTasksConfirm(string $id, Request $request): Response
+    {
+        $sanction = $this->sanctions->findById($id);
+        if ($sanction === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(SanctionVoter::EDIT, $sanction);
+        $this->denyIfViewingPastYear($this->centreFor($sanction));
+
+        if (!$this->isCsrfTokenValid('refresh_sanction_tasks_' . $id, $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // Recomputed here rather than trusting the preview that traveled in the HTML, in case
+        // the group's teaching assignments or the tasks changed in the meantime.
+        $diff = $this->computeTaskRefreshDiff($sanction);
+
+        foreach ($diff['toAdd'] as $groupTeacher) {
+            $this->em->persist(new SanctionTask($sanction, $groupTeacher));
+        }
+
+        foreach (array_merge($diff['toRemoveWithData'], $diff['toRemoveEmpty']) as $task) {
+            $sanction->getTasks()->removeElement($task);
+        }
+
+        $added   = count($diff['toAdd']);
+        $removed = count($diff['toRemoveWithData']) + count($diff['toRemoveEmpty']);
+
+        $this->em->flush();
+
+        if ($added > 0 || $removed > 0) {
+            $this->activityLog->log('sanction_task.refreshed', [
+                'entityId' => $sanction->getId()->toRfc4122(),
+                'added'    => $added,
+                'removed'  => $removed,
+            ]);
+        }
+
+        $this->addFlash('success', $this->t('sanction_task.refresh.flash.done'));
+
+        return $this->redirectToRoute('app_sanctions_show', ['id' => $id]);
+    }
+
+    /**
+     * @return array{toAdd: list<GroupTeacher>, toRemoveWithData: list<SanctionTask>, toRemoveEmpty: list<SanctionTask>}
+     */
+    private function computeTaskRefreshDiff(Sanction $sanction): array
+    {
+        $currentGroupTeachers = $sanction->getGroup()->getTeacherAssignments()->toArray();
+        $existingTasks        = $sanction->getTasks()->toArray();
+
+        $existingGroupTeacherIds = array_map(
+            static fn (SanctionTask $t): string => $t->getGroupTeacher()->getId()->toRfc4122(),
+            $existingTasks,
+        );
+        $currentGroupTeacherIds = array_map(
+            static fn (GroupTeacher $gt): string => $gt->getId()->toRfc4122(),
+            $currentGroupTeachers,
+        );
+
+        $toAdd = array_values(array_filter(
+            $currentGroupTeachers,
+            static fn (GroupTeacher $gt): bool => !in_array($gt->getId()->toRfc4122(), $existingGroupTeacherIds, true),
+        ));
+
+        $toRemoveWithData = [];
+        $toRemoveEmpty    = [];
+        foreach ($existingTasks as $task) {
+            if (in_array($task->getGroupTeacher()->getId()->toRfc4122(), $currentGroupTeacherIds, true)) {
+                continue;
+            }
+            if ($task->getCompletedAt() !== null || !$task->getAttachments()->isEmpty()) {
+                $toRemoveWithData[] = $task;
+            } else {
+                $toRemoveEmpty[] = $task;
+            }
+        }
+
+        return [
+            'toAdd'            => $toAdd,
+            'toRemoveWithData' => $toRemoveWithData,
+            'toRemoveEmpty'    => $toRemoveEmpty,
+        ];
     }
 
     #[Route('/{id}/observaciones', name: 'app_sanctions_add_observation', methods: ['POST'])]

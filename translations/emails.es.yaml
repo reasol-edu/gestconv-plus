@@ -38,6 +38,14 @@ emails.sanction_notified.intro: '%actor% ha comunicado a la familia de %student%
 emails.sanction_notified.reports_heading: 'Partes incluidos en esta sanción'
 emails.sanction_notified.report_item: 'Parte nº %number%'
 
+emails.sanction_task_assigned.subject: '{1} Tienes una tarea de sanción pendiente: %student%|]1,Inf[ Tienes %count% tareas de sanción pendientes: %student%'
+emails.sanction_task_assigned.intro: '{1} Se te ha asignado una tarea de sanción de %student% (grupo %group%). Deja constancia del trabajo asignado o indica que no procede:|]1,Inf[ Se te han asignado %count% tareas de sanción de %student% (grupo %group%), una por cada materia tuya en el grupo. Deja constancia del trabajo asignado o indica que no procede:'
+
+emails.sanction_task_reminder.subject: '{1} Una tarea de sanción pendiente por empezar|]1,Inf[ %count% tareas de sanción pendientes por empezar'
+emails.sanction_task_reminder.intro: '{1} Tienes una tarea de sanción pendiente de cumplimentar cuya sanción está a punto de empezar:|]1,Inf[ Tienes %count% tareas de sanción pendientes de cumplimentar cuyas sanciones están a punto de empezar:'
+emails.sanction_task_reminder.row: '%subject% — %student%'
+emails.sanction_task_reminder.row_days: '{0} Empieza hoy|{1} Empieza mañana|]1,Inf[ Empieza en %count% días'
+
 emails.tutor_assigned.subject: 'Te han asignado como tutor/a dual docente'
 emails.tutor_assigned.intro: 'Te han asignado como tutor/a dual docente de un puesto formativo en la estancia «%stay%».'
 emails.tutor_assigned.student: 'Estudiante'

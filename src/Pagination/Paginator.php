@@ -15,6 +15,9 @@ use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
  */
 final class Paginator
 {
+    /** @var array<array-key, T>|null */
+    private ?array $materializedItems = null;
+
     /**
      * @param iterable<array-key, T> $items elementos de la página actual
      */
@@ -52,10 +55,16 @@ final class Paginator
         return new self($rows, $totalItems, $currentPage, $pageSize);
     }
 
-    /** @return iterable<array-key, T> */
-    public function getItems(): iterable
+    /**
+     * Materializes and caches the underlying items on first access, so that calling
+     * this more than once (e.g. to render the page and separately to batch-load
+     * related data for it) only runs the underlying query once.
+     *
+     * @return array<array-key, T>
+     */
+    public function getItems(): array
     {
-        return $this->items;
+        return $this->materializedItems ??= (is_array($this->items) ? $this->items : iterator_to_array($this->items));
     }
 
     public function getTotalItems(): int

@@ -90,6 +90,28 @@ pertenezca al curso escolar visualizado, y su acceso no se ve afectado por el bl
 sí aplica al profesorado normal. Ningún otro docente, ni siquiera compartiendo grupo, puede ver
 las ausencias de otra persona.
 
+## Tareas de sanción
+
+Las [tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion) solo se generan para sanciones
+con una medida de rango de fechas, una por cada docente y materia del grupo.
+
+| Acción | Docente asignado a la tarea | Otro docente de materia | Tutor/a del grupo | Comisión | Orientador/a | Admin de centro | Admin global |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Ver la sección Tareas de sanción (propias) | ✓ | ✓* | — | — | — | — | — |
+| Cumplimentar o editar una tarea | ✓ | — | — | — | — | — | — |
+| Ver el bloque de seguimiento en el detalle de la sanción | — | — | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Ver el contenido de una tarea ajena desde ese bloque | — | — | — | — | — | — | — |
+| Refrescar las materias de una sanción | — | — | — | ✓ | — | ✓ | ✓ |
+
+\* La sección es visible para cualquier docente que imparta materia a algún grupo en el curso
+visualizado, pero cada uno ve únicamente sus propias tareas.
+
+El bloque de seguimiento del detalle de la sanción muestra el estado de cada tarea (pendiente,
+cumplimentada o no procede) a quien ya puede ver esa sanción, siguiendo las mismas reglas de
+visibilidad que la [tabla de Sanciones](#sanciones) — pero sin dar acceso al contenido de las
+tareas de otros docentes, que sigue siendo exclusivo de quien la tiene asignada. **Refrescar
+materias** exige además el permiso de edición sobre la sanción, igual que registrar o eliminarla.
+
 ## Centro educativo
 
 | Acción | Docente | Admin de centro | Admin global |

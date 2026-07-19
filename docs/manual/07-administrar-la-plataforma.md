@@ -154,7 +154,7 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
 Visualización, Correo electrónico, Modo tablón, Notificaciones a familias, Avisos por correo,
-Personalización de informes y Ausencias.
+Personalización de informes, Ausencias y Tareas de sanción.
 
 ### Visualización
 
@@ -232,14 +232,26 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Parte sancionable (comisión de convivencia) | A nadie / A la comisión de convivencia | A nadie |
 | Enviar parte adjunto al correo | Sí / No | No |
 | Enviar sanción adjunta al correo | Sí / No | No |
+| Tareas de sanción asignadas | Sí / No | Sí |
 
 Uno por cada evento de un parte o una sanción; determinan si se envía un correo y a quién. El
 aviso de parte modificado no se dispara al marcar un parte como prescrito, que tiene su propio
 ajuste independiente, y el aviso a la comisión de convivencia solo se envía cuando un parte queda
-notificado a la familia y todavía puede ser sancionado. Los dos últimos adjuntan el PDF del parte
-o de la sanción a los correos anteriores. Ninguno tiene ámbito de docente: se fijan a nivel
-global o de centro, y por defecto no se envía ningún correo. El detalle de cada aviso está en
+notificado a la familia y todavía puede ser sancionado. Los dos adjuntos-al-correo adjuntan el PDF
+del parte o de la sanción a los correos anteriores. Ninguno tiene ámbito de docente: se fijan a
+nivel global o de centro. Salvo el último, todos están desactivados por defecto. El detalle de
+cada aviso está en
 [Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones).
+
+**Tareas de sanción asignadas**, a diferencia de los anteriores, está **activado por defecto**: en
+cuanto se generan las tareas de una sanción (ver
+[Tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion)), cada docente afectado recibe un
+correo con las materias pendientes. Junto a él, el ajuste **Días de antelación del recordatorio de
+tareas de sanción** (entero, global y de centro, 0-365, por defecto 3) controla un segundo aviso:
+una tarea programada diaria (a las 6:00) envía un recordatorio a quien todavía tenga tareas
+pendientes cuya sanción empiece dentro de ese número de días. Un valor de 0 desactiva el
+recordatorio para ese ámbito; no afecta al correo de asignación, que se rige solo por el ajuste
+booleano anterior.
 
 ### Personalización de informes
 
@@ -318,6 +330,20 @@ afectadas. Un valor de 0 desactiva esta eliminación automática para ese ámbit
 Al eliminar un adjunto, la tarea añade al final de la descripción de la actividad una nota con la
 fecha y hora de la eliminación y el nombre y tamaño del fichero eliminado, para dejar constancia
 de que existió.
+
+### Tareas de sanción
+
+| Ajuste | Ámbito | Tipo | Rango | Por defecto |
+|---|---|---|---|---|
+| Retención de adjuntos de tareas de sanción | Global, centro | Entero (días) | 0-3650 | 30 |
+
+Igual que en Ausencias, controla cuántos días se conservan los ficheros adjuntos a las
+[tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion). La diferencia está en el punto de
+partida: aquí la cuenta empieza en la **fecha de fin de la sanción**, no en la de la propia tarea,
+así que todas las tareas de una misma sanción caducan a la vez. Una tarea programada semanal
+(domingos a las 5:30, media hora después de la de Ausencias) elimina los adjuntos vencidos y añade
+al final de la descripción de la tarea una nota con la fecha, hora, nombre y tamaño del fichero
+eliminado. Un valor de 0 desactiva esta eliminación automática para ese ámbito.
 
 ## Copias de seguridad
 

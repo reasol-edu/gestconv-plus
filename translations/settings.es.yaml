@@ -24,6 +24,7 @@ settings.category.notifications.label: 'Notificaciones a familias'
 settings.category.email_alerts.label: 'Avisos por correo'
 settings.category.reports.label: 'Personalización de informes'
 settings.category.absences.label: 'Ausencias'
+settings.category.sanction_tasks.label: 'Tareas de sanción'
 
 # ── Definiciones de ajustes ───────────────────────────────────────────────────
 settings.key.page_size.label: 'Resultados por página'
@@ -143,6 +144,12 @@ settings.key.notifications_email_report_attach_pdf.description: 'Adjunta el PDF 
 settings.key.notifications_email_sanction_attach_pdf.label: 'Enviar sanción adjunta al correo'
 settings.key.notifications_email_sanction_attach_pdf.description: 'Adjunta el PDF de la sanción al aviso por correo de sanción notificada a la familia. No afecta al registro de avisos.'
 
+settings.key.notifications_email_sanction_task_assigned.label: 'Tareas de sanción asignadas'
+settings.key.notifications_email_sanction_task_assigned.description: 'Envía un correo a cada docente cuando se le asignan tareas de sanción nuevas (una materia suya en el grupo de una sanción con medida de rango de fechas), con el listado de materias pendientes de cumplimentar.'
+
+settings.key.notifications_sanction_task_reminder_days.label: 'Días de antelación del recordatorio de tareas de sanción'
+settings.key.notifications_sanction_task_reminder_days.description: 'Días antes del inicio de la sanción a partir de los cuales se envía un recordatorio diario a los docentes con tareas de sanción pendientes de cumplimentar. Un valor de 0 desactiva este recordatorio.'
+
 settings.key.reports_incident_header_left.label: 'Encabezado de informe de partes (izquierda)'
 settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
@@ -190,6 +197,9 @@ settings.key.reports_guard_duty_header_margin.description: 'Milímetros reservad
 
 settings.key.absences_attachment_retention_days.label: 'Retención de adjuntos de actividades'
 settings.key.absences_attachment_retention_days.description: 'Días transcurridos desde la fecha de una actividad a partir de los cuales una tarea programada semanal elimina automáticamente sus ficheros adjuntos (no la actividad ni su descripción). Un valor de 0 desactiva esta eliminación automática.'
+
+settings.key.sanction_tasks_attachment_retention_days.label: 'Retención de adjuntos de tareas de sanción'
+settings.key.sanction_tasks_attachment_retention_days.description: 'Días transcurridos desde el fin de una sanción a partir de los cuales una tarea programada semanal elimina automáticamente los ficheros adjuntos de sus tareas de sanción (no la descripción). Un valor de 0 desactiva esta eliminación automática.'
 
 # ── Ayuda de marcadores de informes ─────────────────────────────────────────
 settings.placeholder_help.title: 'Marcadores disponibles'

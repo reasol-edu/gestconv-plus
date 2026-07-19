@@ -11,6 +11,7 @@ use App\Entity\GroupTeacher;
 use App\Entity\Teacher;
 use App\Repository\CourseRepository;
 use App\Repository\GroupRepository;
+use App\Repository\SanctionTaskRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\TenantContext;
@@ -78,6 +79,7 @@ class OfferTreeComponent extends AbstractController
         private readonly CourseRepository $courses,
         private readonly GroupRepository $groups,
         private readonly TeacherRepository $teachers,
+        private readonly SanctionTaskRepository $sanctionTasks,
         private readonly TenantContext $tenantContext,
     ) {}
 
@@ -393,6 +395,12 @@ class OfferTreeComponent extends AbstractController
             static fn (int $i, GroupTeacher $gt): bool => $gt->getId()->toRfc4122() === $id
         );
         if ($assignment === null) {
+            return;
+        }
+
+        if ($this->sanctionTasks->existsForGroupTeacher($assignment)) {
+            $this->errors = ['teachers' => $this->t('group.error.teacher_has_sanction_tasks')];
+
             return;
         }
 

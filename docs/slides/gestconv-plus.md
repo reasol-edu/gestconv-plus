@@ -245,6 +245,23 @@ El parte pasa a **"Notificado"** y queda en el historial.
 
 ---
 
+<!-- _class: tight -->
+
+## Tareas de sanción: trabajo durante una expulsión
+
+- Cuando una sanción implica que un estudiante pasa un periodo fuera de su
+  aula habitual, cada docente que le da clase en ese grupo recibe una
+  **tarea de sanción** por su materia, en la nueva sección **Tareas de
+  sanción** del menú lateral.
+- Cada tarea se cumplimenta con **instrucciones de trabajo** (texto
+  enriquecido y adjuntos, igual que en las actividades de ausencia) o
+  marcando que **no procede** para esa materia.
+- Un docente solo ve y edita **sus propias tareas**, no el resto de la
+  sanción (datos de contacto familiar, observaciones o notificación).
+- El panel de inicio avisa con un contador de **tareas pendientes**.
+
+---
+
 <!-- _class: sep -->
 
 # Bloque 2
@@ -316,6 +333,8 @@ completa de su grupo**, no solo de los partes que él mismo registra:
   - Estudiantes **sin puesto asignado** en el calendario de convivencia.
   - **Firmas pendientes** próximas a vencer.
   - Partes o sanciones **todavía sin notificar** a la familia.
+  - Sanciones de su grupo con alguna **tarea de sanción sin cumplimentar**
+    (ver siguiente diapositiva).
 - Estos avisos aparecen tanto en el **panel de inicio** como en la campana de
   notificaciones, para no perder de vista lo urgente.
 
@@ -325,6 +344,9 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 
 - El tutor/a **ve las sanciones** ya impuestas a su alumnado, con su medida,
   estado y notificación a la familia — igual que ve los partes.
+- En las sanciones con rango de fechas, el detalle incluye el bloque
+  **Tareas de sanción**: qué materias tienen ya trabajo asignado y cuáles
+  siguen pendientes, sin acceder al contenido de las tareas ajenas.
 - **Crear una sanción es competencia de la comisión de convivencia**, no del
   tutor/a: así la decisión la valora un grupo, no una sola persona.
 - Si el tutor/a forma parte además de la comisión (perfil ampliado, ver
@@ -388,6 +410,24 @@ el centro**, no solo de sus propios grupos:
   tutores/as, definido por el centro.
 - Las sanciones quedan enlazadas a los partes que las motivaron, de forma que
   el historial del estudiante se lee como un relato completo.
+
+---
+
+<!-- _class: tight -->
+
+## Seguimiento de las tareas de sanción
+
+- El listado de sanciones incorpora el filtro **"Solo con tareas
+  pendientes"**, una columna con el ratio de tareas cumplimentadas (p. ej.
+  «3/6») y un resaltado sutil mientras queden pendientes; el panel de inicio
+  muestra cuántas sanciones tienen alguna materia sin cumplimentar.
+- El detalle de la sanción lista el estado de cada tarea (pendiente,
+  cumplimentada o no procede) por materia y docente.
+- Si la oferta docente del grupo cambia tras generarse las tareas (alta o
+  baja de un docente), quien puede editar la sanción puede **refrescar las
+  materias**: una vista previa muestra qué se añadiría y qué se eliminaría
+  —avisando si alguna baja tiene ya trabajo cumplimentado— antes de
+  confirmar.
 
 ---
 

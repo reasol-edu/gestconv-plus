@@ -23,6 +23,9 @@ El listado muestra las sanciones accesibles para el docente, con paginación y e
 - Filtros de **Vigentes hoy** y **Pendientes de notificar**.
 - Una columna con el **estado de la notificación** a la familia, con enlace directo para
   registrar la comunicación si está pendiente.
+- Una columna de **tareas** con el ratio de tareas cumplimentadas sobre el total (por ejemplo,
+  «3/6») para las sanciones que las tienen; vacía si la sanción no tiene ninguna. La fila se
+  resalta sutilmente mientras queden tareas pendientes.
 
 En pantallas pequeñas, cada fila se muestra como una tarjeta con las etiquetas de campo visibles.
 
@@ -78,6 +81,35 @@ Quien tiene permiso para registrar sanciones (administradores y comisión de con
 puede editarlas o eliminarlas, estén o no comunicadas a la familia. Mientras la sanción esté
 pendiente de comunicar, quien tenga permiso para notificarla ve también un botón **Notificar**
 junto a los de editar y eliminar.
+
+## Tareas de sanción
+
+Cuando una sanción incluye una **medida con rango de fechas** (el estudiante pasa un periodo fuera
+de su aula habitual), la aplicación genera automáticamente una **tarea de sanción** por cada
+docente y materia del grupo, para que cada uno deje constancia del trabajo asignado — o indique
+que no procede (ver [Tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion)). El resultado
+se hace visible en dos sitios:
+
+- El **listado de sanciones** incorpora el filtro **Con materias sin cumplimentar**, junto a
+  Vigentes hoy y Pendientes de notificar, y una columna con el ratio de tareas cumplimentadas
+  (por ejemplo, «3/6»), resaltando sutilmente la fila mientras queden pendientes.
+- El **detalle de la sanción** muestra un bloque **Tareas de sanción** (solo si la sanción tiene
+  alguna) con la materia, el docente y el estado de cada una: *Pendiente*, *Cumplimentada* o *No
+  procede*. No hay acceso desde aquí al contenido de las tareas ajenas — solo el estado.
+
+Quien tiene permiso para editar la sanción (comisión de convivencia y administradores) ve además
+un enlace **Refrescar materias** sobre ese bloque, útil cuando la oferta docente del grupo cambia
+después de generarse las tareas (por ejemplo, se incorpora un nuevo docente a media evaluación):
+
+1. La pantalla de vista previa calcula, sin guardar nada todavía, la diferencia entre las
+   asignaciones actuales del grupo y las tareas ya existentes: qué **materias se añadirían** y
+   cuáles **se eliminarían**.
+2. Cada materia que se eliminaría y ya tiene trabajo asignado o adjuntos se marca con un aviso,
+   para no perder esa información sin darse cuenta.
+3. Si no hay ninguna diferencia, la pantalla lo indica y no ofrece nada que confirmar.
+4. Al **Confirmar**, se crean las tareas nuevas y se eliminan (con sus adjuntos) las que ya no
+   corresponden a ninguna asignación actual del grupo; queda registrado en el
+   [registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
 
 ## El seguimiento de la convivencia
 

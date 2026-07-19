@@ -26,6 +26,14 @@ pending_notifications: 'Pendientes de notificar'
 pending_notifications_help: 'partes y sanciones sin comunicar a la familia'
 pending_notifications_none: 'todo comunicado a las familias'
 
+pending_sanction_tasks: 'Tareas de sanción pendientes'
+pending_sanction_tasks_help: 'materias tuyas por cumplimentar'
+pending_sanction_tasks_none: 'no tienes tareas de sanción pendientes'
+
+sanctions_with_incomplete_tasks: 'Sanciones con materias pendientes'
+sanctions_with_incomplete_tasks_help: 'sanciones con alguna materia sin cumplimentar'
+sanctions_with_incomplete_tasks_none: 'todas las materias están cumplimentadas'
+
 action_import_students: 'Importar estudiantes'
 
 quick_action_new_report: 'Nuevo parte'

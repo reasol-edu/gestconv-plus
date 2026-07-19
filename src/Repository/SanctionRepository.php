@@ -10,6 +10,7 @@ use App\Entity\Group;
 use App\Entity\GroupTeacher;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
+use App\Entity\SanctionTask;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use Symfony\Component\Uid\Uuid;
@@ -49,6 +50,7 @@ class SanctionRepository extends ServiceEntityRepository
      *   studentId      string — UUID of a student
      *   effectiveToday bool   — only sanctions in effect today (notified, within date range)
      *   pendingOnly    bool   — only sanctions without a successful communication
+     *   pendingTasksOnly bool — only sanctions with at least one incomplete sanction task
      *
      * Each academic year is sealed off from the others: results are always restricted to $year.
      *
@@ -114,6 +116,10 @@ class SanctionRepository extends ServiceEntityRepository
 
         if (($filters['pendingOnly'] ?? false) === true) {
             $qb->andWhere('s.notifiedCommunication IS NULL');
+        }
+
+        if (($filters['pendingTasksOnly'] ?? false) === true) {
+            $qb->andWhere('EXISTS (SELECT 1 FROM ' . SanctionTask::class . ' xt WHERE xt.sanction = s AND xt.completedAt IS NULL)');
         }
 
         return $qb->getQuery();

@@ -8,6 +8,7 @@ use App\Entity\Teacher;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
+use App\Repository\SanctionTaskRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\SanctionVoter;
@@ -24,6 +25,7 @@ class DashboardController extends AbstractController
         private readonly StudentRepository $studentRepository,
         private readonly IncidentReportRepository $incidentRepository,
         private readonly SanctionRepository $sanctionRepository,
+        private readonly SanctionTaskRepository $sanctionTaskRepository,
         private readonly GroupRepository $groupRepository,
         private readonly TeacherRepository $teacherRepository,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
@@ -57,6 +59,8 @@ class DashboardController extends AbstractController
                 'hasTeachingGroups'    => false,
                 'thisWeekSanctions'    => [],
                 'nextWeekSanctions'    => [],
+                'pendingSanctionTasksCount'        => 0,
+                'sanctionsWithIncompleteTasksCount' => 0,
             ]);
         }
 
@@ -113,6 +117,10 @@ class DashboardController extends AbstractController
             'hasTeachingGroups'    => $hasTeachingGroups,
             'thisWeekSanctions'    => $thisWeekSanctions,
             'nextWeekSanctions'    => $nextWeekSanctions,
+            'pendingSanctionTasksCount'         => $hasTeachingGroups
+                ? $this->sanctionTaskRepository->countPendingForTeacher($centre, $viewer, $year)
+                : 0,
+            'sanctionsWithIncompleteTasksCount' => $this->sanctionTaskRepository->countSanctionsWithIncompleteTasks($centre, $viewer, $year),
         ]);
     }
 }

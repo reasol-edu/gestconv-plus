@@ -15,6 +15,8 @@ use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
 use App\Entity\Course;
+use App\Entity\Sanction;
+use App\Entity\SanctionTask;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -200,6 +202,76 @@ class DashboardControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertStringNotContainsString('Todavía no hay docentes incorporados', $crawler->filter('body')->text());
+    }
+
+    public function testPendingSanctionTasksCardShowsCountForSubjectTeacher(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenarioWithActiveYear(false);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $group->getTeacherAssignments()->first();
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setRegisteredBy($teacher)
+            ->setDetails('Detalles de prueba.')
+            ->setNoMeasureApplied(false);
+        $this->persist($sanction);
+        $this->persist(new SanctionTask($sanction, $groupTeacher));
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('a[href$="/tareas-de-sancion"]');
+        self::assertStringContainsString('1', $crawler->filter('a[href$="/tareas-de-sancion"]')->last()->text());
+    }
+
+    public function testPendingSanctionTasksCardIsHiddenForNonTeachingTeacher(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('a[href$="/tareas-de-sancion"]'));
+    }
+
+    public function testSanctionsWithIncompleteTasksCardShowsCountForAdmin(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenarioWithActiveYear(true);
+        $other = $this->makeTeacher('sanction.tasks.subject');
+        $this->persist($other);
+        $group->addTeacher($other, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $group->getTeacherAssignments()->first();
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setRegisteredBy($teacher)
+            ->setDetails('Detalles de prueba.')
+            ->setNoMeasureApplied(false);
+        $this->persist($sanction);
+        $this->persist(new SanctionTask($sanction, $groupTeacher));
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('a[href$="/sanciones?pendingTasksOnly=1"]');
+        self::assertStringContainsString('1', $crawler->filter('a[href$="/sanciones?pendingTasksOnly=1"]')->text());
+    }
+
+    private function makeTeacher(string $username): Teacher
+    {
+        return (new Teacher(new PersonName('Test', 'Teacher')))->setUsername($username);
     }
 
     /** @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: Student} */

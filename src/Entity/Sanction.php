@@ -91,6 +91,10 @@ class Sanction
     #[ORM\OneToMany(targetEntity: SanctionObservation::class, mappedBy: 'sanction')]
     private Collection $observations;
 
+    /** @var Collection<int, SanctionTask> */
+    #[ORM\OneToMany(targetEntity: SanctionTask::class, mappedBy: 'sanction', orphanRemoval: true, cascade: ['persist'])]
+    private Collection $tasks;
+
     public function __construct()
     {
         $this->createdAt      = new \DateTimeImmutable();
@@ -98,6 +102,7 @@ class Sanction
         $this->measures       = new ArrayCollection();
         $this->communications = new ArrayCollection();
         $this->observations   = new ArrayCollection();
+        $this->tasks          = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -344,5 +349,16 @@ class Sanction
     public function getObservations(): Collection
     {
         return $this->observations;
+    }
+
+    /** @return Collection<int, SanctionTask> */
+    public function getTasks(): Collection
+    {
+        return $this->tasks;
+    }
+
+    public function hasIncompleteTasks(): bool
+    {
+        return $this->tasks->exists(static fn (int $k, SanctionTask $t): bool => $t->getCompletedAt() === null);
     }
 }

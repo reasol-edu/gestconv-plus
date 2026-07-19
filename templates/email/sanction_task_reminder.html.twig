@@ -1,0 +1,23 @@
+{% extends 'email/_layout.html.twig' %}
+
+{% block content %}
+<p style="margin: 0 0 16px;">
+    {{ 'emails.greeting'|trans({'%name%': teacher.name.firstName}, 'emails') }}
+</p>
+<p style="margin: 0 0 16px;">
+    {{ (transPrefix ~ '.intro')|trans(params, 'emails') }}
+</p>
+<ul style="margin: 0 0 24px; padding-left: 0; list-style: none; color: #374151; font-size: 13px;">
+    {% for row in rows %}
+    <li style="margin: 0 0 12px; padding: 12px 16px; background-color: #f9fafb; border-left: 3px solid #677dae;">
+        <a href="{{ row.url }}" style="color: #576490; font-weight: 600; text-decoration: none;">
+            {{ 'emails.sanction_task_reminder.row'|trans({'%subject%': row.task.groupTeacher.subject, '%student%': row.task.sanction.student.name.firstName ~ ' ' ~ row.task.sanction.student.name.lastName}, 'emails') }}
+        </a>
+        <br>
+        <span style="color: #9ca3af;">
+            {{ 'emails.sanction_task_reminder.row_days'|trans({'%count%': row.daysRemaining}, 'emails') }}
+        </span>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -9,6 +9,7 @@ use App\Entity\EmailNotificationLog;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
+use App\Entity\SanctionTask;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\CommunicationRepository;
@@ -197,6 +198,111 @@ final class IncidentEmailNotifier
                 'sanctionUrl' => $url,
             ], $attachment);
         }
+    }
+
+    /**
+     * Sends one immediate email per teacher when new sanction tasks are assigned to them,
+     * called from {@see \App\Service\SanctionTaskGenerator::generateFor()} right after
+     * persisting a batch of new tasks. A teacher with several subjects in the group gets a
+     * single email listing all of their pending subjects. Respects
+     * notifications.email_sanction_task_assigned.
+     *
+     * @param list<SanctionTask> $tasks
+     */
+    public function sanctionTasksAssigned(Sanction $sanction, array $tasks): void
+    {
+        if ($tasks === []) {
+            return;
+        }
+
+        $centre = $this->centreForGroup($sanction->getGroup());
+        if ($this->settings->getForCentre('notifications.email_sanction_task_assigned', $centre) !== true) {
+            return;
+        }
+
+        /** @var array<string, Teacher> $teachersById */
+        $teachersById = [];
+        /** @var array<string, list<SanctionTask>> $tasksByTeacher */
+        $tasksByTeacher = [];
+        foreach ($tasks as $task) {
+            $teacher                     = $task->getGroupTeacher()->getTeacher();
+            $teacherId                   = $teacher->getId()->toRfc4122();
+            $teachersById[$teacherId]    = $teacher;
+            $tasksByTeacher[$teacherId][] = $task;
+        }
+
+        $params = [
+            '%student%' => $this->fullName($sanction->getStudent()),
+            '%group%'   => $sanction->getGroup()->getName(),
+        ];
+
+        foreach ($tasksByTeacher as $teacherId => $teacherTasks) {
+            $rows = array_map(
+                fn (SanctionTask $task): array => [
+                    'subject' => $task->getGroupTeacher()->getSubject(),
+                    'url'     => $this->urlGenerator->generate(
+                        'app_sanction_tasks_edit',
+                        ['id' => $sanction->getId()->toRfc4122(), 'taskId' => $task->getId()->toRfc4122()],
+                        UrlGeneratorInterface::ABSOLUTE_URL,
+                    ),
+                ],
+                $teacherTasks,
+            );
+
+            $this->dispatch(
+                $centre,
+                $teachersById[$teacherId],
+                'sanction_task_assigned',
+                $params + ['%count%' => count($teacherTasks)],
+                'email/sanction_task_assigned.html.twig',
+                ['rows' => $rows],
+            );
+        }
+    }
+
+    /**
+     * Sends a single daily digest email to a teacher listing their pending sanction tasks
+     * whose sanction is about to start. Eligibility (which teachers, which tasks) is already
+     * resolved by the caller ({@see \App\MessageHandler\SanctionTaskReminderHandler}); this
+     * method only formats and sends.
+     *
+     * @param list<SanctionTask> $items
+     */
+    public function sanctionTasksReminder(Teacher $teacher, array $items): void
+    {
+        if ($items === []) {
+            return;
+        }
+
+        $centre = $this->centreForGroup($items[0]->getSanction()->getGroup());
+        $now    = new \DateTimeImmutable();
+
+        $rows = array_map(
+            function (SanctionTask $task) use ($now): array {
+                $effectiveFrom = $task->getSanction()->getEffectiveFrom();
+                \assert($effectiveFrom !== null);
+
+                return [
+                    'task'          => $task,
+                    'daysRemaining' => $now->diff($effectiveFrom)->days,
+                    'url'           => $this->urlGenerator->generate(
+                        'app_sanction_tasks_edit',
+                        ['id' => $task->getSanction()->getId()->toRfc4122(), 'taskId' => $task->getId()->toRfc4122()],
+                        UrlGeneratorInterface::ABSOLUTE_URL,
+                    ),
+                ];
+            },
+            $items,
+        );
+
+        $this->dispatch(
+            $centre,
+            $teacher,
+            'sanction_task_reminder',
+            ['%count%' => count($items)],
+            'email/sanction_task_reminder.html.twig',
+            ['rows' => $rows],
+        );
     }
 
     private function notifyReportEvent(IncidentReport $report, string $event, Teacher $actor, bool $withLink = true): void

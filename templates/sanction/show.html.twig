@@ -166,6 +166,16 @@
             <div class="prose prose-sm max-w-none text-gray-700">{{ sanction.details|sanitize_html('app.rich_text') }}</div>
         </div>
 
+        {# Descripción para calendario y tablón #}
+        <div class="px-6 py-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'sanction.field.calendar_label'|trans({}, 'admin') }}</p>
+            {% if sanction.calendarLabel %}
+                <p class="text-sm text-gray-700">{{ sanction.calendarLabel }}</p>
+            {% else %}
+                <p class="text-xs text-gray-400">{{ 'sanction.field.calendar_label_empty'|trans({}, 'admin') }}</p>
+            {% endif %}
+        </div>
+
         {# Seguimiento #}
         <div class="px-6 py-4 space-y-4">
             <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'sanction.section.followup'|trans({}, 'admin') }}</p>
@@ -231,6 +241,47 @@
         </div>
 
     </div>
+
+    {% if sanction.tasks is not empty %}
+    <div>
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'sanction_task.title'|trans({}, 'admin') }}</h2>
+            {% if is_granted('sanction.edit', sanction) and not is_viewing_past_year() %}
+                <a href="{{ path('app_sanction_tasks_refresh_preview', {id: sanction.id}) }}"
+                   class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-forest-700 transition-colors">
+                    {{ ux_icon('heroicons:arrow-path', {class: 'h-3.5 w-3.5'}) }}
+                    {{ 'sanction_task.refresh.title'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs divide-y divide-gray-100">
+            {% for task in sanction.tasks %}
+                <div class="px-6 py-3 flex items-center justify-between gap-3 text-sm">
+                    <div class="min-w-0">
+                        <span class="font-medium text-gray-800">{{ task.groupTeacher.subject }}</span>
+                        <span class="ml-2 text-xs text-gray-500">{{ task.groupTeacher.teacher.name.lastName }}, {{ task.groupTeacher.teacher.name.firstName }}</span>
+                    </div>
+                    {% if task.notApplicable %}
+                        <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-600 px-2.5 py-0.5 text-xs font-medium shrink-0">
+                            {{ ux_icon('heroicons:no-symbol', {class: 'h-3 w-3'}) }}
+                            {{ 'sanction_task.status.not_applicable'|trans({}, 'admin') }}
+                        </span>
+                    {% elseif task.completed %}
+                        <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-0.5 text-xs font-medium shrink-0">
+                            {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
+                            {{ 'sanction_task.status.completed'|trans({}, 'admin') }}
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-medium shrink-0">
+                            {{ ux_icon('heroicons:clock', {class: 'h-3 w-3'}) }}
+                            {{ 'sanction_task.status.pending'|trans({}, 'admin') }}
+                        </span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <div>
         <h2 class="text-base font-semibold text-gray-900 mb-3">{{ 'sanction.observation.title'|trans({}, 'admin') }}</h2>

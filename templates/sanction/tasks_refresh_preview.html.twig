@@ -1,0 +1,105 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'sanction_task.refresh.title'|trans({}, 'admin') }} · {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-2xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_sanctions_index') }}" class="hover:text-forest-600 transition-colors">{{ 'sanction.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}" class="hover:text-forest-600 transition-colors">{{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'sanction_task.refresh.title'|trans({}, 'admin') }}</h1>
+        <p class="mt-1 text-sm text-gray-500">{{ sanction.group.name }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+
+        {% if toAdd is empty and toRemoveWithData is empty and toRemoveEmpty is empty %}
+            <div class="px-6 py-8 text-center">
+                {{ ux_icon('heroicons:check-circle', {class: 'h-8 w-8 text-green-500 mx-auto mb-2'}) }}
+                <p class="text-sm text-gray-600">{{ 'sanction_task.refresh.nothing_to_refresh'|trans({}, 'admin') }}</p>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-100">
+                <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}"
+                   class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                    {{ 'sanction_task.refresh.cancel'|trans({}, 'admin') }}
+                </a>
+            </div>
+        {% else %}
+            <form method="post" action="{{ path('app_sanction_tasks_refresh_confirm', {id: sanction.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('refresh_sanction_tasks_' ~ sanction.id) }}">
+
+                <div class="divide-y divide-gray-100">
+
+                    {% if toAdd is not empty %}
+                    <div class="px-6 py-5">
+                        <h2 class="text-sm font-semibold text-gray-800 mb-3">{{ 'sanction_task.refresh.add_label'|trans({}, 'admin') }}</h2>
+                        <ul class="space-y-2">
+                            {% for groupTeacher in toAdd %}
+                            <li class="flex items-center gap-3 rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 text-sm">
+                                {{ ux_icon('heroicons:plus-circle', {class: 'h-4 w-4 text-green-600 shrink-0'}) }}
+                                <span class="font-medium text-gray-800">{{ groupTeacher.subject }}</span>
+                                <span class="text-xs text-gray-500">{{ groupTeacher.teacher.name.lastName }}, {{ groupTeacher.teacher.name.firstName }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if toRemoveWithData is not empty or toRemoveEmpty is not empty %}
+                    <div class="px-6 py-5">
+                        <h2 class="text-sm font-semibold text-gray-800 mb-3">{{ 'sanction_task.refresh.remove_label'|trans({}, 'admin') }}</h2>
+                        <ul class="space-y-2">
+                            {% for task in toRemoveWithData %}
+                            <li class="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm">
+                                {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4 w-4 text-amber-600 shrink-0 mt-0.5'}) }}
+                                <div>
+                                    <div>
+                                        <span class="font-medium text-gray-800">{{ task.groupTeacher.subject }}</span>
+                                        <span class="text-xs text-gray-500">{{ task.groupTeacher.teacher.name.lastName }}, {{ task.groupTeacher.teacher.name.firstName }}</span>
+                                    </div>
+                                    <p class="text-xs text-amber-700 mt-0.5">{{ 'sanction_task.refresh.remove_warning_has_data'|trans({}, 'admin') }}</p>
+                                </div>
+                            </li>
+                            {% endfor %}
+                            {% for task in toRemoveEmpty %}
+                            <li class="flex items-start gap-3 rounded-xl bg-gray-50 border border-gray-200 px-4 py-2.5 text-sm">
+                                {{ ux_icon('heroicons:minus-circle', {class: 'h-4 w-4 text-gray-400 shrink-0 mt-0.5'}) }}
+                                <div>
+                                    <div>
+                                        <span class="font-medium text-gray-800">{{ task.groupTeacher.subject }}</span>
+                                        <span class="text-xs text-gray-500">{{ task.groupTeacher.teacher.name.lastName }}, {{ task.groupTeacher.teacher.name.firstName }}</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-0.5">{{ 'sanction_task.refresh.remove_warning_empty'|trans({}, 'admin') }}</p>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}"
+                           class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                            {{ 'sanction_task.refresh.cancel'|trans({}, 'admin') }}
+                        </a>
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                            {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                            {{ 'sanction_task.refresh.confirm'|trans({}, 'admin') }}
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

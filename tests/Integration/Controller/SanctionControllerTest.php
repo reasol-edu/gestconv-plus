@@ -16,9 +16,11 @@ use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
 use App\Entity\Course;
+use App\Entity\GroupTeacher;
 use App\Entity\Sanction;
 use App\Entity\SanctionMeasure;
 use App\Entity\SanctionMeasureCategory;
+use App\Entity\SanctionTask;
 use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -39,6 +41,96 @@ class SanctionControllerTest extends ControllerTestCase
         $this->client->request('GET', '/sanciones');
 
         self::assertResponseIsSuccessful();
+    }
+
+    public function testIndexPendingTasksOnlyQueryParamPreChecksFilterAndFiltersList(): void
+    {
+        [$admin, $centre, $group, $student] = $this->makeScenario();
+        $teacher = $this->makeTeacher('pending.tasks.query');
+        $this->persist($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $group->getTeacherAssignments()->first();
+        $withPendingTask = $this->makeSanction($admin, $student, $group);
+        $this->persist(new SanctionTask($withPendingTask, $groupTeacher));
+        $withoutTasks = $this->makeSanction($admin, $student, $group);
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones?pendingTasksOnly=1');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('button[data-live-action-param="togglePendingTasksOnly"].border-forest-300');
+        self::assertSelectorExists('a[href$="/sanciones/' . $withPendingTask->getId()->toRfc4122() . '"]');
+        self::assertCount(0, $crawler->filter('a[href$="/sanciones/' . $withoutTasks->getId()->toRfc4122() . '"]'));
+    }
+
+    public function testIndexShowsTaskRatioAndPendingTasksFilterToGroupTutor(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $tutor = $this->makeTeacher('tutor.tasks.visibility');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $subjectTeacher = $this->makeTeacher('subject.tasks.visibility');
+        $this->persist($subjectTeacher);
+        $group->addTeacher($subjectTeacher, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $group->getTeacherAssignments()->first();
+        $report = $this->makeReport($student, $group, $behavior, $admin);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $this->persist(new SanctionTask($sanction, $groupTeacher));
+        $this->flush();
+        $this->loginAs($tutor, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones');
+
+        self::assertResponseIsSuccessful();
+        $row = $crawler->filter('a[href$="/sanciones/' . $sanction->getId()->toRfc4122() . '"]')->closest('tr');
+        self::assertNotNull($row);
+        self::assertStringContainsString('0/1', $row->filter('td[data-label="Tareas"]')->text());
+        self::assertStringContainsString('bg-amber-50/60', $row->attr('class') ?? '');
+
+        $filteredCrawler = $this->client->request('GET', '/sanciones?pendingTasksOnly=1');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('a[href$="/sanciones/' . $sanction->getId()->toRfc4122() . '"]');
+        self::assertCount(1, $filteredCrawler->filter('a[href$="/sanciones/' . $sanction->getId()->toRfc4122() . '"]'));
+    }
+
+    public function testIndexShowsTaskCompletionRatioAndHighlightsIncompleteSanctions(): void
+    {
+        [$admin, $centre, $group, $student] = $this->makeScenario();
+        $teacher1 = $this->makeTeacher('task.ratio.1');
+        $teacher2 = $this->makeTeacher('task.ratio.2');
+        $this->persist($teacher1, $teacher2);
+        $group->addTeacher($teacher1, 'Matemáticas');
+        $group->addTeacher($teacher2, 'Lengua');
+        $this->flush();
+        [$groupTeacher1, $groupTeacher2] = $group->getTeacherAssignments()->toArray();
+
+        $partial = $this->makeSanction($admin, $student, $group);
+        $completedTask = new SanctionTask($partial, $groupTeacher1);
+        $completedTask->setCompletedAt(new \DateTimeImmutable());
+        $this->persist($completedTask, new SanctionTask($partial, $groupTeacher2));
+
+        $withoutTasks = $this->makeSanction($admin, $student, $group);
+        $this->flush();
+
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones');
+
+        self::assertResponseIsSuccessful();
+
+        $partialRow = $crawler->filter('a[href$="/sanciones/' . $partial->getId()->toRfc4122() . '"]')->closest('tr');
+        self::assertNotNull($partialRow);
+        self::assertStringContainsString('1/2', $partialRow->filter('td[data-label="Tareas"]')->text());
+        self::assertStringContainsString('bg-amber-50/60', (string) $partialRow->attr('class'));
+
+        $withoutTasksRow = $crawler->filter('a[href$="/sanciones/' . $withoutTasks->getId()->toRfc4122() . '"]')->closest('tr');
+        self::assertNotNull($withoutTasksRow);
+        self::assertStringNotContainsString('bg-amber-50/60', (string) $withoutTasksRow->attr('class'));
+        self::assertSame('', trim($withoutTasksRow->filter('td[data-label="Tareas"]')->text()));
     }
 
     public function testIndexRedirectsUnauthenticated(): void
@@ -416,6 +508,32 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testShowDisplaysTasksBlockAndCalendarLabelToGroupTutor(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $tutor = $this->makeTeacher('tutor.show.tasks');
+        $this->persist($tutor);
+        $group->addTutor($tutor);
+        $subjectTeacher = $this->makeTeacher('subject.show.tasks');
+        $this->persist($subjectTeacher);
+        $group->addTeacher($subjectTeacher, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $group->getTeacherAssignments()->first();
+        $report   = $this->makeReport($student, $group, $behavior, $admin);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $sanction->setCalendarLabel('Aula de convivencia');
+        $this->persist(new SanctionTask($sanction, $groupTeacher));
+        $this->flush();
+        $this->loginAs($tutor, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Aula de convivencia');
+        self::assertSelectorTextContains('body', 'Matemáticas');
+        self::assertSelectorTextContains('body', 'Pendiente');
+    }
+
     public function testShowDisplaysCommunicationHistory(): void
     {
         [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
@@ -569,6 +687,155 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    // ── refrescar materias ───────────────────────────────────────────────────
+
+    public function testRefreshTasksPreviewShowsNothingToRefreshWhenUpToDate(): void
+    {
+        [$admin, $centre, $group, $student] = $this->makeScenario();
+        $sanction = $this->makeSanction($admin, $student, $group);
+        $teacher  = $this->makeTeacher('subject.uptodate');
+        $this->persist($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $group->getTeacherAssignments()->first();
+        $this->persist(new SanctionTask($sanction, $groupTeacher));
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/tareas/refrescar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Las materias de esta sanción ya están al día');
+        self::assertCount(0, $crawler->filter('button[type="submit"]'));
+    }
+
+    public function testRefreshTasksPreviewListsSubjectsToAddAndStaleTaskWithoutData(): void
+    {
+        [$admin, $centre, $group, $student] = $this->makeScenario();
+        $otherGroup   = $this->makeSecondGroup($group);
+        $sanction     = $this->makeSanction($admin, $student, $group);
+        $newTeacher   = $this->makeTeacher('subject.new');
+        $staleTeacher = $this->makeTeacher('subject.stale');
+        $this->persist($newTeacher, $staleTeacher);
+        $group->addTeacher($newTeacher, 'Matemáticas');
+        $staleGroupTeacher = new GroupTeacher($otherGroup, $staleTeacher, 'Física');
+        $this->persist($staleGroupTeacher);
+        $this->flush();
+        $this->persist(new SanctionTask($sanction, $staleGroupTeacher));
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/tareas/refrescar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Matemáticas');
+        self::assertSelectorTextContains('body', 'Física');
+        self::assertSelectorTextNotContains('body', 'ya tiene trabajo asignado');
+        self::assertCount(1, $crawler->filter('button[type="submit"]'));
+    }
+
+    public function testRefreshTasksPreviewWarnsWhenStaleTaskHasData(): void
+    {
+        [$admin, $centre, $group, $student] = $this->makeScenario();
+        $otherGroup   = $this->makeSecondGroup($group);
+        $sanction     = $this->makeSanction($admin, $student, $group);
+        $staleTeacher = $this->makeTeacher('subject.stale.data');
+        $this->persist($staleTeacher);
+        $staleGroupTeacher = new GroupTeacher($otherGroup, $staleTeacher, 'Física');
+        $this->persist($staleGroupTeacher);
+        $task = new SanctionTask($sanction, $staleGroupTeacher);
+        $task->setDescription('<p>Trabajo entregado.</p>')->setCompletedAt(new \DateTimeImmutable());
+        $this->persist($task);
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/tareas/refrescar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'ya tiene trabajo asignado');
+    }
+
+    public function testRefreshTasksPreviewIsDeniedToUnrelatedTeacher(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $other    = $this->makeTeacher('unrelated.refresh.preview');
+        $this->persist($other);
+        $this->loginAs($other, $centre);
+
+        $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122() . '/tareas/refrescar');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testRefreshTasksConfirmAppliesDiff(): void
+    {
+        [$admin, $centre, $group, $student] = $this->makeScenario();
+        $otherGroup   = $this->makeSecondGroup($group);
+        $sanction     = $this->makeSanction($admin, $student, $group);
+        $newTeacher   = $this->makeTeacher('subject.confirm.new');
+        $staleTeacher = $this->makeTeacher('subject.confirm.stale');
+        $this->persist($newTeacher, $staleTeacher);
+        $group->addTeacher($newTeacher, 'Matemáticas');
+        $staleGroupTeacher = new GroupTeacher($otherGroup, $staleTeacher, 'Física');
+        $this->persist($staleGroupTeacher);
+        $this->flush();
+        $staleTask = new SanctionTask($sanction, $staleGroupTeacher);
+        $this->persist($staleTask);
+        $this->flush();
+        $sanctionId = $sanction->getId()->toRfc4122();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanctionId . '/tareas/refrescar');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/sanciones/' . $sanctionId . '/tareas/refrescar', [
+            '_token' => $token,
+        ]);
+
+        self::assertResponseRedirects('/sanciones/' . $sanctionId);
+
+        $this->em->clear();
+        /** @var Sanction $reloaded */
+        $reloaded   = $this->em->getRepository(Sanction::class)->find($sanctionId);
+        $subjects   = array_map(
+            static fn (SanctionTask $t): string => $t->getGroupTeacher()->getSubject(),
+            $reloaded->getTasks()->toArray(),
+        );
+        self::assertSame(['Matemáticas'], $subjects);
+    }
+
+    public function testRefreshTasksConfirmIsDeniedToUnrelatedTeacher(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $other    = $this->makeTeacher('unrelated.refresh.confirm');
+        $this->persist($other);
+        $this->loginAs($other, $centre);
+
+        $this->client->request('POST', '/sanciones/' . $sanction->getId()->toRfc4122() . '/tareas/refrescar', [
+            '_token' => 'any-token',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testRefreshTasksConfirmWithInvalidCsrfIsDenied(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('POST', '/sanciones/' . $sanction->getId()->toRfc4122() . '/tareas/refrescar', [
+            '_token' => 'invalid-token',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /**
@@ -617,6 +884,14 @@ class SanctionControllerTest extends ControllerTestCase
     private function makeTeacher(string $username): Teacher
     {
         return (new Teacher(new PersonName('Test', 'Teacher')))->setUsername($username);
+    }
+
+    private function makeSecondGroup(Group $group): Group
+    {
+        $otherGroup = (new Group())->setName('1ºB')->setCourse($group->getCourse());
+        $this->persist($otherGroup);
+
+        return $otherGroup;
     }
 
     private function makeReport(

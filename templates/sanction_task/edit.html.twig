@@ -1,0 +1,160 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'sanction_task.edit'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-2xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_sanction_tasks_index') }}" class="hover:text-forest-600 transition-colors">{{ 'sanction_task.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ task.groupTeacher.subject }}</span>
+        </div>
+        <h1 class="text-xl font-medium text-gray-500">{{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}</h1>
+        <p class="mt-0.5 text-2xl font-bold text-gray-900">{{ task.groupTeacher.subject }}</p>
+    </div>
+
+    {# Contexto de la sanción, de solo lectura: el docente de materia no tiene acceso a la pantalla completa #}
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'sanction_task.context.title'|trans({}, 'admin') }}</p>
+
+        {% if sanction.effectiveFrom and sanction.effectiveTo %}
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">{{ 'sanction.field.effective_from'|trans({}, 'admin') }}</p>
+                    <p class="text-gray-900">{{ sanction.effectiveFrom|date('d/m/Y') }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">{{ 'sanction.field.effective_to'|trans({}, 'admin') }}</p>
+                    <p class="text-gray-900">{{ sanction.effectiveTo|date('d/m/Y') }}</p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if sanction.calendarLabel %}
+            <div>
+                <p class="text-xs text-gray-500 mb-1">{{ 'sanction.field.calendar_label'|trans({}, 'admin') }}</p>
+                <p class="text-gray-900">{{ sanction.calendarLabel }}</p>
+            </div>
+        {% endif %}
+
+        {% if sanction.details is not empty %}
+            <div>
+                <p class="text-xs text-gray-500 mb-1">{{ 'sanction.field.details'|trans({}, 'admin') }}</p>
+                <div class="prose prose-sm max-w-none text-gray-700">{{ sanction.details|sanitize_html('app.rich_text') }}</div>
+            </div>
+        {% endif %}
+
+        {% if siblingTasks is not empty %}
+            <div>
+                <p class="text-xs text-gray-500 mb-2">{{ 'sanction_task.context.sibling_tasks'|trans({}, 'admin') }}</p>
+                <ul class="space-y-1.5">
+                    {% for sibling in siblingTasks %}
+                        <li class="flex items-center justify-between gap-2 text-sm">
+                            <span class="text-gray-700">
+                                {{ sibling.groupTeacher.subject }}
+                                <span class="text-gray-400">· {{ sibling.groupTeacher.teacher.name.lastName }}, {{ sibling.groupTeacher.teacher.name.firstName }}</span>
+                            </span>
+                            {% if sibling.completedAt is null %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium shrink-0">
+                                    {{ 'sanction_task.status.pending'|trans({}, 'admin') }}
+                                </span>
+                            {% elseif sibling.notApplicable %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-600 px-2 py-0.5 text-xs font-medium shrink-0">
+                                    {{ 'sanction_task.status.not_applicable'|trans({}, 'admin') }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs font-medium shrink-0">
+                                    {{ 'sanction_task.status.completed'|trans({}, 'admin') }}
+                                </span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if errors is not empty %}
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 space-y-1">
+            {% for error in errors %}
+                <p class="text-sm text-red-700">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{{ path('app_sanction_tasks_edit', {id: sanction.id, taskId: task.id}) }}" enctype="multipart/form-data" class="space-y-6">
+        <input type="hidden" name="_token" value="{{ csrf_token('edit_sanction_task_' ~ task.id) }}">
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-5">
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="not_applicable" name="not_applicable" value="1"
+                       {{ formData.not_applicable ? 'checked' : '' }}
+                       class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                <span class="text-sm font-medium text-gray-700">{{ 'sanction_task.field.not_applicable'|trans({}, 'admin') }}</span>
+            </label>
+            <p class="text-xs text-gray-400">{{ 'sanction_task.field.not_applicable_help'|trans({}, 'admin') }}</p>
+
+            <twig:Form:RichEditor
+                id="description"
+                name="description"
+                label="{{ 'sanction_task.field.description'|trans({}, 'admin') }}"
+                value="{{ formData.description ?? '' }}"
+                :required="true"
+                :error="errors.description ?? null"
+            />
+
+            {% if task.attachments is not empty %}
+                <div>
+                    <p class="block text-sm font-medium text-gray-700 mb-2">{{ 'sanction_task.field.existing_attachments'|trans({}, 'admin') }}</p>
+                    <div class="space-y-2">
+                        {% for attachment in task.attachments %}
+                            <label class="flex items-center gap-3 cursor-pointer group rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5">
+                                <input type="checkbox" name="remove_attachments[]" value="{{ attachment.id.toRfc4122 }}"
+                                       class="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                {{ ux_icon('heroicons:paper-clip', {class: 'h-4 w-4 text-gray-400 shrink-0'}) }}
+                                <span class="text-sm text-gray-700 flex-1 truncate">{{ attachment.filename }}</span>
+                                <span class="text-xs text-gray-400 shrink-0">{{ attachment.size|file_size }}</span>
+                                <span class="text-xs text-gray-400 group-has-[:checked]:text-red-600">{{ 'activity.field.remove'|trans({}, 'admin') }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div>
+                <label for="attachments" class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'sanction_task.field.attachments'|trans({}, 'admin') }}
+                </label>
+                <input type="file" id="attachments" name="attachments[]" multiple
+                       accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.txt,.zip"
+                       {% if errors.attachments is defined %}aria-invalid="true"{% endif %}
+                       class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900 file:mr-3 file:rounded-lg
+                              file:border-0 file:bg-forest-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-forest-700
+                              hover:file:bg-forest-100 focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                {% if errors.attachments is defined %}
+                    <p class="mt-1 text-xs text-red-600">{{ errors.attachments }}</p>
+                {% else %}
+                    <p class="mt-1 text-xs text-gray-400">{{ 'activity.field.attachments_help'|trans({}, 'admin') }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+            <a href="{{ path('app_sanction_tasks_index') }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors">
+                {{ 'sanction_task.cancel'|trans({}, 'admin') }}
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                {{ 'sanction_task.save'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
