@@ -35,7 +35,7 @@
         </div>
     {% endif %}
 
-    {% include 'student/_contact.html.twig' with { student: report.student, canSeeContact: canSeeContact } %}
+    {% include 'student/_contact.html.twig' with { student: report.student, canSeeContact: canSeeContact, canEditContact: false } %}
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs divide-y divide-gray-100">
         {% include 'notification/_report_detail.html.twig' with { report: report } %}
