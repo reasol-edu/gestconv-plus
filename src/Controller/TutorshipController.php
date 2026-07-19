@@ -8,6 +8,7 @@ use App\Entity\Teacher;
 use App\Repository\GroupRepository;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -20,7 +21,7 @@ class TutorshipController extends AbstractController
     ) {}
 
     #[Route('', name: 'app_tutorship_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $centre = $this->tenantContext->getSelectedCentre();
         if ($centre === null) {
@@ -38,8 +39,9 @@ class TutorshipController extends AbstractController
         }
 
         return $this->render('tutorship/index.html.twig', [
-            'centre' => $centre,
-            'viewer' => $viewer,
+            'centre'  => $centre,
+            'viewer'  => $viewer,
+            'groupId' => $request->query->getString('groupId'),
         ]);
     }
 }

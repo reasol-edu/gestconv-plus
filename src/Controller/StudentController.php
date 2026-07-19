@@ -121,17 +121,26 @@ class StudentController extends AbstractController
             && !$this->tenantContext->isViewingNonActiveYear($centre)
             && $this->contactVisibility->canEditContact($viewer, $student, $year);
 
+        $isTutorOfStudent = false;
+        foreach ($activeGroups as $group) {
+            if ($group->getTutors()->contains($viewer)) {
+                $isTutorOfStudent = true;
+                break;
+            }
+        }
+
         return $this->render('student/show.html.twig', [
-            'centre'          => $centre,
-            'student'         => $student,
-            'activeGroups'    => $activeGroups,
-            'timeline'        => $timeline,
-            'reportCount'     => count($reports),
-            'seriousCount'    => $seriousCount,
-            'prescribedCount' => $prescribedCount,
-            'activeSanctions' => $activeSanctions,
-            'canSeeContact'   => $canSeeContact,
-            'canEditContact'  => $canEditContact,
+            'centre'           => $centre,
+            'student'          => $student,
+            'activeGroups'     => $activeGroups,
+            'timeline'         => $timeline,
+            'reportCount'      => count($reports),
+            'seriousCount'     => $seriousCount,
+            'prescribedCount'  => $prescribedCount,
+            'activeSanctions'  => $activeSanctions,
+            'canSeeContact'    => $canSeeContact,
+            'canEditContact'   => $canEditContact,
+            'isTutorOfStudent' => $isTutorOfStudent,
         ]);
     }
 

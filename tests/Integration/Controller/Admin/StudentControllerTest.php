@@ -177,6 +177,22 @@ class StudentControllerTest extends ControllerTestCase
         self::assertSelectorExists('form');
     }
 
+    public function testEditGetShowsLinkToStudentProfile(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $student = $this->makeStudent('2024-001');
+        $this->persist($admin, $centre, $year, $student);
+        $this->loginAs($admin);
+
+        $centreId  = $centre->getId()->toRfc4122();
+        $studentId = $student->getId()->toRfc4122();
+
+        $this->client->request('GET', '/centro/' . $centreId . '/estudiantes/' . $studentId . '/editar');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('a[href="/alumnado/' . $studentId . '"]');
+    }
+
     public function testEditPostSavesChangesAndRedirects(): void
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();

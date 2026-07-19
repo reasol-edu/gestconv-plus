@@ -298,6 +298,7 @@ students.action.delete: 'Eliminar'
 
 student.new.title: 'Nuevo estudiante'
 student.edit.title: 'Editar estudiante'
+student.edit.view_profile: 'Ver ficha'
 student.field.first_name: 'Nombre'
 student.field.last_name: 'Apellidos'
 student.field.student_id: 'NIE (Número de Identificación Escolar)'

@@ -17,7 +17,17 @@
         </h1>
         {% if vy %}
             <p class="mt-1 text-sm {{ viewing_past ? 'text-amber-600 font-medium' : 'text-gray-500' }}">
-                {{ 'summary_for'|trans({'%year%': vy.name}, 'dashboard') }}
+                {% if viewing_past %}
+                    {{ 'summary_for'|trans({'%year%': vy.name}, 'dashboard') }}
+                {% else %}
+                    {{ random([
+                        'home_subtitle_1'|trans({}, 'dashboard'),
+                        'home_subtitle_2'|trans({}, 'dashboard'),
+                        'home_subtitle_3'|trans({}, 'dashboard'),
+                        'home_subtitle_4'|trans({}, 'dashboard'),
+                        'home_subtitle_5'|trans({}, 'dashboard'),
+                    ]) }}
+                {% endif %}
             </p>
         {% elseif active_year is null %}
             <p class="mt-1 text-sm text-amber-600">
@@ -411,9 +421,12 @@
             </div>
             <ul class="divide-y divide-gray-100">
                 {% for entry in tutoredGroups %}
-                    <li class="flex items-center justify-between gap-3 px-5 py-3">
-                        <p class="truncate text-sm font-medium text-gray-800">{{ entry.group.name }}</p>
-                        <p class="shrink-0 text-xs text-gray-500">{{ entry.students }} {{ 'tutored_groups_students'|trans({}, 'dashboard') }}</p>
+                    <li>
+                        <a href="{{ path('app_tutorship_index', {groupId: entry.group.id}) }}"
+                           class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                            <p class="truncate text-sm font-medium text-gray-800">{{ entry.group.name }}</p>
+                            <p class="shrink-0 text-xs text-gray-500">{{ entry.students }} {{ 'tutored_groups_students'|trans({}, 'dashboard') }}</p>
+                        </a>
                     </li>
                 {% endfor %}
             </ul>

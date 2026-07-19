@@ -33,6 +33,19 @@ class DashboardControllerTest extends ControllerTestCase
         self::assertStringContainsString('/login', (string) $this->client->getResponse()->headers->get('Location'));
     }
 
+    public function testTutoredGroupsLinksToTutorshipFilteredByThatGroup(): void
+    {
+        [$teacher, $centre, $group] = $this->makeScenarioWithActiveYear(false);
+        $group->addTutor($teacher);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('a[href="/mi-tutoria?groupId=' . $group->getId()->toRfc4122() . '"]');
+    }
+
     public function testDashboardIsAccessibleToAuthenticatedTeacher(): void
     {
         // TenantContextSubscriber redirects to /centro unless a centre is selected.

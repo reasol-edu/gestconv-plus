@@ -12,9 +12,20 @@
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
             <a href="{{ path('app_centre_students_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'students.title'|trans({}, 'admin') }}</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ student.name.lastName }}, {{ student.name.firstName }}</span>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">{{ student.name.lastName }}, {{ student.name.firstName }}</h1>
-        <p class="mt-1 text-sm font-mono text-gray-500">{{ student.studentId }}</p>
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ student.name.lastName }}, {{ student.name.firstName }}</h1>
+                <p class="mt-1 text-sm font-mono text-gray-500">{{ student.studentId }}</p>
+            </div>
+            <a href="{{ path('app_students_show', {id: student.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors shadow-xs shrink-0">
+                {{ ux_icon('heroicons:user-circle', {class: 'h-4 w-4'}) }}
+                {{ 'student.edit.view_profile'|trans({}, 'admin') }}
+            </a>
+        </div>
     </div>
 
     <form method="post" class="space-y-6">

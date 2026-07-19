@@ -4,6 +4,11 @@ logout: 'Cerrar sesión'
 
 greeting: 'Hola, %name%'
 summary_for: 'Resumen del curso %year%'
+home_subtitle_1: '¿Qué quieres hacer hoy?'
+home_subtitle_2: '¿En qué puedo ayudarte?'
+home_subtitle_3: 'Aquí tienes acceso a las tareas de convivencia del centro.'
+home_subtitle_4: 'Listo para trabajar en mejorar la convivencia.'
+home_subtitle_5: '¿Qué necesitas registrar hoy?'
 no_academic_year: 'No hay un curso académico activo configurado.'
 
 no_students_registered: 'Todavía no hay estudiantes matriculados en el curso académico activo.'

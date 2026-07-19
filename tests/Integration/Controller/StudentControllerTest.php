@@ -141,6 +141,56 @@ class StudentControllerTest extends ControllerTestCase
         self::assertStringNotContainsString('/partes/' . $currentYearReport->getId()->toRfc4122(), $content);
     }
 
+    // ── breadcrumb ───────────────────────────────────────────────────────────
+
+    public function testShowDisplaysTutorshipBreadcrumbForGroupTutor(): void
+    {
+        [, $centre, $group, $student] = $this->makeScenario();
+        $tutor = $this->makeTeacher('student.breadcrumb.tutor.20');
+        $group->addTutor($tutor);
+        $this->persist($tutor);
+        $this->flush();
+
+        $this->loginAs($tutor, $centre);
+        $crawler = $this->client->request('GET', '/alumnado/' . $student->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#breadcrumb a[href="/mi-tutoria"]');
+        self::assertSelectorNotExists('#breadcrumb a[href$="/estudiantes"]');
+        self::assertStringContainsString('García, Ana', $crawler->filter('#breadcrumb')->text());
+    }
+
+    public function testShowDisplaysCentreBreadcrumbForCentreAdmin(): void
+    {
+        [, $centre, , $student] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('student.breadcrumb.cadmin.21');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+
+        $this->loginAs($cadmin, $centre);
+        $this->client->request('GET', '/alumnado/' . $student->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#breadcrumb a[href$="/estudiantes"]');
+        self::assertSelectorNotExists('#breadcrumb a[href="/mi-tutoria"]');
+    }
+
+    public function testShowHidesBreadcrumbForPlainTeacherWhoIsNotTutorNorAdmin(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $other = $this->makeTeacher('student.breadcrumb.plain.22');
+        $group->addTeacher($other, 'Matemáticas');
+        $this->persist($other);
+        $this->flush();
+
+        $this->loginAs($other, $centre);
+        $this->client->request('GET', '/alumnado/' . $student->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('#breadcrumb');
+    }
+
     // ── editContact ──────────────────────────────────────────────────────────
 
     public function testEditContactRedirectsAnonymousUser(): void

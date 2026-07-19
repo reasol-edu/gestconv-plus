@@ -53,6 +53,27 @@ class TutorshipControllerTest extends ControllerTestCase
         self::assertStringContainsString('García, Ana', (string) $this->client->getResponse()->getContent());
     }
 
+    public function testIndexPreFiltersByGroupIdFromQueryParam(): void
+    {
+        [$centre, $year, $group, ] = $this->makeScenario();
+        $course2  = (new Course())->setName('DAM')->setAcademicYear($year);
+        $group2   = (new Group())->setName('1ºB')->setCourse($course2);
+        $student2 = (new Student(new PersonName('Luis', 'Martín')))->setStudentId('NIE-' . uniqid('', false));
+        $group2->addStudent($student2);
+        $tutor = $this->makeTeacher('tutorship.groupfilter.4');
+        $group->addTutor($tutor);
+        $group2->addTutor($tutor);
+        $this->persist($course2, $group2, $student2, $tutor);
+
+        $this->loginAs($tutor, $centre);
+        $this->client->request('GET', '/mi-tutoria?groupId=' . $group->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('García, Ana', $content);
+        self::assertStringNotContainsString('Martín, Luis', $content);
+    }
+
     public function testIndexDeniesWhenCentreHasNoActiveYear(): void
     {
         $suffix  = (string) ++self::$scenarioCounter;
