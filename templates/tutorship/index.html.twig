@@ -1,0 +1,22 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'tutorship.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-7xl mx-auto space-y-6">
+
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'tutorship.title'|trans({}, 'admin') }}</h1>
+        <p class="mt-1 text-sm text-gray-500">{{ 'tutorship.help'|trans({}, 'admin') }}</p>
+        {% set vy = view_year() %}
+        {% if vy %}
+            <p class="mt-1 text-sm {{ is_viewing_past_year() ? 'text-amber-600 font-medium' : 'text-gray-500' }}">{{ vy.name }}</p>
+        {% endif %}
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        <twig:TutorshipListComponent :centre="centre" :viewer="viewer" />
+    </div>
+
+</div>
+{% endblock %}

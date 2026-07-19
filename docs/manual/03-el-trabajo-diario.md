@@ -234,7 +234,11 @@ estudiante:
 - **Contadores** — partes registrados (indicando cuántos incluyen conductas graves y cuántos han
   prescrito) y sanciones vigentes hoy.
 - **Datos de contacto** — tutores legales, teléfonos y observaciones. Solo visibles para los
-  administradores, la comisión de convivencia, la orientación y los tutores/as del grupo.
+  administradores, la comisión de convivencia, la orientación y los tutores/as del grupo. El
+  tutor/a del grupo del estudiante en el curso activo puede además **editarlos**, con el botón
+  **Editar contacto** que abre un formulario en un cuadro de diálogo; el resto de perfiles con
+  acceso a estos datos solo puede consultarlos. La edición queda bloqueada mientras se consulta un
+  curso académico distinto del activo y cada cambio se registra en el registro de actividad.
 - **Historial de convivencia** — los partes y sanciones del estudiante en orden cronológico, cada
   uno con su estado de notificación. Cada docente ve solo los que le permiten sus permisos.
 - **Accesos directos** para registrar un nuevo parte o una nueva sanción con el estudiante ya
@@ -242,6 +246,25 @@ estudiante:
 
 Se llega a la ficha desde el buscador global, los listados y detalles de partes y sanciones, y la
 lista *Alumnado con partes pendientes de sanción* del inicio.
+
+## Mi tutoría
+
+La sección **Mi tutoría** del menú lateral aparece para cualquier docente que sea tutor/a de al
+menos un grupo en el curso académico visualizado, y reúne en una sola tabla todo el alumnado de
+sus grupos tutorizados, ordenado por apellidos y nombre:
+
+- **Apellidos, nombre** y **grupo** de cada estudiante.
+- **Partes** — total de partes registrados, con el desglose entre normales (N) y graves (G) entre
+  paréntesis.
+- **Sin notificar** — partes todavía sin comunicar a la familia.
+- **Prescritos** — partes que han prescrito por el paso del plazo.
+- **Sanciones** y **Sanciones sin notificar**, con el mismo criterio que los partes.
+
+Un buscador por nombre o apellidos y un desplegable de grupo permiten filtrar el listado, y
+cualquier columna —incluidas las estadísticas— puede usarse para ordenar, alternando entre orden
+creciente y decreciente. El botón **Ver ficha** de cada fila lleva a la
+[ficha del estudiante](#ficha-del-estudiante), donde el tutor/a puede además editar sus datos de
+contacto.
 
 ## Ausencias
 

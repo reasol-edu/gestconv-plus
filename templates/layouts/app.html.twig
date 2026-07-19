@@ -149,6 +149,18 @@
                 </a>
             {% endif %}
 
+            {# Mi tutoría — solo para docentes que tutorizan algún grupo del curso visualizado #}
+            {% if active_centre and tutors_any_group() %}
+                {% set tutorship_active = current_route starts with 'app_tutorship' %}
+                <a href="{{ path('app_tutorship_index') }}"
+                    {{ tutorship_active ? 'aria-current="page"' : '' }}
+                   class="{{ tutorship_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:academic-cap', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'tutorship'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
             {# Calendario #}
             {{ _self.nav_item(
                 'calendar'|trans({}, 'navigation'),

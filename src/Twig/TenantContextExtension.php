@@ -7,6 +7,7 @@ namespace App\Twig;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
+use App\Repository\GroupRepository;
 use App\Service\TenantContext;
 use Symfony\Bundle\SecurityBundle\Security;
 use Twig\Extension\AbstractExtension;
@@ -17,6 +18,7 @@ final class TenantContextExtension extends AbstractExtension
     public function __construct(
         private readonly TenantContext $context,
         private readonly Security $security,
+        private readonly GroupRepository $groups,
     ) {}
 
     public function getFunctions(): array
@@ -29,6 +31,7 @@ final class TenantContextExtension extends AbstractExtension
             new TwigFunction('is_viewing_past_year', $this->isViewingPastYear(...)),
             new TwigFunction('is_centre_admin', $this->isCentreAdmin(...)),
             new TwigFunction('belongs_to_view_year', $this->belongsToViewYear(...)),
+            new TwigFunction('tutors_any_group', $this->tutorsAnyGroup(...)),
         ];
     }
 
@@ -102,5 +105,22 @@ final class TenantContextExtension extends AbstractExtension
         $year = $this->context->getViewYear($centre);
 
         return $year !== null && $year->getTeachers()->contains($user);
+    }
+
+    public function tutorsAnyGroup(): bool
+    {
+        $centre = $this->context->getSelectedCentre();
+        if ($centre === null) {
+            return false;
+        }
+
+        $user = $this->security->getUser();
+        if (!$user instanceof Teacher) {
+            return false;
+        }
+
+        $year = $this->context->getViewYear($centre);
+
+        return $year !== null && $this->groups->hasTutoredGroupsInYear($centre, $user, $year);
     }
 }

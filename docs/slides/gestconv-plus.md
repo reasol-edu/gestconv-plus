@@ -265,6 +265,8 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 - Accede al **seguimiento** de firmas y tareas pendientes de su tutoría.
 - Ve el **estado de las sanciones** de su alumnado, aunque crearlas es
   competencia de la comisión de convivencia.
+- Tiene una sección propia, **Mi tutoría**, con el listado de su alumnado y
+  la posibilidad de editar sus datos de contacto.
 
 ---
 
@@ -277,6 +279,21 @@ completa de su grupo**, no solo de los partes que él mismo registra:
   distintos docentes, por ejemplo.
 - Desde este listado se accede igual que un docente normal al detalle de
   cada parte y a su notificación.
+
+---
+
+## Mi tutoría: alumnado y datos de contacto
+
+- Nueva sección del menú lateral con el alumnado de todos los grupos
+  tutorizados, ordenado por apellidos y nombre.
+- Cada fila resume su grupo y sus estadísticas: partes totales (con el
+  desglose entre normales y graves), sin notificar y prescritos, y
+  sanciones totales y sin notificar.
+- Buscador por nombre, filtro por grupo y ordenación por cualquier columna,
+  creciente o decreciente.
+- El botón **Ver ficha** lleva a la ficha del estudiante, donde el tutor/a
+  —y solo el tutor/a del grupo— puede **editar los datos de contacto**
+  (tutores legales, teléfonos y observaciones).
 
 ---
 

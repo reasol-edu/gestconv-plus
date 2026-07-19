@@ -119,4 +119,7 @@ las ausencias de otra persona.
 - En la [ficha del estudiante](03-el-trabajo-diario.md#ficha-del-estudiante), los **datos de
   contacto de la familia** solo son visibles para los administradores, la comisión de
   convivencia, la orientación y los tutores/as del grupo del estudiante; el historial muestra a
-  cada docente únicamente los partes y sanciones que ya puede ver según las tablas anteriores.
+  cada docente únicamente los partes y sanciones que ya puede ver según las tablas anteriores. De
+  entre todos ellos, solo el **tutor/a del grupo** puede además **editar** esos datos de contacto.
+- La sección [Mi tutoría](03-el-trabajo-diario.md#mi-tutoria) del menú lateral solo es visible
+  para quien sea **tutor/a de al menos un grupo** en el curso académico visualizado.

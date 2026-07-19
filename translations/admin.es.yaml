@@ -256,6 +256,25 @@ centre_profiles.counselors.help: 'Pueden ver todos los partes y sanciones del ce
 centre_profiles.save: 'Guardar'
 centre_profiles.flash.saved: 'Perfiles actualizados correctamente.'
 
+# Mi tutoría
+tutorship.title: 'Mi tutoría'
+tutorship.help: 'Estudiantes de tus grupos tutorizados en el curso visualizado.'
+tutorship.search: 'Buscar por nombre o apellidos…'
+tutorship.filter.all_groups: 'Todos los grupos'
+tutorship.empty: 'No tutorizas ningún grupo con estudiantes en este curso.'
+tutorship.search_empty: 'No se encontraron estudiantes con ese criterio.'
+
+tutorship.col.name: 'Apellidos, nombre'
+tutorship.col.group: 'Grupo'
+tutorship.col.reports_total: 'Partes'
+tutorship.col.reports_unnotified: 'Sin notificar'
+tutorship.col.reports_prescribed: 'Prescritos'
+tutorship.col.sanctions_total: 'Sanciones'
+tutorship.col.sanctions_unnotified: 'Sanciones sin notificar'
+tutorship.col.actions: 'Acciones'
+
+tutorship.action.view_profile: 'Ver ficha'
+
 # Estudiantes
 students.title: 'Estudiantes'
 students.new: 'Nuevo estudiante'
@@ -328,6 +347,8 @@ student.show.history: 'Historial de convivencia'
 student.show.history_empty: 'Este estudiante no tiene partes ni sanciones visibles para ti.'
 student.show.entry.report: 'Parte'
 student.show.entry.sanction: 'Sanción'
+student.show.edit_contact: 'Editar contacto'
+student.show.contact_saved: 'Datos de contacto guardados correctamente.'
 
 # Importación CSV
 students.import.title: 'Importar estudiantes desde CSV'
@@ -1011,6 +1032,7 @@ activity_log.action.student.created: 'Alta de estudiante'
 activity_log.action.student.updated: 'Modificación de estudiante'
 activity_log.action.student.deleted: 'Eliminación de estudiante'
 activity_log.action.student.imported: 'Importación de estudiantes'
+activity_log.action.student.contact_updated: 'Modificación de datos de contacto'
 activity_log.action.teacher.created: 'Alta de docente'
 activity_log.action.teacher.updated: 'Modificación de docente'
 activity_log.action.teacher.deleted: 'Eliminación de docente'

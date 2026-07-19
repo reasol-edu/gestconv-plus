@@ -166,6 +166,25 @@ class GroupRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns whether the viewer tutors at least one group in the given academic year.
+     * Used to decide whether to show the "Mi tutoría" sidebar section.
+     */
+    public function hasTutoredGroupsInYear(EducationalCentre $centre, Teacher $viewer, AcademicYear $year): bool
+    {
+        $qb = $this->createQueryBuilder('g');
+        $qb->select('1')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay = :year')
+            ->andWhere(':viewer MEMBER OF g.tutors')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('viewer', $viewer->getId(), 'uuid')
+            ->setMaxResults(1);
+
+        return $qb->getQuery()->getOneOrNullResult() !== null;
+    }
+
+    /**
      * Returns whether the viewer teaches or tutors any group in the given academic year.
      * Used to decide whether to show the weekly-sanctions widget on the dashboard.
      */

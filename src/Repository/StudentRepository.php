@@ -13,6 +13,7 @@ use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<Student>
@@ -251,5 +252,125 @@ class StudentRepository extends ServiceEntityRepository
         $result = $qb->setMaxResults($limit)->getQuery()->getResult();
 
         return $result;
+    }
+
+    /** Columnas ordenables para {@see findTutoredSummary()} (allowlist contra inyección). */
+    private const TUTORED_SORTABLE = ['name', 'group', 'reportsTotal', 'reportsUnnotified', 'reportsPrescribed', 'sanctionsTotal', 'sanctionsUnnotified'];
+
+    /**
+     * One row per (student, group) pair for every group the viewer tutors in the given
+     * academic year, with report/sanction counts scoped to that student+group. A student
+     * tutored in two different groups by the same viewer appears once per group.
+     *
+     * Supported filters: search (name/group text), groupId.
+     *
+     * @param array<string, mixed> $filters
+     * @return list<array{
+     *     studentId: string, firstName: string, lastName: string, groupId: string, groupName: string,
+     *     reportsTotal: int, reportsSerious: int, reportsUnnotified: int, reportsPrescribed: int,
+     *     sanctionsTotal: int, sanctionsUnnotified: int
+     * }>
+     */
+    public function findTutoredSummary(Teacher $viewer, AcademicYear $year, array $filters = []): array
+    {
+        $dql = '
+            SELECT
+                s.id AS studentId,
+                s.name.firstName AS firstName,
+                s.name.lastName AS lastName,
+                g.id AS groupId,
+                g.name AS groupName,
+                (SELECT COUNT(r1.id) FROM App\Entity\IncidentReport r1
+                 WHERE r1.student = s AND r1.group = g) AS reportsTotal,
+                (SELECT COUNT(DISTINCT r2.id) FROM App\Entity\IncidentReport r2
+                 JOIN r2.behaviors b2 JOIN b2.category bc2
+                 WHERE r2.student = s AND r2.group = g AND bc2.serious = :serious) AS reportsSerious,
+                (SELECT COUNT(r3.id) FROM App\Entity\IncidentReport r3
+                 WHERE r3.student = s AND r3.group = g AND r3.notifiedCommunication IS NULL) AS reportsUnnotified,
+                (SELECT COUNT(r4.id) FROM App\Entity\IncidentReport r4
+                 WHERE r4.student = s AND r4.group = g AND r4.prescribedAt IS NOT NULL) AS reportsPrescribed,
+                (SELECT COUNT(sa1.id) FROM App\Entity\Sanction sa1
+                 WHERE sa1.student = s AND sa1.group = g) AS sanctionsTotal,
+                (SELECT COUNT(sa2.id) FROM App\Entity\Sanction sa2
+                 WHERE sa2.student = s AND sa2.group = g AND sa2.notifiedCommunication IS NULL) AS sanctionsUnnotified
+            FROM App\Entity\Student s
+            JOIN s.groups g
+            JOIN g.course c
+            JOIN c.academicYear ay
+            WHERE ay = :year
+            AND :viewer MEMBER OF g.tutors
+        ';
+
+        $groupId = $filters['groupId'] ?? '';
+        if (is_string($groupId) && $groupId !== '') {
+            $dql .= ' AND g.id = :groupId';
+        }
+
+        $search = $filters['search'] ?? '';
+        if (is_string($search) && $search !== '') {
+            $dql .= ' AND (LOWER(s.name.firstName) LIKE LOWER(:search)
+                           OR LOWER(s.name.lastName) LIKE LOWER(:search)
+                           OR LOWER(g.name) LIKE LOWER(:search))';
+        }
+
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('viewer', $viewer->getId(), 'uuid')
+            ->setParameter('serious', true);
+
+        if (is_string($groupId) && $groupId !== '') {
+            $query->setParameter('groupId', $groupId, 'uuid');
+        }
+        if (is_string($search) && $search !== '') {
+            $query->setParameter('search', '%' . $search . '%');
+        }
+
+        /** @var list<array<string, mixed>> $raw */
+        $raw = $query->getArrayResult();
+
+        /** @var list<array{studentId: string, firstName: string, lastName: string, groupId: string, groupName: string, reportsTotal: int, reportsSerious: int, reportsUnnotified: int, reportsPrescribed: int, sanctionsTotal: int, sanctionsUnnotified: int}> $rows */
+        $rows = array_map(
+            static function (array $row): array {
+                $studentId = $row['studentId'];
+                $groupId   = $row['groupId'];
+
+                return [
+                    'studentId'           => $studentId instanceof Uuid ? $studentId->toRfc4122() : '',
+                    'firstName'           => is_string($row['firstName']) ? $row['firstName'] : '',
+                    'lastName'            => is_string($row['lastName']) ? $row['lastName'] : '',
+                    'groupId'             => $groupId instanceof Uuid ? $groupId->toRfc4122() : '',
+                    'groupName'           => is_string($row['groupName']) ? $row['groupName'] : '',
+                    'reportsTotal'        => is_scalar($row['reportsTotal']) ? intval($row['reportsTotal']) : 0,
+                    'reportsSerious'      => is_scalar($row['reportsSerious']) ? intval($row['reportsSerious']) : 0,
+                    'reportsUnnotified'   => is_scalar($row['reportsUnnotified']) ? intval($row['reportsUnnotified']) : 0,
+                    'reportsPrescribed'   => is_scalar($row['reportsPrescribed']) ? intval($row['reportsPrescribed']) : 0,
+                    'sanctionsTotal'      => is_scalar($row['sanctionsTotal']) ? intval($row['sanctionsTotal']) : 0,
+                    'sanctionsUnnotified' => is_scalar($row['sanctionsUnnotified']) ? intval($row['sanctionsUnnotified']) : 0,
+                ];
+            },
+            $raw,
+        );
+
+        $sortRaw = $filters['sort'] ?? '';
+        $sort    = is_string($sortRaw) && in_array($sortRaw, self::TUTORED_SORTABLE, true) ? $sortRaw : '';
+        $sortDirRaw = $filters['sortDir'] ?? 'asc';
+        $desc       = is_string($sortDirRaw) && strtolower($sortDirRaw) === 'desc';
+
+        usort($rows, static function (array $a, array $b) use ($sort, $desc): int {
+            $cmp = match ($sort) {
+                'group'                => strcmp($a['groupName'], $b['groupName']) ?: strcmp($a['lastName'], $b['lastName']) ?: strcmp($a['firstName'], $b['firstName']),
+                'reportsTotal'         => $a['reportsTotal'] <=> $b['reportsTotal'],
+                'reportsUnnotified'    => $a['reportsUnnotified'] <=> $b['reportsUnnotified'],
+                'reportsPrescribed'    => $a['reportsPrescribed'] <=> $b['reportsPrescribed'],
+                'sanctionsTotal'       => $a['sanctionsTotal'] <=> $b['sanctionsTotal'],
+                'sanctionsUnnotified'  => $a['sanctionsUnnotified'] <=> $b['sanctionsUnnotified'],
+                default                => strcmp($a['lastName'], $b['lastName']) ?: strcmp($a['firstName'], $b['firstName']) ?: strcmp($a['groupName'], $b['groupName']),
+            };
+
+            return $desc ? -$cmp : $cmp;
+        });
+
+        return $rows;
     }
 }

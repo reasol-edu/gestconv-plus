@@ -298,6 +298,46 @@ class GroupRepositoryTest extends RepositoryTestCase
         self::assertCount(0, $this->repo->findByActiveYearOfCentreWithCourse($centre));
     }
 
+    // ── hasTutoredGroupsInYear ───────────────────────────────────────────────
+
+    public function testHasTutoredGroupsInYearReturnsTrueWhenTeacherTutorsAGroup(): void
+    {
+        [$centre, $year, $course] = $this->makeChain('41000021');
+        $teacher = $this->makeTeacher('hastutored.tutor');
+        $group   = $this->makeGroup($course, 'DAM1A');
+        $this->persist($teacher, $group);
+        $group->addTutor($teacher);
+        $this->flush();
+
+        self::assertTrue($this->repo->hasTutoredGroupsInYear($centre, $teacher, $year));
+    }
+
+    public function testHasTutoredGroupsInYearReturnsFalseForPlainGroupTeacher(): void
+    {
+        [$centre, $year, $course] = $this->makeChain('41000022');
+        $teacher = $this->makeTeacher('hastutored.plain');
+        $group   = $this->makeGroup($course, 'DAM1A');
+        $this->persist($teacher, $group);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+
+        self::assertFalse($this->repo->hasTutoredGroupsInYear($centre, $teacher, $year));
+    }
+
+    public function testHasTutoredGroupsInYearReturnsFalseForOtherAcademicYear(): void
+    {
+        [$centre, , $courseA] = $this->makeChain('41000023');
+        $otherYear = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
+        $courseB   = (new Course())->setName('DAW')->setAcademicYear($otherYear);
+        $teacher   = $this->makeTeacher('hastutored.otheryear');
+        $groupA    = $this->makeGroup($courseA, 'DAM1A');
+        $this->persist($otherYear, $courseB, $teacher, $groupA);
+        $groupA->addTutor($teacher);
+        $this->flush();
+
+        self::assertFalse($this->repo->hasTutoredGroupsInYear($centre, $teacher, $otherYear));
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
