@@ -108,9 +108,10 @@
                             </td>
                             <td class="px-6 py-3 text-right">
                                 <a href="{{ path('app_absences_show', {id: absence.id}) }}"
-                                   class="inline-flex items-center rounded-lg p-1.5 text-gray-400 hover:text-forest-600 hover:bg-gray-100 transition-colors"
-                                   title="{{ 'absence.view'|trans({}, 'admin') }}">
-                                    {{ ux_icon('heroicons:eye', {class: 'h-4 w-4'}) }}
+                                   class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium
+                                          text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                    {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
+                                    {{ 'absence.view'|trans({}, 'admin') }}
                                 </a>
                             </td>
                         </tr>
