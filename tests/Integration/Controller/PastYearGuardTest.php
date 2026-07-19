@@ -50,7 +50,7 @@ class PastYearGuardTest extends ControllerTestCase
         yield 'import GET'                     => ['GET',  '/docentes-curso/importar'];
         yield 'import_assignments GET'         => ['GET',  '/docentes-curso/importar-asignaciones'];
         yield 'register GET'                   => ['GET',  '/docentes-curso/registrar'];
-        yield 'edit GET'                       => ['GET',  "/docentes-curso/{$fakeId}/editar"];
+        yield 'subjects GET'                   => ['GET',  "/docentes-curso/{$fakeId}/materias"];
         yield 'remove POST'                    => ['POST', "/docentes-curso/{$fakeId}/quitar"];
     }
 

@@ -8,15 +8,8 @@ use App\Entity\AcademicYear;
 use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
-use App\Entity\GroupTeacher;
 use App\Entity\PersonName;
-use App\Entity\Sanction;
-use App\Entity\SanctionMeasure;
-use App\Entity\SanctionMeasureCategory;
-use App\Entity\Student;
 use App\Entity\Teacher;
-use App\Repository\SanctionTaskRepository;
-use App\Service\SanctionTaskGenerator;
 use App\Tests\Integration\ControllerTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -402,79 +395,30 @@ class CentreTeacherControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
-    // ── edit ──────────────────────────────────────────────────────────────────
+    // ── subjects ──────────────────────────────────────────────────────────────
 
-    public function testEditKeepsGroupAssignmentWithPendingSanctionTasksAndShowsError(): void
+    public function testSubjectsPageIsAccessibleToAdminAndShowsAssignments(): void
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();
         $teacher = $this->makeTeacher('teacher.1');
         $course  = (new Course())->setName('DAW')->setAcademicYear($year);
         $group   = (new Group())->setName('1ºA')->setCourse($course);
         $group->addTeacher($teacher, 'Matemáticas');
-        $groupTeacher = $group->getTeacherAssignments()->first();
-        self::assertInstanceOf(GroupTeacher::class, $groupTeacher);
 
-        $student = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-edit-1');
-
-        $this->persist($admin, $centre, $year, $course, $group, $teacher, $student);
+        $this->persist($admin, $centre, $year, $course, $group, $teacher);
         $centre->setActiveAcademicYear($year);
         $year->addTeacher($teacher);
         $this->flush();
-
-        $category = (new SanctionMeasureCategory())
-            ->setEducationalCentre($centre)
-            ->setName('Correcciones')
-            ->setPosition(0);
-        $measure = (new SanctionMeasure())
-            ->setEducationalCentre($centre)
-            ->setCategory($category)
-            ->setName('Expulsión con actividades')
-            ->setHasDateRange(true)
-            ->setPosition(0)
-            ->setActive(true);
-        $sanction = (new Sanction())
-            ->setAcademicYear($year)
-            ->setStudent($student)
-            ->setGroup($group)
-            ->setRegisteredBy($teacher)
-            ->setDetails('Detalles de prueba')
-            ->setNoMeasureApplied(false)
-            ->setEffectiveFrom(new \DateTimeImmutable('+2 days'))
-            ->setEffectiveTo(new \DateTimeImmutable('+7 days'));
-        $sanction->addMeasure($measure);
-        $this->persist($category, $measure, $sanction);
-        $this->flush();
-
-        /** @var SanctionTaskGenerator $generator */
-        $generator = self::getContainer()->get(SanctionTaskGenerator::class);
-        $tasks     = $generator->generateFor($sanction);
-        self::assertCount(1, $tasks);
-        $this->flush();
-
         $this->loginAs($admin);
 
         $centreId  = $centre->getId()->toRfc4122();
         $teacherId = $teacher->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/' . $teacherId . '/editar');
-        $token     = $crawler->filter('[name="_token"]')->first()->attr('value');
+        $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/' . $teacherId . '/materias');
 
-        // Submit the form without the group's id, attempting to unassign the teacher.
-        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/' . $teacherId . '/editar', [
-            '_token'    => $token,
-            'group_ids' => [],
-        ]);
-
-        self::assertResponseRedirects();
-        $this->client->followRedirect();
-        self::assertStringContainsString(
-            'tienen tareas de sanción asociadas',
-            (string) $this->client->getResponse()->getContent(),
-        );
-
-        /** @var SanctionTaskRepository $sanctionTasks */
-        $sanctionTasks = self::getContainer()->get(SanctionTaskRepository::class);
-        self::assertTrue($sanctionTasks->existsForGroupTeacher($groupTeacher));
-        self::assertTrue($group->getTeacherAssignments()->contains($groupTeacher));
+        self::assertResponseIsSuccessful();
+        $html = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Materias asignadas', $html);
+        self::assertStringContainsString('Matemáticas', $html);
     }
 
     // ── remove ────────────────────────────────────────────────────────────────
