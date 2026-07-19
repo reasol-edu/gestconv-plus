@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
@@ -17,6 +18,7 @@ use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\SanctionTask;
+use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
@@ -139,7 +141,7 @@ class DashboardControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('a[href$="/estudiantes/importar"]'));
-        self::assertStringContainsString('matriculados este curso', $crawler->filter('body')->text());
+        self::assertStringContainsString('en los últimos 30 días', $crawler->filter('body')->text());
     }
 
     public function testNoGroupsDefinedShowsNoticeForAdminInsteadOfStudentsNotice(): void
@@ -269,6 +271,121 @@ class DashboardControllerTest extends ControllerTestCase
         self::assertStringContainsString('1', $crawler->filter('a[href$="/sanciones?pendingTasksOnly=1"]')->text());
     }
 
+    public function testQuickActionsPendingTasksIsHiddenForNonTeachingTeacher(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('#quick-actions a[href$="/tareas-de-sancion"]'));
+    }
+
+    public function testQuickActionsPendingTasksIsAnActionableLinkWithCountForSubjectTeacher(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenarioWithActiveYear(false);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $this->flush();
+        $groupTeacher = $group->getTeacherAssignments()->first();
+
+        $sanction = (new Sanction())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setRegisteredBy($teacher)
+            ->setDetails('Detalles de prueba.')
+            ->setNoMeasureApplied(false);
+        $this->persist($sanction);
+        $this->persist(new SanctionTask($sanction, $groupTeacher));
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#quick-actions a[href$="/tareas-de-sancion"]');
+        self::assertStringContainsString('1', $crawler->filter('#quick-actions a[href$="/tareas-de-sancion"]')->text());
+    }
+
+    public function testQuickActionsNewAbsenceIsShownForTeacherBelongingToViewYear(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $centre->getActiveAcademicYear()->addTeacher($teacher);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#quick-actions a[href$="/ausencias/nuevo"]');
+        self::assertStringContainsString('Anotar ausencia propia', $crawler->filter('#quick-actions a[href$="/ausencias/nuevo"]')->text());
+    }
+
+    public function testQuickActionsNewAbsenceShowsAdminWordingForCentreAdmin(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(true);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#quick-actions a[href$="/ausencias/nuevo"]');
+        self::assertStringContainsString('Anotar ausencia de un docente', $crawler->filter('#quick-actions a[href$="/ausencias/nuevo"]')->text());
+    }
+
+    public function testPendingPrescriptionCardShowsZeroWhenNothingPending(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(true);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Partes próximos a prescribir', $crawler->filter('body')->text());
+        self::assertStringContainsString('ninguno cerca del plazo de prescripción', $crawler->filter('body')->text());
+    }
+
+    public function testPendingPrescriptionCardCountsUnnotifiedReportsNearingCutoff(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenarioWithActiveYear(true);
+        // Ajustes por defecto: 14 días para prescribir, aviso con 7 días de antelación → corte a los 7 días.
+        $this->makeUnnotifiedReport($centre, $group, $student, $teacher, new \DateTimeImmutable('-8 days'));
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        $bodyText = $crawler->filter('body')->text();
+        self::assertStringContainsString('Partes próximos a prescribir', $bodyText);
+        self::assertStringContainsString('sin notificar, cerca del plazo de prescripción automática', $bodyText);
+    }
+
+    public function testPendingPrescriptionCardIsHiddenWhenAutoPrescriptionDisabled(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(true);
+        $this->setCentreIntegerSetting('notifications.report_auto_prescribe_days', $centre, 0);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('Partes próximos a prescribir', $crawler->filter('body')->text());
+    }
+
+    private function setCentreIntegerSetting(string $key, EducationalCentre $centre, int $value): void
+    {
+        /** @var SettingDefinition $definition */
+        $definition = $this->em->getRepository(SettingDefinition::class)->findOneBy(['key' => $key]);
+
+        $centreValue = (new CentreSettingValue())
+            ->setDefinition($definition)
+            ->setCentre($centre)
+            ->setValue((string) $value);
+        $this->persist($centreValue);
+        $this->flush();
+    }
+
     private function makeTeacher(string $username): Teacher
     {
         return (new Teacher(new PersonName('Test', 'Teacher')))->setUsername($username);
@@ -295,7 +412,7 @@ class DashboardControllerTest extends ControllerTestCase
         return [$teacher, $centre, $group, $student];
     }
 
-    private function makeUnnotifiedReport(EducationalCentre $centre, Group $group, Student $student, Teacher $creator): IncidentReport
+    private function makeUnnotifiedReport(EducationalCentre $centre, Group $group, Student $student, Teacher $creator, ?\DateTimeImmutable $occurredAt = null): IncidentReport
     {
         [$category, $behavior] = $this->makeBehavior($centre);
         $report = (new IncidentReport())
@@ -304,7 +421,7 @@ class DashboardControllerTest extends ControllerTestCase
             ->setStudent($student)
             ->setGroup($group)
             ->setRegisteredBy($creator)
-            ->setOccurredAt(new \DateTimeImmutable())
+            ->setOccurredAt($occurredAt ?? new \DateTimeImmutable())
             ->setDescription('<p>Test.</p>')
             ->setExpelledFromClass(false);
         $report->addBehavior($behavior);

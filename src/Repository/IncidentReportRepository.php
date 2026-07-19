@@ -211,6 +211,49 @@ class IncidentReportRepository extends ServiceEntityRepository
     }
 
     /**
+     * Count of reports the viewer can see that are still un-notified, not prescribed, and whose
+     * occurrence date is at or before the given cutoff — i.e. close enough to the centre's
+     * auto-prescription deadline to warrant an "próximos a prescribir" warning. $cutoff is
+     * expected to already account for the centre's auto-prescription window minus the warning
+     * threshold (see {@see WarnUpcomingReportPrescriptionsHandler} for the equivalent per-teacher
+     * email digest logic).
+     */
+    public function countPendingPrescriptionForViewer(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        AcademicYear $year,
+        \DateTimeImmutable $cutoff,
+    ): int {
+        $qb = $this->createQueryBuilder('r')
+            ->select('COUNT(DISTINCT r.id)')
+            ->join('r.group', 'g')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('ay = :year')
+            ->andWhere('r.notifiedCommunication IS NULL')
+            ->andWhere('r.prescribedAt IS NULL')
+            ->andWhere('r.occurredAt <= :cutoff')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('cutoff', $cutoff);
+
+        $hasFullAccess = $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+        if (!$viewer->isAdmin() && !$hasFullAccess) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    'r.registeredBy = :viewer',
+                    ':viewer MEMBER OF g.tutors',
+                )
+            )->setParameter('viewer', $viewer->getId(), 'uuid');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * Returns the distinct groups that have at least one incident report visible to the viewer,
      * ordered by group name. Used to populate the group filter dropdown.
      *

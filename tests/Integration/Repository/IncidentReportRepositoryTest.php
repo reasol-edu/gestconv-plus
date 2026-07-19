@@ -248,6 +248,81 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertSame(1, $this->repo->countRecentByCentre($worldA['centre'], $admin, $worldB['year'], 30));
     }
 
+    // ── countPendingPrescriptionForViewer ──────────────────────────────────────
+
+    public function testCountPendingPrescriptionForViewerCountsOnlyReportsAtOrBeforeCutoff(): void
+    {
+        $world  = $this->makeWorld();
+        $admin  = $this->makeTeacher('admin.prescription', admin: true);
+        $old    = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-10 days'));
+        $recent = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-1 day'));
+        $this->persist($admin, $old, $recent);
+
+        $count = $this->repo->countPendingPrescriptionForViewer(
+            $world['centre'],
+            $admin,
+            $world['year'],
+            new \DateTimeImmutable('-5 days'),
+        );
+
+        self::assertSame(1, $count);
+    }
+
+    public function testCountPendingPrescriptionForViewerExcludesNotifiedReports(): void
+    {
+        $world = $this->makeWorld();
+        $admin = $this->makeTeacher('admin.prescription.notified', admin: true);
+        $report = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-10 days'));
+        $this->persist($admin, $report);
+        $this->notify($report, $world, $admin);
+
+        $count = $this->repo->countPendingPrescriptionForViewer(
+            $world['centre'],
+            $admin,
+            $world['year'],
+            new \DateTimeImmutable('-5 days'),
+        );
+
+        self::assertSame(0, $count);
+    }
+
+    public function testCountPendingPrescriptionForViewerExcludesAlreadyPrescribedReports(): void
+    {
+        $world  = $this->makeWorld();
+        $admin  = $this->makeTeacher('admin.prescription.prescribed', admin: true);
+        $report = $this->makeReport($world, creator: $admin, occurredAt: new \DateTimeImmutable('-10 days'));
+        $report->setPrescribedAt(new \DateTimeImmutable());
+        $this->persist($admin, $report);
+
+        $count = $this->repo->countPendingPrescriptionForViewer(
+            $world['centre'],
+            $admin,
+            $world['year'],
+            new \DateTimeImmutable('-5 days'),
+        );
+
+        self::assertSame(0, $count);
+    }
+
+    public function testCountPendingPrescriptionForViewerRestrictsToOwnReportsForRegularTeacher(): void
+    {
+        $world = $this->makeWorld();
+        $t1    = $this->makeTeacher('t1.prescription');
+        $t2    = $this->makeTeacher('t2.prescription');
+        $r1    = $this->makeReport($world, creator: $t1, occurredAt: new \DateTimeImmutable('-10 days'));
+        $r2    = $this->makeReport($world, creator: $t2, occurredAt: new \DateTimeImmutable('-10 days'));
+        $this->persist($t1, $t2, $r1, $r2);
+
+        $count = $this->repo->countPendingPrescriptionForViewer(
+            $world['centre'],
+            $t1,
+            $world['year'],
+            new \DateTimeImmutable('-5 days'),
+        );
+
+        self::assertSame(1, $count);
+    }
+
     // ── createFilteredQuery: aislamiento por curso académico ──────────────────
 
     public function testCreateFilteredQueryRestrictsToGivenAcademicYear(): void

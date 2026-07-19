@@ -36,8 +36,10 @@
     {# ── Accesos rápidos: acciones principales, grandes y táctiles ──────────── #}
     {% set can_students_section = is_granted('educational_centre.section', active_centre) %}
     {% set can_sanction         = is_granted('sanction.create', active_centre) %}
+    {% set can_register_absence = is_centre_admin() or belongs_to_view_year() %}
+    {% set quick_action_count  = 2 + (can_sanction ? 1 : 0) + (hasTeachingGroups ? 1 : 0) + (can_register_absence ? 1 : 0) %}
     {% if not viewing_past %}
-        <div id="quick-actions" class="grid grid-cols-1 {{ can_sanction ? 'sm:grid-cols-3' : 'sm:grid-cols-2' }} gap-3">
+        <div id="quick-actions" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-{{ quick_action_count }} gap-3">
             <a href="{{ path('app_incidents_new') }}"
                class="flex items-center gap-3 rounded-2xl bg-forest-600 px-5 py-5 text-white shadow-xs hover:bg-forest-700 transition-colors">
                 <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15">
@@ -103,6 +105,47 @@
                     </div>
                 {% endif %}
             {% endif %}
+
+            {% if hasTeachingGroups %}
+                {% if pendingSanctionTasksCount > 0 %}
+                    <a href="{{ path('app_sanction_tasks_index') }}"
+                       class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
+                        <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                            {{ ux_icon('heroicons:clipboard-document-list', {class: 'h-6 w-6'}) }}
+                            <span class="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-xs">
+                                {{ pendingSanctionTasksCount }}
+                            </span>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_pending_tasks'|trans({}, 'dashboard') }}</span>
+                            <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_pending_tasks_help'|trans({}, 'dashboard') }}</span>
+                        </span>
+                    </a>
+                {% else %}
+                    <div class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 opacity-60" aria-disabled="true">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-200 text-gray-400">
+                            {{ ux_icon('heroicons:clipboard-document-list', {class: 'h-6 w-6'}) }}
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-base font-semibold text-gray-500">{{ 'quick_action_pending_tasks'|trans({}, 'dashboard') }}</span>
+                            <span class="block text-xs text-gray-400 truncate">{{ 'quick_action_pending_tasks_none'|trans({}, 'dashboard') }}</span>
+                        </span>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            {% if can_register_absence %}
+                <a href="{{ path('app_absences_new') }}"
+                   class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
+                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                        {{ ux_icon('heroicons:user-minus', {class: 'h-6 w-6'}) }}
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_new_absence'|trans({}, 'dashboard') }}</span>
+                        <span class="block text-xs text-gray-500 truncate">{{ (is_centre_admin() ? 'quick_action_new_absence_help_admin' : 'quick_action_new_absence_help_self')|trans({}, 'dashboard') }}</span>
+                    </span>
+                </a>
+            {% endif %}
         </div>
     {% endif %}
 
@@ -147,20 +190,6 @@
         </div>
     {% else %}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {% set students_url = can_students_section ? path('app_centre_students_index', {centreId: active_centre.id}) : null %}
-        {% if students_url %}<a href="{{ students_url }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">{% else %}<div class="col-span-1 rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">{% endif %}
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    {{ 'students'|trans({}, 'dashboard') }}
-                </p>
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-forest-50 text-forest-600">
-                    {{ ux_icon('heroicons:academic-cap', {class: 'h-4.5 w-4.5'}) }}
-                </span>
-            </div>
-            <p class="mt-3 text-3xl font-bold text-gray-900 tabular-nums">{{ studentCount }}</p>
-            <p class="mt-1 text-xs text-gray-500">{{ 'students_enrolled'|trans({}, 'dashboard') }}</p>
-        {% if students_url %}</a>{% else %}</div>{% endif %}
-
         <a href="{{ path('app_incidents_index') }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
             <div class="flex items-center justify-between">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -187,36 +216,20 @@
             <p class="mt-1 text-xs text-gray-500">{{ 'active_sanctions_help'|trans({}, 'dashboard') }}</p>
         </a>
 
-        {% set has_pending = pendingQueue.total > 0 %}
+        {% if showPrescriptionWarning %}
+        {% set has_pending_prescription = pendingPrescriptionCount > 0 %}
         <a href="{{ path('app_notifications_index') }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
             <div class="flex items-center justify-between">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    {{ 'pending_notifications'|trans({}, 'dashboard') }}
+                    {{ 'pending_prescription'|trans({}, 'dashboard') }}
                 </p>
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg {{ has_pending ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600' }}">
-                    {{ ux_icon(has_pending ? 'heroicons:bell-alert' : 'heroicons:check-circle', {class: 'h-4.5 w-4.5'}) }}
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg {{ has_pending_prescription ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600' }}">
+                    {{ ux_icon(has_pending_prescription ? 'heroicons:clock' : 'heroicons:check-circle', {class: 'h-4.5 w-4.5'}) }}
                 </span>
             </div>
-            <p class="mt-3 text-3xl font-bold tabular-nums {{ has_pending ? 'text-red-600' : 'text-green-600' }}">{{ pendingQueue.total }}</p>
+            <p class="mt-3 text-3xl font-bold tabular-nums {{ has_pending_prescription ? 'text-red-600' : 'text-green-600' }}">{{ pendingPrescriptionCount }}</p>
             <p class="mt-1 text-xs text-gray-500">
-                {{ (has_pending ? 'pending_notifications_help' : 'pending_notifications_none')|trans({}, 'dashboard') }}
-            </p>
-        </a>
-
-        {% if hasTeachingGroups %}
-        {% set has_pending_tasks = pendingSanctionTasksCount > 0 %}
-        <a href="{{ path('app_sanction_tasks_index') }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    {{ 'pending_sanction_tasks'|trans({}, 'dashboard') }}
-                </p>
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg {{ has_pending_tasks ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600' }}">
-                    {{ ux_icon(has_pending_tasks ? 'heroicons:clipboard-document-list' : 'heroicons:check-circle', {class: 'h-4.5 w-4.5'}) }}
-                </span>
-            </div>
-            <p class="mt-3 text-3xl font-bold tabular-nums {{ has_pending_tasks ? 'text-red-600' : 'text-green-600' }}">{{ pendingSanctionTasksCount }}</p>
-            <p class="mt-1 text-xs text-gray-500">
-                {{ (has_pending_tasks ? 'pending_sanction_tasks_help' : 'pending_sanction_tasks_none')|trans({}, 'dashboard') }}
+                {{ (has_pending_prescription ? 'pending_prescription_help' : 'pending_prescription_none')|trans({}, 'dashboard') }}
             </p>
         </a>
         {% endif %}
@@ -240,6 +253,76 @@
         {% endif %}
     </div>
     {% endif %}
+    {% endif %}
+
+    {# ── Sanciones en vigor en tus grupos (esta semana / próxima) ──────────── #}
+    {% if hasTeachingGroups or thisWeekSanctions|length > 0 or nextWeekSanctions|length > 0 %}
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
+            <h2 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                {{ ux_icon('heroicons:calendar-days', {class: 'h-4 w-4 text-gray-400'}) }}
+                {{ 'active_sanctions_week_title'|trans({}, 'dashboard') }}
+            </h2>
+            <a href="{{ path('app_sanctions_index') }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
+                {{ 'recent_reports_view_all'|trans({}, 'dashboard') }}
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 divide-y divide-gray-100 sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
+            {% for week in [
+                {label: 'active_sanctions_this_week'|trans({}, 'dashboard'), sanctions: thisWeekSanctions},
+                {label: 'active_sanctions_next_week'|trans({}, 'dashboard'), sanctions: nextWeekSanctions},
+            ] %}
+            <div>
+                <p class="px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 border-b border-gray-100">
+                    {{ week.label }}
+                </p>
+                {% if week.sanctions|length == 0 %}
+                    <p class="px-5 py-6 text-center text-sm text-gray-400">
+                        {{ 'active_sanctions_week_empty'|trans({}, 'dashboard') }}
+                    </p>
+                {% else %}
+                    <ul class="divide-y divide-gray-100">
+                        {% for sanction in week.sanctions %}
+                            <li>
+                                <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}"
+                                   class="flex items-start justify-between gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-medium text-gray-800">
+                                            {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
+                                        </p>
+                                        <p class="mt-0.5 text-xs text-gray-500">{{ sanction.group.name }}</p>
+                                        {% if sanction.noMeasureApplied %}
+                                            <span class="mt-1 inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[11px] font-medium">
+                                                {{ 'sanction.badge.no_measure'|trans({}, 'admin') }}
+                                            </span>
+                                        {% else %}
+                                            <div class="mt-1 flex flex-wrap gap-1">
+                                                {% for measure in sanction.measures %}
+                                                    <span class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 px-2 py-0.5 text-[11px] font-medium">
+                                                        {{ measure.name }}
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% if sanction.effectiveFrom %}
+                                        <p class="shrink-0 text-right text-[11px] text-gray-400 tabular-nums whitespace-nowrap">
+                                            {{ sanction.effectiveFrom|date('d/m') }}
+                                            {% if sanction.effectiveTo and sanction.effectiveTo != sanction.effectiveFrom %}
+                                                – {{ sanction.effectiveTo|date('d/m') }}
+                                            {% endif %}
+                                        </p>
+                                    {% endif %}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
 
     {# ── Últimos partes + panel condicional por rol (requieren estudiantado matriculado) ── #}
@@ -336,76 +419,6 @@
             </ul>
         </div>
         {% endif %}
-    </div>
-    {% endif %}
-
-    {# ── Sanciones en vigor en tus grupos (esta semana / próxima) ──────────── #}
-    {% if hasTeachingGroups or thisWeekSanctions|length > 0 or nextWeekSanctions|length > 0 %}
-    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
-        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                {{ ux_icon('heroicons:calendar-days', {class: 'h-4 w-4 text-gray-400'}) }}
-                {{ 'active_sanctions_week_title'|trans({}, 'dashboard') }}
-            </h2>
-            <a href="{{ path('app_sanctions_index') }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
-                {{ 'recent_reports_view_all'|trans({}, 'dashboard') }}
-            </a>
-        </div>
-
-        <div class="grid grid-cols-1 divide-y divide-gray-100 sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
-            {% for week in [
-                {label: 'active_sanctions_this_week'|trans({}, 'dashboard'), sanctions: thisWeekSanctions},
-                {label: 'active_sanctions_next_week'|trans({}, 'dashboard'), sanctions: nextWeekSanctions},
-            ] %}
-            <div>
-                <p class="px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 border-b border-gray-100">
-                    {{ week.label }}
-                </p>
-                {% if week.sanctions|length == 0 %}
-                    <p class="px-5 py-6 text-center text-sm text-gray-400">
-                        {{ 'active_sanctions_week_empty'|trans({}, 'dashboard') }}
-                    </p>
-                {% else %}
-                    <ul class="divide-y divide-gray-100">
-                        {% for sanction in week.sanctions %}
-                            <li>
-                                <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}"
-                                   class="flex items-start justify-between gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
-                                    <div class="min-w-0">
-                                        <p class="truncate text-sm font-medium text-gray-800">
-                                            {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
-                                        </p>
-                                        <p class="mt-0.5 text-xs text-gray-500">{{ sanction.group.name }}</p>
-                                        {% if sanction.noMeasureApplied %}
-                                            <span class="mt-1 inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[11px] font-medium">
-                                                {{ 'sanction.badge.no_measure'|trans({}, 'admin') }}
-                                            </span>
-                                        {% else %}
-                                            <div class="mt-1 flex flex-wrap gap-1">
-                                                {% for measure in sanction.measures %}
-                                                    <span class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 px-2 py-0.5 text-[11px] font-medium">
-                                                        {{ measure.name }}
-                                                    </span>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    {% if sanction.effectiveFrom %}
-                                        <p class="shrink-0 text-right text-[11px] text-gray-400 tabular-nums whitespace-nowrap">
-                                            {{ sanction.effectiveFrom|date('d/m') }}
-                                            {% if sanction.effectiveTo and sanction.effectiveTo != sanction.effectiveFrom %}
-                                                – {{ sanction.effectiveTo|date('d/m') }}
-                                            {% endif %}
-                                        </p>
-                                    {% endif %}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
     </div>
     {% endif %}
 

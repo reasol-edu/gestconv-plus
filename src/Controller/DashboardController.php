@@ -12,6 +12,7 @@ use App\Repository\SanctionTaskRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\SanctionVoter;
+use App\Service\AppSettingsInterface;
 use App\Service\PendingNotificationQueue;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,6 +30,7 @@ class DashboardController extends AbstractController
         private readonly GroupRepository $groupRepository,
         private readonly TeacherRepository $teacherRepository,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
+        private readonly AppSettingsInterface $settings,
     ) {}
 
     #[Route('/', name: 'app_dashboard')]
@@ -61,6 +63,8 @@ class DashboardController extends AbstractController
                 'nextWeekSanctions'    => [],
                 'pendingSanctionTasksCount'        => 0,
                 'sanctionsWithIncompleteTasksCount' => 0,
+                'pendingPrescriptionCount'          => 0,
+                'showPrescriptionWarning'           => false,
             ]);
         }
 
@@ -102,6 +106,19 @@ class DashboardController extends AbstractController
             ? $this->sanctionRepository->findActiveForTeacherInDateRange($centre, $viewer, $year, $nextMonday, $nextSunday)
             : [];
 
+        $autoPrescribeDays = $this->settings->getForCentre('notifications.report_auto_prescribe_days', $centre);
+        $warningDays       = $this->settings->getForTeacherInCentre('notifications.report_prescription_warning_days', $viewer, $centre);
+        $showPrescriptionWarning = is_int($autoPrescribeDays) && $autoPrescribeDays > 0
+            && is_int($warningDays) && $warningDays > 0;
+        $pendingPrescriptionCount = $showPrescriptionWarning
+            ? $this->incidentRepository->countPendingPrescriptionForViewer(
+                $centre,
+                $viewer,
+                $year,
+                $today->modify('-' . ($autoPrescribeDays - $warningDays) . ' days'),
+            )
+            : 0;
+
         return $this->render('dashboard/index.html.twig', [
             'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
             'groupCount'           => $this->groupRepository->countByActiveYearOfCentre($centre, $year),
@@ -121,6 +138,8 @@ class DashboardController extends AbstractController
                 ? $this->sanctionTaskRepository->countPendingForTeacher($centre, $viewer, $year)
                 : 0,
             'sanctionsWithIncompleteTasksCount' => $this->sanctionTaskRepository->countSanctionsWithIncompleteTasks($centre, $viewer, $year),
+            'pendingPrescriptionCount'          => $pendingPrescriptionCount,
+            'showPrescriptionWarning'           => $showPrescriptionWarning,
         ]);
     }
 }

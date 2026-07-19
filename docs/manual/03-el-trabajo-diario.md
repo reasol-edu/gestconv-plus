@@ -16,30 +16,34 @@ El panel de inicio muestra un resumen del curso activo, adaptado al perfil de qu
 
 ![Panel de inicio con las tarjetas de resumen](img/inicio.png)
 
-En la parte superior hay cuatro tarjetas:
+En la parte superior están los **accesos rápidos**: botones grandes pensados para el móvil, uno
+por cada acción habitual, que solo aparecen para quien puede realizarlas:
 
-- **Estudiantes** — matriculados en el curso activo (solo los visibles según el perfil).
+- **Nuevo parte** — todo el profesorado.
+- **Notificar** — con un contador en rojo si hay algo pendiente de comunicar; en gris y sin
+  contador cuando no queda nada pendiente.
+- **Nueva sanción** — solo quien puede registrar sanciones.
+- **Cumplimentar tareas** — visible para cualquier docente con grupos de materia, con un contador
+  de sus propias [tareas de sanción](#tareas-de-sancion) pendientes.
+- **Registrar ausencia** — todo el profesorado.
+
+Debajo, las tarjetas de estadísticas:
+
 - **Partes de convivencia** — registrados en los últimos 30 días y accesibles para ese docente.
 - **Sanciones vigentes** — sanciones en vigor en el día de hoy.
-- **Pendientes de notificar** — partes y sanciones aún sin comunicar a la familia. Esta tarjeta
-  se muestra siempre: en rojo cuando hay elementos pendientes y en verde cuando no queda nada por
-  comunicar.
-
-Dos tarjetas adicionales, en rojo o verde según si queda algo pendiente, están relacionadas con las
-[tareas de sanción](#tareas-de-sancion):
-
-- **Tareas de sanción pendientes** — visible para cualquier docente con grupos de materia: cuántas
-  de sus propias tareas todavía no ha cumplimentado.
+- **Partes próximos a prescribir** — partes sin notificar cuya prescripción automática está
+  próxima, según el plazo configurado para el centro. Solo se muestra si esa función está
+  activada en los ajustes.
 - **Sanciones con materias pendientes** — visible para administradores, comisión de convivencia,
-  orientación y tutores/as: cuántas sanciones del curso tienen alguna materia sin cumplimentar.
-  Enlaza al listado de sanciones con el filtro correspondiente ya aplicado.
+  orientación y tutores/as: cuántas sanciones del curso tienen alguna materia de [tareas de
+  sanción](#tareas-de-sancion) sin cumplimentar. Enlaza al listado de sanciones con el filtro
+  correspondiente ya aplicado.
 
-Debajo de las tarjetas:
+A continuación, las **sanciones en vigor en tus grupos** de esta semana y la próxima, visible para
+quien imparte materia en algún grupo.
 
-- **Accesos rápidos** — botones grandes pensados para el móvil: **Nuevo parte** (todo el
-  profesorado), **Notificar** (con un contador en rojo si hay algo pendiente de comunicar) y
-  **Nueva sanción** (solo quien puede registrar sanciones). Junto a ellos, **Importar
-  estudiantes** aparece como enlace secundario para quienes administran el centro.
+Y por último:
+
 - **Últimos partes** — los seis partes más recientes accesibles para el docente, cada uno con su
   estado (*Notificado* / *Pendiente de notificar*).
 - **Alumnado con partes pendientes de sanción** — visible para administradores, comisión de
