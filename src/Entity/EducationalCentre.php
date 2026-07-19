@@ -31,18 +31,24 @@ class EducationalCentre
     #[ORM\ManyToOne]
     private ?AcademicYear $activeAcademicYear = null;
 
+    // Sin EXTRA_LAZY a propósito: contains() se llama muchas veces por petición
+    // (voters, repositorios, TenantContextExtension) sobre el mismo centro/docente;
+    // con EXTRA_LAZY cada llamada dispara su propia consulta, mientras que con la
+    // carga lazy normal la primera llamada hidrata la colección entera (pequeña,
+    // acotada al personal con rol especial del centro) y el resto se resuelve en
+    // memoria.
     /** @var Collection<int, Teacher> */
-    #[ORM\ManyToMany(targetEntity: Teacher::class, fetch: 'EXTRA_LAZY')]
+    #[ORM\ManyToMany(targetEntity: Teacher::class)]
     #[ORM\JoinTable(name: 'educational_centre_admins')]
     private Collection $admins;
 
     /** @var Collection<int, Teacher> */
-    #[ORM\ManyToMany(targetEntity: Teacher::class, fetch: 'EXTRA_LAZY')]
+    #[ORM\ManyToMany(targetEntity: Teacher::class)]
     #[ORM\JoinTable(name: 'educational_centre_committee_members')]
     private Collection $committeeMembers;
 
     /** @var Collection<int, Teacher> */
-    #[ORM\ManyToMany(targetEntity: Teacher::class, fetch: 'EXTRA_LAZY')]
+    #[ORM\ManyToMany(targetEntity: Teacher::class)]
     #[ORM\JoinTable(name: 'educational_centre_counselors')]
     private Collection $counselors;
 

@@ -11,11 +11,23 @@ use App\Repository\AcademicYearRepository;
 use App\Repository\EducationalCentreRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Service\ResetInterface;
 
-final class TenantContext implements TenantContextInterface
+final class TenantContext implements TenantContextInterface, ResetInterface
 {
     private const SESSION_KEY      = 'tenant.centre_id';
     private const SESSION_YEAR_KEY = 'tenant.year_id';
+
+    // Memoiza el centro resuelto durante la petición: getSelectedCentre() se
+    // invoca muchas veces por request (subscriber, controladores, extensiones
+    // Twig) y cada llamada repetía la consulta con JOIN además de un refresh()
+    // condicional. $centreResolved distingue "aún no resuelto" de "resuelto a
+    // null" (sesión con un id que ya no existe). reset() vacía el caché por si
+    // el proceso PHP llegara a reutilizarse entre peticiones (p.ej. FrankenPHP
+    // en modo worker); con el despliegue actual (php_server sin worker) cada
+    // petición ya reconstruye el contenedor, así que es una red de seguridad.
+    private bool $centreResolved = false;
+    private ?EducationalCentre $resolvedCentre = null;
 
     public function __construct(
         private readonly RequestStack $requestStack,
@@ -31,6 +43,10 @@ final class TenantContext implements TenantContextInterface
 
     public function getSelectedCentre(): ?EducationalCentre
     {
+        if ($this->centreResolved) {
+            return $this->resolvedCentre;
+        }
+
         $id = $this->requestStack->getSession()->get(self::SESSION_KEY);
         if (!\is_string($id)) {
             return null;
@@ -44,12 +60,17 @@ final class TenantContext implements TenantContextInterface
             $this->em->refresh($centre);
         }
 
+        $this->resolvedCentre = $centre;
+        $this->centreResolved = true;
+
         return $centre;
     }
 
     public function selectCentre(EducationalCentre $centre): void
     {
         $this->requestStack->getSession()->set(self::SESSION_KEY, $centre->getId()->toRfc4122());
+        $this->resolvedCentre = $centre;
+        $this->centreResolved = true;
         $this->clearYear();
     }
 
@@ -98,5 +119,13 @@ final class TenantContext implements TenantContextInterface
     public function clear(): void
     {
         $this->requestStack->getSession()->remove(self::SESSION_KEY);
+        $this->resolvedCentre = null;
+        $this->centreResolved = false;
+    }
+
+    public function reset(): void
+    {
+        $this->resolvedCentre = null;
+        $this->centreResolved = false;
     }
 }
