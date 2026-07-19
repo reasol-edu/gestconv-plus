@@ -47,7 +47,7 @@
     {% set can_students_section = is_granted('educational_centre.section', active_centre) %}
     {% set can_sanction         = is_granted('sanction.create', active_centre) %}
     {% set can_register_absence = is_centre_admin() or belongs_to_view_year() %}
-    {% set quick_action_count  = 2 + (can_sanction ? 1 : 0) + (hasTeachingGroups ? 1 : 0) + (can_register_absence ? 1 : 0) %}
+    {% set quick_action_count  = 2 + (can_sanction ? 1 : 0) + (hasTeachingGroups ? 1 : 0) + (can_register_absence ? 1 : 0) + (hasGuardsAccess ? 1 : 0) %}
     {% if not viewing_past %}
         <div id="quick-actions" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-{{ quick_action_count }} gap-3">
             <a href="{{ path('app_incidents_new') }}"
@@ -60,6 +60,19 @@
                     <span class="block text-xs text-forest-50/90 truncate">{{ 'quick_action_new_report_help'|trans({}, 'dashboard') }}</span>
                 </span>
             </a>
+
+            {% if hasGuardsAccess %}
+                <a href="{{ path('app_guards_index') }}"
+                   class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
+                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                        {{ ux_icon('heroicons:shield-check', {class: 'h-6 w-6'}) }}
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_guards'|trans({}, 'dashboard') }}</span>
+                        <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_guards_help'|trans({}, 'dashboard') }}</span>
+                    </span>
+                </a>
+            {% endif %}
 
             {% set has_pending_notify = pendingQueue.total > 0 %}
             {% if has_pending_notify %}

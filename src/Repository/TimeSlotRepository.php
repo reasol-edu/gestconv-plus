@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\EducationalCentre;
+use App\Entity\Teacher;
 use App\Entity\TimeSlot;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -81,5 +83,22 @@ class TimeSlotRepository extends ServiceEntityRepository
             ->setParameter('year', $year->getId(), 'uuid')
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Whether the teacher guards at least one time slot of the given centre/year. Uses MEMBER OF
+     * (translated to an EXISTS subquery) instead of touching the EXTRA_LAZY guards collection, to
+     * avoid triggering a per-call query.
+     */
+    public function hasGuardDutyInYear(EducationalCentre $centre, Teacher $teacher, AcademicYear $year): bool
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.academicYear = :year')
+            ->andWhere(':teacher MEMBER OF t.guards')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('teacher', $teacher->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
     }
 }

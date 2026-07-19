@@ -21,6 +21,7 @@ use App\Entity\SanctionTask;
 use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Entity\TimeSlot;
 use App\Tests\Integration\ControllerTestCase;
 
 class DashboardControllerTest extends ControllerTestCase
@@ -345,6 +346,47 @@ class DashboardControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('#quick-actions a[href$="/ausencias/nuevo"]');
         self::assertStringContainsString('Anotar ausencia de un docente', $crawler->filter('#quick-actions a[href$="/ausencias/nuevo"]')->text());
+    }
+
+    public function testQuickActionsGuardsIsHiddenForTeacherWithoutGuardDuty(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('#quick-actions a[href$="/guardias"]'));
+    }
+
+    public function testQuickActionsGuardsIsShownForTeacherWithGuardDuty(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $slot = (new TimeSlot())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setName('1ª hora')
+            ->setDayOfWeek(0)
+            ->setStartTime(\DateTimeImmutable::createFromFormat('H:i', '08:00'))
+            ->setEndTime(\DateTimeImmutable::createFromFormat('H:i', '08:55'));
+        $slot->addGuard($teacher);
+        $this->persist($slot);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#quick-actions a[href$="/guardias"]');
+    }
+
+    public function testQuickActionsGuardsIsShownForAdmin(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(true);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#quick-actions a[href$="/guardias"]');
     }
 
     public function testPendingPrescriptionCardShowsZeroWhenNothingPending(): void

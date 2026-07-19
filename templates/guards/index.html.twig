@@ -1,0 +1,195 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'guards.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-4xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ 'guards.title'|trans({}, 'admin') }}</h1>
+            {% if year is not null %}
+                <p class="mt-1 text-sm text-gray-500">
+                    {% if isToday %}{{ 'guards.today_prefix'|trans({}, 'admin') }}{% endif %}{{ ('weekday.' ~ date.format('N'))|trans({}, 'calendar') }}, {{ date|date('d/m/Y') }}
+                </p>
+            {% endif %}
+        </div>
+        {% if year is not null %}
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ path('app_guards_index', {date: prevDate}) }}"
+                   class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-forest-600 transition-colors"
+                   title="{{ 'guards.prev_day'|trans({}, 'admin') }}" aria-label="{{ 'guards.prev_day'|trans({}, 'admin') }}">
+                    {{ ux_icon('heroicons:chevron-left', {class: 'h-4 w-4'}) }}
+                </a>
+                <a href="{{ path('app_guards_index', {date: nextDate}) }}"
+                   class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-forest-600 transition-colors"
+                   title="{{ 'guards.next_day'|trans({}, 'admin') }}" aria-label="{{ 'guards.next_day'|trans({}, 'admin') }}">
+                    {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if year is null %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-8 text-center">
+            <p class="text-sm text-gray-400">{{ 'guards.no_year'|trans({}, 'admin') }}</p>
+        </div>
+    {% elseif slots is empty and sanctionsByGroup is empty %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-8 text-center">
+            <p class="text-sm text-gray-400">{{ 'guards.empty'|trans({}, 'admin') }}</p>
+        </div>
+    {% else %}
+
+        {% if slots|length > 1 %}
+            <div class="flex flex-wrap gap-2">
+                {% for item in slots %}
+                    <a href="#slot-{{ item.timeSlot.id }}"
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-forest-300 hover:text-forest-700 transition-colors">
+                        {{ item.timeSlot.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if slots is not empty %}
+            <div class="space-y-6"
+                 {% if isToday %}data-controller="current-time-slot" data-current-time-slot-current-class="ring-2 ring-amber-300 border-amber-300 bg-amber-50"{% endif %}>
+                {% for item in slots %}
+                    <section id="slot-{{ item.timeSlot.id }}"
+                             class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden transition-colors"
+                             {% if isToday %}data-current-time-slot-target="slot" data-start="{{ item.timeSlot.startTime|date('H:i') }}" data-end="{{ item.timeSlot.endTime|date('H:i') }}"{% endif %}>
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <h2 class="text-base font-semibold text-gray-900">{{ item.timeSlot.name }}</h2>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ item.timeSlot.startTime|date('H:i') }}–{{ item.timeSlot.endTime|date('H:i') }}</p>
+                        </div>
+
+                        <div class="px-6 py-4">
+                            <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ 'guards.absences_title'|trans({}, 'admin') }}</h3>
+                            {% if item.rows is empty %}
+                                <p class="text-sm text-gray-400">{{ 'board_today_no_absences'|trans({}, 'calendar') }}</p>
+                            {% else %}
+                                <ul class="space-y-4">
+                                    {% for row in item.rows %}
+                                        <li>
+                                            <p class="text-sm font-medium text-gray-900">{{ row.teacher.name.full() }}</p>
+                                            {% if row.activity %}
+                                                {% set activity = row.activity %}
+                                                {% if activity.subjects is not empty %}
+                                                    <div class="flex flex-wrap gap-1.5 mt-1.5 mb-2">
+                                                        {% for subject in activity.subjects %}
+                                                            <span class="inline-flex items-center rounded-full bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-0.5 text-xs font-medium">
+                                                                {{ subject.subject }} <span class="text-forest-500 font-normal ml-1">{{ subject.group.name }}</span>
+                                                            </span>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                                <div class="prose prose-sm max-w-none text-gray-700 mt-1.5">{{ activity.description|sanitize_html('app.rich_text') }}</div>
+                                                {% if activity.attachments is not empty %}
+                                                    <div class="mt-2 flex flex-wrap gap-2">
+                                                        {% for attachment in activity.attachments %}
+                                                            <a href="{{ path('app_guards_activity_attachment_download', {absenceId: activity.absence.id, activityId: activity.id, attachmentId: attachment.id}) }}"
+                                                               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                                                      hover:border-forest-300 hover:text-forest-700 hover:bg-forest-50 transition-colors">
+                                                                {{ ux_icon('heroicons:paper-clip', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                                                                {{ attachment.filename }}
+                                                            </a>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            {% else %}
+                                                <p class="text-sm text-gray-400 mt-0.5">{{ 'guards.no_activity'|trans({}, 'admin') }}</p>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </section>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+            <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
+                {{ ux_icon('heroicons:scale', {class: 'h-5 w-5 text-gray-400'}) }}
+                <h2 class="text-base font-semibold text-gray-900">{{ 'guards.sanctioned_title'|trans({}, 'admin') }}</h2>
+            </div>
+
+            {% if sanctionsByGroup is empty %}
+                <p class="px-6 py-8 text-sm text-gray-400 text-center">{{ 'guards.sanctioned_empty'|trans({}, 'admin') }}</p>
+            {% else %}
+                <div class="divide-y divide-gray-100">
+                    {% for groupName, entries in sanctionsByGroup %}
+                        <div class="px-6 py-4">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ groupName }}</p>
+                            <ul class="space-y-3">
+                                {% for entry in entries %}
+                                    {% set sanction = entry.sanction %}
+                                    <li>
+                                        <details class="group">
+                                            <summary class="flex items-center justify-between gap-4 cursor-pointer list-none">
+                                                <span class="text-sm text-gray-900">
+                                                    <span class="font-medium">{{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}</span>
+                                                    {% if sanction.effectiveFrom and sanction.effectiveTo %}
+                                                        <span class="text-gray-500">— {{ sanction.effectiveFrom|date('d/m/Y') }} – {{ sanction.effectiveTo|date('d/m/Y') }}</span>
+                                                    {% endif %}
+                                                </span>
+                                                {{ ux_icon('heroicons:chevron-down', {class: 'h-4 w-4 text-gray-400 shrink-0 transition-transform group-open:rotate-180'}) }}
+                                            </summary>
+
+                                            <div class="mt-3 pl-4 border-l-2 border-gray-100 space-y-4">
+                                                {% for task in entry.tasks %}
+                                                    <div>
+                                                        <div class="flex items-center justify-between gap-3 mb-1.5">
+                                                            <p class="text-sm font-medium text-gray-800">{{ task.groupTeacher.subject }}</p>
+                                                            {% if task.completedAt is null %}
+                                                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-medium">
+                                                                    {{ ux_icon('heroicons:clock', {class: 'h-3 w-3'}) }}
+                                                                    {{ 'sanction_task.status.pending'|trans({}, 'admin') }}
+                                                                </span>
+                                                            {% elseif task.notApplicable %}
+                                                                <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-600 px-2.5 py-0.5 text-xs font-medium">
+                                                                    {{ ux_icon('heroicons:minus-circle', {class: 'h-3 w-3'}) }}
+                                                                    {{ 'sanction_task.status.not_applicable'|trans({}, 'admin') }}
+                                                                </span>
+                                                            {% else %}
+                                                                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-0.5 text-xs font-medium">
+                                                                    {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
+                                                                    {{ 'sanction_task.status.completed'|trans({}, 'admin') }}
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
+
+                                                        {% if task.description %}
+                                                            <div class="prose prose-sm max-w-none text-gray-700">{{ task.description|sanitize_html('app.rich_text') }}</div>
+                                                        {% endif %}
+
+                                                        {% if task.attachments is not empty %}
+                                                            <div class="mt-2 flex flex-wrap gap-2">
+                                                                {% for attachment in task.attachments %}
+                                                                    <a href="{{ path('app_guards_task_attachment_download', {sanctionId: sanction.id, taskId: task.id, attachmentId: attachment.id}) }}"
+                                                                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                                                              hover:border-forest-300 hover:text-forest-700 hover:bg-forest-50 transition-colors">
+                                                                        {{ ux_icon('heroicons:paper-clip', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                                                                        {{ attachment.filename }}
+                                                                    </a>
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </details>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+    {% endif %}
+
+</div>
+{% endblock %}

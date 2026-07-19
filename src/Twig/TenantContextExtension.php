@@ -8,6 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
 use App\Repository\GroupRepository;
+use App\Repository\TimeSlotRepository;
 use App\Service\TenantContext;
 use Symfony\Bundle\SecurityBundle\Security;
 use Twig\Extension\AbstractExtension;
@@ -19,6 +20,7 @@ final class TenantContextExtension extends AbstractExtension
         private readonly TenantContext $context,
         private readonly Security $security,
         private readonly GroupRepository $groups,
+        private readonly TimeSlotRepository $timeSlots,
     ) {}
 
     public function getFunctions(): array
@@ -33,6 +35,7 @@ final class TenantContextExtension extends AbstractExtension
             new TwigFunction('belongs_to_view_year', $this->belongsToViewYear(...)),
             new TwigFunction('tutors_any_group', $this->tutorsAnyGroup(...)),
             new TwigFunction('teaches_any_group', $this->teachesAnyGroup(...)),
+            new TwigFunction('is_guard_any_time_slot', $this->isGuardAnyTimeSlot(...)),
         ];
     }
 
@@ -140,5 +143,22 @@ final class TenantContextExtension extends AbstractExtension
         $year = $this->context->getViewYear($centre);
 
         return $year !== null && $this->groups->hasTeachingGroupsInYear($centre, $user, $year);
+    }
+
+    public function isGuardAnyTimeSlot(): bool
+    {
+        $centre = $this->context->getSelectedCentre();
+        if ($centre === null) {
+            return false;
+        }
+
+        $user = $this->security->getUser();
+        if (!$user instanceof Teacher) {
+            return false;
+        }
+
+        $year = $this->context->getViewYear($centre);
+
+        return $year !== null && $this->timeSlots->hasGuardDutyInYear($centre, $user, $year);
     }
 }

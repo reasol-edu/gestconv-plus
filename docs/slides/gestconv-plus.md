@@ -245,6 +245,23 @@ El parte pasa a **"Notificado"** y queda en el historial.
 
 ---
 
+## Guardias: qué hacer al cubrir un tramo horario
+
+- Sección **Mis guardias** en el menú lateral, visible para cualquier
+  docente que tenga guardia en algún tramo horario del curso —
+  **Guardias** a secas para la administración, que ve todos los tramos.
+- Navegación día a día, con el tramo en curso resaltado en vivo al
+  visualizar el día de hoy, igual que en el modo tablón.
+- Para cada tramo: las **ausencias del día** con la actividad encomendada
+  (descripción y adjuntos descargables) o un aviso de que no hay nada
+  registrado.
+- Al final, una sola vez para todo el día: el **alumnado sancionado**,
+  agrupado por grupo, con sus **tareas de sanción** desplegables (materia,
+  estado, detalle y adjuntos) — para poder entregárselas sobre la marcha.
+- Acceso rápido desde el panel de inicio, junto a **Registrar un parte**.
+
+---
+
 <!-- _class: tight -->
 
 ## Tareas de sanción: trabajo durante una expulsión

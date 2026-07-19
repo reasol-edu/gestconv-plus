@@ -363,6 +363,40 @@ eliminarlo, además de poder añadir otros nuevos.
     descripción no se ven afectadas: queda una nota al final indicando qué fichero se eliminó, y
     cuándo.
 
+## Guardias
+
+Cuando un docente cubre una guardia (un tramo horario en el que figura como guarda), la sección
+**Mis guardias** del menú lateral —**Guardias** a secas para quien administra el centro— reúne todo
+lo que necesita saber para esa clase: qué docentes del tramo están ausentes, qué actividad dejaron
+encomendada (con sus adjuntos) y qué estudiantado sancionado hay ese día para poder entregarle sus
+tareas pendientes.
+
+La sección es visible para cualquier docente que tenga guardia en algún tramo horario del curso
+visualizado —no hace falta que sea precisamente ese día— y para los administradores del centro, que
+ven además **todos** los tramos, no solo los propios (ver
+[Permisos de un vistazo](08-permisos-de-un-vistazo.md#guardias)).
+
+La cabecera muestra el día activo, precedido de «Hoy: » cuando corresponde a la fecha actual, junto
+con dos flechas para navegar al día anterior y siguiente. Si el día visualizado es hoy, el tramo
+horario en curso se resalta automáticamente, igual que en el modo tablón de las pantallas de sala de
+profesores. Cuando hay más de un tramo ese día, un grupo de botones al principio de la página
+permite saltar directamente a cada uno.
+
+Para cada tramo horario se muestran, una detrás de otra:
+
+- **Ausencias** — el docente ausente y, si dejó una actividad registrada para ese tramo, su
+  descripción completa junto con los ficheros adjuntos disponibles para descargar. Si no dejó
+  actividad, aparece un aviso indicándolo.
+- **Alumnado sancionado** — a diferencia de las ausencias, esta subsección aparece una sola vez al
+  final de la página (no se repite en cada tramo), agrupada por grupo. Cada estudiante muestra su
+  nombre completo y las fechas de la sanción; un desplegable permite consultar, materia por materia,
+  el estado de su tarea de sanción, el trabajo asignado y sus adjuntos.
+
+!!! note "La descarga conjunta en ZIP queda pendiente"
+    Por ahora, los ficheros adjuntos —tanto de actividades como de tareas de sanción— se descargan
+    de uno en uno. La descarga conjunta en un único archivo ZIP (por actividad, por tramo horario o
+    por sanción) está prevista para una fase posterior.
+
 ## Tareas de sanción
 
 Cuando una sanción incluye una medida con **rango de fechas** (el estudiante pasa un periodo fuera

@@ -11,6 +11,8 @@ use App\Repository\SanctionRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
+use App\Repository\TimeSlotRepository;
+use App\Security\Voter\EducationalCentreVoter;
 use App\Security\Voter\SanctionVoter;
 use App\Service\AppSettingsInterface;
 use App\Service\PendingNotificationQueue;
@@ -29,6 +31,7 @@ class DashboardController extends AbstractController
         private readonly SanctionTaskRepository $sanctionTaskRepository,
         private readonly GroupRepository $groupRepository,
         private readonly TeacherRepository $teacherRepository,
+        private readonly TimeSlotRepository $timeSlotRepository,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
         private readonly AppSettingsInterface $settings,
     ) {}
@@ -59,6 +62,7 @@ class DashboardController extends AbstractController
                 'tutoredGroups'        => [],
                 'sanctionableCount'    => 0,
                 'hasTeachingGroups'    => false,
+                'hasGuardsAccess'      => false,
                 'thisWeekSanctions'    => [],
                 'nextWeekSanctions'    => [],
                 'pendingSanctionTasksCount'        => 0,
@@ -89,7 +93,9 @@ class DashboardController extends AbstractController
             }
         }
 
-        $canSanction = $this->isGranted(SanctionVoter::CREATE, $centre);
+        $canSanction    = $this->isGranted(SanctionVoter::CREATE, $centre);
+        $hasGuardsAccess = $this->isGranted(EducationalCentreVoter::SECTION, $centre)
+            || $this->timeSlotRepository->hasGuardDutyInYear($centre, $viewer, $year);
 
         $today      = new \DateTimeImmutable('today');
         $dow        = (int) $today->format('N'); // 1 = lunes … 7 = domingo
@@ -132,6 +138,7 @@ class DashboardController extends AbstractController
             'tutoredGroups'        => $tutoredGroups,
             'sanctionableCount'    => $canSanction ? $this->sanctionRepository->countSanctionableByCentre($centre) : 0,
             'hasTeachingGroups'    => $hasTeachingGroups,
+            'hasGuardsAccess'      => $hasGuardsAccess,
             'thisWeekSanctions'    => $thisWeekSanctions,
             'nextWeekSanctions'    => $nextWeekSanctions,
             'pendingSanctionTasksCount'         => $hasTeachingGroups

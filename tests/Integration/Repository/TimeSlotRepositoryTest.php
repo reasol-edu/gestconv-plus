@@ -177,6 +177,49 @@ class TimeSlotRepositoryTest extends RepositoryTestCase
         self::assertSame(0, $this->repo->countByAcademicYear($this->year));
     }
 
+    // ── hasGuardDutyInYear ───────────────────────────────────────────────────
+
+    public function testHasGuardDutyInYearReturnsTrueWhenTeacherGuardsSomeSlot(): void
+    {
+        $centre  = $this->year->getEducationalCentre();
+        $teacher = (new Teacher(new PersonName('Ana', 'Pérez')))->setUsername('ana.perez.' . uniqid('', false));
+        $this->persist($teacher);
+
+        $slot = $this->makeSlot('1ª hora', 0, '08:00', '08:55');
+        $slot->addGuard($teacher);
+        $this->persist($slot);
+
+        self::assertTrue($this->repo->hasGuardDutyInYear($centre, $teacher, $this->year));
+    }
+
+    public function testHasGuardDutyInYearReturnsFalseWhenTeacherGuardsNoSlot(): void
+    {
+        $centre  = $this->year->getEducationalCentre();
+        $teacher = (new Teacher(new PersonName('Ana', 'Pérez')))->setUsername('ana.perez.' . uniqid('', false));
+        $this->persist($teacher);
+
+        $this->persist($this->makeSlot('1ª hora', 0, '08:00', '08:55'));
+
+        self::assertFalse($this->repo->hasGuardDutyInYear($centre, $teacher, $this->year));
+    }
+
+    public function testHasGuardDutyInYearReturnsFalseWhenTeacherGuardsSlotInOtherYear(): void
+    {
+        $centre  = $this->year->getEducationalCentre();
+        $teacher = (new Teacher(new PersonName('Ana', 'Pérez')))->setUsername('ana.perez.' . uniqid('', false));
+        $this->persist($teacher);
+
+        $otherCentre = (new EducationalCentre())->setCode('43000005')->setName('IES Otro')->setCity('Cádiz');
+        $otherYear   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($otherCentre);
+        $this->persist($otherCentre, $otherYear);
+
+        $slot = $this->makeSlotForYear($otherYear, 'Ajeno', 0, '08:00', '08:55');
+        $slot->addGuard($teacher);
+        $this->persist($slot);
+
+        self::assertFalse($this->repo->hasGuardDutyInYear($centre, $teacher, $this->year));
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private function makeSlot(string $name, int $day, string $start, string $end): TimeSlot

@@ -1011,6 +1011,18 @@ sanction_task.refresh.cancel: 'Cancelar'
 sanction_task.refresh.nothing_to_refresh: 'Las materias de esta sanción ya están al día: no hay nada que refrescar.'
 sanction_task.refresh.flash.done: 'Materias de la sanción refrescadas correctamente.'
 
+# Guardias
+guards.title: 'Información sobre las guardias'
+guards.today_prefix: 'Hoy: '
+guards.prev_day: 'Día anterior'
+guards.next_day: 'Día siguiente'
+guards.no_year: 'No hay un curso académico disponible.'
+guards.empty: 'No hay tramos ni alumnado sancionado para este día.'
+guards.absences_title: 'Ausencias'
+guards.no_activity: 'Sin actividad registrada para este tramo.'
+guards.sanctioned_title: 'Alumnado sancionado'
+guards.sanctioned_empty: 'Ningún alumno sancionado este día.'
+
 # Medidas disciplinarias (admin)
 sanction_measure.title: 'Medidas disciplinarias'
 sanction_measure.hub_help: 'Define las medidas correctoras y disciplinarias aplicables en las sanciones.'

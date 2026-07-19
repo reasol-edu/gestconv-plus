@@ -112,6 +112,23 @@ visibilidad que la [tabla de Sanciones](#sanciones) — pero sin dar acceso al c
 tareas de otros docentes, que sigue siendo exclusivo de quien la tiene asignada. **Refrescar
 materias** exige además el permiso de edición sobre la sanción, igual que registrar o eliminarla.
 
+## Guardias
+
+Las [guardias](03-el-trabajo-diario.md#guardias) muestran, para el tramo horario y día
+visualizados, las ausencias con sus actividades y el alumnado sancionado del centro.
+
+| Acción | Docente con guardia ese curso | Docente sin ninguna guardia | Admin de centro | Admin global |
+|---|:---:|:---:|:---:|:---:|
+| Ver la sección Mis guardias / Guardias | ✓ | — | ✓ | ✓ |
+| Ver los tramos horarios propios de un día | ✓ | — | ✓ | ✓ |
+| Ver todos los tramos horarios de un día (no solo los propios) | — | — | ✓ | ✓ |
+| Descargar adjuntos de actividades y tareas de sanción mostrados en la pantalla | ✓ | — | ✓ | ✓ |
+
+El acceso a la sección no depende de tener guardia justo el día que se está viendo, sino de tener
+guardia en **algún** tramo horario del curso académico visualizado; eso permite navegar a otros días
+con fines de consulta. Quien entra por tener guardia en algún tramo, aunque ese día concreto no le
+corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos de otros docentes.
+
 ## Centro educativo
 
 | Acción | Docente | Admin de centro | Admin global |
