@@ -1,4 +1,4 @@
-.PHONY: dev dev-stop fixtures migrate setup test slides docs docs-pdf docs-web docs-serve bump-readme
+.PHONY: dev dev-stop fixtures migrate setup test slides docs docs-pdf docs-web docs-serve cheatsheets bump-readme
 
 # Versión publicada, leída de config/services.yaml (app.version). La portada del
 # manual en PDF y la presentación la muestran automáticamente, así que en cada
@@ -68,8 +68,26 @@ slides:
 	npx --yes @marp-team/marp-cli docs/slides/_build.md --allow-local-files -o docs/slides/gestconv-plus.pdf
 	rm -f docs/slides/_build.md
 
-## Genera el manual completo: PDF y web.
-docs: docs-pdf docs-web
+## Genera las fichas de referencia rápida (docs/cheatsheets/ficha-*.pdf), una por función básica
+## del profesorado.
+##
+## Mismo mecanismo que "slides": sustituye {{VERSION}}/{{PUB_DATE}} en un _build.md temporal (en
+## docs/cheatsheets/, para que las rutas a img/ resuelvan) y compila cada ficha por separado con
+## marp, para que cada una se publique como un PDF independiente. El tema compartido
+## (docs/cheatsheets/theme.css) se registra con --theme-set.
+cheatsheets:
+	@command -v npx >/dev/null 2>&1 || { echo "Necesitas Node.js/npx para generar las fichas. Instala Node y reintenta."; exit 1; }
+	@for f in docs/cheatsheets/*.md; do \
+		base=$$(basename "$$f" .md); \
+		case "$$base" in README|_build) continue ;; esac; \
+		sed -e 's/{{VERSION}}/$(VERSION)/g' -e 's#{{PUB_DATE}}#$(PUB_DATE)#g' "$$f" > docs/cheatsheets/_build.md; \
+		npx --yes @marp-team/marp-cli docs/cheatsheets/_build.md --allow-local-files \
+			--theme-set docs/cheatsheets/theme.css -o "docs/cheatsheets/ficha-$$base.pdf"; \
+	done
+	rm -f docs/cheatsheets/_build.md
+
+## Genera el manual completo: PDF, web y fichas de referencia rápida.
+docs: docs-pdf docs-web cheatsheets
 
 ## Genera el manual en PDF (docs/manual/gestconv-plus-manual.pdf).
 ##

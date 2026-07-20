@@ -244,7 +244,7 @@ jobs:
           # (evita descargar un Chromium aparte).
           CHROME_PATH: /usr/bin/google-chrome
           PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
-        run: make slides docs-pdf docs-web
+        run: make slides docs-pdf docs-web cheatsheets
 
       - name: Ensamblar activos con sufijo de versión
         env:
@@ -254,6 +254,10 @@ jobs:
           cp docs/manual/gestconv-plus-manual.pdf "_docs-dist/gestconv-plus-manual-${VERSION}.pdf"
           cp docs/slides/gestconv-plus.pdf        "_docs-dist/gestconv-plus-presentacion-${VERSION}.pdf"
           (cd docs/manual-site && zip -r "../../_docs-dist/gestconv-plus-manual-web-${VERSION}.zip" .)
+          for f in docs/cheatsheets/ficha-*.pdf; do
+            name=$(basename "$f" .pdf)
+            cp "$f" "_docs-dist/gestconv-plus-${name}-${VERSION}.pdf"
+          done
 
       - uses: actions/upload-artifact@v4
         with:
@@ -289,6 +293,7 @@ jobs:
             gestconv-plus-*.zip
             gestconv-plus-manual-*.pdf
             gestconv-plus-presentacion-*.pdf
+            gestconv-plus-ficha-*.pdf
             gestconv-plus-manual-web-*.zip
           generate_release_notes: true
 
