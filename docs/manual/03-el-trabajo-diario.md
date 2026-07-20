@@ -310,6 +310,8 @@ clase) ve directamente el listado de ausencias del centro, sin pestañas.
 
 ### Registrar una ausencia
 
+![Formulario de nueva ausencia](img/ausencias/ausencia-nueva.png)
+
 1. Pulsa **Nueva ausencia** en la esquina superior derecha del listado.
 2. Si quien registra es administrador, elige primero el **docente** para el que se registra la
    ausencia (por defecto, uno mismo).
@@ -318,6 +320,8 @@ clase) ve directamente el listado de ausencias del centro, sin pestañas.
 4. Guarda: se abre el detalle de la ausencia, todavía sin actividades.
 
 ### Añadir actividades
+
+![Formulario de nueva actividad](img/ausencias/actividad-nueva.png)
 
 Desde el detalle de la ausencia, pulsa **Nueva actividad** para indicar qué hacer en una de las
 clases afectadas:
@@ -342,6 +346,8 @@ Una misma ausencia puede tener tantas actividades como clases afectadas, incluso
 día si hay más de un tramo horario implicado.
 
 ### Consultar, editar y eliminar
+
+![Detalle de una ausencia con una actividad y su adjunto](img/ausencias/ausencia-detalle.png)
 
 El listado de **Ausencias** muestra las propias (o las del centro, en la pestaña
 correspondiente), con sus fechas y el número de actividades de cada una. Su detalle reúne todas
@@ -383,6 +389,8 @@ profesores. Cuando hay más de un tramo ese día, o alumnado sancionado que most
 botones al principio de la página permite saltar directamente a cada tramo y a **Alumnado
 sancionado**.
 
+![Bloque de un tramo horario con el profesorado de guardia y las ausencias de esa hora](img/guardias/guardias-tramo.png)
+
 Para cada tramo horario se muestran, una detrás de otra:
 
 - **Profesorado de guardia** — el nombre completo de cada docente asignado a ese tramo, o un aviso
@@ -408,6 +416,8 @@ archivo ZIP:
 - Junto a cada sanción del listado de alumnado sancionado, si alguna de sus tareas tiene adjuntos:
   descarga los adjuntos de **todas** las tareas de esa sanción, en carpetas separadas por materia.
 
+![Alumnado sancionado con el desplegable de una tarea abierto](img/guardias/guardias-alumnado-sancionado.png)
+
 ## Tareas de sanción
 
 Cuando una sanción incluye una medida con **rango de fechas** (el estudiante pasa un periodo fuera
@@ -420,6 +430,8 @@ La sección **Tareas de sanción** del menú lateral aparece para cualquier doce
 materia a algún grupo en el curso visualizado, y lista sus propias tareas (pendientes primero),
 con el estudiante, la materia y el periodo de la sanción de cada una.
 
+![Listado de tareas de sanción de un docente](img/tareas-sancion/tareas-listado.png)
+
 !!! note "Solo tu propia tarea"
     Un docente ve y cumplimenta únicamente las tareas de sus propias materias. No tiene acceso a
     la pantalla completa de la sanción (datos de contacto familiar, observaciones o historial de
@@ -431,6 +443,8 @@ Pulsa sobre cualquier tarea de la lista (el nombre del estudiante o el icono de 
 su formulario, que muestra también, a modo de contexto, el nombre del estudiante, las fechas de la
 sanción, su descripción (si la tiene) y el estado del resto de materias de esa misma sanción (sin
 enlace a su contenido). Desde ahí se puede:
+
+![Formulario de una tarea de sanción con el trabajo asignado y un adjunto](img/tareas-sancion/tareas-formulario.png)
 
 - Redactar el **trabajo asignado** en el editor de texto enriquecido y, opcionalmente, **adjuntar
   ficheros** — mismo límite de tamaño (10 MB por fichero) y formatos admitidos que en las
