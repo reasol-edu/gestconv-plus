@@ -1,5 +1,5 @@
 /**
- * Captura las capturas móviles de las 5 fichas rápidas (docs/cheatsheets/img/).
+ * Captura las capturas móviles de las 6 fichas rápidas (docs/cheatsheets/img/).
  *
  * Mismo patrón que scripts/capture-tutorial-shots.mjs y capture-misc-shots.mjs (servidor ya
  * arrancado en SHOTS_BASE_URL, datos sembrados), pero con el viewport móvil de Playwright
@@ -10,7 +10,10 @@
  * scripts/capture-misc-shots.mjs), datos que AppFixtures tampoco crea: alguna Absence con
  * actividad y adjuntos, una SanctionTask pendiente para roberto.guerrero, y un TimeSlot con
  * guardias asignadas a un docente para hoy — sembrar con un comando de consola desechable, igual
- * que el resto de datos de demostración (ver memoria project-screenshot-workflow).
+ * que el resto de datos de demostración (ver memoria project-screenshot-workflow). Para «Editar
+ * los datos de contacto» no hace falta sembrar nada más: AppFixtures ya asigna a
+ * roberto.guerrero como tutor del primer grupo con alumnado, y el propio script rellena el
+ * formulario (los campos empiezan vacíos).
  */
 import { chromium, devices } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -232,6 +235,61 @@ async function fillQuill(page, mountSelector, text) {
 
     await page.locator('#sanctioned-students')
         .screenshot({ path: `${root}/mis-guardias-4.png` });
+
+    await page.close();
+}
+
+// ── Editar los datos de contacto de un estudiante (roberto.guerrero, tutor de grupo) ────────
+{
+    const page = await browser.newPage({ ...iphone, locale: 'es-ES' });
+    await login(page, 'roberto.guerrero', 'ejemplo');
+
+    await page.goto(`${baseUrl}/mi-tutoria`);
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+
+    const viewProfileLink = page.locator('a:has-text("Ver ficha")').first();
+    await viewProfileLink.scrollIntoViewIfNeeded();
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/editar-contacto-1.png` });
+
+    await viewProfileLink.click();
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+
+    // El formulario no tiene id en los campos, solo name (a diferencia del resto de formularios de
+    // la app), así que se seleccionan por name.
+    const contactHeading = page.locator('h2', { hasText: 'Datos de contacto' }).first();
+    await contactHeading.scrollIntoViewIfNeeded();
+    await hideToolbar(page);
+    await contactHeading.locator('xpath=../..').screenshot({ path: `${root}/editar-contacto-2.png` });
+
+    await page.click('button:has-text("Editar contacto")');
+    await page.waitForTimeout(200);
+    await hideToolbar(page);
+
+    await page.fill('input[name="tutorName1"]', 'María Fernández Ruiz');
+    await page.fill('input[name="tutorEmail1"]', 'maria.fernandez@example.com');
+    await page.fill('input[name="tutorName2"]', 'José Fernández Ruiz');
+    await page.fill('input[name="tutorEmail2"]', 'jose.fernandez@example.com');
+    await hideToolbar(page);
+    await page.locator('dialog').screenshot({ path: `${root}/editar-contacto-3.png` });
+
+    await page.fill('input[name="contactPhone1"]', '600 111 222');
+    await page.fill('input[name="contactPhone1Notes"]', 'Madre, preferible por la tarde');
+    await page.fill('input[name="contactPhone2"]', '600 333 444');
+    await page.fill('input[name="contactPhone2Notes"]', 'Padre');
+    await page.fill('textarea[name="details"]', 'Recogida autorizada solo a los tutores legales.');
+    await hideToolbar(page);
+    await page.locator('dialog').screenshot({ path: `${root}/editar-contacto-4.png` });
+
+    await page.click('dialog button[type="submit"]');
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    const savedHeading = page.locator('h2', { hasText: 'Datos de contacto' }).first();
+    await savedHeading.scrollIntoViewIfNeeded();
+    await hideToolbar(page);
+    await savedHeading.locator('xpath=../..').screenshot({ path: `${root}/editar-contacto-5.png` });
 
     await page.close();
 }

@@ -8,10 +8,10 @@ carpeta.
 ## Ficheros
 
 - `registrar-parte.md`, `notificar-parte.md`, `registrar-ausencia.md`, `tareas-sancion.md`,
-  `mis-guardias.md` — una ficha [Marp](https://marp.app) por función, con el mismo mecanismo de
-  versión/fecha que `docs/slides/gestconv-plus.md` (marcadores `{{VERSION}}`/`{{PUB_DATE}}`
-  sustituidos por `make cheatsheets`).
-- `theme.css` — tema Marp compartido por las 5 fichas (página A4 vertical, paleta de marca).
+  `mis-guardias.md`, `editar-contacto.md` — una ficha [Marp](https://marp.app) por función, con el
+  mismo mecanismo de versión/fecha que `docs/slides/gestconv-plus.md` (marcadores
+  `{{VERSION}}`/`{{PUB_DATE}}` sustituidos por `make cheatsheets`).
+- `theme.css` — tema Marp compartido por las 6 fichas (página A4 vertical, paleta de marca).
 - `img/` — capturas de pantalla móviles referenciadas desde las fichas.
 - `ficha-*.pdf` y `_build.md` — salidas generadas por `make cheatsheets` (ver abajo); no se editan
   a mano.

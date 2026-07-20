@@ -743,7 +743,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   configuración, con capturas paso a paso.
 - Para el día a día en el móvil, las **fichas de referencia rápida** resumen
   en una página cada función básica: registrar y notificar un parte,
-  registrar una ausencia, cumplimentar tareas de sanción y «Mis guardias».
+  registrar una ausencia, cumplimentar tareas de sanción, «Mis guardias»
+  y editar los datos de contacto de un estudiante como tutor/a de grupo.
 - Ante cualquier duda sobre un permiso o un ajuste concreto, consulta primero
   la sección de **ajustes** o el capítulo de **roles y permisos** del manual.
 - El equipo del centro que administra GestConv+ es el primer punto de
