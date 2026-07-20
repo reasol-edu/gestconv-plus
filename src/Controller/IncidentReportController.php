@@ -187,7 +187,7 @@ class IncidentReportController extends AbstractController
             $occurredAtRaw     = trim($request->request->getString('occurred_at'));
             $locationId        = trim($request->request->getString('location_id'));
             $description       = trim($request->request->getString('description'));
-            $expelled          = $request->request->getBoolean('expelled_from_class');
+            $expelled          = $request->request->getString('expelled_from_class') === 'yes';
             $assignedTasks     = trim($request->request->getString('assigned_tasks')) ?: null;
             $tasksCompletedRaw = $request->request->getString('tasks_completed');
 
@@ -687,7 +687,7 @@ class IncidentReportController extends AbstractController
             $occurredAtRaw     = trim($request->request->getString('occurred_at'));
             $locationIdRaw     = trim($request->request->getString('location_id'));
             $description       = trim($request->request->getString('description'));
-            $expelled          = $request->request->getBoolean('expelled_from_class');
+            $expelled          = $request->request->getString('expelled_from_class') === 'yes';
             $assignedTasks     = trim($request->request->getString('assigned_tasks')) ?: null;
             $tasksCompletedRaw = $request->request->getString('tasks_completed');
             $prescribedAtRaw   = $this->isGranted(IncidentReportVoter::PRESCRIBE, $report)

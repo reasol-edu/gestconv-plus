@@ -41,7 +41,7 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 <div class="step">
   <span class="num">4</span>
   <div class="text">
-    <p>Describe lo sucedido y activa <strong>Expulsión del aula</strong> si corresponde.</p>
+    <p>Describe lo sucedido y elige <strong>Sí</strong> en Expulsión del aula si corresponde.</p>
     <img src="img/registrar-parte-4.png" alt="Descripción y expulsión">
   </div>
 </div>

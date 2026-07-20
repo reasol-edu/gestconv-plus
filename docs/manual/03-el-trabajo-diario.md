@@ -93,9 +93,9 @@ especiales amplían esa visibilidad (ver [Permisos de un vistazo](08-permisos-de
    cuántas hay seleccionadas.
 6. **Descripción de lo acontecido** — campo de texto obligatorio, con formato. Describe los
    hechos con detalle.
-7. **Expulsión del aula** — activa el interruptor si el estudiante fue expulsado. Aparecerán dos
-   campos adicionales: *Tareas encargadas durante la expulsión* y *¿Realizó las tareas?*
-   (No se sabe / Sí / No).
+7. **Expulsión del aula** — elige **Sí** si el estudiante fue expulsado (por defecto está marcado
+   **No**). Aparecerán dos campos adicionales: *Tareas encargadas durante la expulsión* y
+   *¿Realizó las tareas?* (No se sabe / Sí / No).
 8. Pulsa **Guardar parte**. Una pantalla de confirmación muestra los partes creados (uno por
    estudiante) con accesos directos para **notificar a la familia**, **crear otro parte** o
    **volver al listado**.

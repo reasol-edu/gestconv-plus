@@ -79,7 +79,7 @@ async function fillQuill(page, mountSelector, text) {
     await page.screenshot({ path: `${root}/registrar-parte-3.png` });
 
     await fillQuill(page, '#description', 'El alumno interrumpió reiteradamente la clase y no atendió a las indicaciones del profesorado.');
-    await page.click('#expelled_from_class');
+    await page.click('input[name="expelled_from_class"][value="yes"]');
     await page.waitForTimeout(200);
     await hideToolbar(page);
     await page.screenshot({ path: `${root}/registrar-parte-4.png` });

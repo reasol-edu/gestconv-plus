@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['checkbox', 'details'];
+    static targets = ['yesRadio', 'details'];
 
     connect() {
         this.sync();
@@ -12,7 +12,7 @@ export default class extends Controller {
     }
 
     sync() {
-        const expelled = this.checkboxTarget.checked;
+        const expelled = this.yesRadioTarget.checked;
         this.detailsTarget.classList.toggle('hidden', !expelled);
     }
 }
