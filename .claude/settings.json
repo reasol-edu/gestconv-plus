@@ -14,7 +14,15 @@
       "Bash(php bin/console debug:container *)",
       "Bash(php bin/console doctrine:schema:validate)",
       "Bash(php bin/console doctrine:migrations:status)",
-      "Bash(composer show *)"
+      "Bash(composer show *)",
+      "Bash(command -v *)",
+      "Bash(php bin/console debug:translation *)",
+      "Bash(php bin/console list *)",
+      "Bash(php bin/console importmap:audit)",
+      "Bash(php bin/console debug:config *)",
+      "Bash(gh run watch *)",
+      "Bash(git -C /Users/lrlopez/Documents/Proyectos/gestconv-plus status *)",
+      "Bash(git -C /Users/lrlopez/Documents/Proyectos/gestconv-plus diff *)"
     ]
   }
 }
