@@ -152,8 +152,8 @@ desactívalo en su lugar.
 
 ### Copiar catálogos entre centros
 
-Los cuatro catálogos incluyen botones **Exportar JSON** e **Importar JSON** para copiar la
-configuración de un centro a otro: la exportación descarga un fichero con los elementos y sus
+Los cuatro catálogos incluyen botones **Exportar configuración** e **Importar configuración**
+para copiar la configuración de un centro a otro: la exportación descarga un fichero con los elementos y sus
 categorías, y la importación lo vuelve a cargar, creando lo que no exista y actualizando el resto
 por nombre (sin distinguir mayúsculas). Al importar se puede marcar la opción de **vaciar el
 catálogo existente** antes de incorporar el fichero; esta acción no se puede deshacer (los
