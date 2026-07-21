@@ -1,5 +1,5 @@
 /**
- * Captura las capturas móviles de las 6 fichas rápidas (docs/cheatsheets/img/).
+ * Captura las capturas móviles de las 7 fichas rápidas (docs/cheatsheets/img/).
  *
  * Mismo patrón que scripts/capture-tutorial-shots.mjs y capture-misc-shots.mjs (servidor ya
  * arrancado en SHOTS_BASE_URL, datos sembrados), pero con el viewport móvil de Playwright
@@ -8,12 +8,13 @@
  *
  * Requiere, además de fixtures + tmp:seed-shots (partes/sanciones, ver
  * scripts/capture-misc-shots.mjs), datos que AppFixtures tampoco crea: alguna Absence con
- * actividad y adjuntos, una SanctionTask pendiente para roberto.guerrero, y un TimeSlot con
- * guardias asignadas a un docente para hoy — sembrar con un comando de consola desechable, igual
- * que el resto de datos de demostración (ver memoria project-screenshot-workflow). Para «Editar
- * los datos de contacto» no hace falta sembrar nada más: AppFixtures ya asigna a
- * roberto.guerrero como tutor del primer grupo con alumnado, y el propio script rellena el
- * formulario (los campos empiezan vacíos).
+ * actividad y adjuntos, una SanctionTask pendiente para roberto.guerrero, un TimeSlot con
+ * guardias asignadas a un docente para hoy, y al menos dos IncidentReport ya notificados a la
+ * familia para un mismo estudiante (para que salga sancionable en «Registrar una sanción») —
+ * sembrar con un comando de consola desechable, igual que el resto de datos de demostración (ver
+ * memoria project-screenshot-workflow). Para «Editar los datos de contacto» no hace falta sembrar
+ * nada más: AppFixtures ya asigna a roberto.guerrero como tutor del primer grupo con alumnado, y
+ * el propio script rellena el formulario (los campos empiezan vacíos).
  */
 import { chromium, devices } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -290,6 +291,55 @@ async function fillQuill(page, mountSelector, text) {
     await savedHeading.scrollIntoViewIfNeeded();
     await hideToolbar(page);
     await savedHeading.locator('xpath=../..').screenshot({ path: `${root}/editar-contacto-5.png` });
+
+    await page.close();
+}
+
+// ── Registrar una sanción (carmen.diaz, comisión de convivencia) ────────────
+{
+    const page = await browser.newPage({ ...iphone, locale: 'es-ES' });
+    await login(page, 'carmen.diaz', 'ejemplo');
+
+    await page.goto(`${baseUrl}/sanciones/nueva`);
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    const searchInput = page.locator('input[type="search"]');
+    await searchInput.click();
+    await page.keyboard.type('Gil Cabrera', { delay: 30 });
+    await page.waitForTimeout(700);
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/registrar-sancion-1.png` });
+
+    // El enlace «Nueva sanción» de cada fila reutiliza la misma ruta que el buscador
+    // (app_sanctions_new), pero con studentId/groupId como query string, no como segmento.
+    const newSanctionLink = page.locator('a[href*="/sanciones/nueva?studentId="]').first();
+    await newSanctionLink.click();
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+
+    await page.locator('input[name="reports[]"]').first().check();
+    await page.locator('input[name="reports[]"]').nth(1).check();
+    await hideToolbar(page);
+    await page.locator('input[name="reports[]"]').first().locator('xpath=../..')
+        .screenshot({ path: `${root}/registrar-sancion-2.png` });
+
+    const measuresSection = page.locator('h2', { hasText: 'Medida disciplinaria' }).first().locator('xpath=..');
+    await measuresSection.scrollIntoViewIfNeeded();
+    await page.locator('input[name="measures[]"]').first().check();
+    await page.waitForTimeout(200);
+    await hideToolbar(page);
+    await measuresSection.screenshot({ path: `${root}/registrar-sancion-3.png` });
+
+    await fillQuill(page, '#details', 'Se aplica una amonestación oral y se informa a la familia de la reiteración de conductas disruptivas.');
+    await page.fill('#calendar_label', 'Amonestación');
+    await hideToolbar(page);
+    const detailsSection = page.locator('h2', { hasText: 'Detalle de la sanción' }).first().locator('xpath=..');
+    await detailsSection.scrollIntoViewIfNeeded();
+    await detailsSection.screenshot({ path: `${root}/registrar-sancion-4.png` });
+
+    await page.locator('button[type="submit"]').scrollIntoViewIfNeeded();
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/registrar-sancion-5.png` });
 
     await page.close();
 }
