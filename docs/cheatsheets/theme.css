@@ -86,6 +86,22 @@ h1 {
   color: var(--nx-accent);
 }
 
+/* Iconos de línea (heroicons, ver docs/cheatsheets/instalar-app.md). Van como <img> porque
+   Marp escapa las etiquetas HTML que no reconoce (como <svg>) fuera de un atributo src;
+   el color va ya fijo en el propio SVG (un <img> no hereda currentColor del texto). Selector
+   reforzado (.step img.icn) para ganarle en especificidad a ".step img" de abajo, pensada
+   para las capturas de pantalla, no para iconos en línea con el texto. */
+.step img.icn {
+  display: inline;
+  width: 1.05em;
+  height: 1.05em;
+  max-height: none;
+  vertical-align: -0.18em;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .step img {
   display: block;
   max-height: 62mm;

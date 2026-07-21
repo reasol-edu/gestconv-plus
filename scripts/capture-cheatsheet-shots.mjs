@@ -344,5 +344,18 @@ async function fillQuill(page, mountSelector, text) {
     await page.close();
 }
 
+// ── Añadir la app a la pantalla de inicio (roberto.guerrero, panel de inicio) ──────
+{
+    const page = await browser.newPage({ ...iphone, locale: 'es-ES' });
+    await login(page, 'roberto.guerrero', 'ejemplo');
+
+    await page.goto(`${baseUrl}/`);
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/instalar-app-1.png` });
+
+    await page.close();
+}
+
 await browser.close();
 console.log('Capturas guardadas en', root);
