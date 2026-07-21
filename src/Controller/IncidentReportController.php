@@ -25,6 +25,7 @@ use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
 use App\Service\AppSettingsInterface;
 use App\Service\IncidentReportFormHandler;
+use App\Service\ObservationFormHandler;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\TenantContext;
@@ -49,9 +50,6 @@ class IncidentReportController extends AbstractController
         'prescribedAt',
     ];
 
-    /** @var list<string> */
-    private const LOGGED_OBSERVATION_FIELDS = ['text', 'registeredAt'];
-
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly EntityManagerInterface $em,
@@ -71,6 +69,7 @@ class IncidentReportController extends AbstractController
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly AppSettingsInterface $settings,
         private readonly IncidentReportFormHandler $formHandler,
+        private readonly ObservationFormHandler $observationHandler,
     ) {}
 
     #[Route('', name: 'app_incidents_index')]
@@ -409,8 +408,7 @@ class IncidentReportController extends AbstractController
         }
 
         $observation = new IncidentReportObservation($report, $user, new \DateTimeImmutable(), $text);
-        $this->em->persist($observation);
-        $this->em->flush();
+        $this->observationHandler->create($observation);
 
         $this->activityLog->log('incident_report_observation.created', [
             'entityId' => $observation->getId()->toRfc4122(),
@@ -452,37 +450,11 @@ class IncidentReportController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $text = trim($request->request->getString('text'));
-
-            $registeredAt = $observation->getRegisteredAt();
-            if ($canEditDate) {
-                $registeredAtRaw = trim($request->request->getString('registered_at'));
-
-                $registeredAt = null;
-                if ($registeredAtRaw !== '') {
-                    try {
-                        $registeredAt = new \DateTimeImmutable($registeredAtRaw);
-                    } catch (\Exception) {
-                        $registeredAt = null;
-                    }
-                }
-
-                if ($registeredAt === null) {
-                    $errors['registered_at'] = $this->t('incident.observation.error.invalid');
-                }
-            }
-
-            if ($text === '') {
-                $errors['text'] = $this->t('incident.observation.error.invalid');
-            }
+            ['errors' => $errors, 'registeredAt' => $registeredAt, 'text' => $text] =
+                $this->observationHandler->validateEdit($request, $observation, $canEditDate, 'incident.observation');
 
             if (empty($errors) && $registeredAt !== null) {
-                $before = $this->changeTracker->snapshot($observation, self::LOGGED_OBSERVATION_FIELDS);
-
-                $observation->setRegisteredAt($registeredAt)->setText($text);
-                $this->em->flush();
-
-                $changes = $this->changeTracker->diff($before, $observation, self::LOGGED_OBSERVATION_FIELDS);
+                $changes = $this->observationHandler->applyEdit($observation, $registeredAt, $text);
                 if ($changes !== []) {
                     $this->activityLog->log('incident_report_observation.updated', [
                         'entityId' => $observation->getId()->toRfc4122(),
@@ -528,8 +500,7 @@ class IncidentReportController extends AbstractController
 
         $entityId = $observation->getId()->toRfc4122();
 
-        $this->em->remove($observation);
-        $this->em->flush();
+        $this->observationHandler->delete($observation);
 
         $this->activityLog->log('incident_report_observation.deleted', [
             'entityId' => $entityId,

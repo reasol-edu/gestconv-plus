@@ -24,6 +24,7 @@ use App\Security\Voter\SanctionVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
 use App\Service\AppSettingsInterface;
+use App\Service\ObservationFormHandler;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\SanctionFormHandler;
@@ -52,9 +53,6 @@ class SanctionController extends AbstractController
         'registeredInSeneca',
     ];
 
-    /** @var list<string> */
-    private const LOGGED_OBSERVATION_FIELDS = ['text', 'registeredAt'];
-
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly EntityManagerInterface $em,
@@ -72,6 +70,7 @@ class SanctionController extends AbstractController
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly AppSettingsInterface $settings,
         private readonly SanctionFormHandler $formHandler,
+        private readonly ObservationFormHandler $observationHandler,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -537,8 +536,7 @@ class SanctionController extends AbstractController
         }
 
         $observation = new SanctionObservation($sanction, $user, new \DateTimeImmutable(), $text);
-        $this->em->persist($observation);
-        $this->em->flush();
+        $this->observationHandler->create($observation);
 
         $this->activityLog->log('sanction_observation.created', [
             'entityId'   => $observation->getId()->toRfc4122(),
@@ -580,35 +578,11 @@ class SanctionController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $text         = trim($request->request->getString('text'));
-            $registeredAt = $observation->getRegisteredAt();
-
-            if ($canEditDate) {
-                $registeredAtRaw = trim($request->request->getString('registered_at'));
-                $registeredAt    = null;
-                if ($registeredAtRaw !== '') {
-                    try {
-                        $registeredAt = new \DateTimeImmutable($registeredAtRaw);
-                    } catch (\Exception) {
-                        $registeredAt = null;
-                    }
-                }
-                if ($registeredAt === null) {
-                    $errors['registered_at'] = $this->t('sanction.observation.error.invalid');
-                }
-            }
-
-            if ($text === '') {
-                $errors['text'] = $this->t('sanction.observation.error.invalid');
-            }
+            ['errors' => $errors, 'registeredAt' => $registeredAt, 'text' => $text] =
+                $this->observationHandler->validateEdit($request, $observation, $canEditDate, 'sanction.observation');
 
             if (empty($errors) && $registeredAt !== null) {
-                $before = $this->changeTracker->snapshot($observation, self::LOGGED_OBSERVATION_FIELDS);
-
-                $observation->setRegisteredAt($registeredAt)->setText($text);
-                $this->em->flush();
-
-                $changes = $this->changeTracker->diff($before, $observation, self::LOGGED_OBSERVATION_FIELDS);
+                $changes = $this->observationHandler->applyEdit($observation, $registeredAt, $text);
                 if ($changes !== []) {
                     $this->activityLog->log('sanction_observation.updated', [
                         'entityId'   => $observation->getId()->toRfc4122(),
@@ -654,8 +628,7 @@ class SanctionController extends AbstractController
 
         $entityId = $observation->getId()->toRfc4122();
 
-        $this->em->remove($observation);
-        $this->em->flush();
+        $this->observationHandler->delete($observation);
 
         $this->activityLog->log('sanction_observation.deleted', [
             'entityId'   => $entityId,
