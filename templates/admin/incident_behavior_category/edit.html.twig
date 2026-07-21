@@ -38,28 +38,22 @@
             <div>
                 <p class="block text-sm font-medium text-gray-700 mb-2">{{ 'category.field.type'|trans({}, 'admin') }}</p>
                 <div class="grid grid-cols-2 gap-3">
-                    <label class="flex items-start gap-3 cursor-pointer rounded-xl border-2 px-4 py-3.5 transition-all
-                                  border-gray-200 bg-white hover:border-gray-300
-                                  has-[:checked]:border-gray-400 has-[:checked]:bg-gray-50">
-                        <input type="radio" name="serious" value="0"
-                               {{ category is null or not category.serious ? 'checked' : '' }}
-                               class="mt-0.5 h-4 w-4 shrink-0 border-gray-300 text-gray-500 focus:ring-gray-400">
-                        <div>
-                            <span class="block text-sm font-semibold text-gray-900">{{ 'category.badge.contrary'|trans({}, 'admin') }}</span>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ 'category.field.type_contrary_help'|trans({}, 'admin') }}</p>
-                        </div>
-                    </label>
-                    <label class="flex items-start gap-3 cursor-pointer rounded-xl border-2 px-4 py-3.5 transition-all
-                                  border-gray-200 bg-white hover:border-gray-300
-                                  has-[:checked]:border-red-400 has-[:checked]:bg-red-50">
-                        <input type="radio" name="serious" value="1"
-                               {{ category is not null and category.serious ? 'checked' : '' }}
-                               class="mt-0.5 h-4 w-4 shrink-0 border-gray-300 text-red-600 focus:ring-red-500">
-                        <div>
-                            <span class="block text-sm font-semibold text-gray-900">{{ 'category.badge.serious'|trans({}, 'admin') }}</span>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ 'category.field.type_serious_help'|trans({}, 'admin') }}</p>
-                        </div>
-                    </label>
+                    <twig:Form:RadioCard
+                        name="serious"
+                        value="0"
+                        label="{{ 'category.badge.contrary'|trans({}, 'admin') }}"
+                        help="{{ 'category.field.type_contrary_help'|trans({}, 'admin') }}"
+                        :checked="category is null or not category.serious"
+                        tone="gray"
+                    />
+                    <twig:Form:RadioCard
+                        name="serious"
+                        value="1"
+                        label="{{ 'category.badge.serious'|trans({}, 'admin') }}"
+                        help="{{ 'category.field.type_serious_help'|trans({}, 'admin') }}"
+                        :checked="category is not null and category.serious"
+                        tone="red"
+                    />
                 </div>
             </div>
 

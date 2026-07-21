@@ -47,9 +47,9 @@ El registro tiene dos pasos:
       motivan la sanción. Cada uno muestra la fecha y hora, el docente que lo registró y la
       descripción completa; un desplegable «Ver observaciones e historial de notificaciones»
       permite consultar el resto sin salir del formulario.
-    - **Medidas disciplinarias** — marca las medidas aplicadas, con el mismo filtro de texto y
-      contador que las conductas del parte. Si no se aplica ninguna medida, marca la casilla
-      correspondiente e indica el motivo.
+    - **Medidas disciplinarias** — un selector Sí/No indica si se aplica alguna medida. Con
+      «Sí», marca las medidas aplicadas, con el mismo filtro de texto y contador que las
+      conductas del parte; con «No», indica el motivo de la no aplicación.
     - **Detalle de la sanción** — campo de texto con formato para describir la sanción completa.
     - **Descripción para calendario y tablón** — texto breve que se mostrará en el
       [calendario y en el modo tablón](05-calendario-y-tablon.md) en lugar del detalle. Si se

@@ -110,15 +110,29 @@
                 <span data-checkbox-filter-target="count" class="ml-2 text-xs font-normal text-forest-700" aria-live="polite"></span>
             </h2>
 
-            {# No se aplica corrección #}
-            <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="no_measure_applied" value="1"
-                       {{ formData.noMeasure is defined and formData.noMeasure ? 'checked' : '' }}
-                       data-sanction-measures-target="noMeasureCheckbox"
-                       data-action="change->sanction-measures#toggle"
-                       class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
-                <span class="text-sm font-medium text-gray-700">{{ 'sanction.field.no_measure_applied'|trans({}, 'admin') }}</span>
-            </label>
+            {# ¿Se aplican medidas? #}
+            <div>
+                <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'sanction.field.measures_applied'|trans({}, 'admin') }}</span>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <twig:Form:RadioCard
+                        name="no_measure_applied"
+                        value="0"
+                        label="{{ 'sanction.field.measures_applied_yes'|trans({}, 'admin') }}"
+                        help="{{ 'sanction.field.measures_applied_yes_help'|trans({}, 'admin') }}"
+                        :checked="not (formData.noMeasure is defined and formData.noMeasure)"
+                        data-action="change->sanction-measures#toggle"
+                    />
+                    <twig:Form:RadioCard
+                        name="no_measure_applied"
+                        value="1"
+                        label="{{ 'sanction.field.measures_applied_no'|trans({}, 'admin') }}"
+                        help="{{ 'sanction.field.measures_applied_no_help'|trans({}, 'admin') }}"
+                        :checked="formData.noMeasure is defined and formData.noMeasure"
+                        data-sanction-measures-target="noMeasureRadio"
+                        data-action="change->sanction-measures#toggle"
+                    />
+                </div>
+            </div>
 
             {# Selector de medidas #}
             <div data-sanction-measures-target="measureSelector"
@@ -248,76 +262,58 @@
             <div>
                 <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'sanction.field.registered_in_seneca'|trans({}, 'admin') }}</span>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                        <input type="radio" name="registered_in_seneca" value="0"
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.registered_in_seneca_no'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'sanction.field.registered_in_seneca_no_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                        <input type="radio" name="registered_in_seneca" value="1"
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.registered_in_seneca_yes'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'sanction.field.registered_in_seneca_yes_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
+                    <twig:Form:RadioCard
+                        name="registered_in_seneca"
+                        value="0"
+                        label="{{ 'sanction.field.registered_in_seneca_no'|trans({}, 'admin') }}"
+                        help="{{ 'sanction.field.registered_in_seneca_no_help'|trans({}, 'admin') }}"
+                    />
+                    <twig:Form:RadioCard
+                        name="registered_in_seneca"
+                        value="1"
+                        label="{{ 'sanction.field.registered_in_seneca_yes'|trans({}, 'admin') }}"
+                        help="{{ 'sanction.field.registered_in_seneca_yes_help'|trans({}, 'admin') }}"
+                    />
                 </div>
             </div>
 
             <div>
                 <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'sanction.field.measures_effective'|trans({}, 'admin') }}</span>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                        <input type="radio" name="measures_effective" value="0"
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.measures_effective_no'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'sanction.field.measures_effective_no_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                        <input type="radio" name="measures_effective" value="1"
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.measures_effective_yes'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'sanction.field.measures_effective_yes_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
+                    <twig:Form:RadioCard
+                        name="measures_effective"
+                        value="0"
+                        label="{{ 'sanction.field.measures_effective_no'|trans({}, 'admin') }}"
+                        help="{{ 'sanction.field.measures_effective_no_help'|trans({}, 'admin') }}"
+                    />
+                    <twig:Form:RadioCard
+                        name="measures_effective"
+                        value="1"
+                        label="{{ 'sanction.field.measures_effective_yes'|trans({}, 'admin') }}"
+                        help="{{ 'sanction.field.measures_effective_yes_help'|trans({}, 'admin') }}"
+                    />
                 </div>
             </div>
 
             <div>
                 <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'sanction.field.family_claimed'|trans({}, 'admin') }}</span>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                        <input type="radio" name="family_claimed" value="0"
-                               data-sanction-measures-target="familyClaimedRadio"
-                               data-action="change->sanction-measures#updateFollowup"
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.family_claimed_no'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'sanction.field.family_claimed_no_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                        <input type="radio" name="family_claimed" value="1"
-                               data-sanction-measures-target="familyClaimedRadio"
-                               data-action="change->sanction-measures#updateFollowup"
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'sanction.field.family_claimed_yes'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'sanction.field.family_claimed_yes_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
+                    <twig:Form:RadioCard
+                        name="family_claimed"
+                        value="0"
+                        label="{{ 'sanction.field.family_claimed_no'|trans({}, 'admin') }}"
+                        help="{{ 'sanction.field.family_claimed_no_help'|trans({}, 'admin') }}"
+                        data-sanction-measures-target="familyClaimedRadio"
+                        data-action="change->sanction-measures#updateFollowup"
+                    />
+                    <twig:Form:RadioCard
+                        name="family_claimed"
+                        value="1"
+                        label="{{ 'sanction.field.family_claimed_yes'|trans({}, 'admin') }}"
+                        help="{{ 'sanction.field.family_claimed_yes_help'|trans({}, 'admin') }}"
+                        data-sanction-measures-target="familyClaimedRadio"
+                        data-action="change->sanction-measures#updateFollowup"
+                    />
                 </div>
             </div>
 

@@ -449,8 +449,9 @@ enlace a su contenido). Desde ahí se puede:
 - Redactar el **trabajo asignado** en el editor de texto enriquecido y, opcionalmente, **adjuntar
   ficheros** — mismo límite de tamaño (10 MB por fichero) y formatos admitidos que en las
   actividades de ausencia.
-- Marcar **No procede dejar trabajo para esta materia**, si por el motivo que sea no corresponde
-  asignar nada; en ese caso se vacía cualquier descripción o adjunto que hubiera.
+- Responder **No procede** a la pregunta «¿Vas a dejar trabajo para esta materia?», si por el
+  motivo que sea no corresponde asignar nada; en ese caso se vacía cualquier descripción o
+  adjunto que hubiera.
 
 Una tarea queda **cumplimentada** la primera vez que se guarda con una descripción o marcando que
 no procede, pero sigue siendo editable después sin límite de tiempo: se puede volver a abrir para

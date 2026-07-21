@@ -103,24 +103,22 @@
             <div>
                 <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'teacher.field.auth_method'|trans({}, 'admin') }}</span>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <label class="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                        <input type="radio" name="auth_method" value="password"
-                               {{ not flags.external ? 'checked' : '' }}
-                               data-external-auth-target="radio"
-                               data-action="change->external-auth#toggle"
-                               class="h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span class="text-sm font-medium text-gray-700">{{ 'teacher.field.auth_password'|trans({}, 'admin') }}</span>
-                    </label>
-                    <label class="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                        <input type="radio" name="auth_method" value="external"
-                               {{ flags.external ? 'checked' : '' }}
-                               data-external-auth-target="radio"
-                               data-action="change->external-auth#toggle"
-                               class="h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span class="text-sm font-medium text-gray-700">{{ 'teacher.field.auth_external'|trans({}, 'admin') }}</span>
-                    </label>
+                    <twig:Form:RadioCard
+                        name="auth_method"
+                        value="password"
+                        label="{{ 'teacher.field.auth_password'|trans({}, 'admin') }}"
+                        :checked="not flags.external"
+                        data-external-auth-target="radio"
+                        data-action="change->external-auth#toggle"
+                    />
+                    <twig:Form:RadioCard
+                        name="auth_method"
+                        value="external"
+                        label="{{ 'teacher.field.auth_external'|trans({}, 'admin') }}"
+                        :checked="flags.external"
+                        data-external-auth-target="radio"
+                        data-action="change->external-auth#toggle"
+                    />
                 </div>
             </div>
 
@@ -149,26 +147,20 @@
                 <div>
                     <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'teacher.field.force_password_change'|trans({}, 'admin') }}</span>
                     <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                      hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                            <input type="radio" name="force_password_change" value="no"
-                                   {{ not flags.force_password_change ? 'checked' : '' }}
-                                   class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                            <span>
-                                <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.force_password_change_no'|trans({}, 'admin') }}</span>
-                                <span class="block text-xs text-gray-500">{{ 'teacher.field.force_password_change_no_help'|trans({}, 'admin') }}</span>
-                            </span>
-                        </label>
-                        <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                      hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50">
-                            <input type="radio" name="force_password_change" value="yes"
-                                   {{ flags.force_password_change ? 'checked' : '' }}
-                                   class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                            <span>
-                                <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.force_password_change_yes'|trans({}, 'admin') }}</span>
-                                <span class="block text-xs text-gray-500">{{ 'teacher.field.force_password_change_yes_help'|trans({}, 'admin') }}</span>
-                            </span>
-                        </label>
+                        <twig:Form:RadioCard
+                            name="force_password_change"
+                            value="no"
+                            label="{{ 'teacher.field.force_password_change_no'|trans({}, 'admin') }}"
+                            help="{{ 'teacher.field.force_password_change_no_help'|trans({}, 'admin') }}"
+                            :checked="not flags.force_password_change"
+                        />
+                        <twig:Form:RadioCard
+                            name="force_password_change"
+                            value="yes"
+                            label="{{ 'teacher.field.force_password_change_yes'|trans({}, 'admin') }}"
+                            help="{{ 'teacher.field.force_password_change_yes_help'|trans({}, 'admin') }}"
+                            :checked="flags.force_password_change"
+                        />
                     </div>
                 </div>
             </div>
@@ -177,30 +169,22 @@
             <div>
                 <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'teacher.field.admin'|trans({}, 'admin') }}</span>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50
-                                  {{ is_current_user ? 'opacity-60 cursor-not-allowed' : '' }}">
-                        <input type="radio" name="admin" value="no"
-                               {{ not flags.admin ? 'checked' : '' }}
-                               {{ is_current_user ? 'disabled' : '' }}
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.admin_no'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'teacher.field.admin_no_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50
-                                  {{ is_current_user ? 'opacity-60 cursor-not-allowed' : '' }}">
-                        <input type="radio" name="admin" value="yes"
-                               {{ flags.admin ? 'checked' : '' }}
-                               {{ is_current_user ? 'disabled' : '' }}
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.admin_yes'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'teacher.field.admin_yes_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
+                    <twig:Form:RadioCard
+                        name="admin"
+                        value="no"
+                        label="{{ 'teacher.field.admin_no'|trans({}, 'admin') }}"
+                        help="{{ 'teacher.field.admin_no_help'|trans({}, 'admin') }}"
+                        :checked="not flags.admin"
+                        :disabled="is_current_user"
+                    />
+                    <twig:Form:RadioCard
+                        name="admin"
+                        value="yes"
+                        label="{{ 'teacher.field.admin_yes'|trans({}, 'admin') }}"
+                        help="{{ 'teacher.field.admin_yes_help'|trans({}, 'admin') }}"
+                        :checked="flags.admin"
+                        :disabled="is_current_user"
+                    />
                 </div>
             </div>
 
@@ -208,30 +192,22 @@
             <div>
                 <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'teacher.field.active'|trans({}, 'admin') }}</span>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50
-                                  {{ is_current_user ? 'opacity-60 cursor-not-allowed' : '' }}">
-                        <input type="radio" name="active" value="yes"
-                               {{ flags.active ? 'checked' : '' }}
-                               {{ is_current_user ? 'disabled' : '' }}
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.active_yes'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'teacher.field.active_yes_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
-                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer transition-colors
-                                  hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50
-                                  {{ is_current_user ? 'opacity-60 cursor-not-allowed' : '' }}">
-                        <input type="radio" name="active" value="no"
-                               {{ not flags.active ? 'checked' : '' }}
-                               {{ is_current_user ? 'disabled' : '' }}
-                               class="mt-0.5 h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span>
-                            <span class="block text-sm font-medium text-gray-700">{{ 'teacher.field.active_no'|trans({}, 'admin') }}</span>
-                            <span class="block text-xs text-gray-500">{{ 'teacher.field.active_no_help'|trans({}, 'admin') }}</span>
-                        </span>
-                    </label>
+                    <twig:Form:RadioCard
+                        name="active"
+                        value="yes"
+                        label="{{ 'teacher.field.active_yes'|trans({}, 'admin') }}"
+                        help="{{ 'teacher.field.active_yes_help'|trans({}, 'admin') }}"
+                        :checked="flags.active"
+                        :disabled="is_current_user"
+                    />
+                    <twig:Form:RadioCard
+                        name="active"
+                        value="no"
+                        label="{{ 'teacher.field.active_no'|trans({}, 'admin') }}"
+                        help="{{ 'teacher.field.active_no_help'|trans({}, 'admin') }}"
+                        :checked="not flags.active"
+                        :disabled="is_current_user"
+                    />
                 </div>
             </div>
 

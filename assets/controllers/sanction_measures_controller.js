@@ -2,7 +2,7 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     static targets = [
-        'noMeasureCheckbox',
+        'noMeasureRadio',
         'measureSelector',
         'measureLabel',
         'measureCheckbox',
@@ -26,12 +26,12 @@ export default class extends Controller {
     }
 
     sync() {
-        if (!this.hasNoMeasureCheckboxTarget) {
+        if (!this.hasNoMeasureRadioTarget) {
             this.updateFollowup();
             return;
         }
 
-        const noMeasure = this.noMeasureCheckboxTarget.checked;
+        const noMeasure = this.noMeasureRadioTarget.checked;
 
         // Disable / enable measure checkboxes
         this.measureLabelTargets.forEach(label => {
@@ -58,8 +58,8 @@ export default class extends Controller {
     }
 
     updateDates() {
-        if (!this.hasNoMeasureCheckboxTarget) return;
-        const noMeasure = this.noMeasureCheckboxTarget.checked;
+        if (!this.hasNoMeasureRadioTarget) return;
+        const noMeasure = this.noMeasureRadioTarget.checked;
         const requiresDates = !noMeasure && this.measureCheckboxTargets.some(
             cb => cb.checked && cb.dataset.hasDateRange === '1'
         );
