@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Dto\SanctionFormData;
 use App\Entity\EducationalCentre;
 use App\Entity\GroupTeacher;
 use App\Entity\IncidentReport;
@@ -14,7 +15,6 @@ use App\Entity\Teacher;
 use App\Repository\CommunicationRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentReportObservationRepository;
-use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionMeasureRepository;
 use App\Repository\SanctionObservationRepository;
 use App\Repository\SanctionRepository;
@@ -23,11 +23,10 @@ use App\Security\Voter\SanctionObservationVoter;
 use App\Security\Voter\SanctionVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
-use App\Service\IncidentEmailNotifier;
 use App\Service\AppSettingsInterface;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
-use App\Service\SanctionTaskGenerator;
+use App\Service\SanctionFormHandler;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -61,20 +60,18 @@ class SanctionController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly SanctionRepository $sanctions,
         private readonly SanctionMeasureRepository $measures,
-        private readonly IncidentReportRepository $reports,
         private readonly StudentRepository $students,
         private readonly GroupRepository $groups,
         private readonly CommunicationRepository $communications,
         private readonly IncidentReportObservationRepository $reportObservations,
         private readonly SanctionObservationRepository $sanctionObservations,
-        private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
         private readonly PdfRenderer $pdfRenderer,
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly AppSettingsInterface $settings,
-        private readonly SanctionTaskGenerator $taskGenerator,
+        private readonly SanctionFormHandler $formHandler,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -130,141 +127,18 @@ class SanctionController extends AbstractController
             }
 
             $eligibleReports = $this->sanctions->findEligibleReports($student, $group);
-            $errors          = [];
 
             if ($request->isMethod('POST') && $request->request->getString('_step') !== 'select') {
                 if (!$this->isCsrfTokenValid('new_sanction', $request->request->getString('_token'))) {
                     throw $this->createAccessDeniedException();
                 }
 
-                $reportIds              = $request->request->all('reports');
-                $measureIds             = $request->request->all('measures');
-                $details                = trim($request->request->getString('details'));
-                $calendarLabel          = trim($request->request->getString('calendar_label')) ?: null;
-                $noMeasure              = $request->request->getBoolean('no_measure_applied');
-                $noMeasureReason        = trim($request->request->getString('no_measure_reason'));
-                $effectiveFromRaw       = trim($request->request->getString('effective_from'));
-                $effectiveToRaw         = trim($request->request->getString('effective_to'));
-                $measuresEffective      = $this->parseBoolField($request->request->getString('measures_effective'));
-                $familyClaimed          = $this->parseBoolField($request->request->getString('family_claimed'));
-                $familyClaimAttitude    = trim($request->request->getString('family_claim_attitude'));
-                $registeredInSeneca     = $this->parseBoolField($request->request->getString('registered_in_seneca'));
+                $data   = SanctionFormData::fromRequest($request);
+                $result = $this->formHandler->validate($data, $centre);
 
-                if (empty($reportIds)) {
-                    $errors['reports'] = $this->t('sanction.error.no_reports');
-                }
-
-                if ($details === '') {
-                    $errors['details'] = $this->t('sanction.error.details_required');
-                }
-
-                if (!$noMeasure && empty($measureIds)) {
-                    $errors['measures'] = $this->t('sanction.error.no_measures');
-                }
-
-                if ($noMeasure && $noMeasureReason === '') {
-                    $errors['no_measure_reason'] = $this->t('sanction.error.no_measure_reason_required');
-                }
-
-                if (!$noMeasure && $familyClaimed === true && $familyClaimAttitude === '') {
-                    $errors['family_claim_attitude'] = $this->t('sanction.error.family_claim_attitude_required');
-                }
-
-                /** @var list<\App\Entity\SanctionMeasure> $selectedMeasures */
-                $selectedMeasures = [];
-                if (!$noMeasure) {
-                    foreach ($measureIds as $mid) {
-                        if (!is_string($mid)) {
-                            continue;
-                        }
-                        $m = $this->measures->findById($mid);
-                        if ($m !== null && $m->getEducationalCentre() === $centre) {
-                            $selectedMeasures[] = $m;
-                        }
-                    }
-                }
-
-                $requiresDates = false;
-                foreach ($selectedMeasures as $m) {
-                    if ($m->hasDateRange()) {
-                        $requiresDates = true;
-                        break;
-                    }
-                }
-
-                $effectiveFrom = null;
-                $effectiveTo   = null;
-
-                if ($requiresDates) {
-                    if ($effectiveFromRaw === '') {
-                        $errors['effective_from'] = $this->t('sanction.error.effective_from_required');
-                    } else {
-                        $effectiveFrom = \DateTimeImmutable::createFromFormat('Y-m-d', $effectiveFromRaw) ?: null;
-                        if ($effectiveFrom === null) {
-                            $errors['effective_from'] = $this->t('sanction.error.effective_from_invalid');
-                        }
-                    }
-                    if ($effectiveToRaw === '') {
-                        $errors['effective_to'] = $this->t('sanction.error.effective_to_required');
-                    } else {
-                        $effectiveTo = \DateTimeImmutable::createFromFormat('Y-m-d', $effectiveToRaw) ?: null;
-                        if ($effectiveTo === null) {
-                            $errors['effective_to'] = $this->t('sanction.error.effective_to_invalid');
-                        }
-                    }
-                }
-
-                if (empty($errors)) {
-                    $academicYear = $group->getAcademicYear();
-
-                    $sanction = (new Sanction())
-                        ->setAcademicYear($academicYear)
-                        ->setStudent($student)
-                        ->setGroup($group)
-                        ->setRegisteredBy($user)
-                        ->setDetails($details)
-                        ->setCalendarLabel($calendarLabel)
-                        ->setNoMeasureApplied($noMeasure)
-                        ->setNoMeasureReason($noMeasure ? ($noMeasureReason ?: null) : null)
-                        ->setEffectiveFrom($requiresDates ? $effectiveFrom : null)
-                        ->setEffectiveTo($requiresDates ? $effectiveTo : null)
-                        ->setMeasuresEffective($noMeasure ? null : $measuresEffective)
-                        ->setFamilyClaimed($noMeasure ? null : $familyClaimed)
-                        ->setFamilyClaimAttitude(!$noMeasure && $familyClaimed === true ? ($familyClaimAttitude ?: null) : null)
-                        ->setRegisteredInSeneca($registeredInSeneca);
-
-                    foreach ($selectedMeasures as $m) {
-                        $sanction->addMeasure($m);
-                    }
-
-                    $this->em->persist($sanction);
-
-                    // Link selected reports to this sanction
-                    /** @var list<IncidentReport> $linkedReports */
-                    $linkedReports = [];
-                    foreach ($reportIds as $rid) {
-                        if (!is_string($rid)) {
-                            continue;
-                        }
-                        $report = $this->reports->findById($rid);
-                        if ($report === null
-                            || $report->getStudent() !== $student
-                            || $report->getGroup() !== $group
-                            || $report->isPrescribed()
-                            || $report->getSanction() !== null) {
-                            continue;
-                        }
-                        $report->setSanction($sanction);
-                        $linkedReports[] = $report;
-                    }
-
-                    $this->em->flush();
-
-                    foreach ($linkedReports as $linkedReport) {
-                        $this->notifier->reportSanctioned($linkedReport, $user);
-                    }
-
-                    $tasks = $this->taskGenerator->generateFor($sanction);
+                if ($result->isValid()) {
+                    $outcome  = $this->formHandler->create($data, $result, $student, $group, $user);
+                    $sanction = $outcome['sanction'];
 
                     $this->activityLog->log('sanction.created', [
                         'entityId'  => $sanction->getId()->toRfc4122(),
@@ -272,9 +146,9 @@ class SanctionController extends AbstractController
                         'groupId'   => $group->getId()->toRfc4122(),
                         'reportIds' => array_map(
                             static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
-                            $linkedReports,
+                            $outcome['linkedReports'],
                         ),
-                        'taskCount' => count($tasks),
+                        'taskCount' => count($outcome['tasks']),
                     ]);
 
                     $this->addFlash('success', $this->t('sanction.flash.created'));
@@ -290,21 +164,8 @@ class SanctionController extends AbstractController
                     'observationsByReport'  => $this->reportObservations->findByIncidentReports($eligibleReports),
                     'communicationsByReport' => $this->communications->findByIncidentReports($eligibleReports),
                     'measuresByCategory'    => $measuresByCategory,
-                    'errors'                => $errors,
-                    'formData'           => [
-                        'reports'               => array_values(array_filter($reportIds, 'is_string')),
-                        'measureIds'            => array_values(array_filter($measureIds, 'is_string')),
-                        'details'               => $details,
-                        'calendarLabel'         => $calendarLabel,
-                        'noMeasure'             => $noMeasure,
-                        'noMeasureReason'       => $noMeasureReason,
-                        'effectiveFrom'         => $effectiveFromRaw,
-                        'effectiveTo'           => $effectiveToRaw,
-                        'measuresEffective'     => $measuresEffective,
-                        'familyClaimed'         => $familyClaimed,
-                        'familyClaimAttitude'   => $familyClaimAttitude,
-                        'registeredInSeneca'    => $registeredInSeneca,
-                    ],
+                    'errors'                => $result->errors,
+                    'formData'              => $data->toTemplateArray(),
                 ]);
             }
 
@@ -434,167 +295,33 @@ class SanctionController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $measuresEffective   = $this->parseBoolField($request->request->getString('measures_effective'));
-            $familyClaimed       = $this->parseBoolField($request->request->getString('family_claimed'));
-            $familyClaimAttitude = trim($request->request->getString('family_claim_attitude'));
-            $registeredInSeneca  = $this->parseBoolField($request->request->getString('registered_in_seneca'));
-
-            if (!$sanction->isNoMeasureApplied() && $familyClaimed === true && $familyClaimAttitude === '') {
-                $errors['family_claim_attitude'] = $this->t('sanction.error.family_claim_attitude_required');
-            }
+            $data   = SanctionFormData::fromRequest($request);
+            $result = null;
 
             if ($canEditAll) {
-                $previouslyLinkedIds = array_map(
-                    static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
-                    $sanction->getReports()->toArray(),
-                );
-
-                $reportIds       = $request->request->all('reports');
-                $measureIds      = $request->request->all('measures');
-                $details         = trim($request->request->getString('details'));
-                $calendarLabel   = trim($request->request->getString('calendar_label')) ?: null;
-                $noMeasure       = $request->request->getBoolean('no_measure_applied');
-                $noMeasureReason = trim($request->request->getString('no_measure_reason'));
-                $effectiveFromRaw = trim($request->request->getString('effective_from'));
-                $effectiveToRaw   = trim($request->request->getString('effective_to'));
-
-                if (empty($reportIds)) {
-                    $errors['reports'] = $this->t('sanction.error.no_reports');
-                }
-
-                if ($details === '') {
-                    $errors['details'] = $this->t('sanction.error.details_required');
-                }
-
-                if (!$noMeasure && empty($measureIds)) {
-                    $errors['measures'] = $this->t('sanction.error.no_measures');
-                }
-
-                if ($noMeasure && $noMeasureReason === '') {
-                    $errors['no_measure_reason'] = $this->t('sanction.error.no_measure_reason_required');
-                }
-
-                /** @var list<\App\Entity\SanctionMeasure> $selectedMeasures */
-                $selectedMeasures = [];
-                if (!$noMeasure) {
-                    foreach ($measureIds as $mid) {
-                        if (!is_string($mid)) {
-                            continue;
-                        }
-                        $m = $this->measures->findById($mid);
-                        if ($m !== null && $m->getEducationalCentre() === $centre) {
-                            $selectedMeasures[] = $m;
-                        }
-                    }
-                }
-
-                $requiresDates = false;
-                foreach ($selectedMeasures as $m) {
-                    if ($m->hasDateRange()) {
-                        $requiresDates = true;
-                        break;
-                    }
-                }
-
-                $effectiveFrom = null;
-                $effectiveTo   = null;
-
-                if ($requiresDates) {
-                    if ($effectiveFromRaw === '') {
-                        $errors['effective_from'] = $this->t('sanction.error.effective_from_required');
-                    } else {
-                        $effectiveFrom = \DateTimeImmutable::createFromFormat('Y-m-d', $effectiveFromRaw) ?: null;
-                        if ($effectiveFrom === null) {
-                            $errors['effective_from'] = $this->t('sanction.error.effective_from_invalid');
-                        }
-                    }
-                    if ($effectiveToRaw === '') {
-                        $errors['effective_to'] = $this->t('sanction.error.effective_to_required');
-                    } else {
-                        $effectiveTo = \DateTimeImmutable::createFromFormat('Y-m-d', $effectiveToRaw) ?: null;
-                        if ($effectiveTo === null) {
-                            $errors['effective_to'] = $this->t('sanction.error.effective_to_invalid');
-                        }
-                    }
-                }
+                $result = $this->formHandler->validate($data, $centre);
+                $errors = $result->errors;
+            } else {
+                $errors = $this->formHandler->validateFollowup($data, $sanction->isNoMeasureApplied());
             }
 
             if (empty($errors)) {
                 $before = $this->changeTracker->snapshot($sanction, self::LOGGED_SANCTION_FIELDS);
 
-                $noMeasureForFollowup = $canEditAll ? $noMeasure : $sanction->isNoMeasureApplied();
-
-                $sanction->setMeasuresEffective($noMeasureForFollowup ? null : $measuresEffective)
-                         ->setFamilyClaimed($noMeasureForFollowup ? null : $familyClaimed)
-                         ->setFamilyClaimAttitude(!$noMeasureForFollowup && $familyClaimed === true ? ($familyClaimAttitude ?: null) : null)
-                         ->setRegisteredInSeneca($registeredInSeneca);
-
+                $linkChanges = null;
                 if ($canEditAll) {
-                    $sanction->setDetails($details)
-                             ->setCalendarLabel($calendarLabel)
-                             ->setNoMeasureApplied($noMeasure)
-                             ->setNoMeasureReason($noMeasure ? ($noMeasureReason ?: null) : null)
-                             ->setEffectiveFrom($requiresDates ? $effectiveFrom : null)
-                             ->setEffectiveTo($requiresDates ? $effectiveTo : null);
-
-                    // Replace measures
-                    foreach ($sanction->getMeasures()->toArray() as $m) {
-                        $sanction->removeMeasure($m);
-                    }
-                    foreach ($selectedMeasures as $m) {
-                        $sanction->addMeasure($m);
-                    }
-
-                    // Replace report associations
-                    foreach ($sanction->getReports()->toArray() as $r) {
-                        /** @var IncidentReport $r */
-                        $r->setSanction(null);
-                    }
-
-                    /** @var list<IncidentReport> $newlyLinkedReports */
-                    $newlyLinkedReports = [];
-
-                    foreach ($reportIds as $rid) {
-                        if (!is_string($rid)) {
-                            continue;
-                        }
-                        $report = $this->reports->findById($rid);
-                        if ($report === null
-                            || $report->getStudent() !== $sanction->getStudent()
-                            || $report->getGroup() !== $sanction->getGroup()
-                            || $report->isPrescribed()
-                            || ($report->getSanction() !== null && $report->getSanction() !== $sanction)) {
-                            continue;
-                        }
-                        $report->setSanction($sanction);
-
-                        if (!in_array($report->getId()->toRfc4122(), $previouslyLinkedIds, true)) {
-                            $newlyLinkedReports[] = $report;
-                        }
-                    }
-
-                    $this->em->flush();
-
-                    foreach ($newlyLinkedReports as $newlyLinkedReport) {
-                        $this->notifier->reportSanctioned($newlyLinkedReport, $user);
-                    }
-
-                    $this->taskGenerator->generateFor($sanction);
-
-                    $currentLinkedIds = array_map(
-                        static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
-                        $sanction->getReports()->toArray(),
-                    );
-                    sort($previouslyLinkedIds);
-                    sort($currentLinkedIds);
+                    $linkChanges = $this->formHandler->update($sanction, $data, $result, $user);
                 } else {
-                    $this->em->flush();
+                    $this->formHandler->updateFollowup($sanction, $data);
                 }
 
                 $changes = $this->changeTracker->diff($before, $sanction, self::LOGGED_SANCTION_FIELDS);
 
-                if ($canEditAll && $previouslyLinkedIds !== $currentLinkedIds) {
-                    $changes['reportIds'] = ['before' => $previouslyLinkedIds, 'after' => $currentLinkedIds];
+                if ($linkChanges !== null && $linkChanges['previouslyLinkedIds'] !== $linkChanges['currentLinkedIds']) {
+                    $changes['reportIds'] = [
+                        'before' => $linkChanges['previouslyLinkedIds'],
+                        'after'  => $linkChanges['currentLinkedIds'],
+                    ];
                 }
 
                 if ($changes !== []) {
@@ -973,17 +700,5 @@ class SanctionController extends AbstractController
     private function t(string $key): string
     {
         return $this->translator->trans($key, [], 'admin');
-    }
-
-    private function parseBoolField(string $raw): ?bool
-    {
-        if ($raw === '1') {
-            return true;
-        }
-        if ($raw === '0') {
-            return false;
-        }
-
-        return null;
     }
 }

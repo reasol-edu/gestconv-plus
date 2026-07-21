@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Dto\IncidentReportFormData;
 use App\Entity\EducationalCentre;
 use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
 use App\Entity\Teacher;
-use App\Entity\TasksCompletionStatus;
 use App\Repository\CommunicationRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentBehaviorRepository;
@@ -24,10 +24,10 @@ use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
 use App\Service\AppSettingsInterface;
+use App\Service\IncidentReportFormHandler;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\TenantContext;
-use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -70,6 +70,7 @@ class IncidentReportController extends AbstractController
         private readonly PdfRenderer $pdfRenderer,
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly AppSettingsInterface $settings,
+        private readonly IncidentReportFormHandler $formHandler,
     ) {}
 
     #[Route('', name: 'app_incidents_index')]
@@ -170,153 +171,30 @@ class IncidentReportController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            if ($canChooseTeacher) {
-                $registeredByRaw = trim($request->request->getString('registered_by'));
-                if ($registeredByRaw !== '') {
-                    $activeYear      = $centre->getActiveAcademicYear();
-                    $selectedTeacher = $activeYear !== null ? $this->teachers->findByAcademicYearAndId($activeYear, $registeredByRaw) : null;
-                    if ($selectedTeacher === null) {
-                        $errors['registered_by'] = $this->t('incident.error.invalid_teacher');
-                    } else {
-                        $registeredBy = $selectedTeacher;
-                    }
+            $data = IncidentReportFormData::fromRequest($request);
+
+            if ($canChooseTeacher && $data->registeredByRaw !== '') {
+                $activeYear      = $centre->getActiveAcademicYear();
+                $selectedTeacher = $activeYear !== null ? $this->teachers->findByAcademicYearAndId($activeYear, $data->registeredByRaw) : null;
+                if ($selectedTeacher === null) {
+                    $errors['registered_by'] = $this->t('incident.error.invalid_teacher');
+                } else {
+                    $registeredBy = $selectedTeacher;
                 }
             }
 
-            $studentPairs      = $request->request->all('students');
-            $behaviorIds       = $request->request->all('behaviors');
-            $occurredAtRaw     = trim($request->request->getString('occurred_at'));
-            $locationId        = trim($request->request->getString('location_id'));
-            $description       = trim($request->request->getString('description'));
-            $expelled          = $request->request->getString('expelled_from_class') === 'yes';
-            $assignedTasks     = trim($request->request->getString('assigned_tasks')) ?: null;
-            $tasksCompletedRaw = $request->request->getString('tasks_completed');
+            $result = $this->formHandler->validate($data, $centre, forCreation: true);
+            $errors += $result->errors;
 
-            $location = null;
-            if ($locationId !== '') {
-                $location = $this->locations->findById($locationId);
-                if ($location === null || $location->getEducationalCentre() !== $centre) {
-                    $location = null;
-                }
-            }
-
-            if (empty($studentPairs)) {
-                $errors['students'] = $this->t('incident.error.no_students');
-            }
-
-            if ($location === null) {
-                $errors['location'] = $this->t('incident.error.no_location');
-            }
-
-            if (empty($behaviorIds)) {
-                $errors['behaviors'] = $this->t('incident.error.no_behaviors');
-            }
-
-            if ($description === '') {
-                $errors['description'] = $this->t('incident.error.description_required');
-            }
-
-            $occurredAt = null;
-            if ($occurredAtRaw !== '') {
-                try {
-                    $occurredAt = new \DateTimeImmutable($occurredAtRaw);
-                } catch (\Exception) {
-                    $errors['occurred_at'] = $this->t('incident.field.occurred_at') . ' inválida.';
-                }
-            } else {
-                $occurredAt = new \DateTimeImmutable();
-            }
-
-            /** @var list<\App\Entity\IncidentBehavior> $selectedBehaviors */
-            $selectedBehaviors = [];
-            foreach ($behaviorIds as $bid) {
-                if (!is_string($bid)) {
-                    continue;
-                }
-                $b = $this->behaviors->findById($bid);
-                if ($b !== null && $b->getEducationalCentre() === $centre) {
-                    $selectedBehaviors[] = $b;
-                }
-            }
-
-            if (empty($errors) && $occurredAt !== null) {
-                $tasksCompleted = null;
-                if ($expelled && $tasksCompletedRaw !== '') {
-                    $tasksCompleted = TasksCompletionStatus::tryFrom($tasksCompletedRaw);
-                }
-
-                /** @var list<IncidentReport> $createdReports */
-                $createdReports = $this->em->wrapInTransaction(function () use (
-                    $studentPairs,
+            if (empty($errors) && $result->location !== null && $result->occurredAt !== null) {
+                $createdReports = $this->formHandler->create(
+                    $data,
                     $centre,
                     $registeredBy,
-                    $occurredAt,
-                    $location,
-                    $description,
-                    $expelled,
-                    $assignedTasks,
-                    $tasksCompleted,
-                    $selectedBehaviors,
-                ): array {
-                    /** @var array<string, int> $nextNumbers next number per academic-year ID */
-                    $nextNumbers = [];
-
-                    /** @var list<IncidentReport> $createdReports */
-                    $createdReports = [];
-
-                    foreach ($studentPairs as $pair) {
-                        if (!is_string($pair)) {
-                            continue;
-                        }
-                        $parts = explode('::', $pair, 2);
-                        if (count($parts) !== 2) {
-                            continue;
-                        }
-                        [$studentId, $groupId] = $parts;
-
-                        $student = $this->students->findById($studentId);
-                        $group   = $this->groups->findByIdAndCentre($groupId, $centre);
-
-                        if ($student === null || $group === null) {
-                            continue;
-                        }
-
-                        $academicYear = $group->getAcademicYear();
-                        $yearKey      = $academicYear->getId()->toRfc4122();
-
-                        if (!array_key_exists($yearKey, $nextNumbers)) {
-                            // El lock serializa los registros concurrentes del mismo curso:
-                            // sin él, dos peticiones podrían leer el mismo MAX(number) y chocar
-                            // contra el índice único uq_ir_year_number.
-                            $this->em->lock($academicYear, LockMode::PESSIMISTIC_WRITE);
-                            $nextNumbers[$yearKey] = $this->reports->nextNumberForYear($academicYear);
-                        } else {
-                            $nextNumbers[$yearKey]++;
-                        }
-
-                        $report = new IncidentReport();
-                        $report->setAcademicYear($academicYear)
-                               ->setNumber($nextNumbers[$yearKey])
-                               ->setStudent($student)
-                               ->setGroup($group)
-                               ->setRegisteredBy($registeredBy)
-                               ->setOccurredAt($occurredAt)
-                               ->setLocation($location)
-                               ->setDescription($description)
-                               ->setExpelledFromClass($expelled)
-                               ->setAssignedTasks($expelled ? $assignedTasks : null)
-                               ->setTasksCompleted($expelled ? $tasksCompleted : null);
-
-                        foreach ($selectedBehaviors as $beh) {
-                            $report->addBehavior($beh);
-                        }
-
-                        $this->em->persist($report);
-                        $createdReports[] = $report;
-                    }
-
-                    return $createdReports;
-                });
+                    $result->location,
+                    $result->occurredAt,
+                    $result->behaviors,
+                );
 
                 if ($createdReports === []) {
                     $this->addFlash('error', $this->t('incident.error.no_students'));
@@ -344,30 +222,18 @@ class IncidentReportController extends AbstractController
             }
 
             // Validation failed — preserve submitted values for re-render
-            $formData = [
-                'students'       => $studentPairs,
-                'behaviorIds'    => array_values(array_filter($behaviorIds, 'is_string')),
-                'occurredAt'     => $occurredAtRaw,
-                'locationId'     => $locationId,
-                'description'    => $description,
-                'expelled'       => $expelled,
-                'assignedTasks'  => $assignedTasks ?? '',
-                'tasksCompleted' => $tasksCompletedRaw !== '' ? $tasksCompletedRaw : 'unknown',
-            ];
+            $formData = $data->toTemplateArray();
 
-            if ($location !== null) {
+            if ($result->location !== null) {
                 $preloadedLocation = [
-                    'value'     => $location->getId()->toRfc4122(),
-                    'label'     => $location->getName(),
-                    'secondary' => $location->getCategory()->getName(),
-                    'category'  => $location->getCategory()->getId()->toRfc4122(),
+                    'value'     => $result->location->getId()->toRfc4122(),
+                    'label'     => $result->location->getName(),
+                    'secondary' => $result->location->getCategory()->getName(),
+                    'category'  => $result->location->getCategory()->getId()->toRfc4122(),
                 ];
             }
 
-            foreach ($studentPairs as $pair) {
-                if (!is_string($pair)) {
-                    continue;
-                }
+            foreach ($data->studentPairs as $pair) {
                 $parts = explode('::', $pair, 2);
                 if (count($parts) !== 2) {
                     continue;
@@ -702,38 +568,21 @@ class IncidentReportController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $behaviorIds       = $request->request->all('behaviors');
-            $occurredAtRaw     = trim($request->request->getString('occurred_at'));
-            $locationIdRaw     = trim($request->request->getString('location_id'));
-            $description       = trim($request->request->getString('description'));
-            $expelled          = $request->request->getString('expelled_from_class') === 'yes';
-            $assignedTasks     = trim($request->request->getString('assigned_tasks')) ?: null;
-            $tasksCompletedRaw = $request->request->getString('tasks_completed');
-            $prescribedAtRaw   = $this->isGranted(IncidentReportVoter::PRESCRIBE, $report)
-                ? trim($request->request->getString('prescribed_at'))
-                : null;
-
-            $location = null;
-            if ($locationIdRaw !== '') {
-                $location = $this->locations->findById($locationIdRaw);
-                if ($location === null || $location->getEducationalCentre() !== $centre) {
-                    $location = null;
-                }
-            }
+            $data = IncidentReportFormData::fromRequest($request);
 
             $canReassign  = $this->isGranted(IncidentReportVoter::REASSIGN, $report);
+            $canPrescribe = $this->isGranted(IncidentReportVoter::PRESCRIBE, $report);
             $registeredBy = $report->getRegisteredBy();
             $student      = $report->getStudent();
             $group        = $report->getGroup();
 
             if ($canReassign) {
-                $registeredByRaw = trim($request->request->getString('registered_by'));
-                $registeredBy    = $this->teachers->findByAcademicYearAndId($report->getAcademicYear(), $registeredByRaw);
+                $registeredBy = $this->teachers->findByAcademicYearAndId($report->getAcademicYear(), $data->registeredByRaw);
                 if ($registeredBy === null) {
                     $errors['registered_by'] = $this->t('incident.error.invalid_teacher');
                 }
 
-                $studentGroupParts = explode('::', trim($request->request->getString('student_group')), 2);
+                $studentGroupParts = explode('::', $data->studentGroupRaw, 2);
                 $student           = null;
                 $group             = null;
                 if (count($studentGroupParts) === 2) {
@@ -751,69 +600,40 @@ class IncidentReportController extends AbstractController
                 }
             }
 
-            if (empty($behaviorIds)) {
-                $errors['behaviors'] = $this->t('incident.error.no_behaviors');
-            }
-
-            if ($location === null) {
-                $errors['location'] = $this->t('incident.error.no_location');
-            }
-
-            if ($description === '') {
-                $errors['description'] = $this->t('incident.error.description_required');
-            }
-
-            $occurredAt = null;
-            if ($occurredAtRaw !== '') {
-                try {
-                    $occurredAt = new \DateTimeImmutable($occurredAtRaw);
-                } catch (\Exception) {
-                    $errors['occurred_at'] = $this->t('incident.field.occurred_at') . ' inválida.';
-                }
-            }
+            $result = $this->formHandler->validate($data, $centre, forCreation: false);
+            $errors += $result->errors;
 
             if (empty($errors)) {
                 $wasPrescribed    = $report->isPrescribed();
                 $before           = $this->changeTracker->snapshot($report, self::LOGGED_REPORT_FIELDS);
                 $locationIdBefore = $report->getLocation()?->getId()->toRfc4122();
 
-                if ($occurredAt !== null) {
-                    $report->setOccurredAt($occurredAt);
+                if ($result->occurredAt !== null) {
+                    $report->setOccurredAt($result->occurredAt);
                 }
-                $report->setLocation($location);
+                $report->setLocation($result->location);
                 if ($canReassign && $registeredBy !== null && $student !== null && $group !== null) {
                     $report->setRegisteredBy($registeredBy)
                            ->setStudent($student)
                            ->setGroup($group);
                 }
-                $report->setDescription($description)
-                       ->setExpelledFromClass($expelled)
-                       ->setAssignedTasks($expelled ? $assignedTasks : null);
-
-                $tasksCompleted = null;
-                if ($expelled && $tasksCompletedRaw !== '') {
-                    $tasksCompleted = TasksCompletionStatus::tryFrom($tasksCompletedRaw);
-                }
-                $report->setTasksCompleted($expelled ? $tasksCompleted : null);
+                $report->setDescription($data->description)
+                       ->setExpelledFromClass($data->expelled)
+                       ->setAssignedTasks($data->expelled ? $data->assignedTasks : null)
+                       ->setTasksCompleted($data->tasksCompleted());
 
                 // Replace behaviors
                 foreach ($report->getBehaviors()->toArray() as $b) {
                     $report->removeBehavior($b);
                 }
-                foreach ($behaviorIds as $bid) {
-                    if (!is_string($bid)) {
-                        continue;
-                    }
-                    $b = $this->behaviors->findById($bid);
-                    if ($b !== null && $b->getEducationalCentre() === $centre) {
-                        $report->addBehavior($b);
-                    }
+                foreach ($result->behaviors as $b) {
+                    $report->addBehavior($b);
                 }
 
-                if ($prescribedAtRaw !== null) {
-                    $prescribedAt = $prescribedAtRaw === ''
+                if ($canPrescribe) {
+                    $prescribedAt = $data->prescribedAtRaw === ''
                         ? null
-                        : (\DateTimeImmutable::createFromFormat('Y-m-d', $prescribedAtRaw) ?: null);
+                        : (\DateTimeImmutable::createFromFormat('Y-m-d', $data->prescribedAtRaw) ?: null);
                     $report->setPrescribedAt($prescribedAt);
                 }
 
