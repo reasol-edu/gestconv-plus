@@ -27,7 +27,8 @@ y adaptarlos al plan de convivencia del centro (ver
 La vía recomendada es la importación desde Séneca, disponible en
 **Centro educativo › Docentes › Importar desde Séneca**:
 
-- Se sube el fichero CSV y la aplicación crea los docentes que no existan (con autenticación
+- Se sube el fichero CSV (texto con valores separados por comas, el formato en el que Séneca
+  exporta sus listados) y la aplicación crea los docentes que no existan (con autenticación
   externa vía IdEA) y añade al curso activo tanto los recién creados como los que ya existieran
   en el sistema, sin modificar los datos de estos últimos.
 - Se aceptan ficheros en UTF-8 y en Windows-1252 (la codificación habitual de las exportaciones
