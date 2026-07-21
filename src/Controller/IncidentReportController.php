@@ -27,6 +27,7 @@ use App\Service\AppSettingsInterface;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\TenantContext;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -244,60 +245,78 @@ class IncidentReportController extends AbstractController
                     $tasksCompleted = TasksCompletionStatus::tryFrom($tasksCompletedRaw);
                 }
 
-                /** @var array<string, int> $nextNumbers next number per academic-year ID */
-                $nextNumbers = [];
-
                 /** @var list<IncidentReport> $createdReports */
-                $createdReports = [];
+                $createdReports = $this->em->wrapInTransaction(function () use (
+                    $studentPairs,
+                    $centre,
+                    $registeredBy,
+                    $occurredAt,
+                    $location,
+                    $description,
+                    $expelled,
+                    $assignedTasks,
+                    $tasksCompleted,
+                    $selectedBehaviors,
+                ): array {
+                    /** @var array<string, int> $nextNumbers next number per academic-year ID */
+                    $nextNumbers = [];
 
-                foreach ($studentPairs as $pair) {
-                    if (!is_string($pair)) {
-                        continue;
+                    /** @var list<IncidentReport> $createdReports */
+                    $createdReports = [];
+
+                    foreach ($studentPairs as $pair) {
+                        if (!is_string($pair)) {
+                            continue;
+                        }
+                        $parts = explode('::', $pair, 2);
+                        if (count($parts) !== 2) {
+                            continue;
+                        }
+                        [$studentId, $groupId] = $parts;
+
+                        $student = $this->students->findById($studentId);
+                        $group   = $this->groups->findByIdAndCentre($groupId, $centre);
+
+                        if ($student === null || $group === null) {
+                            continue;
+                        }
+
+                        $academicYear = $group->getAcademicYear();
+                        $yearKey      = $academicYear->getId()->toRfc4122();
+
+                        if (!array_key_exists($yearKey, $nextNumbers)) {
+                            // El lock serializa los registros concurrentes del mismo curso:
+                            // sin él, dos peticiones podrían leer el mismo MAX(number) y chocar
+                            // contra el índice único uq_ir_year_number.
+                            $this->em->lock($academicYear, LockMode::PESSIMISTIC_WRITE);
+                            $nextNumbers[$yearKey] = $this->reports->nextNumberForYear($academicYear);
+                        } else {
+                            $nextNumbers[$yearKey]++;
+                        }
+
+                        $report = new IncidentReport();
+                        $report->setAcademicYear($academicYear)
+                               ->setNumber($nextNumbers[$yearKey])
+                               ->setStudent($student)
+                               ->setGroup($group)
+                               ->setRegisteredBy($registeredBy)
+                               ->setOccurredAt($occurredAt)
+                               ->setLocation($location)
+                               ->setDescription($description)
+                               ->setExpelledFromClass($expelled)
+                               ->setAssignedTasks($expelled ? $assignedTasks : null)
+                               ->setTasksCompleted($expelled ? $tasksCompleted : null);
+
+                        foreach ($selectedBehaviors as $beh) {
+                            $report->addBehavior($beh);
+                        }
+
+                        $this->em->persist($report);
+                        $createdReports[] = $report;
                     }
-                    $parts = explode('::', $pair, 2);
-                    if (count($parts) !== 2) {
-                        continue;
-                    }
-                    [$studentId, $groupId] = $parts;
 
-                    $student = $this->students->findById($studentId);
-                    $group   = $this->groups->findByIdAndCentre($groupId, $centre);
-
-                    if ($student === null || $group === null) {
-                        continue;
-                    }
-
-                    $academicYear = $group->getAcademicYear();
-                    $yearKey      = $academicYear->getId()->toRfc4122();
-
-                    if (!array_key_exists($yearKey, $nextNumbers)) {
-                        $nextNumbers[$yearKey] = $this->reports->nextNumberForYear($academicYear);
-                    } else {
-                        $nextNumbers[$yearKey]++;
-                    }
-
-                    $report = new IncidentReport();
-                    $report->setAcademicYear($academicYear)
-                           ->setNumber($nextNumbers[$yearKey])
-                           ->setStudent($student)
-                           ->setGroup($group)
-                           ->setRegisteredBy($registeredBy)
-                           ->setOccurredAt($occurredAt)
-                           ->setLocation($location)
-                           ->setDescription($description)
-                           ->setExpelledFromClass($expelled)
-                           ->setAssignedTasks($expelled ? $assignedTasks : null)
-                           ->setTasksCompleted($expelled ? $tasksCompleted : null);
-
-                    foreach ($selectedBehaviors as $beh) {
-                        $report->addBehavior($beh);
-                    }
-
-                    $this->em->persist($report);
-                    $createdReports[] = $report;
-                }
-
-                $this->em->flush();
+                    return $createdReports;
+                });
 
                 if ($createdReports === []) {
                     $this->addFlash('error', $this->t('incident.error.no_students'));

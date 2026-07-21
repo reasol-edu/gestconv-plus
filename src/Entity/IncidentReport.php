@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: IncidentReportRepository::class)]
+#[ORM\UniqueConstraint(name: 'uq_ir_year_number', columns: ['academic_year_id', 'number'])]
 class IncidentReport
 {
     #[ORM\Id]
