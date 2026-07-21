@@ -14,6 +14,7 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: IncidentReportRepository::class)]
 #[ORM\UniqueConstraint(name: 'uq_ir_year_number', columns: ['academic_year_id', 'number'])]
+#[ORM\Index(columns: ['occurred_at'], name: 'idx_incident_report_occurred')]
 class IncidentReport
 {
     #[ORM\Id]
@@ -43,6 +44,9 @@ class IncidentReport
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $occurredAt;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
@@ -89,6 +93,7 @@ class IncidentReport
         $this->behaviors      = new ArrayCollection();
         $this->communications = new ArrayCollection();
         $this->observations   = new ArrayCollection();
+        $this->createdAt      = new \DateTimeImmutable();
     }
 
     public function getId(): Uuid
@@ -159,6 +164,11 @@ class IncidentReport
     public function getOccurredAt(): \DateTimeImmutable
     {
         return $this->occurredAt;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
     }
 
     public function setOccurredAt(\DateTimeImmutable $occurredAt): static

@@ -88,7 +88,7 @@ class Sanction
     private Collection $communications;
 
     /** @var Collection<int, SanctionObservation> */
-    #[ORM\OneToMany(targetEntity: SanctionObservation::class, mappedBy: 'sanction')]
+    #[ORM\OneToMany(targetEntity: SanctionObservation::class, mappedBy: 'sanction', orphanRemoval: true)]
     private Collection $observations;
 
     /** @var Collection<int, SanctionTask> */
