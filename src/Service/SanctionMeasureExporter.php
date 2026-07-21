@@ -4,43 +4,48 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
+use App\Entity\SanctionMeasure;
+use App\Entity\SanctionMeasureCategory;
 use App\Repository\SanctionMeasureCategoryRepository;
 use App\Repository\SanctionMeasureRepository;
+use App\Service\Catalog\AbstractCatalogExporter;
 
-class SanctionMeasureExporter
+class SanctionMeasureExporter extends AbstractCatalogExporter
 {
     public function __construct(
         private readonly SanctionMeasureCategoryRepository $categories,
         private readonly SanctionMeasureRepository $measures,
     ) {}
 
-    /** @return array<string, mixed> */
-    public function export(EducationalCentre $centre): array
+    protected function itemsKey(): string
     {
-        $data = [
-            'exported_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-            'centre'      => $centre->getName(),
-            'categories'  => [],
-        ];
+        return 'measures';
+    }
 
-        foreach ($this->categories->findByCentreOrdered($centre) as $category) {
-            $categoryData = [
-                'name'     => $category->getName(),
-                'measures' => [],
-            ];
+    protected function hasCategories(): bool
+    {
+        return true;
+    }
 
-            foreach ($this->measures->findByCategoryOrdered($category) as $measure) {
-                $categoryData['measures'][] = [
-                    'name'           => $measure->getName(),
-                    'has_date_range' => $measure->hasDateRange(),
-                    'active'         => $measure->isActive(),
-                ];
-            }
+    protected function categoriesFor(EducationalCentre $centre): iterable
+    {
+        return $this->categories->findByCentreOrdered($centre);
+    }
 
-            $data['categories'][] = $categoryData;
-        }
+    protected function itemsForCategory(CatalogCategoryInterface $category): iterable
+    {
+        assert($category instanceof SanctionMeasureCategory);
 
-        return $data;
+        return $this->measures->findByCategoryOrdered($category);
+    }
+
+    protected function itemExtra(CatalogEntryInterface $item): array
+    {
+        assert($item instanceof SanctionMeasure);
+
+        return ['has_date_range' => $item->hasDateRange()];
     }
 }

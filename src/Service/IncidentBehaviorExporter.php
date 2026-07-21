@@ -4,43 +4,47 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
+use App\Entity\IncidentBehaviorCategory;
 use App\Repository\IncidentBehaviorCategoryRepository;
 use App\Repository\IncidentBehaviorRepository;
+use App\Service\Catalog\AbstractCatalogExporter;
 
-class IncidentBehaviorExporter
+class IncidentBehaviorExporter extends AbstractCatalogExporter
 {
     public function __construct(
         private readonly IncidentBehaviorCategoryRepository $categories,
         private readonly IncidentBehaviorRepository $behaviors,
     ) {}
 
-    /** @return array<string, mixed> */
-    public function export(EducationalCentre $centre): array
+    protected function itemsKey(): string
     {
-        $data = [
-            'exported_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-            'centre'      => $centre->getName(),
-            'categories'  => [],
-        ];
+        return 'behaviors';
+    }
 
-        foreach ($this->categories->findByCentreOrdered($centre) as $category) {
-            $categoryData = [
-                'name'      => $category->getName(),
-                'serious'   => $category->isSerious(),
-                'behaviors' => [],
-            ];
+    protected function hasCategories(): bool
+    {
+        return true;
+    }
 
-            foreach ($this->behaviors->findByCategoryOrdered($category) as $behavior) {
-                $categoryData['behaviors'][] = [
-                    'name'   => $behavior->getName(),
-                    'active' => $behavior->isActive(),
-                ];
-            }
+    protected function categoriesFor(EducationalCentre $centre): iterable
+    {
+        return $this->categories->findByCentreOrdered($centre);
+    }
 
-            $data['categories'][] = $categoryData;
-        }
+    protected function itemsForCategory(CatalogCategoryInterface $category): iterable
+    {
+        assert($category instanceof IncidentBehaviorCategory);
 
-        return $data;
+        return $this->behaviors->findByCategoryOrdered($category);
+    }
+
+    protected function categoryExtra(CatalogCategoryInterface $category): array
+    {
+        assert($category instanceof IncidentBehaviorCategory);
+
+        return ['serious' => $category->isSerious()];
     }
 }

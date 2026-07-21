@@ -4,66 +4,57 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Yaml\Yaml;
+use App\Service\Catalog\AbstractCatalogSeeder;
 
-final class IncidentBehaviorSeeder
+final class IncidentBehaviorSeeder extends AbstractCatalogSeeder
 {
-    public function __construct(
-        private readonly EntityManagerInterface $em,
-        #[Autowire('%kernel.project_dir%')]
-        private readonly string $projectDir,
-    ) {}
-
-    public function seedForCentre(EducationalCentre $centre): void
+    protected function configFile(): string
     {
-        $config = Yaml::parseFile($this->projectDir . '/config/incident_behaviors.yaml');
-        if (!is_array($config)) {
-            return;
-        }
+        return 'incident_behaviors.yaml';
+    }
 
-        $rawCategories = $config['categories'] ?? [];
-        if (!is_array($rawCategories)) {
-            return;
-        }
+    protected function hasCategories(): bool
+    {
+        return true;
+    }
 
-        foreach ($rawCategories as $catPosition => $catData) {
-            if (!is_array($catData) || !is_int($catPosition)) {
-                continue;
-            }
+    protected function itemsKey(): string
+    {
+        return 'behaviors';
+    }
 
-            $catName = is_string($catData['name'] ?? null) ? $catData['name'] : '';
-            if ($catName === '') {
-                continue;
-            }
+    protected function createCategory(EducationalCentre $centre, string $name, int $position): CatalogCategoryInterface
+    {
+        return (new IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)
+            ->setName($name)
+            ->setPosition($position);
+    }
 
-            $category = (new IncidentBehaviorCategory())
-                ->setEducationalCentre($centre)
-                ->setName($catName)
-                ->setSerious((bool) ($catData['serious'] ?? false))
-                ->setPosition($catPosition);
+    protected function applyCategoryExtra(CatalogCategoryInterface $category, array $catData): void
+    {
+        assert($category instanceof IncidentBehaviorCategory);
 
-            $this->em->persist($category);
+        $category->setSerious((bool) ($catData['serious'] ?? false));
+    }
 
-            $rawBehaviors = is_array($catData['behaviors'] ?? null) ? $catData['behaviors'] : [];
-            foreach ($rawBehaviors as $behaviorPosition => $behaviorName) {
-                if (!is_string($behaviorName) || !is_int($behaviorPosition)) {
-                    continue;
-                }
+    protected function createItem(
+        EducationalCentre $centre,
+        ?CatalogCategoryInterface $category,
+        string $name,
+        int $position,
+    ): CatalogEntryInterface {
+        assert($category instanceof IncidentBehaviorCategory);
 
-                $behavior = (new IncidentBehavior())
-                    ->setEducationalCentre($centre)
-                    ->setCategory($category)
-                    ->setName($behaviorName)
-                    ->setPosition($behaviorPosition)
-                    ->setActive(true);
-
-                $this->em->persist($behavior);
-            }
-        }
+        return (new IncidentBehavior())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName($name)
+            ->setPosition($position);
     }
 }

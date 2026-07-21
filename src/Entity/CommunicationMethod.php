@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Repository\CommunicationMethodRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: CommunicationMethodRepository::class)]
-class CommunicationMethod
+class CommunicationMethod implements CatalogEntryInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]

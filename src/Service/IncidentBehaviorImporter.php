@@ -4,102 +4,87 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Repository\IncidentBehaviorCategoryRepository;
 use App\Repository\IncidentBehaviorRepository;
+use App\Service\Catalog\AbstractCatalogImporter;
 use Doctrine\ORM\EntityManagerInterface;
 
-class IncidentBehaviorImporter
+class IncidentBehaviorImporter extends AbstractCatalogImporter
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        EntityManagerInterface $em,
         private readonly IncidentBehaviorCategoryRepository $categories,
         private readonly IncidentBehaviorRepository $behaviors,
-    ) {}
+    ) {
+        parent::__construct($em);
+    }
 
-    /**
-     * @param array<string, mixed> $data
-     * @return array{categories: int, behaviors: int}
-     */
-    public function import(array $data, EducationalCentre $centre, bool $replaceExisting = false): array
+    protected function hasCategories(): bool
     {
-        $stats = [
-            'categories' => 0,
-            'behaviors'  => 0,
-        ];
+        return true;
+    }
 
-        if ($replaceExisting) {
-            foreach ($this->categories->findByCentreOrdered($centre) as $existing) {
-                $this->em->remove($existing);
-            }
-            $this->em->flush();
-        }
+    protected function itemsKey(): string
+    {
+        return 'behaviors';
+    }
 
-        $existingCategories = [];
-        $nextCategoryPosition = $this->categories->countByCentre($centre);
-        foreach ($this->categories->findByCentreOrdered($centre) as $c) {
-            $existingCategories[mb_strtolower($c->getName())] = $c;
-        }
+    protected function findExistingCategories(EducationalCentre $centre): iterable
+    {
+        return $this->categories->findByCentreOrdered($centre);
+    }
 
-        foreach ((array) ($data['categories'] ?? []) as $catData) {
-            if (!is_array($catData)) {
-                continue;
-            }
-            $nameRaw = $catData['name'] ?? null;
-            $catName = is_string($nameRaw) ? trim($nameRaw) : '';
-            if ($catName === '') {
-                continue;
-            }
+    protected function countExistingCategories(EducationalCentre $centre): int
+    {
+        return $this->categories->countByCentre($centre);
+    }
 
-            $category = $existingCategories[mb_strtolower($catName)] ?? null;
-            if ($category === null) {
-                $category = (new IncidentBehaviorCategory())
-                    ->setEducationalCentre($centre)
-                    ->setName($catName)
-                    ->setPosition($nextCategoryPosition++);
-                $this->em->persist($category);
-                $existingCategories[mb_strtolower($catName)] = $category;
-                $stats['categories']++;
-            }
+    protected function createCategory(EducationalCentre $centre, string $name, int $position): CatalogCategoryInterface
+    {
+        return (new IncidentBehaviorCategory())
+            ->setEducationalCentre($centre)
+            ->setName($name)
+            ->setPosition($position);
+    }
 
-            $category->setSerious((bool) ($catData['serious'] ?? false));
+    protected function applyCategoryExtra(CatalogCategoryInterface $category, array $catData): void
+    {
+        assert($category instanceof IncidentBehaviorCategory);
 
-            $existingBehaviors = [];
-            $nextBehaviorPosition = $this->behaviors->countByCategory($category);
-            foreach ($this->behaviors->findByCategoryOrdered($category) as $b) {
-                $existingBehaviors[mb_strtolower($b->getName())] = $b;
-            }
+        $category->setSerious((bool) ($catData['serious'] ?? false));
+    }
 
-            foreach ((array) ($catData['behaviors'] ?? []) as $behaviorData) {
-                if (!is_array($behaviorData)) {
-                    continue;
-                }
-                $behaviorNameRaw = $behaviorData['name'] ?? null;
-                $behaviorName    = is_string($behaviorNameRaw) ? trim($behaviorNameRaw) : '';
-                if ($behaviorName === '') {
-                    continue;
-                }
+    protected function findExistingItemsForCategory(CatalogCategoryInterface $category): iterable
+    {
+        assert($category instanceof IncidentBehaviorCategory);
 
-                $behavior = $existingBehaviors[mb_strtolower($behaviorName)] ?? null;
-                if ($behavior === null) {
-                    $behavior = (new IncidentBehavior())
-                        ->setEducationalCentre($centre)
-                        ->setCategory($category)
-                        ->setName($behaviorName)
-                        ->setPosition($nextBehaviorPosition++);
-                    $this->em->persist($behavior);
-                    $existingBehaviors[mb_strtolower($behaviorName)] = $behavior;
-                    $stats['behaviors']++;
-                }
+        return $this->behaviors->findByCategoryOrdered($category);
+    }
 
-                $behavior->setActive((bool) ($behaviorData['active'] ?? true));
-            }
-        }
+    protected function countExistingItemsForCategory(CatalogCategoryInterface $category): int
+    {
+        assert($category instanceof IncidentBehaviorCategory);
 
-        $this->em->flush();
+        return $this->behaviors->countByCategory($category);
+    }
 
-        return $stats;
+    protected function createItem(
+        EducationalCentre $centre,
+        ?CatalogCategoryInterface $category,
+        string $name,
+        int $position,
+    ): CatalogEntryInterface {
+        assert($category instanceof IncidentBehaviorCategory);
+
+        return (new IncidentBehavior())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName($name)
+            ->setPosition($position);
     }
 }

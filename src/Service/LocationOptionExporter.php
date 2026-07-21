@@ -4,42 +4,39 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
 use App\Entity\EducationalCentre;
+use App\Entity\LocationOptionCategory;
 use App\Repository\LocationOptionCategoryRepository;
 use App\Repository\LocationOptionRepository;
+use App\Service\Catalog\AbstractCatalogExporter;
 
-class LocationOptionExporter
+class LocationOptionExporter extends AbstractCatalogExporter
 {
     public function __construct(
         private readonly LocationOptionCategoryRepository $categories,
         private readonly LocationOptionRepository $options,
     ) {}
 
-    /** @return array<string, mixed> */
-    public function export(EducationalCentre $centre): array
+    protected function itemsKey(): string
     {
-        $data = [
-            'exported_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-            'centre'      => $centre->getName(),
-            'categories'  => [],
-        ];
+        return 'options';
+    }
 
-        foreach ($this->categories->findByCentreOrdered($centre) as $category) {
-            $categoryData = [
-                'name'    => $category->getName(),
-                'options' => [],
-            ];
+    protected function hasCategories(): bool
+    {
+        return true;
+    }
 
-            foreach ($this->options->findByCategoryOrdered($category) as $option) {
-                $categoryData['options'][] = [
-                    'name'   => $option->getName(),
-                    'active' => $option->isActive(),
-                ];
-            }
+    protected function categoriesFor(EducationalCentre $centre): iterable
+    {
+        return $this->categories->findByCentreOrdered($centre);
+    }
 
-            $data['categories'][] = $categoryData;
-        }
+    protected function itemsForCategory(CatalogCategoryInterface $category): iterable
+    {
+        assert($category instanceof LocationOptionCategory);
 
-        return $data;
+        return $this->options->findByCategoryOrdered($category);
     }
 }

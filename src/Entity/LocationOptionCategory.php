@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
 use App\Repository\LocationOptionCategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: LocationOptionCategoryRepository::class)]
-class LocationOptionCategory
+class LocationOptionCategory implements CatalogCategoryInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]

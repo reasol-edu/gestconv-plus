@@ -10,7 +10,7 @@ namespace App\Controller;
  */
 trait TranslatorTrait
 {
-    private function t(string $key): string
+    protected function t(string $key): string
     {
         return $this->translator->trans($key, [], $this->translationDomain());
     }

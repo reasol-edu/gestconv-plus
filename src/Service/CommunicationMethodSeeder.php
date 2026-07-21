@@ -4,44 +4,38 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\CommunicationMethod;
 use App\Entity\EducationalCentre;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Yaml\Yaml;
+use App\Service\Catalog\AbstractCatalogSeeder;
 
-final class CommunicationMethodSeeder
+final class CommunicationMethodSeeder extends AbstractCatalogSeeder
 {
-    public function __construct(
-        private readonly EntityManagerInterface $em,
-        #[Autowire('%kernel.project_dir%')]
-        private readonly string $projectDir,
-    ) {}
-
-    public function seedForCentre(EducationalCentre $centre): void
+    protected function configFile(): string
     {
-        $config = Yaml::parseFile($this->projectDir . '/config/communication_methods.yaml');
-        if (!is_array($config)) {
-            return;
-        }
+        return 'communication_methods.yaml';
+    }
 
-        $rawMethods = $config['methods'] ?? [];
-        if (!is_array($rawMethods)) {
-            return;
-        }
+    protected function hasCategories(): bool
+    {
+        return false;
+    }
 
-        foreach ($rawMethods as $position => $name) {
-            if (!is_string($name) || !is_int($position)) {
-                continue;
-            }
+    protected function itemsKey(): string
+    {
+        return 'methods';
+    }
 
-            $method = (new CommunicationMethod())
-                ->setEducationalCentre($centre)
-                ->setName($name)
-                ->setPosition($position)
-                ->setActive(true);
-
-            $this->em->persist($method);
-        }
+    protected function createItem(
+        EducationalCentre $centre,
+        ?CatalogCategoryInterface $category,
+        string $name,
+        int $position,
+    ): CatalogEntryInterface {
+        return (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName($name)
+            ->setPosition($position);
     }
 }

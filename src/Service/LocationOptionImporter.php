@@ -4,100 +4,80 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
 use App\Entity\LocationOption;
 use App\Entity\LocationOptionCategory;
 use App\Repository\LocationOptionCategoryRepository;
 use App\Repository\LocationOptionRepository;
+use App\Service\Catalog\AbstractCatalogImporter;
 use Doctrine\ORM\EntityManagerInterface;
 
-class LocationOptionImporter
+class LocationOptionImporter extends AbstractCatalogImporter
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        EntityManagerInterface $em,
         private readonly LocationOptionCategoryRepository $categories,
         private readonly LocationOptionRepository $options,
-    ) {}
+    ) {
+        parent::__construct($em);
+    }
 
-    /**
-     * @param array<string, mixed> $data
-     * @return array{categories: int, options: int}
-     */
-    public function import(array $data, EducationalCentre $centre, bool $replaceExisting = false): array
+    protected function hasCategories(): bool
     {
-        $stats = [
-            'categories' => 0,
-            'options'    => 0,
-        ];
+        return true;
+    }
 
-        if ($replaceExisting) {
-            foreach ($this->categories->findByCentreOrdered($centre) as $existing) {
-                $this->em->remove($existing);
-            }
-            $this->em->flush();
-        }
+    protected function itemsKey(): string
+    {
+        return 'options';
+    }
 
-        $existingCategories = [];
-        $nextCategoryPosition = $this->categories->countByCentre($centre);
-        foreach ($this->categories->findByCentreOrdered($centre) as $c) {
-            $existingCategories[mb_strtolower($c->getName())] = $c;
-        }
+    protected function findExistingCategories(EducationalCentre $centre): iterable
+    {
+        return $this->categories->findByCentreOrdered($centre);
+    }
 
-        foreach ((array) ($data['categories'] ?? []) as $catData) {
-            if (!is_array($catData)) {
-                continue;
-            }
-            $nameRaw = $catData['name'] ?? null;
-            $catName = is_string($nameRaw) ? trim($nameRaw) : '';
-            if ($catName === '') {
-                continue;
-            }
+    protected function countExistingCategories(EducationalCentre $centre): int
+    {
+        return $this->categories->countByCentre($centre);
+    }
 
-            $category = $existingCategories[mb_strtolower($catName)] ?? null;
-            if ($category === null) {
-                $category = (new LocationOptionCategory())
-                    ->setEducationalCentre($centre)
-                    ->setName($catName)
-                    ->setPosition($nextCategoryPosition++);
-                $this->em->persist($category);
-                $existingCategories[mb_strtolower($catName)] = $category;
-                $stats['categories']++;
-            }
+    protected function createCategory(EducationalCentre $centre, string $name, int $position): CatalogCategoryInterface
+    {
+        return (new LocationOptionCategory())
+            ->setEducationalCentre($centre)
+            ->setName($name)
+            ->setPosition($position);
+    }
 
-            $existingOptions = [];
-            $nextOptionPosition = $this->options->countByCategory($category);
-            foreach ($this->options->findByCategoryOrdered($category) as $o) {
-                $existingOptions[mb_strtolower($o->getName())] = $o;
-            }
+    protected function findExistingItemsForCategory(CatalogCategoryInterface $category): iterable
+    {
+        assert($category instanceof LocationOptionCategory);
 
-            foreach ((array) ($catData['options'] ?? []) as $optionData) {
-                if (!is_array($optionData)) {
-                    continue;
-                }
-                $optionNameRaw = $optionData['name'] ?? null;
-                $optionName    = is_string($optionNameRaw) ? trim($optionNameRaw) : '';
-                if ($optionName === '') {
-                    continue;
-                }
+        return $this->options->findByCategoryOrdered($category);
+    }
 
-                $option = $existingOptions[mb_strtolower($optionName)] ?? null;
-                if ($option === null) {
-                    $option = (new LocationOption())
-                        ->setEducationalCentre($centre)
-                        ->setCategory($category)
-                        ->setName($optionName)
-                        ->setPosition($nextOptionPosition++);
-                    $this->em->persist($option);
-                    $existingOptions[mb_strtolower($optionName)] = $option;
-                    $stats['options']++;
-                }
+    protected function countExistingItemsForCategory(CatalogCategoryInterface $category): int
+    {
+        assert($category instanceof LocationOptionCategory);
 
-                $option->setActive((bool) ($optionData['active'] ?? true));
-            }
-        }
+        return $this->options->countByCategory($category);
+    }
 
-        $this->em->flush();
+    protected function createItem(
+        EducationalCentre $centre,
+        ?CatalogCategoryInterface $category,
+        string $name,
+        int $position,
+    ): CatalogEntryInterface {
+        assert($category instanceof LocationOptionCategory);
 
-        return $stats;
+        return (new LocationOption())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName($name)
+            ->setPosition($position);
     }
 }

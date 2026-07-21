@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
 use App\Repository\IncidentBehaviorCategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: IncidentBehaviorCategoryRepository::class)]
-class IncidentBehaviorCategory
+class IncidentBehaviorCategory implements CatalogCategoryInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]

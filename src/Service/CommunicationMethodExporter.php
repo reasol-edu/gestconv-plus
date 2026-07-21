@@ -6,29 +6,26 @@ namespace App\Service;
 
 use App\Entity\EducationalCentre;
 use App\Repository\CommunicationMethodRepository;
+use App\Service\Catalog\AbstractCatalogExporter;
 
-class CommunicationMethodExporter
+class CommunicationMethodExporter extends AbstractCatalogExporter
 {
     public function __construct(
         private readonly CommunicationMethodRepository $methods,
     ) {}
 
-    /** @return array<string, mixed> */
-    public function export(EducationalCentre $centre): array
+    protected function itemsKey(): string
     {
-        $data = [
-            'exported_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-            'centre'      => $centre->getName(),
-            'methods'     => [],
-        ];
+        return 'methods';
+    }
 
-        foreach ($this->methods->findByCentreOrdered($centre) as $method) {
-            $data['methods'][] = [
-                'name'   => $method->getName(),
-                'active' => $method->isActive(),
-            ];
-        }
+    protected function hasCategories(): bool
+    {
+        return false;
+    }
 
-        return $data;
+    protected function itemsForCentre(EducationalCentre $centre): iterable
+    {
+        return $this->methods->findByCentreOrdered($centre);
     }
 }

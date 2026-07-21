@@ -4,72 +4,61 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\CommunicationMethod;
 use App\Entity\EducationalCentre;
 use App\Repository\CommunicationMethodRepository;
 use App\Repository\CommunicationRepository;
+use App\Service\Catalog\AbstractCatalogImporter;
 use Doctrine\ORM\EntityManagerInterface;
 
-class CommunicationMethodImporter
+class CommunicationMethodImporter extends AbstractCatalogImporter
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        EntityManagerInterface $em,
         private readonly CommunicationMethodRepository $methods,
         private readonly CommunicationRepository $communications,
-    ) {}
+    ) {
+        parent::__construct($em);
+    }
 
-    /**
-     * @param array<string, mixed> $data
-     * @return array{methods: int}
-     */
-    public function import(array $data, EducationalCentre $centre, bool $replaceExisting = false): array
+    protected function hasCategories(): bool
     {
-        $stats = [
-            'methods' => 0,
-        ];
+        return false;
+    }
 
-        if ($replaceExisting) {
-            foreach ($this->methods->findByCentreOrdered($centre) as $existing) {
-                if ($this->communications->countByMethod($existing) > 0) {
-                    continue;
-                }
-                $this->em->remove($existing);
-            }
-            $this->em->flush();
-        }
+    protected function itemsKey(): string
+    {
+        return 'methods';
+    }
 
-        $existingMethods = [];
-        $nextPosition    = $this->methods->countByCentre($centre);
-        foreach ($this->methods->findByCentreOrdered($centre) as $m) {
-            $existingMethods[mb_strtolower($m->getName())] = $m;
-        }
+    protected function findExistingItemsForCentre(EducationalCentre $centre): iterable
+    {
+        return $this->methods->findByCentreOrdered($centre);
+    }
 
-        foreach ((array) ($data['methods'] ?? []) as $methodData) {
-            if (!is_array($methodData)) {
-                continue;
-            }
-            $nameRaw = $methodData['name'] ?? null;
-            $name    = is_string($nameRaw) ? trim($nameRaw) : '';
-            if ($name === '') {
-                continue;
-            }
+    protected function countExistingItemsForCentre(EducationalCentre $centre): int
+    {
+        return $this->methods->countByCentre($centre);
+    }
 
-            $method = $existingMethods[mb_strtolower($name)] ?? null;
-            if ($method === null) {
-                $method = (new CommunicationMethod())
-                    ->setEducationalCentre($centre)
-                    ->setName($name)
-                    ->setPosition($nextPosition++);
-                $this->em->persist($method);
-                $existingMethods[mb_strtolower($name)] = $method;
-                $stats['methods']++;
-            }
+    protected function createItem(
+        EducationalCentre $centre,
+        ?CatalogCategoryInterface $category,
+        string $name,
+        int $position,
+    ): CatalogEntryInterface {
+        return (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName($name)
+            ->setPosition($position);
+    }
 
-            $method->setActive((bool) ($methodData['active'] ?? true));
-        }
+    protected function canRemove(object $entity): bool
+    {
+        assert($entity instanceof CommunicationMethod);
 
-        $this->em->flush();
-
-        return $stats;
+        return $this->communications->countByMethod($entity) === 0;
     }
 }

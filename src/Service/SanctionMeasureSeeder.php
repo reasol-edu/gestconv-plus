@@ -4,73 +4,68 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Catalog\CatalogCategoryInterface;
+use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
 use App\Entity\SanctionMeasure;
 use App\Entity\SanctionMeasureCategory;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Yaml\Yaml;
+use App\Service\Catalog\AbstractCatalogSeeder;
 
-final class SanctionMeasureSeeder
+final class SanctionMeasureSeeder extends AbstractCatalogSeeder
 {
-    public function __construct(
-        private readonly EntityManagerInterface $em,
-        #[Autowire('%kernel.project_dir%')]
-        private readonly string $projectDir,
-    ) {}
-
-    public function seedForCentre(EducationalCentre $centre): void
+    protected function configFile(): string
     {
-        $config = Yaml::parseFile($this->projectDir . '/config/sanction_measures.yaml');
-        if (!is_array($config)) {
-            return;
+        return 'sanction_measures.yaml';
+    }
+
+    protected function hasCategories(): bool
+    {
+        return true;
+    }
+
+    protected function itemsKey(): string
+    {
+        return 'measures';
+    }
+
+    protected function createCategory(EducationalCentre $centre, string $name, int $position): CatalogCategoryInterface
+    {
+        return (new SanctionMeasureCategory())
+            ->setEducationalCentre($centre)
+            ->setName($name)
+            ->setPosition($position);
+    }
+
+    protected function parseItem(mixed $raw): ?array
+    {
+        if (!is_array($raw)) {
+            return null;
         }
 
-        $rawCategories = $config['categories'] ?? [];
-        if (!is_array($rawCategories)) {
-            return;
-        }
+        $name = is_string($raw['name'] ?? null) ? $raw['name'] : '';
 
-        foreach ($rawCategories as $catPosition => $catData) {
-            if (!is_array($catData) || !is_int($catPosition)) {
-                continue;
-            }
+        return [$name, ['has_date_range' => (bool) ($raw['has_date_range'] ?? false)]];
+    }
 
-            $catName = is_string($catData['name'] ?? null) ? $catData['name'] : '';
-            if ($catName === '') {
-                continue;
-            }
+    protected function createItem(
+        EducationalCentre $centre,
+        ?CatalogCategoryInterface $category,
+        string $name,
+        int $position,
+    ): CatalogEntryInterface {
+        assert($category instanceof SanctionMeasureCategory);
 
-            $category = (new SanctionMeasureCategory())
-                ->setEducationalCentre($centre)
-                ->setName($catName)
-                ->setPosition($catPosition);
+        return (new SanctionMeasure())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName($name)
+            ->setPosition($position);
+    }
 
-            $this->em->persist($category);
+    protected function applyItemExtra(CatalogEntryInterface $item, array $extra): void
+    {
+        assert($item instanceof SanctionMeasure);
 
-            $rawMeasures = is_array($catData['measures'] ?? null) ? $catData['measures'] : [];
-            foreach ($rawMeasures as $measurePosition => $measureData) {
-                if (!is_array($measureData) || !is_int($measurePosition)) {
-                    continue;
-                }
-
-                $measureName  = is_string($measureData['name'] ?? null) ? $measureData['name'] : '';
-                $hasDateRange = (bool) ($measureData['has_date_range'] ?? false);
-
-                if ($measureName === '') {
-                    continue;
-                }
-
-                $measure = (new SanctionMeasure())
-                    ->setEducationalCentre($centre)
-                    ->setCategory($category)
-                    ->setName($measureName)
-                    ->setHasDateRange($hasDateRange)
-                    ->setPosition($measurePosition)
-                    ->setActive(true);
-
-                $this->em->persist($measure);
-            }
-        }
+        $item->setHasDateRange((bool) ($extra['has_date_range'] ?? false));
     }
 }
