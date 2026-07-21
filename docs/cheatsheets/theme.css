@@ -124,6 +124,20 @@ h1 {
   font-size: 11pt;
 }
 
+/* Captura de escritorio a ancho completo (equipo directivo, admin de centro: ver
+   docs/cheatsheets/curso-nuevo.md). Las demás fichas usan .step img, pensada para capturas
+   móviles en retrato (limitadas por alto); una captura de escritorio apaisada necesita lo
+   contrario, limitarse por ancho, para que el texto de la interfaz siga siendo legible en la
+   página impresa. */
+.captura-escritorio {
+  display: block;
+  width: 100%;
+  margin-top: 4mm;
+  border: 1px solid #d8dae6;
+  border-radius: 2mm;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+}
+
 /* ----- Nota final ----- */
 .nota {
   margin-top: 6mm;
