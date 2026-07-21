@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\TranslatorTrait;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Pagination\Paginator;
@@ -24,6 +25,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_ADMIN')]
 class TeacherController extends AbstractController
 {
+    use TranslatorTrait;
+
     /** @var list<string> */
     private const LOGGED_FIELDS = ['username', 'email', 'admin', 'active', 'external', 'forcePasswordChange'];
 
@@ -298,10 +301,5 @@ class TeacherController extends AbstractController
         }
 
         return $errors;
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

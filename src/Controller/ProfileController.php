@@ -22,6 +22,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_TEACHER')]
 class ProfileController extends AbstractController
 {
+    use TranslatorTrait;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UserPasswordHasherInterface $hasher,
@@ -141,8 +143,8 @@ class ProfileController extends AbstractController
         return $this->render('profile/settings.html.twig');
     }
 
-    private function t(string $key): string
+    private function translationDomain(): string
     {
-        return $this->translator->trans($key, [], 'messages');
+        return 'messages';
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\TranslatorTrait;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
@@ -31,6 +32,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_ADMIN')]
 class EducationalCentreController extends AbstractController
 {
+    use TranslatorTrait;
+
     /** @var list<string> */
     private const LOGGED_FIELDS = ['code', 'name', 'city'];
 
@@ -279,10 +282,5 @@ class EducationalCentreController extends AbstractController
         }
 
         return $errors;
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

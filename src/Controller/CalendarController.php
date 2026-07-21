@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
+use App\Entity\EducationalCentre;
 use App\Entity\Sanction;
 use App\Repository\SanctionRepository;
 use App\Security\Voter\EducationalCentreVoter;
@@ -26,13 +28,8 @@ class CalendarController extends AbstractController
     ) {}
 
     #[Route('/calendario', name: 'app_calendar')]
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $isAdmin = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
         $tab     = $isAdmin && $request->query->getString('tab') === 'absences' ? 'absences' : 'sanctions';
 
@@ -48,11 +45,8 @@ class CalendarController extends AbstractController
         CalendarBoardBuilder $boardBuilder,
         BoardTodayBuilder $boardTodayBuilder,
         KioskMode $kioskMode,
+        #[CurrentCentre] EducationalCentre $centre,
     ): Response {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
         $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
 
         $academicYear = $this->tenantContext->getViewYear($centre);

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
+use App\Entity\EducationalCentre;
 use App\Repository\AcademicYearRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\TenantContext;
@@ -22,13 +24,8 @@ class YearSelectionController extends AbstractController
     ) {}
 
     #[Route('/curso/año', name: 'app_select_year_page')]
-    public function page(Request $request): Response
+    public function page(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
 
         $returnTo = $request->query->getString('return_to', '/');
@@ -44,13 +41,8 @@ class YearSelectionController extends AbstractController
 
     #[Route('/curso/año/{id}', name: 'app_select_year', methods: ['POST'],
         requirements: ['id' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'])]
-    public function select(string $id, Request $request): Response
+    public function select(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
 
         if (!$this->isCsrfTokenValid('select_year_' . $id, $request->request->getString('_token'))) {

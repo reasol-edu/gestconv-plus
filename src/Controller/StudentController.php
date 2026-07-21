@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
+use App\Entity\EducationalCentre;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\Teacher;
@@ -46,13 +48,8 @@ class StudentController extends AbstractController
     ) {}
 
     #[Route('/{id}', name: 'app_students_show', methods: ['GET'])]
-    public function show(string $id): Response
+    public function show(string $id, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $viewer = $this->getUser();
         if (!$viewer instanceof Teacher) {
             throw $this->createAccessDeniedException();
@@ -145,13 +142,8 @@ class StudentController extends AbstractController
     }
 
     #[Route('/{id}/contacto', name: 'app_students_edit_contact', methods: ['POST'])]
-    public function editContact(string $id, Request $request): Response
+    public function editContact(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $viewer = $this->getUser();
         if (!$viewer instanceof Teacher) {
             throw $this->createAccessDeniedException();

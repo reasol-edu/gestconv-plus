@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
@@ -34,6 +35,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/notificaciones')]
 class NotificationController extends AbstractController
 {
+    use PastYearGuardTrait;
+    use TranslatorTrait;
+
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly EntityManagerInterface $em,
@@ -51,13 +55,8 @@ class NotificationController extends AbstractController
     ) {}
 
     #[Route('', name: 'app_notifications_index')]
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
             throw $this->createAccessDeniedException();
@@ -155,13 +154,8 @@ class NotificationController extends AbstractController
     }
 
     #[Route('/partes/estudiante/{studentId}/registrar', name: 'app_notifications_register_student_reports', methods: ['GET', 'POST'])]
-    public function registerForStudentReports(string $studentId, Request $request): Response
+    public function registerForStudentReports(string $studentId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $this->denyIfViewingPastYear($centre);
 
         $student = $this->students->findById($studentId);
@@ -345,15 +339,8 @@ class NotificationController extends AbstractController
         return $target->getGroup()->getAcademicYear()->getEducationalCentre();
     }
 
-    private function denyIfViewingPastYear(EducationalCentre $centre): void
+    private function translationDomain(): string
     {
-        if ($this->tenantContext->isViewingNonActiveYear($centre)) {
-            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
-        }
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'notifications');
+        return 'notifications';
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
 use App\Entity\AcademicYear;
 use App\Entity\Absence;
 use App\Entity\Activity;
@@ -31,6 +32,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/ausencias')]
 class AbsenceController extends AbstractController
 {
+    use PastYearGuardTrait;
+    use TranslatorTrait;
+
     private const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
     /** @var list<string> */
@@ -67,13 +71,8 @@ class AbsenceController extends AbstractController
     ) {}
 
     #[Route('', name: 'app_absences_index')]
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
             throw $this->createAccessDeniedException();
@@ -110,13 +109,8 @@ class AbsenceController extends AbstractController
     }
 
     #[Route('/nuevo', name: 'app_absences_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    public function new(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $this->denyIfViewingPastYear($centre);
 
         $user = $this->getUser();
@@ -201,13 +195,8 @@ class AbsenceController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_absences_show', methods: ['GET'])]
-    public function show(string $id): Response
+    public function show(string $id, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $absence = $this->absences->findById($id);
         if ($absence === null) {
             throw $this->createNotFoundException();
@@ -222,13 +211,8 @@ class AbsenceController extends AbstractController
     }
 
     #[Route('/{id}/editar', name: 'app_absences_edit', methods: ['GET', 'POST'])]
-    public function edit(string $id, Request $request): Response
+    public function edit(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $absence = $this->absences->findById($id);
         if ($absence === null) {
             throw $this->createNotFoundException();
@@ -325,13 +309,8 @@ class AbsenceController extends AbstractController
     }
 
     #[Route('/{id}/actividades/nueva', name: 'app_absences_activity_new', methods: ['GET', 'POST'])]
-    public function activityNew(string $id, Request $request): Response
+    public function activityNew(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $absence = $this->absences->findById($id);
         if ($absence === null) {
             throw $this->createNotFoundException();
@@ -399,13 +378,8 @@ class AbsenceController extends AbstractController
     }
 
     #[Route('/{id}/actividades/{activityId}/editar', name: 'app_absences_activity_edit', methods: ['GET', 'POST'])]
-    public function activityEdit(string $id, string $activityId, Request $request): Response
+    public function activityEdit(string $id, string $activityId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $absence = $this->absences->findById($id);
         if ($absence === null) {
             throw $this->createNotFoundException();
@@ -666,17 +640,5 @@ class AbsenceController extends AbstractController
     private function centreFor(Absence $absence): EducationalCentre
     {
         return $absence->getAcademicYear()->getEducationalCentre();
-    }
-
-    private function denyIfViewingPastYear(EducationalCentre $centre): void
-    {
-        if ($this->tenantContext->isViewingNonActiveYear($centre)) {
-            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
-        }
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

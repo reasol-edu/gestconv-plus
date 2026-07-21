@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\TranslatorTrait;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Repository\AcademicYearRepository;
@@ -20,6 +21,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centro/{centreId}/cursos')]
 class AcademicYearController extends AbstractController
 {
+    use TranslatorTrait;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
@@ -167,10 +170,5 @@ class AcademicYearController extends AbstractController
         $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
 
         return $centre;
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

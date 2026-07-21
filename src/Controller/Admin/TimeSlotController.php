@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\TranslatorTrait;
 use App\Entity\EducationalCentre;
 use App\Repository\EducationalCentreRepository;
 use App\Security\Voter\EducationalCentreVoter;
@@ -24,6 +25,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centro/{centreId}/tramos-horarios')]
 class TimeSlotController extends AbstractController
 {
+    use TranslatorTrait;
+
     public function __construct(
         private readonly EducationalCentreRepository $centres,
         private readonly TenantContext $tenantContext,
@@ -146,10 +149,5 @@ class TimeSlotController extends AbstractController
         $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
 
         return $centre;
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

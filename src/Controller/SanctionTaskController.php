@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
 use App\Entity\EducationalCentre;
 use App\Entity\SanctionTask;
 use App\Entity\SanctionTaskAttachment;
@@ -25,6 +26,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SanctionTaskController extends AbstractController
 {
+    use PastYearGuardTrait;
+    use TranslatorTrait;
+
     private const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
     /** @var list<string> */
@@ -58,13 +62,8 @@ class SanctionTaskController extends AbstractController
     ) {}
 
     #[Route('/tareas-de-sancion', name: 'app_sanction_tasks_index')]
-    public function index(): Response
+    public function index(#[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
             throw $this->createAccessDeniedException();
@@ -81,13 +80,8 @@ class SanctionTaskController extends AbstractController
     }
 
     #[Route('/sanciones/{id}/tareas/{taskId}/editar', name: 'app_sanction_tasks_edit', methods: ['GET', 'POST'])]
-    public function edit(string $id, string $taskId, Request $request): Response
+    public function edit(string $id, string $taskId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $sanction = $this->sanctions->findById($id);
         if ($sanction === null) {
             throw $this->createNotFoundException();
@@ -228,17 +222,5 @@ class SanctionTaskController extends AbstractController
         }
 
         return $attachments;
-    }
-
-    private function denyIfViewingPastYear(EducationalCentre $centre): void
-    {
-        if ($this->tenantContext->isViewingNonActiveYear($centre)) {
-            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
-        }
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

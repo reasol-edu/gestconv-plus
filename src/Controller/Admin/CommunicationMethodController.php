@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\TranslatorTrait;
 use App\Entity\CommunicationMethod;
 use App\Repository\CommunicationMethodRepository;
 use App\Repository\CommunicationRepository;
@@ -25,6 +26,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centro/{centreId}/metodos-comunicacion')]
 class CommunicationMethodController extends AbstractController
 {
+    use TranslatorTrait;
+
     /** @var list<string> */
     private const LOGGED_FIELDS = ['name', 'active'];
 
@@ -346,10 +349,5 @@ class CommunicationMethodController extends AbstractController
         $this->addFlash('success', $this->t('communication_method.flash.toggled'));
 
         return $this->redirectToRoute('app_centre_communication_methods_index', ['centreId' => $centreId]);
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
@@ -43,13 +44,8 @@ class GuardsController extends AbstractController
     ) {}
 
     #[Route('', name: 'app_guards_index')]
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
             throw $this->createAccessDeniedException();

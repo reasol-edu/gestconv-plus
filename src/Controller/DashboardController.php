@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
+use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
@@ -36,13 +38,8 @@ class DashboardController extends AbstractController
     ) {}
 
     #[Route('/', name: 'app_dashboard')]
-    public function index(): Response
+    public function index(#[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $year   = $this->tenantContext->getViewYear($centre);
         $user   = $this->getUser();
         $viewer = $user instanceof Teacher ? $user : null;

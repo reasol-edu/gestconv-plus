@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\TranslatorTrait;
 use App\Entity\IncidentBehavior;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\IncidentBehaviorCategoryRepository;
@@ -25,6 +26,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centro/{centreId}/conductas')]
 class IncidentBehaviorController extends AbstractController
 {
+    use TranslatorTrait;
+
     /** @var list<string> */
     private const LOGGED_FIELDS = ['name', 'active'];
 
@@ -365,10 +368,5 @@ class IncidentBehaviorController extends AbstractController
         $this->addFlash('success', $this->t('behavior.flash.toggled'));
 
         return $this->redirectToRoute('app_centre_incident_behaviors_index', ['centreId' => $centreId]);
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

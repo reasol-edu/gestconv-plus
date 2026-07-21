@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\TranslatorTrait;
+use App\Controller\PastYearGuardTrait;
 use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
@@ -30,6 +32,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centro/{centreId}/estudiantes')]
 class StudentController extends AbstractController
 {
+    use PastYearGuardTrait;
+    use TranslatorTrait;
+
     /** @var list<string> */
     private const LOGGED_FIELDS = [
         'studentId', 'details',
@@ -700,13 +705,6 @@ class StudentController extends AbstractController
         return $centre;
     }
 
-    private function denyIfViewingPastYear(EducationalCentre $centre): void
-    {
-        if ($this->tenantContext->isViewingNonActiveYear($centre)) {
-            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
-        }
-    }
-
     private function requireStudent(string $id, EducationalCentre $centre): Student
     {
         $student = $this->students->findById($id);
@@ -726,11 +724,6 @@ class StudentController extends AbstractController
         }
 
         return $result;
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 
     /** @return array<string, string> */

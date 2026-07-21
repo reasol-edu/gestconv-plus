@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\TranslatorTrait;
 use App\Entity\SanctionMeasure;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\SanctionMeasureCategoryRepository;
@@ -25,6 +26,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/centro/{centreId}/sanciones/medidas')]
 class SanctionMeasureController extends AbstractController
 {
+    use TranslatorTrait;
+
     /** @var list<string> */
     private const LOGGED_FIELDS = ['name', 'hasDateRange', 'active'];
 
@@ -371,10 +374,5 @@ class SanctionMeasureController extends AbstractController
         $this->addFlash('success', $this->t('sanction_measure.flash.toggled'));
 
         return $this->redirectToRoute('app_centre_sanction_measures_index', ['centreId' => $centreId]);
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
     }
 }

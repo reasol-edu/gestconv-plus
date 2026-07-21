@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\CurrentCentre;
 use App\Dto\SanctionFormData;
 use App\Entity\EducationalCentre;
 use App\Entity\GroupTeacher;
@@ -39,6 +40,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/sanciones')]
 class SanctionController extends AbstractController
 {
+    use PastYearGuardTrait;
+    use TranslatorTrait;
+
     /** @var list<string> */
     private const LOGGED_SANCTION_FIELDS = [
         'details',
@@ -74,13 +78,8 @@ class SanctionController extends AbstractController
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
             throw $this->createAccessDeniedException();
@@ -93,13 +92,8 @@ class SanctionController extends AbstractController
     }
 
     #[Route('/nueva', name: 'app_sanctions_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    public function new(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $this->denyIfViewingPastYear($centre);
 
         $user = $this->getUser();
@@ -188,13 +182,8 @@ class SanctionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_sanctions_show', methods: ['GET'])]
-    public function show(string $id): Response
+    public function show(string $id, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $sanction = $this->sanctions->findById($id);
         if ($sanction === null) {
             throw $this->createNotFoundException();
@@ -211,13 +200,8 @@ class SanctionController extends AbstractController
     }
 
     #[Route('/{id}/pdf', name: 'app_sanctions_pdf', methods: ['GET'])]
-    public function pdf(string $id): Response
+    public function pdf(string $id, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $sanction = $this->sanctions->findById($id);
         if ($sanction === null) {
             throw $this->createNotFoundException();
@@ -258,13 +242,8 @@ class SanctionController extends AbstractController
     }
 
     #[Route('/{id}/editar', name: 'app_sanctions_edit', methods: ['GET', 'POST'])]
-    public function edit(string $id, Request $request): Response
+    public function edit(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $sanction = $this->sanctions->findById($id);
         if ($sanction === null) {
             throw $this->createNotFoundException();
@@ -549,13 +528,8 @@ class SanctionController extends AbstractController
     }
 
     #[Route('/{id}/observaciones/{observationId}/editar', name: 'app_sanctions_edit_observation', methods: ['GET', 'POST'])]
-    public function editObservation(string $id, string $observationId, Request $request): Response
+    public function editObservation(string $id, string $observationId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $centre = $this->tenantContext->getSelectedCentre();
-        if ($centre === null) {
-            return $this->redirectToRoute('app_select_centre');
-        }
-
         $sanction = $this->sanctions->findById($id);
         if ($sanction === null) {
             throw $this->createNotFoundException();
@@ -663,15 +637,4 @@ class SanctionController extends AbstractController
         return $sanction->getGroup()->getAcademicYear()->getEducationalCentre();
     }
 
-    private function denyIfViewingPastYear(EducationalCentre $centre): void
-    {
-        if ($this->tenantContext->isViewingNonActiveYear($centre)) {
-            throw $this->createAccessDeniedException('Write operations are not allowed while viewing a non-active academic year.');
-        }
-    }
-
-    private function t(string $key): string
-    {
-        return $this->translator->trans($key, [], 'admin');
-    }
 }
