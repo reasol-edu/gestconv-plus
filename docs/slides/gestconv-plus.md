@@ -581,6 +581,21 @@ el centro**, no solo de sus propios grupos:
 
 ---
 
+## Días no lectivos
+
+![bg right:35% fit](../manual/img/centro/centro-dias-no-lectivos.png)
+
+- Catálogo de festivos, puentes y demás jornadas sin clase del curso académico, con fecha y
+  descripción opcional.
+- Alta, edición y borrado manual, uno a uno.
+- **Importar desde iCal**: sube un fichero `.ics` y da de alta de golpe todos sus eventos; las
+  fechas repetidas se detectan y no se duplican, así que el mismo fichero se puede reimportar sin
+  riesgo.
+- La pantalla de importación enlaza directamente a la Secretaría Virtual de la Consejería de
+  Educación, de donde se descarga el calendario escolar oficial del centro en ese formato.
+
+---
+
 ## Configurar quién notifica partes y sanciones
 
 ![bg right:35% fit](../manual/img/notificaciones/ajustes-notificaciones.png)

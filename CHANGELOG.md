@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Nuevo catálogo de **días no lectivos** (festivos, puentes…), gestionado por los administradores de centro en **Centro educativo › Días no lectivos** con ámbito de curso académico: alta, edición y borrado manual (fecha y descripción opcional), o importación masiva desde un fichero **iCal (.ics)**, con enlace directo desde la propia pantalla de importación a la Secretaría Virtual de la Consejería de Educación, donde se puede descargar el calendario escolar oficial del centro en ese formato. Al importar, las fechas que ya existan en el curso se cuentan como ya existentes y no se duplican, por lo que el mismo fichero puede volver a importarse sin riesgo.
+
 ## [1.0.0] - 2026-07-22
 
 ### Added

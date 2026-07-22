@@ -139,6 +139,7 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Gestionar oferta formativa | — | ✓ | ✓ |
 | Gestionar estudiantes | — | ✓ | ✓ |
 | Gestionar conductas, medidas y métodos de comunicación | — | ✓ | ✓ |
+| Gestionar días no lectivos, con importación desde iCal | — | ✓ | ✓ |
 | Gestionar perfiles (comisión y orientación) | — | ✓ | ✓ |
 
 ## Administración global

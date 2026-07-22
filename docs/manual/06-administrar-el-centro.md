@@ -10,8 +10,8 @@ automáticos por correo.
 
 La sección **Centro educativo** del menú lateral es el panel de configuración del centro,
 reservado a los administradores. Sus tarjetas dan acceso a los cursos académicos, los docentes,
-la oferta formativa, los estudiantes, los tramos horarios, los catálogos del centro, los perfiles
-especiales, los ajustes y el registro de avisos por correo.
+la oferta formativa, los estudiantes, los tramos horarios, los días no lectivos, los catálogos del
+centro, los perfiles especiales, los ajustes y el registro de avisos por correo.
 
 Las tarjetas de **Docentes** y **Estudiantes** —altas e importaciones desde Séneca— se explican
 paso a paso en [Preparar el curso académico](02-preparar-el-curso-academico.md); el resto, a
@@ -84,6 +84,28 @@ combinación de hora de inicio y fin que exista en la semana, con una columna po
 viernes y el nombre completo de cada docente de guardia en una línea distinta dentro de su celda.
 El encabezado admite el mismo tipo de personalización que el resto de informes (ver
 [Personalización de informes](07-administrar-la-plataforma.md#personalizacion-de-informes)).
+
+### Días no lectivos
+
+La tarjeta **Días no lectivos** lleva el calendario de festivos, puentes y demás jornadas sin
+clase del curso académico activo: cada entrada tiene una fecha y una descripción opcional (por
+ejemplo, «Puente de la Constitución»).
+
+![Gestión de los días no lectivos del curso](img/centro/centro-dias-no-lectivos.png)
+
+- **Añadir día no lectivo** — al pie del listado, un formulario con la fecha y una descripción
+  opcional lo crea de inmediato. No se admite repetir una fecha ya registrada en el mismo curso.
+- **Editar** y **Eliminar** — junto a cada entrada; eliminar pide confirmación.
+- **Importar desde iCal** — sube un fichero `.ics` y da de alta de golpe todos los eventos que
+  contenga, usando su fecha y su título como descripción. Las fechas que ya existan en el curso se
+  cuentan como «ya existentes» y no se duplican, así que el mismo fichero se puede volver a
+  importar sin riesgo (por ejemplo, tras una actualización del calendario oficial). La propia
+  pantalla de importación enlaza a la
+  [Secretaría Virtual de la Consejería de Educación](https://www.juntadeandalucia.es/educacion/secretariavirtual/consulta/calendario-escolar/),
+  donde se puede descargar el calendario escolar oficial del centro en este formato.
+
+Esta iteración solo gestiona el catálogo de días no lectivos: todavía no se usa para excluir esas
+fechas de otras pantallas (tramos horarios, ausencias, calendario de sanciones).
 
 ### Perfiles
 
