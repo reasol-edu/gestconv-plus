@@ -5,16 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
-
-- Nuevo catálogo de **días no lectivos** (festivos, puentes…), gestionado por los administradores de centro en **Centro educativo › Días no lectivos** con ámbito de curso académico: alta, edición y borrado manual (fecha y descripción opcional), o importación masiva desde un fichero **iCal (.ics)**, con enlace directo desde la propia pantalla de importación a la Secretaría Virtual de la Consejería de Educación, donde se puede descargar el calendario escolar oficial del centro en ese formato. Al importar, las fechas que ya existan en el curso se cuentan como ya existentes y no se duplican, por lo que el mismo fichero puede volver a importarse sin riesgo.
-
 ## [1.0.0] - 2026-07-22
 
 ### Added
 
+- Nuevo catálogo de **días no lectivos** (festivos, puentes…), gestionado por los administradores de centro en **Centro educativo › Días no lectivos** con ámbito de curso académico: alta, edición y borrado manual (fecha y descripción opcional), o importación masiva desde un fichero **iCal (.ics)**, con enlace directo desde la propia pantalla de importación a la Secretaría Virtual de la Consejería de Educación, donde se puede descargar el calendario escolar oficial del centro en ese formato. Al importar, las fechas que ya existan en el curso se cuentan como ya existentes y no se duplican, por lo que el mismo fichero puede volver a importarse sin riesgo.
+- Los días no lectivos se tienen en cuenta ahora en el resto de la aplicación: el calendario y el modo tablón los marcan visualmente, con un aviso en la pantalla «Hoy» del tablón y en guardias cuando el día no es lectivo (con la descripción del festivo si existe), y la navegación día a día de guardias salta el fin de semana. El alta y edición de una sanción muestra un contador de días lectivos entre el inicio y el fin de vigencia (con botones de incrementar/decrementar) que se recalcula al cambiar cualquiera de las tres fechas. Ningún selector de fecha de sanciones, ausencias de docente o actividades dentro de una ausencia permite ya elegir una fecha no lectiva: el formulario revierte la selección con un aviso, y el servidor repite la misma validación de forma autoritativa.
 - Widget en el panel de inicio con las **sanciones notificadas y vigentes** de la semana actual y la siguiente, filtradas a los grupos donde el docente imparte clase o es tutor/a. Si el docente no pertenece a ningún grupo del curso activo, el widget no aparece.
 - **Seguimiento de sanciones**: nuevos campos opcionales en el formulario de sanción («¿Las medidas tuvieron efecto?», «¿La familia reclamó?», «Actitud de la familia» y «¿Registrada en Séneca?») que permiten completar el resultado de la sanción una vez ejecutada; solo editable por quien tenga permiso de vista sobre la sanción.
 - **Observaciones en sanciones**: cualquier docente o administrador con acceso a una sanción puede añadir anotaciones de texto enriquecido; el autor puede modificarlas o eliminarlas durante la hora siguiente a su creación, y los administradores en cualquier momento.

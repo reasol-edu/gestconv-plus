@@ -593,6 +593,10 @@ el centro**, no solo de sus propios grupos:
   riesgo.
 - La pantalla de importación enlaza directamente a la Secretaría Virtual de la Consejería de
   Educación, de donde se descarga el calendario escolar oficial del centro en ese formato.
+- Una vez declarados, se reflejan en toda la aplicación: se marcan en el calendario y el tablón,
+  guardias los avisa y salta el fin de semana al navegar día a día, la sanción muestra un contador
+  de días lectivos entre inicio y fin, y ningún selector de fecha (sanciones, ausencias,
+  actividades) permite ya elegir un día no lectivo.
 
 ---
 
