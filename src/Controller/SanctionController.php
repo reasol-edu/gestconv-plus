@@ -26,6 +26,7 @@ use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
 use App\Service\AppSettingsInterface;
 use App\Service\ObservationFormHandler;
+use App\Service\NonWorkingDayChecker;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\SanctionFormHandler;
@@ -75,6 +76,7 @@ class SanctionController extends AbstractController
         private readonly AppSettingsInterface $settings,
         private readonly SanctionFormHandler $formHandler,
         private readonly ObservationFormHandler $observationHandler,
+        private readonly NonWorkingDayChecker $nonWorkingDayChecker,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -120,6 +122,7 @@ class SanctionController extends AbstractController
             }
 
             $eligibleReports = $this->sanctions->findEligibleReports($student, $group);
+            $nonWorkingDayDates = $this->nonWorkingDayChecker->datesFor($group->getAcademicYear());
 
             if ($request->isMethod('POST') && $request->request->getString('_step') !== 'select') {
                 if (!$this->isCsrfTokenValid('new_sanction', $request->request->getString('_token'))) {
@@ -127,7 +130,7 @@ class SanctionController extends AbstractController
                 }
 
                 $data   = SanctionFormData::fromRequest($request);
-                $result = $this->formHandler->validate($data, $centre);
+                $result = $this->formHandler->validate($data, $centre, $group->getAcademicYear());
 
                 if ($result->isValid()) {
                     $outcome  = $this->formHandler->create($data, $result, $student, $group, $user);
@@ -159,6 +162,7 @@ class SanctionController extends AbstractController
                     'measuresByCategory'    => $measuresByCategory,
                     'errors'                => $result->errors,
                     'formData'              => $data->toTemplateArray(),
+                    'nonWorkingDayDates'    => $nonWorkingDayDates,
                 ]);
             }
 
@@ -172,6 +176,7 @@ class SanctionController extends AbstractController
                 'measuresByCategory'    => $measuresByCategory,
                 'errors'                => [],
                 'formData'              => [],
+                'nonWorkingDayDates'    => $nonWorkingDayDates,
             ]);
         }
 
@@ -277,7 +282,7 @@ class SanctionController extends AbstractController
             $result = null;
 
             if ($canEditAll) {
-                $result = $this->formHandler->validate($data, $centre);
+                $result = $this->formHandler->validate($data, $centre, $sanction->getGroup()->getAcademicYear());
                 $errors = $result->errors;
             } else {
                 $errors = $this->formHandler->validateFollowup($data, $sanction->isNoMeasureApplied());
@@ -340,6 +345,7 @@ class SanctionController extends AbstractController
             'communicationsByReport' => $canEditAll ? $this->communications->findByIncidentReports($availableReports) : [],
             'measuresByCategory'    => $measuresByCategory,
             'errors'                => $errors,
+            'nonWorkingDayDates'    => $canEditAll ? $this->nonWorkingDayChecker->datesFor($sanction->getGroup()->getAcademicYear()) : [],
         ]);
     }
 

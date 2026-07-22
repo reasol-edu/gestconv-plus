@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Dto\SanctionFormData;
 use App\Dto\SanctionFormResult;
+use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
@@ -31,9 +32,10 @@ class SanctionFormHandler
         private readonly IncidentEmailNotifier $notifier,
         private readonly SanctionTaskGenerator $taskGenerator,
         private readonly TranslatorInterface $translator,
+        private readonly NonWorkingDayChecker $nonWorkingDayChecker,
     ) {}
 
-    public function validate(SanctionFormData $data, EducationalCentre $centre): SanctionFormResult
+    public function validate(SanctionFormData $data, EducationalCentre $centre, AcademicYear $academicYear): SanctionFormResult
     {
         $errors = [];
 
@@ -84,6 +86,8 @@ class SanctionFormHandler
                 $effectiveFrom = \DateTimeImmutable::createFromFormat('Y-m-d', $data->effectiveFromRaw) ?: null;
                 if ($effectiveFrom === null) {
                     $errors['effective_from'] = $this->t('sanction.error.effective_from_invalid');
+                } elseif ($this->nonWorkingDayChecker->isNonWorkingDay($academicYear, $effectiveFrom)) {
+                    $errors['effective_from'] = $this->t('sanction.error.effective_from_non_working');
                 }
             }
             if ($data->effectiveToRaw === '') {
@@ -92,6 +96,8 @@ class SanctionFormHandler
                 $effectiveTo = \DateTimeImmutable::createFromFormat('Y-m-d', $data->effectiveToRaw) ?: null;
                 if ($effectiveTo === null) {
                     $errors['effective_to'] = $this->t('sanction.error.effective_to_invalid');
+                } elseif ($this->nonWorkingDayChecker->isNonWorkingDay($academicYear, $effectiveTo)) {
+                    $errors['effective_to'] = $this->t('sanction.error.effective_to_non_working');
                 }
             }
         }

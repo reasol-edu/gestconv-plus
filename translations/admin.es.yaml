@@ -507,6 +507,9 @@ checkbox_filter.placeholder: 'Filtrar por texto…'
 checkbox_filter.selected_one: 'seleccionada'
 checkbox_filter.selected_many: 'seleccionadas'
 checkbox_filter.no_matches: 'Ninguna coincide con el filtro.'
+
+# Aviso cliente de fecha no lectiva seleccionada (sanciones, ausencias, actividades)
+non_working_date.selection_blocked: 'Esa fecha no es lectiva (fin de semana o festivo); elige otra para poder guardar los cambios.'
 incident.field.description: 'Descripción de lo acontecido'
 incident.field.expelled_from_class: 'El estudiante fue expulsado del aula'
 incident.field.expelled_from_class_no: 'No'
@@ -936,6 +939,8 @@ sanction.field.no_measure_reason: 'Motivos de la no aplicación de sanción'
 sanction.field.details: 'Detalle de la sanción impuesta'
 sanction.field.effective_from: 'Sanción efectiva desde'
 sanction.field.effective_to: 'Sanción efectiva hasta'
+sanction.field.school_days: 'Días lectivos'
+sanction.field.school_days_help: 'Los sábados, domingos y días no lectivos no cuentan.'
 
 sanction.col.student: 'Estudiante'
 sanction.col.group: 'Grupo'
@@ -971,6 +976,8 @@ sanction.error.effective_from_required: 'La fecha de inicio de vigencia es oblig
 sanction.error.effective_to_required: 'La fecha de fin de vigencia es obligatoria para la medida seleccionada.'
 sanction.error.effective_from_invalid: 'La fecha de inicio de vigencia no es válida.'
 sanction.error.effective_to_invalid: 'La fecha de fin de vigencia no es válida.'
+sanction.error.effective_from_non_working: 'La fecha de inicio de vigencia no puede ser un día no lectivo.'
+sanction.error.effective_to_non_working: 'La fecha de fin de vigencia no puede ser un día no lectivo.'
 sanction.error.family_claim_attitude_required: 'La actitud de la familia ante la sanción es obligatoria cuando se ha presentado una reclamación.'
 
 sanction.flash.created: 'Sanción registrada correctamente.'

@@ -314,6 +314,69 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertSelectorTextContains('body', 'medida');
     }
 
+    // ── new: fechas no lectivas ────────────────────────────────────────────────
+
+    public function testNewPostRejectsNonWorkingEffectiveFromAndEffectiveToDates(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report          = $this->makeReport($student, $group, $behavior);
+        $dateRangeMeasure = $this->makeDateRangeMeasure($centre);
+        $this->loginAs($admin, $centre);
+
+        $saturday = (new \DateTimeImmutable('next saturday'))->format('Y-m-d');
+        $sunday   = (new \DateTimeImmutable('next saturday'))->modify('+1 day')->format('Y-m-d');
+
+        $url     = '/sanciones/nueva?studentId=' . $student->getId()->toRfc4122()
+                 . '&groupId=' . $group->getId()->toRfc4122();
+        $crawler = $this->client->request('GET', $url);
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', $url, [
+            '_token'         => $token,
+            'reports'        => [$report->getId()->toRfc4122()],
+            'measures'       => [$dateRangeMeasure->getId()->toRfc4122()],
+            'details'        => 'Motivo de la sanción.',
+            'effective_from' => $saturday,
+            'effective_to'   => $sunday,
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'no puede ser un día no lectivo');
+
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(Sanction::class)->findAll());
+    }
+
+    public function testNewPostCreatesSanctionWithValidSchoolDayDateRange(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report          = $this->makeReport($student, $group, $behavior);
+        $dateRangeMeasure = $this->makeDateRangeMeasure($centre);
+        $this->loginAs($admin, $centre);
+
+        $monday  = (new \DateTimeImmutable('next monday'))->format('Y-m-d');
+        $tuesday = (new \DateTimeImmutable('next monday'))->modify('+1 day')->format('Y-m-d');
+
+        $url     = '/sanciones/nueva?studentId=' . $student->getId()->toRfc4122()
+                 . '&groupId=' . $group->getId()->toRfc4122();
+        $crawler = $this->client->request('GET', $url);
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', $url, [
+            '_token'         => $token,
+            'reports'        => [$report->getId()->toRfc4122()],
+            'measures'       => [$dateRangeMeasure->getId()->toRfc4122()],
+            'details'        => 'Motivo de la sanción.',
+            'effective_from' => $monday,
+            'effective_to'   => $tuesday,
+        ]);
+
+        self::assertResponseRedirects();
+
+        $this->em->clear();
+        self::assertCount(1, $this->em->getRepository(Sanction::class)->findAll());
+    }
+
     public function testNewPostShowsErrorWhenDetailsEmpty(): void
     {
         [$admin, $centre, $group, $student, $behavior, $measure] = $this->makeScenario();
@@ -636,6 +699,39 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertSame('Descripción actualizada.', $updated->getDetails());
     }
 
+    public function testEditPostRejectsNonWorkingEffectiveDates(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report          = $this->makeReport($student, $group, $behavior);
+        $dateRangeMeasure = $this->makeDateRangeMeasure($centre);
+        $sanction        = $this->makeSanction($admin, $student, $group, [$report]);
+        $this->loginAs($admin, $centre);
+
+        $saturday = (new \DateTimeImmutable('next saturday'))->format('Y-m-d');
+        $sunday   = (new \DateTimeImmutable('next saturday'))->modify('+1 day')->format('Y-m-d');
+
+        $sanctionId = $sanction->getId()->toRfc4122();
+        $crawler    = $this->client->request('GET', '/sanciones/' . $sanctionId . '/editar');
+        $token      = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/sanciones/' . $sanctionId . '/editar', [
+            '_token'         => $token,
+            'reports'        => [$report->getId()->toRfc4122()],
+            'measures'       => [$dateRangeMeasure->getId()->toRfc4122()],
+            'details'        => 'Descripción actualizada.',
+            'effective_from' => $saturday,
+            'effective_to'   => $sunday,
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'no puede ser un día no lectivo');
+
+        $this->em->clear();
+        $unchanged = $this->em->find(Sanction::class, $sanction->getId());
+        self::assertNotNull($unchanged);
+        self::assertNull($unchanged->getEffectiveFrom());
+    }
+
     // ── delete ────────────────────────────────────────────────────────────────
 
     public function testDeleteIsDeniedToReportCreator(): void
@@ -879,6 +975,24 @@ class SanctionControllerTest extends ControllerTestCase
         $this->persist($admin, $centre, $year, $course, $group, $student, $category, $behavior, $measureCat, $measure);
 
         return [$admin, $centre, $group, $student, $behavior, $measure];
+    }
+
+    private function makeDateRangeMeasure(EducationalCentre $centre): SanctionMeasure
+    {
+        $category = (new SanctionMeasureCategory())
+            ->setEducationalCentre($centre)
+            ->setName('Con fechas')
+            ->setPosition(1);
+        $measure = (new SanctionMeasure())
+            ->setEducationalCentre($centre)
+            ->setCategory($category)
+            ->setName('Cambio de centro')
+            ->setHasDateRange(true)
+            ->setPosition(0)
+            ->setActive(true);
+        $this->persist($category, $measure);
+
+        return $measure;
     }
 
     private function makeTeacher(string $username): Teacher

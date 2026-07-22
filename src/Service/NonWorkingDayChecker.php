@@ -62,6 +62,17 @@ final readonly class NonWorkingDayChecker
         }
     }
 
+    /**
+     * Fechas ISO (Y-m-d) de los festivos declarados del curso, para inyectar en
+     * los controladores Stimulus que bloquean la selección de fechas no lectivas.
+     *
+     * @return list<string>
+     */
+    public function datesFor(AcademicYear $year): array
+    {
+        return array_keys($this->holidaySet($year));
+    }
+
     /** @return array<string, true> */
     private function holidaySet(AcademicYear $year): array
     {

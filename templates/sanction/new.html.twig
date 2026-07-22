@@ -26,7 +26,10 @@
     <form method="post"
           action="{{ path('app_sanctions_new', {studentId: student.id.toRfc4122, groupId: group.id.toRfc4122}) }}"
           class="space-y-8"
-          data-controller="form-submit sanction-measures">
+          data-controller="form-submit sanction-measures sanction-date-range"
+          data-sanction-date-range-non-working-dates-value="{{ nonWorkingDayDates|default([])|json_encode }}"
+          data-sanction-date-range-blocked-message-value="{{ 'non_working_date.selection_blocked'|trans({}, 'admin') }}"
+          data-action="submit->sanction-date-range#preventIfInvalid">
         <input type="hidden" name="_token" value="{{ csrf_token('new_sanction') }}">
 
         {# ── Estudiante (readonly) ──────────────────────────────────────── #}
@@ -193,7 +196,8 @@
 
             {# Fechas de vigencia #}
             <div data-sanction-measures-target="dateBlock"
-                 class="{{ not (formData.effectiveFrom is defined and formData.effectiveFrom) ? 'hidden' : '' }} grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+                 data-sanction-date-range-target="dateBlock"
+                 class="{{ not (formData.effectiveFrom is defined and formData.effectiveFrom) ? 'hidden' : '' }} grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-start pt-2 border-t border-gray-100">
                 <div>
                     <label for="effective_from" class="block text-sm font-medium text-gray-700 mb-1.5">
                         {{ 'sanction.field.effective_from'|trans({}, 'admin') }}
@@ -202,11 +206,32 @@
                            value="{{ formData.effectiveFrom ?? '' }}"
                            {% if errors.effective_from is defined %}aria-invalid="true"{% endif %}
                            data-sanction-measures-target="effectiveFrom"
+                           data-sanction-date-range-target="start"
+                           data-action="change->sanction-date-range#startChanged"
                            class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
                                   focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                     {% if errors.effective_from is defined %}
                         <p class="mt-1 text-xs text-red-600">{{ errors.effective_from }}</p>
                     {% endif %}
+                    <p data-sanction-date-range-target="startWarning" class="mt-1 text-xs text-red-600 hidden"></p>
+                </div>
+                <div class="flex flex-col items-center gap-1.5 pt-0 sm:pt-6">
+                    <span class="text-xs font-medium text-gray-500">{{ 'sanction.field.school_days'|trans({}, 'admin') }}</span>
+                    <div class="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-2 py-1.5">
+                        <button type="button" data-action="sanction-date-range#decrement"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-white hover:text-forest-600 transition-colors">
+                            {{ ux_icon('heroicons:minus', {class: 'h-3.5 w-3.5'}) }}
+                        </button>
+                        <input type="number" min="1" max="90" inputmode="numeric"
+                               data-sanction-date-range-target="count"
+                               data-action="change->sanction-date-range#countChanged"
+                               class="w-12 border-0 bg-transparent text-center text-sm font-semibold text-gray-900 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
+                        <button type="button" data-action="sanction-date-range#increment"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-white hover:text-forest-600 transition-colors">
+                            {{ ux_icon('heroicons:plus', {class: 'h-3.5 w-3.5'}) }}
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-gray-400 text-center max-w-[8rem]">{{ 'sanction.field.school_days_help'|trans({}, 'admin') }}</p>
                 </div>
                 <div>
                     <label for="effective_to" class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -216,11 +241,14 @@
                            value="{{ formData.effectiveTo ?? '' }}"
                            {% if errors.effective_to is defined %}aria-invalid="true"{% endif %}
                            data-sanction-measures-target="effectiveTo"
+                           data-sanction-date-range-target="end"
+                           data-action="change->sanction-date-range#endChanged"
                            class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
                                   focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                     {% if errors.effective_to is defined %}
                         <p class="mt-1 text-xs text-red-600">{{ errors.effective_to }}</p>
                     {% endif %}
+                    <p data-sanction-date-range-target="endWarning" class="mt-1 text-xs text-red-600 hidden"></p>
                 </div>
             </div>
         </div>
