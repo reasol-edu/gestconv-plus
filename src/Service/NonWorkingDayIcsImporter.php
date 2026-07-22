@@ -45,7 +45,7 @@ class NonWorkingDayIcsImporter
 
             $summary     = is_string($event->summary) ? $event->summary : '';
             $eventDesc   = is_string($event->description) ? $event->description : '';
-            $description = trim($summary !== '' ? $summary : $eventDesc);
+            $description = trim($eventDesc !== '' ? $eventDesc : $summary);
 
             $nonWorkingDay = (new NonWorkingDay())
                 ->setDate($date)
