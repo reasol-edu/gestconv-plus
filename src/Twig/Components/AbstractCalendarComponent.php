@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Twig\Components;
 
 use App\Entity\EducationalCentre;
+use App\Service\NonWorkingDayChecker;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -31,6 +32,7 @@ abstract class AbstractCalendarComponent extends AbstractController
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly TranslatorInterface $translator,
+        private readonly NonWorkingDayChecker $nonWorkingDayChecker,
     ) {}
 
     public function mount(): void
@@ -87,6 +89,28 @@ abstract class AbstractCalendarComponent extends AbstractController
     {
         return (int) $day->format('n') === $this->month
             && (int) $day->format('Y') === $this->year;
+    }
+
+    public function isNonWorkingDay(\DateTimeImmutable $day): bool
+    {
+        $centre       = $this->tenantContext->getSelectedCentre();
+        $academicYear = $centre !== null ? $this->tenantContext->getViewYear($centre) : null;
+        if ($academicYear === null) {
+            return false;
+        }
+
+        return $this->nonWorkingDayChecker->isNonWorkingDay($academicYear, $day);
+    }
+
+    public function nonWorkingDayDescription(\DateTimeImmutable $day): ?string
+    {
+        $centre       = $this->tenantContext->getSelectedCentre();
+        $academicYear = $centre !== null ? $this->tenantContext->getViewYear($centre) : null;
+        if ($academicYear === null) {
+            return null;
+        }
+
+        return $this->nonWorkingDayChecker->descriptionFor($academicYear, $day);
     }
 
     /**

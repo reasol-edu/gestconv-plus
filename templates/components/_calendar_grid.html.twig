@@ -79,15 +79,18 @@
                 <div class="absolute inset-0 grid grid-cols-5 divide-x divide-gray-100 pointer-events-none z-0"
                      aria-hidden="true">
                     {% for day in week.days %}
-                        <div class="{{ this.isToday(day) ? 'bg-forest-50' : '' }}"></div>
+                        <div class="{{ this.isToday(day) ? 'bg-forest-50' : (this.isNonWorkingDay(day) ? 'bg-gray-100' : '') }}"></div>
                     {% endfor %}
                 </div>
 
                 {# Day numbers — top of each week row #}
                 <div class="relative z-10 grid grid-cols-5">
                     {% for day in week.days %}
+                        {% set nonWorking = this.isNonWorkingDay(day) %}
                         <div class="py-1 px-1.5 text-right text-xs
-                                    {{ this.isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-300' }}">
+                                    {{ this.isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-300' }}
+                                    {{ nonWorking ? 'line-through decoration-gray-300' : '' }}"
+                             {% if nonWorking %}title="{{ this.nonWorkingDayDescription(day) ?? 'non_working_day'|trans({}, 'calendar') }}"{% endif %}>
                             {% if this.isToday(day) %}
                                 <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-forest-600 text-white text-xs font-bold">
                                     {{ day.format('j') }}

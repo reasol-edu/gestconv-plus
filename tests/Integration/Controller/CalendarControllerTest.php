@@ -15,6 +15,7 @@ use App\Entity\CommunicationResult;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\GroupTeacher;
+use App\Entity\NonWorkingDay;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\Sanction;
@@ -837,6 +838,49 @@ class CalendarControllerTest extends ControllerTestCase
         $content = (string) $this->client->getResponse()->getContent();
         self::assertStringContainsString('data-controller="clock"', $content);
         self::assertStringContainsString('data-clock-target="display"', $content);
+    }
+
+    public function testBoardTodayShowsNonWorkingDayMessageInsteadOfTimeSlots(): void
+    {
+        $world = $this->makeScenario();
+        $this->makeTimeSlot($world['year'], $this->todayDayOfWeek());
+
+        $nonWorkingDay = (new NonWorkingDay())
+            ->setAcademicYear($world['year'])
+            ->setDate(new \DateTimeImmutable('today'))
+            ->setDescription('Día del Centro');
+        $this->persist($nonWorkingDay);
+
+        $admin = $this->makeAdmin('calendar.board.today.nonworking');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Día no lectivo: Día del Centro', $content);
+        self::assertStringNotContainsString('data-current-time-slot-target="slot"', $content);
+    }
+
+    public function testBoardWeekMarksNonWorkingDayColumnWithItsLabel(): void
+    {
+        $world  = $this->makeScenario();
+        $monday = (new \DateTimeImmutable('today'))->modify('monday this week');
+
+        $nonWorkingDay = (new NonWorkingDay())
+            ->setAcademicYear($world['year'])
+            ->setDate($monday)
+            ->setDescription('Puente');
+        $this->persist($nonWorkingDay);
+
+        $admin = $this->makeAdmin('calendar.board.week.nonworking');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/tablon');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Puente', $content);
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────

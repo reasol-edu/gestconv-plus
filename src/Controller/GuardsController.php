@@ -117,15 +117,16 @@ class GuardsController extends AbstractController
         ksort($sanctionsByGroup);
 
         return $this->render('guards/index.html.twig', [
-            'centre'           => $centre,
-            'year'             => $year,
-            'date'             => $date,
-            'isToday'          => $isToday,
-            'isAdmin'          => $isAdmin,
-            'slots'            => $slots,
-            'sanctionsByGroup' => $sanctionsByGroup,
-            'prevDate'         => $date->modify('-1 day')->format('Y-m-d'),
-            'nextDate'         => $date->modify('+1 day')->format('Y-m-d'),
+            'centre'             => $centre,
+            'year'               => $year,
+            'date'               => $date,
+            'isToday'            => $isToday,
+            'isAdmin'            => $isAdmin,
+            'slots'              => $slots,
+            'sanctionsByGroup'   => $sanctionsByGroup,
+            'nonWorkingDayLabel' => $report->nonWorkingDayLabel,
+            'prevDate'           => self::skipWeekend($date, -1)->format('Y-m-d'),
+            'nextDate'           => self::skipWeekend($date, 1)->format('Y-m-d'),
         ]);
     }
 
@@ -272,6 +273,15 @@ class GuardsController extends AbstractController
         }
 
         throw $this->createAccessDeniedException();
+    }
+
+    private static function skipWeekend(\DateTimeImmutable $date, int $direction): \DateTimeImmutable
+    {
+        do {
+            $date = $date->modify($direction < 0 ? '-1 day' : '+1 day');
+        } while ((int) $date->format('N') >= 6);
+
+        return $date;
     }
 
     private static function parseDate(string $raw): ?\DateTimeImmutable

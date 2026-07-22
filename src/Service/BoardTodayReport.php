@@ -18,5 +18,6 @@ final readonly class BoardTodayReport
         public array $timeSlots,
         public array $absentTeachers,
         public array $sanctionedStudents,
+        public ?string $nonWorkingDayLabel = null,
     ) {}
 }

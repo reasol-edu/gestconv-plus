@@ -10,6 +10,7 @@ use App\Repository\AbsenceRepository;
 use App\Repository\ActivityRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\TimeSlotRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Builds the "Hoy" board screen: every time slot of the given weekday with
@@ -25,10 +26,16 @@ class BoardTodayBuilder
         private readonly ActivityRepository $activities,
         private readonly AbsenceRepository $absences,
         private readonly SanctionRepository $sanctions,
+        private readonly NonWorkingDayChecker $nonWorkingDayChecker,
+        private readonly TranslatorInterface $translator,
     ) {}
 
     public function build(AcademicYear $year, \DateTimeImmutable $date): BoardTodayReport
     {
+        if ($this->nonWorkingDayChecker->isNonWorkingDay($year, $date)) {
+            return new BoardTodayReport($date, [], [], [], $this->nonWorkingDayLabel($year, $date));
+        }
+
         $dayOfWeek = ((int) $date->format('N')) - 1;
 
         $slots = $this->timeSlots->findByAcademicYearAndDay($year, $dayOfWeek);
@@ -62,6 +69,18 @@ class BoardTodayBuilder
             $this->absences->findTeachersAbsentOn($year, $date),
             $sanctionedStudents,
         );
+    }
+
+    private function nonWorkingDayLabel(AcademicYear $year, \DateTimeImmutable $date): string
+    {
+        $description = $this->nonWorkingDayChecker->descriptionFor($year, $date);
+        if ($description !== null) {
+            return $description;
+        }
+
+        return $this->nonWorkingDayChecker->isWeekend($date)
+            ? $this->translator->trans('board_non_working_weekend', [], 'calendar')
+            : $this->translator->trans('board_day_non_working', [], 'calendar');
     }
 
     private function truncate(string $text): string

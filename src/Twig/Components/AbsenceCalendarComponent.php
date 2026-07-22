@@ -9,6 +9,7 @@ use App\Entity\Absence;
 use App\Repository\AbsenceRepository;
 use App\Service\CalendarMonthGridBuilder;
 use App\Service\GroupColorPalette;
+use App\Service\NonWorkingDayChecker;
 use App\Service\TenantContext;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
@@ -22,11 +23,12 @@ class AbsenceCalendarComponent extends AbstractCalendarComponent
     public function __construct(
         TenantContext $tenantContext,
         TranslatorInterface $translator,
+        NonWorkingDayChecker $nonWorkingDayChecker,
         private readonly AbsenceRepository $absenceRepository,
         private readonly CalendarMonthGridBuilder $gridBuilder,
         private readonly GroupColorPalette $colorPalette,
     ) {
-        parent::__construct($tenantContext, $translator);
+        parent::__construct($tenantContext, $translator, $nonWorkingDayChecker);
     }
 
     /**

@@ -15,6 +15,7 @@ use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\GroupTeacher;
+use App\Entity\NonWorkingDay;
 use App\Entity\PersonName;
 use App\Entity\Sanction;
 use App\Entity\SanctionTask;
@@ -140,13 +141,40 @@ class GuardsControllerTest extends ControllerTestCase
         $this->persist($world['centre']);
         $this->loginAs($admin, $world['centre']);
 
-        $date = (new \DateTimeImmutable('today'))->modify('+5 days');
+        // Miércoles: tanto el día anterior como el siguiente son lectivos,
+        // así que no hay salto de fin de semana que complique el cálculo.
+        $date    = new \DateTimeImmutable('next wednesday');
         $crawler = $this->client->request('GET', '/guardias?date=' . $date->format('Y-m-d'));
 
         self::assertResponseIsSuccessful();
         $html = $crawler->html();
         self::assertStringContainsString('date=' . $date->modify('-1 day')->format('Y-m-d'), $html);
         self::assertStringContainsString('date=' . $date->modify('+1 day')->format('Y-m-d'), $html);
+    }
+
+    public function testDateNavigationSkipsWeekend(): void
+    {
+        $world = $this->makeWorld('navskipweekend');
+        $admin = $this->makeTeacher('admin-navskipweekend');
+        $world['centre']->addAdmin($admin);
+        $this->persist($world['centre']);
+        $this->loginAs($admin, $world['centre']);
+
+        $friday  = new \DateTimeImmutable('next friday');
+        $monday  = $friday->modify('+3 days');
+        $crawler = $this->client->request('GET', '/guardias?date=' . $friday->format('Y-m-d'));
+
+        self::assertResponseIsSuccessful();
+        $fridayHtml = $crawler->html();
+        self::assertStringContainsString('date=' . $monday->format('Y-m-d'), $fridayHtml);
+        self::assertStringNotContainsString('date=' . $friday->modify('+1 day')->format('Y-m-d'), $fridayHtml);
+
+        $crawler = $this->client->request('GET', '/guardias?date=' . $monday->format('Y-m-d'));
+
+        self::assertResponseIsSuccessful();
+        $mondayHtml = $crawler->html();
+        self::assertStringContainsString('date=' . $friday->format('Y-m-d'), $mondayHtml);
+        self::assertStringNotContainsString('date=' . $monday->modify('-1 day')->format('Y-m-d'), $mondayHtml);
     }
 
     public function testCurrentTimeSlotWiringOnlyPresentWhenViewingToday(): void
@@ -333,6 +361,34 @@ class GuardsControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString($this->trans('board_today_no_absences', 'calendar'), $crawler->html());
+    }
+
+    // ── días no lectivos ──────────────────────────────────────────────────────
+
+    public function testNonWorkingDayShowsWarningBoxWithDescriptionAlongsideSanctions(): void
+    {
+        $world = $this->makeWorld('nonworking');
+
+        $today         = new \DateTimeImmutable('today');
+        $nonWorkingDay = (new NonWorkingDay())
+            ->setAcademicYear($world['year'])
+            ->setDate($today)
+            ->setDescription('Día del Centro');
+        $this->persist($nonWorkingDay);
+
+        $this->makeNotifiedSanction($world, $today->modify('-1 day'), $today->modify('+1 day'));
+
+        $admin = $this->makeTeacher('admin-nonworking');
+        $world['centre']->addAdmin($admin);
+        $this->persist($world['centre']);
+        $this->loginAs($admin, $world['centre']);
+
+        $crawler = $this->client->request('GET', '/guardias');
+
+        self::assertResponseIsSuccessful();
+        $html = $crawler->html();
+        self::assertStringContainsString('Día no lectivo: Día del Centro', $html);
+        self::assertStringContainsString($world['student']->getName()->getLastName(), $html);
     }
 
     // ── alumnado sancionado ──────────────────────────────────────────────────

@@ -34,39 +34,52 @@
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-8 text-center">
             <p class="text-sm text-gray-400">{{ 'guards.no_year'|trans({}, 'admin') }}</p>
         </div>
-    {% elseif slots is empty and sanctionsByGroup is empty %}
-        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-8 text-center">
-            <p class="text-sm text-gray-400">{{ 'guards.empty'|trans({}, 'admin') }}</p>
-        </div>
     {% else %}
 
-        {% if slots|length > 1 or sanctionsByGroup is not empty %}
-            <div class="flex flex-wrap gap-2">
-                {% for item in slots %}
-                    <a href="#slot-{{ item.timeSlot.id }}"
-                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-forest-300 hover:text-forest-700 transition-colors">
-                        {{ item.timeSlot.name }}
-                    </a>
-                {% endfor %}
-                {% if sanctionsByGroup is not empty %}
-                    <a href="#sanctioned-students"
-                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-forest-300 hover:text-forest-700 transition-colors">
-                        {{ 'guards.sanctioned_title'|trans({}, 'admin') }}
-                    </a>
-                {% endif %}
+        {% if nonWorkingDayLabel is not null %}
+            <div class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4.5 w-4.5 shrink-0 text-amber-500 mt-0.5'}) }}
+                <p class="text-sm text-amber-800">
+                    {{ 'guards.non_working'|trans({'%label%': nonWorkingDayLabel}, 'admin') }}
+                </p>
             </div>
         {% endif %}
 
-        {% if slots is not empty %}
-            <div class="space-y-6"
-                 {% if isToday %}data-controller="current-time-slot" data-current-time-slot-current-class="ring-2 ring-amber-300 border-amber-300 bg-amber-50"{% endif %}>
-                {% for item in slots %}
-                    {% include 'guards/_time_slot.html.twig' with { item: item, date: date, isToday: isToday, centre: centre, isAdmin: isAdmin } %}
-                {% endfor %}
+        {% if slots is empty and sanctionsByGroup is empty %}
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-8 text-center">
+                <p class="text-sm text-gray-400">{{ 'guards.empty'|trans({}, 'admin') }}</p>
             </div>
-        {% endif %}
+        {% else %}
 
-        {% include 'guards/_sanctioned_students.html.twig' with { sanctionsByGroup: sanctionsByGroup } %}
+            {% if slots|length > 1 or sanctionsByGroup is not empty %}
+                <div class="flex flex-wrap gap-2">
+                    {% for item in slots %}
+                        <a href="#slot-{{ item.timeSlot.id }}"
+                           class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-forest-300 hover:text-forest-700 transition-colors">
+                            {{ item.timeSlot.name }}
+                        </a>
+                    {% endfor %}
+                    {% if sanctionsByGroup is not empty %}
+                        <a href="#sanctioned-students"
+                           class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-forest-300 hover:text-forest-700 transition-colors">
+                            {{ 'guards.sanctioned_title'|trans({}, 'admin') }}
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if slots is not empty %}
+                <div class="space-y-6"
+                     {% if isToday %}data-controller="current-time-slot" data-current-time-slot-current-class="ring-2 ring-amber-300 border-amber-300 bg-amber-50"{% endif %}>
+                    {% for item in slots %}
+                        {% include 'guards/_time_slot.html.twig' with { item: item, date: date, isToday: isToday, centre: centre, isAdmin: isAdmin } %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% include 'guards/_sanctioned_students.html.twig' with { sanctionsByGroup: sanctionsByGroup } %}
+
+        {% endif %}
 
     {% endif %}
 

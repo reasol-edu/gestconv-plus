@@ -68,7 +68,9 @@
                     <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4"
                          data-controller="current-time-slot"
                          data-current-time-slot-current-class="bg-amber-50 border-amber-300 ring-2 ring-amber-300 dark:bg-amber-900/20 dark:border-amber-500/40 dark:ring-amber-500/40">
-                        {% if report.timeSlots is empty %}
+                        {% if report.nonWorkingDayLabel is not null %}
+                            <p class="text-center text-sm text-gray-400 dark:text-forest-400">{{ 'board_today_non_working'|trans({'%label%': report.nonWorkingDayLabel}, 'calendar') }}</p>
+                        {% elseif report.timeSlots is empty %}
                             <p class="text-center text-sm text-gray-400 dark:text-forest-400">{{ 'board_today_no_time_slots'|trans({}, 'calendar') }}</p>
                         {% else %}
                             {% for row in report.timeSlots|batch(7) %}
@@ -203,7 +205,8 @@
                     <div class="flex-1 grid grid-cols-5 divide-x divide-gray-200 dark:divide-white/10 overflow-hidden">
                         {% for day in screen.days %}
                             {% set is_today = day.day.format('Y-m-d') == today.format('Y-m-d') %}
-                            <div class="flex flex-col overflow-hidden">
+                            {% set nonWorkingLabel = nonWorkingDays[day.day.format('Y-m-d')] ?? null %}
+                            <div class="flex flex-col overflow-hidden {{ nonWorkingLabel is not null ? 'bg-amber-50/70 dark:bg-amber-500/10' : '' }}">
                                 <h3 class="shrink-0 px-4 pt-4 pb-2 text-sm font-semibold {{ is_today ? 'text-amber-600 dark:text-amber-300' : 'text-gray-600 dark:text-forest-200' }}">
                                     {{ ('weekday.' ~ day.day.format('N'))|trans({}, 'calendar') }}
                                     {{ day.day.format('j') }} {{ 'de'|trans({}, 'calendar') }}
@@ -211,7 +214,9 @@
                                 </h3>
 
                                 <div class="flex-1 overflow-hidden px-4 pb-4" data-controller="board-column">
-                                    {% if day.groups is empty %}
+                                    {% if nonWorkingLabel is not null %}
+                                        <p class="text-xs text-amber-700 dark:text-amber-300">{{ nonWorkingLabel }}</p>
+                                    {% elseif day.groups is empty %}
                                         <p class="text-xs text-gray-400 dark:text-forest-400">{{ 'board_no_sanctions'|trans({}, 'calendar') }}</p>
                                     {% else %}
                                         <div class="space-y-3">
