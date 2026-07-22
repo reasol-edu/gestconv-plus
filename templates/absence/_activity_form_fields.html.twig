@@ -9,7 +9,8 @@
                    min="{{ absence.startDate|date('Y-m-d') }}" max="{{ absence.endDate|date('Y-m-d') }}"
                    {% if errors.date is defined %}aria-invalid="true"{% endif %}
                    data-activity-time-slot-target="date"
-                   data-action="input->activity-time-slot#sync change->activity-time-slot#sync"
+                   data-non-working-day-target="input"
+                   data-action="change->non-working-day#check input->activity-time-slot#sync change->activity-time-slot#sync"
                    class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
                           focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
             {% if errors.date is defined %}
@@ -19,6 +20,7 @@
                     {{ 'activity.field.date_help'|trans({'%start%': absence.startDate|date('format.date'|trans), '%end%': absence.endDate|date('format.date'|trans)}, 'admin') }}
                 </p>
             {% endif %}
+            <p data-non-working-day-target="warning" class="mt-1 text-xs text-red-600 hidden"></p>
         </div>
         <div>
             <label for="time_slot_id" class="block text-sm font-medium text-gray-700 mb-1.5">

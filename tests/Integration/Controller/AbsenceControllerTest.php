@@ -152,6 +152,50 @@ class AbsenceControllerTest extends ControllerTestCase
         self::assertCount(0, $this->em->getRepository(Absence::class)->findAll());
     }
 
+    public function testNewPostWithNonWorkingStartDateShowsError(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $saturday = new \DateTimeImmutable('next saturday');
+
+        $crawler = $this->client->request('GET', '/ausencias/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/ausencias/nuevo', [
+            '_token'     => $token,
+            'start_date' => $saturday->format('Y-m-d'),
+            'end_date'   => $saturday->modify('+1 day')->format('Y-m-d'),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'no puede ser un día no lectivo');
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(Absence::class)->findAll());
+    }
+
+    public function testNewPostWithNonWorkingEndDateShowsError(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $monday = new \DateTimeImmutable('next monday');
+
+        $crawler = $this->client->request('GET', '/ausencias/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/ausencias/nuevo', [
+            '_token'     => $token,
+            'start_date' => $monday->format('Y-m-d'),
+            'end_date'   => $monday->modify('+5 days')->format('Y-m-d'),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'no puede ser un día no lectivo');
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(Absence::class)->findAll());
+    }
+
     public function testAdminCanCreateAbsenceForAnotherTeacher(): void
     {
         [$admin, $centre, $year] = $this->makeScenario();
@@ -247,6 +291,30 @@ class AbsenceControllerTest extends ControllerTestCase
         $this->em->clear();
         $updated = $this->em->getRepository(Absence::class)->find($absence->getId());
         self::assertSame($this->futureDateString(31), $updated->getStartDate()->format('Y-m-d'));
+    }
+
+    public function testEditPostWithNonWorkingDatesShowsError(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence = $this->makeAbsence($teacher, $year);
+        $this->loginAs($teacher, $centre);
+
+        $saturday = new \DateTimeImmutable('next saturday');
+
+        $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/editar');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/editar', [
+            '_token'     => $token,
+            'start_date' => $saturday->format('Y-m-d'),
+            'end_date'   => $saturday->modify('+1 day')->format('Y-m-d'),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'no puede ser un día no lectivo');
+        $this->em->clear();
+        $unchanged = $this->em->getRepository(Absence::class)->find($absence->getId());
+        self::assertSame($this->futureDateString(30), $unchanged->getStartDate()->format('Y-m-d'));
     }
 
     public function testDeletePostRemovesAbsence(): void
@@ -450,6 +518,40 @@ class AbsenceControllerTest extends ControllerTestCase
         self::assertCount(0, $this->em->getRepository(Activity::class)->findAll());
     }
 
+    public function testActivityNewPostWithNonWorkingDateShowsError(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $groupTeacher = $this->makeGroupTeacher($teacher, $year);
+
+        $monday   = new \DateTimeImmutable('next monday');
+        $saturday = $monday->modify('+5 days');
+        $absence  = (new Absence())
+            ->setTeacher($teacher)
+            ->setAcademicYear($year)
+            ->setStartDate($monday)
+            ->setEndDate($monday->modify('+6 days'));
+        $this->persist($absence);
+
+        $timeSlot = $this->makeTimeSlot($year, dayOfWeek: (int) $saturday->format('N') - 1);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva', [
+            '_token'       => $token,
+            'date'         => $saturday->format('Y-m-d'),
+            'time_slot_id' => $timeSlot->getId()->toRfc4122(),
+            'subjects'     => [$groupTeacher->getId()->toRfc4122()],
+            'description'  => '<p>Fecha no lectiva.</p>',
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'no puede ser un día no lectivo');
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(Activity::class)->findAll());
+    }
+
     public function testActivityNewPostWithTimeSlotDayMismatchShowsError(): void
     {
         [$teacher, $centre, $year] = $this->makeScenario();
@@ -602,11 +704,18 @@ class AbsenceControllerTest extends ControllerTestCase
     /**
      * Dates are computed relative to "today" (instead of hard-coded) so the
      * fixture keeps producing a future, non-locked absence regardless of when
-     * the test suite runs.
+     * the test suite runs. Landing on a weekend is nudged to the following
+     * Monday, since start/end absence and activity dates must be lectivas.
      */
     private function futureDate(int $daysFromToday): \DateTimeImmutable
     {
-        return (new \DateTimeImmutable('today'))->modify(sprintf('+%d days', $daysFromToday));
+        $date = (new \DateTimeImmutable('today'))->modify(sprintf('+%d days', $daysFromToday));
+
+        return match ((int) $date->format('N')) {
+            6       => $date->modify('+2 days'),
+            7       => $date->modify('+1 day'),
+            default => $date,
+        };
     }
 
     private function futureDateString(int $daysFromToday): string

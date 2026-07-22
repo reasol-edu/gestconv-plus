@@ -20,6 +20,7 @@ use App\Repository\TimeSlotRepository;
 use App\Security\Voter\AbsenceVoter;
 use App\Service\ActivityLogService;
 use App\Service\AttachmentDownloadResponder;
+use App\Service\NonWorkingDayChecker;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -68,6 +69,7 @@ class AbsenceController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
         private readonly AttachmentDownloadResponder $downloadResponder,
+        private readonly NonWorkingDayChecker $nonWorkingDayChecker,
     ) {}
 
     #[Route('', name: 'app_absences_index')]
@@ -152,9 +154,13 @@ class AbsenceController extends AbstractController
 
             if ($startDate === null) {
                 $errors['start_date'] = $this->t('absence.error.start_date_required');
+            } elseif ($this->nonWorkingDayChecker->isNonWorkingDay($year, $startDate)) {
+                $errors['start_date'] = $this->t('absence.error.start_date_non_working');
             }
             if ($endDate === null) {
                 $errors['end_date'] = $this->t('absence.error.end_date_required');
+            } elseif ($this->nonWorkingDayChecker->isNonWorkingDay($year, $endDate)) {
+                $errors['end_date'] = $this->t('absence.error.end_date_non_working');
             }
             if ($startDate !== null && $endDate !== null && $endDate < $startDate) {
                 $errors['end_date'] = $this->t('absence.error.end_before_start');
@@ -163,7 +169,7 @@ class AbsenceController extends AbstractController
                 $errors['teacher_id'] = $this->t('absence.error.teacher_required');
             }
 
-            if (empty($errors) && $endDate instanceof \DateTimeImmutable && $targetTeacher !== null) {
+            if (empty($errors) && $startDate instanceof \DateTimeImmutable && $endDate instanceof \DateTimeImmutable && $targetTeacher !== null) {
                 $absence = new Absence();
                 $absence->setTeacher($targetTeacher)
                         ->setAcademicYear($year)
@@ -185,12 +191,13 @@ class AbsenceController extends AbstractController
         }
 
         return $this->render('absence/new.html.twig', [
-            'centre'          => $centre,
-            'year'            => $year,
-            'isAdmin'         => $isAdmin,
-            'errors'          => $errors,
-            'formData'        => $formData,
-            'selectedTeacher' => $selectedTeacher,
+            'centre'             => $centre,
+            'year'               => $year,
+            'isAdmin'            => $isAdmin,
+            'errors'             => $errors,
+            'formData'           => $formData,
+            'selectedTeacher'    => $selectedTeacher,
+            'nonWorkingDayDates' => $this->nonWorkingDayChecker->datesFor($year),
         ]);
     }
 
@@ -241,9 +248,13 @@ class AbsenceController extends AbstractController
 
             if ($startDate === null) {
                 $errors['start_date'] = $this->t('absence.error.start_date_required');
+            } elseif ($this->nonWorkingDayChecker->isNonWorkingDay($absence->getAcademicYear(), $startDate)) {
+                $errors['start_date'] = $this->t('absence.error.start_date_non_working');
             }
             if ($endDate === null) {
                 $errors['end_date'] = $this->t('absence.error.end_date_required');
+            } elseif ($this->nonWorkingDayChecker->isNonWorkingDay($absence->getAcademicYear(), $endDate)) {
+                $errors['end_date'] = $this->t('absence.error.end_date_non_working');
             }
             if ($startDate !== null && $endDate !== null && $endDate < $startDate) {
                 $errors['end_date'] = $this->t('absence.error.end_before_start');
@@ -274,10 +285,11 @@ class AbsenceController extends AbstractController
         }
 
         return $this->render('absence/edit.html.twig', [
-            'centre'   => $centre,
-            'absence'  => $absence,
-            'errors'   => $errors,
-            'formData' => $formData,
+            'centre'             => $centre,
+            'absence'            => $absence,
+            'errors'             => $errors,
+            'formData'           => $formData,
+            'nonWorkingDayDates' => $this->nonWorkingDayChecker->datesFor($absence->getAcademicYear()),
         ]);
     }
 
@@ -374,6 +386,7 @@ class AbsenceController extends AbstractController
             'availableTimeSlots' => $availableTimeSlots,
             'errors'             => $errors,
             'formData'           => $formData,
+            'nonWorkingDayDates' => $this->nonWorkingDayChecker->datesFor($year),
         ]);
     }
 
@@ -467,6 +480,7 @@ class AbsenceController extends AbstractController
             'availableTimeSlots' => $availableTimeSlots,
             'errors'             => $errors,
             'formData'           => $formData,
+            'nonWorkingDayDates' => $this->nonWorkingDayChecker->datesFor($year),
         ]);
     }
 
@@ -552,6 +566,8 @@ class AbsenceController extends AbstractController
             $errors['date'] = $this->t('activity.error.date_required');
         } elseif ($date < $absence->getStartDate() || $date > $absence->getEndDate()) {
             $errors['date'] = $this->t('activity.error.date_out_of_range');
+        } elseif ($this->nonWorkingDayChecker->isNonWorkingDay($year, $date)) {
+            $errors['date'] = $this->t('activity.error.date_non_working');
         }
 
         $timeSlot = $timeSlotId !== '' ? $this->timeSlots->findByAcademicYearAndId($year, $timeSlotId) : null;

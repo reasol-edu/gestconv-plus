@@ -27,7 +27,10 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{{ path('app_absences_activity_edit', {id: absence.id, activityId: activity.id}) }}" enctype="multipart/form-data" class="space-y-6">
+    <form method="post" action="{{ path('app_absences_activity_edit', {id: absence.id, activityId: activity.id}) }}" enctype="multipart/form-data" class="space-y-6"
+          data-controller="non-working-day"
+          data-non-working-day-dates-value="{{ nonWorkingDayDates|default([])|json_encode }}"
+          data-non-working-day-blocked-message-value="{{ 'non_working_date.selection_reverted'|trans({}, 'admin') }}">
         <input type="hidden" name="_token" value="{{ csrf_token('edit_activity_' ~ activity.id) }}">
 
         {% include 'absence/_activity_form_fields.html.twig' %}
