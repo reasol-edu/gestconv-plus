@@ -11,7 +11,7 @@
             </tr>
             <tr>
                 <td><span class="cell-sub">{{ 'sanction.col.registered_by'|trans({}, 'admin') }}</span><br>{{ sanction.registeredBy.name.lastName }}, {{ sanction.registeredBy.name.firstName }}</td>
-                <td><span class="cell-sub">{{ 'sanction.col.created_at'|trans({}, 'admin') }}</span><br>{{ sanction.createdAt|date('d/m/Y H:i') }}</td>
+                <td><span class="cell-sub">{{ 'sanction.col.created_at'|trans({}, 'admin') }}</span><br>{{ sanction.createdAt|date('format.datetime'|trans) }}</td>
             </tr>
             <tr>
                 <td colspan="2">
@@ -43,7 +43,7 @@
 
     {% if sanction.effectiveFrom and sanction.effectiveTo %}
         <p class="subsection-title">{{ 'sanction.field.effective_from'|trans({}, 'admin') }} — {{ 'sanction.field.effective_to'|trans({}, 'admin') }}</p>
-        <p>{{ sanction.effectiveFrom|date('d/m/Y') }} &rarr; {{ sanction.effectiveTo|date('d/m/Y') }}</p>
+        <p>{{ sanction.effectiveFrom|date('format.date'|trans) }} &rarr; {{ sanction.effectiveTo|date('format.date'|trans) }}</p>
     {% endif %}
 
     <p class="subsection-title">{{ 'sanction.field.details'|trans({}, 'admin') }}</p>
@@ -114,7 +114,7 @@
             <tbody>
                 {% for observation in observations %}
                     <tr>
-                        <td style="white-space: nowrap">{{ observation.registeredAt|date('d/m/Y H:i') }}</td>
+                        <td style="white-space: nowrap">{{ observation.registeredAt|date('format.datetime'|trans) }}</td>
                         <td style="white-space: nowrap">{{ observation.registeredBy.name.lastName }}, {{ observation.registeredBy.name.firstName }}</td>
                         <td>{{ observation.text|sanitize_html('app.rich_text') }}</td>
                     </tr>

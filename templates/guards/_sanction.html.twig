@@ -5,7 +5,7 @@
             <span class="text-sm text-gray-900">
                 <span class="font-medium">{{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}</span>
                 {% if sanction.effectiveFrom and sanction.effectiveTo %}
-                    <span class="text-gray-500">— {{ sanction.effectiveFrom|date('d/m/Y') }} – {{ sanction.effectiveTo|date('d/m/Y') }}</span>
+                    <span class="text-gray-500">— {{ sanction.effectiveFrom|date('format.date'|trans) }} – {{ sanction.effectiveTo|date('format.date'|trans) }}</span>
                 {% endif %}
             </span>
             <span class="flex items-center gap-2 shrink-0">

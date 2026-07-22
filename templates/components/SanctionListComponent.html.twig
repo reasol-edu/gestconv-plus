@@ -128,7 +128,7 @@
                             <td data-label="{{ 'sanction.col.effective_period'|trans({}, 'admin')|e('html_attr') }}"
                                 class="px-6 py-4 text-gray-600 text-xs">
                                 {% if sanction.effectiveFrom and sanction.effectiveTo %}
-                                    {{ sanction.effectiveFrom|date('d/m/Y') }} – {{ sanction.effectiveTo|date('d/m/Y') }}
+                                    {{ sanction.effectiveFrom|date('format.date'|trans) }} – {{ sanction.effectiveTo|date('format.date'|trans) }}
                                 {% else %}
                                     —
                                 {% endif %}
@@ -165,7 +165,7 @@
                             </td>
                             <td data-label="{{ 'sanction.col.created_at'|trans({}, 'admin')|e('html_attr') }}"
                                 class="px-6 py-4 text-gray-500 text-xs">
-                                {{ sanction.createdAt|date('d/m/Y') }}
+                                {{ sanction.createdAt|date('format.date'|trans) }}
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}"

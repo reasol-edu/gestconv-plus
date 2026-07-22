@@ -374,7 +374,7 @@
                                     <p class="truncate text-sm font-medium text-gray-800">
                                         {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
                                     </p>
-                                    <p class="mt-0.5 text-xs text-gray-500">{{ report.group.name }} · {{ report.occurredAt|date('d/m/Y') }}</p>
+                                    <p class="mt-0.5 text-xs text-gray-500">{{ report.group.name }} · {{ report.occurredAt|date('format.date'|trans) }}</p>
                                 </div>
                                 {% if report.isNotified %}
                                     <span class="shrink-0 inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium">

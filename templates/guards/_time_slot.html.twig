@@ -1,10 +1,10 @@
 <section id="slot-{{ item.timeSlot.id }}"
          class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden transition-colors"
-         {% if isToday %}data-current-time-slot-target="slot" data-start="{{ item.timeSlot.startTime|date('H:i') }}" data-end="{{ item.timeSlot.endTime|date('H:i') }}"{% endif %}>
+         {% if isToday %}data-current-time-slot-target="slot" data-start="{{ item.timeSlot.startTime|date('format.time'|trans) }}" data-end="{{ item.timeSlot.endTime|date('format.time'|trans) }}"{% endif %}>
     <div class="px-6 py-4 border-b border-gray-100 flex items-start justify-between gap-3">
         <div>
             <h2 class="text-base font-semibold text-gray-900">{{ item.timeSlot.name }}</h2>
-            <p class="text-xs text-gray-500 mt-0.5">{{ item.timeSlot.startTime|date('H:i') }}–{{ item.timeSlot.endTime|date('H:i') }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">{{ item.timeSlot.startTime|date('format.time'|trans) }}–{{ item.timeSlot.endTime|date('format.time'|trans) }}</p>
         </div>
         {% if isAdmin %}
             <a href="{{ path('app_centre_time_slots_index', {centreId: centre.id, slot: item.timeSlot.id}) }}"

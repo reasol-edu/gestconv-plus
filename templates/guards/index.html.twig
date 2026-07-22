@@ -10,7 +10,7 @@
             <h1 class="text-2xl font-bold text-gray-900">{{ 'guards.title'|trans({}, 'admin') }}</h1>
             {% if year is not null %}
                 <p class="mt-1 text-sm text-gray-500">
-                    {% if isToday %}{{ 'guards.today_prefix'|trans({}, 'admin') }}{% endif %}{{ ('weekday.' ~ date.format('N'))|trans({}, 'calendar') }}, {{ date|date('d/m/Y') }}
+                    {% if isToday %}{{ 'guards.today_prefix'|trans({}, 'admin') }}{% endif %}{{ ('weekday.' ~ date.format('N'))|trans({}, 'calendar') }}, {{ date|date('format.date'|trans) }}
                 </p>
             {% endif %}
         </div>

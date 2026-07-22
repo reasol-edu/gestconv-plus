@@ -10,7 +10,7 @@
             </tr>
             <tr>
                 <td><span class="cell-sub">{{ 'incident.col.teacher'|trans({}, 'admin') }}</span><br>{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</td>
-                <td><span class="cell-sub">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</span><br>{{ report.occurredAt|date('d/m/Y H:i') }}</td>
+                <td><span class="cell-sub">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</span><br>{{ report.occurredAt|date('format.datetime'|trans) }}</td>
             </tr>
             {% if report.location %}
                 <tr>
@@ -24,7 +24,7 @@
                         {{ (report.notified ? 'notification.badge.notified' : 'notification.badge.pending')|trans({}, 'notifications') }}
                     </span>
                     {% if report.prescribed %}
-                        <span class="badge badge-amber">{{ 'incident.badge.prescribed'|trans({}, 'admin') }} · {{ report.prescribedAt|date('d/m/Y') }}</span>
+                        <span class="badge badge-amber">{{ 'incident.badge.prescribed'|trans({}, 'admin') }} · {{ report.prescribedAt|date('format.date'|trans) }}</span>
                     {% endif %}
                     {% if report.expelledFromClass %}
                         <span class="badge badge-gray">{{ 'incident.badge.expelled'|trans({}, 'admin') }}</span>
@@ -65,7 +65,7 @@
             <tbody>
                 {% for observation in reportObservations %}
                     <tr>
-                        <td>{{ observation.registeredAt|date('d/m/Y H:i') }}</td>
+                        <td>{{ observation.registeredAt|date('format.datetime'|trans) }}</td>
                         <td>{{ observation.registeredBy.name.lastName }}, {{ observation.registeredBy.name.firstName }}</td>
                         <td>{{ observation.text|sanitize_html('app.rich_text') }}</td>
                     </tr>

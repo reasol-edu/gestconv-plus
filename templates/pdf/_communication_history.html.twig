@@ -15,7 +15,7 @@
         <tbody>
             {% for communication in history %}
                 <tr>
-                    <td>{{ communication.performedAt|date('d/m/Y H:i') }}</td>
+                    <td>{{ communication.performedAt|date('format.datetime'|trans) }}</td>
                     <td>{{ communication.method.name }}</td>
                     <td>{{ communication.performedBy.name.lastName }}, {{ communication.performedBy.name.firstName }}</td>
                     <td>

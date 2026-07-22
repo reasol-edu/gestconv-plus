@@ -20,7 +20,7 @@
                 </a>
             </h1>
             <p class="mt-1 text-sm text-gray-500">
-                {{ sanction.group.name }} · {{ sanction.createdAt|date('d/m/Y') }}
+                {{ sanction.group.name }} · {{ sanction.createdAt|date('format.date'|trans) }}
             </p>
             <div class="mt-2">
                 {% set notifyUrl = is_granted('sanction.notify', sanction) and not is_viewing_past_year() ? path('app_notifications_register_sanction', {id: sanction.id}) : null %}
@@ -92,7 +92,7 @@
             </div>
             <div>
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.col.created_at'|trans({}, 'admin') }}</p>
-                <p class="text-gray-900">{{ sanction.createdAt|date('d/m/Y H:i') }}</p>
+                <p class="text-gray-900">{{ sanction.createdAt|date('format.datetime'|trans) }}</p>
             </div>
         </div>
 
@@ -109,7 +109,7 @@
                                class="text-sm text-forest-700 hover:text-forest-900 font-mono font-medium transition-colors">
                                 #{{ report.number }}
                             </a>
-                            <span class="text-xs text-gray-500">{{ report.occurredAt|date('d/m/Y') }}</span>
+                            <span class="text-xs text-gray-500">{{ report.occurredAt|date('format.date'|trans) }}</span>
                             <span class="text-xs text-gray-400 truncate">{{ report.description|striptags|slice(0, 80) }}</span>
                         </div>
                     {% endfor %}
@@ -151,11 +151,11 @@
             <div class="px-6 py-4 grid grid-cols-2 gap-4 text-sm">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.field.effective_from'|trans({}, 'admin') }}</p>
-                    <p class="text-gray-900">{{ sanction.effectiveFrom|date('d/m/Y') }}</p>
+                    <p class="text-gray-900">{{ sanction.effectiveFrom|date('format.date'|trans) }}</p>
                 </div>
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'sanction.field.effective_to'|trans({}, 'admin') }}</p>
-                    <p class="text-gray-900">{{ sanction.effectiveTo|date('d/m/Y') }}</p>
+                    <p class="text-gray-900">{{ sanction.effectiveTo|date('format.date'|trans) }}</p>
                 </div>
             </div>
         {% endif %}

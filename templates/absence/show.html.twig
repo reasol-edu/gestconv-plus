@@ -1,6 +1,6 @@
 {% extends 'layouts/app.html.twig' %}
 
-{% block title %}{{ 'absence.show_title'|trans({}, 'admin') }} · {{ absence.startDate|date('d/m/Y') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+{% block title %}{{ 'absence.show_title'|trans({}, 'admin') }} · {{ absence.startDate|date('format.date'|trans) }} · {{ centre.name }} · {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
@@ -14,7 +14,7 @@
                 <span aria-current="page" class="text-gray-700 font-medium">{{ 'absence.show_title'|trans({}, 'admin') }}</span>
             </div>
             <h1 class="text-2xl font-bold text-gray-900">
-                {{ absence.startDate|date('d/m/Y') }} — {{ absence.endDate|date('d/m/Y') }}
+                {{ absence.startDate|date('format.date'|trans) }} — {{ absence.endDate|date('format.date'|trans) }}
             </h1>
             <p class="mt-1 text-sm text-gray-500">
                 {{ absence.teacher.name.lastName }}, {{ absence.teacher.name.firstName }}
@@ -70,13 +70,13 @@
                         <div class="flex items-start justify-between gap-4 mb-3">
                             <div>
                                 <p class="text-sm font-semibold text-gray-900">
-                                    {{ activity.date|date('d/m/Y') }}
+                                    {{ activity.date|date('format.date'|trans) }}
                                     <span class="text-gray-400 font-normal">·</span>
                                     {{ activity.timeSlot.name }}
                                 </p>
                                 <p class="text-xs text-gray-500 mt-0.5">
                                     {{ ('weekday.' ~ (activity.timeSlot.dayOfWeek + 1))|trans({}, 'calendar') }}
-                                    {{ activity.timeSlot.startTime|date('H:i') }}–{{ activity.timeSlot.endTime|date('H:i') }}
+                                    {{ activity.timeSlot.startTime|date('format.time'|trans) }}–{{ activity.timeSlot.endTime|date('format.time'|trans) }}
                                 </p>
                             </div>
                             {% if is_granted('absence.edit', absence) and not is_viewing_past_year() %}

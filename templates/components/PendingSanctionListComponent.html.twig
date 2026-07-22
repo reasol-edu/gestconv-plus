@@ -30,7 +30,7 @@
                             <td data-label="{{ 'notification.index.col.group'|trans({}, 'notifications')|e('html_attr') }}"
                                 class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ sanction.group.name }}</td>
                             <td data-label="{{ 'notification.index.col.date'|trans({}, 'notifications')|e('html_attr') }}"
-                                class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ sanction.createdAt|date('d/m/Y') }}</td>
+                                class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ sanction.createdAt|date('format.date'|trans) }}</td>
                             {% set age = date().diff(date(sanction.createdAt)).days %}
                             <td data-label="{{ 'notification.index.col.age'|trans({}, 'notifications')|e('html_attr') }}"
                                 class="px-6 py-3 whitespace-nowrap">

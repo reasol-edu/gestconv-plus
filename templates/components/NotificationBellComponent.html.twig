@@ -42,7 +42,7 @@
                                     {'%student%': entity.student.name.firstName ~ ' ' ~ entity.student.name.lastName}, 'notifications'
                                 ) }}
                             </p>
-                            <p class="mt-0.5 text-xs text-gray-400">{{ item.date|date('d/m/Y') }}</p>
+                            <p class="mt-0.5 text-xs text-gray-400">{{ item.date|date('format.date'|trans) }}</p>
                         </a>
                     </li>
                 {% endfor %}

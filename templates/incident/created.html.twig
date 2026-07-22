@@ -33,7 +33,7 @@
                         <span class="font-mono text-xs text-gray-400 mr-1">#{{ report.number }}</span>
                         {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
                     </p>
-                    <p class="mt-0.5 text-xs text-gray-500">{{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}</p>
+                    <p class="mt-0.5 text-xs text-gray-500">{{ report.group.name }} · {{ report.occurredAt|date('format.datetime'|trans) }}</p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                     <a href="{{ path('app_incidents_show', {id: report.id}) }}"

@@ -84,7 +84,7 @@
                                                 class="flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left transition-colors
                                                        {{ is_sel ? 'bg-forest-50 ring-1 ring-inset ring-forest-200' : 'hover:bg-gray-50' }}">
                                             <span class="text-sm truncate w-full {{ is_sel ? 'font-semibold text-forest-800' : 'text-gray-800' }}">{{ ts.name }}</span>
-                                            <span class="text-xs text-gray-400">{{ ts.startTime|date('H:i') }}–{{ ts.endTime|date('H:i') }}</span>
+                                            <span class="text-xs text-gray-400">{{ ts.startTime|date('format.time'|trans) }}–{{ ts.endTime|date('format.time'|trans) }}</span>
                                             {% if ts.guards is not empty %}
                                                 <span class="mt-1 flex items-center -space-x-0.5">
                                                     {% for g in ts.guards|slice(0, 6) %}

@@ -60,7 +60,7 @@
                     </h2>
                     <div class="shrink-0 px-8 py-6 text-center border-b border-gray-200 dark:border-white/10" data-controller="clock">
                         <p class="text-3xl font-bold">
-                            {{ ('weekday.' ~ report.date.format('N'))|trans({}, 'calendar') }}, {{ report.date|date('d/m/Y') }}
+                            {{ ('weekday.' ~ report.date.format('N'))|trans({}, 'calendar') }}, {{ report.date|date('format.date'|trans) }}
                             · <span data-clock-target="display" class="tabular-nums"></span>
                         </p>
                     </div>
@@ -76,11 +76,11 @@
                                     {% for entry in row %}
                                         <div class="rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 flex flex-col overflow-hidden min-h-40 max-h-64 transition-colors"
                                              data-current-time-slot-target="slot"
-                                             data-start="{{ entry.timeSlot.startTime|date('H:i') }}"
-                                             data-end="{{ entry.timeSlot.endTime|date('H:i') }}">
+                                             data-start="{{ entry.timeSlot.startTime|date('format.time'|trans) }}"
+                                             data-end="{{ entry.timeSlot.endTime|date('format.time'|trans) }}">
                                             <div class="shrink-0 px-3 py-2 bg-gray-50 dark:bg-white/10 border-b border-gray-200 dark:border-white/10">
                                                 <p class="text-xs font-semibold text-gray-700 dark:text-forest-100 truncate">{{ entry.timeSlot.name }}</p>
-                                                <p class="text-[11px] text-gray-400 dark:text-forest-400">{{ entry.timeSlot.startTime|date('H:i') }}–{{ entry.timeSlot.endTime|date('H:i') }}</p>
+                                                <p class="text-[11px] text-gray-400 dark:text-forest-400">{{ entry.timeSlot.startTime|date('format.time'|trans) }}–{{ entry.timeSlot.endTime|date('format.time'|trans) }}</p>
                                             </div>
                                             <div class="flex-1 px-3 py-2 overflow-hidden" data-controller="board-column">
                                                 {% if entry.timeSlot.guards is empty and entry.activities is empty %}
@@ -126,7 +126,7 @@
                                                                                 <div>
                                                                                     <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ activity.absence.teacher.name.full() }}</p>
                                                                                     <p class="text-xs text-gray-500 dark:text-forest-300 mt-0.5">
-                                                                                        {{ activity.timeSlot.name }} · {{ activity.timeSlot.startTime|date('H:i') }}–{{ activity.timeSlot.endTime|date('H:i') }}
+                                                                                        {{ activity.timeSlot.name }} · {{ activity.timeSlot.startTime|date('format.time'|trans) }}–{{ activity.timeSlot.endTime|date('format.time'|trans) }}
                                                                                     </p>
                                                                                 </div>
                                                                                 <button type="button"
@@ -228,8 +228,8 @@
                                                                     <span class="text-gray-500 dark:text-forest-300"> — {{ item.details }}</span>
                                                                 {% endif %}
                                                                 <span class="block text-xs text-gray-400 dark:text-forest-400">
-                                                                    {{ 'board_start_date'|trans({}, 'calendar') }}: {{ item.from|date('d/m/Y') }}
-                                                                    · {{ 'board_end_date'|trans({}, 'calendar') }}: {{ (item.to ?? item.from)|date('d/m/Y') }}
+                                                                    {{ 'board_start_date'|trans({}, 'calendar') }}: {{ item.from|date('format.date'|trans) }}
+                                                                    · {{ 'board_end_date'|trans({}, 'calendar') }}: {{ (item.to ?? item.from)|date('format.date'|trans) }}
                                                                 </span>
                                                             </li>
                                                         {% endfor %}

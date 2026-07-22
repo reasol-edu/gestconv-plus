@@ -16,7 +16,7 @@
             {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
         </h1>
         <p class="mt-1 text-sm text-gray-500">
-            {{ sanction.group.name }} · {{ sanction.createdAt|date('d/m/Y') }}
+            {{ sanction.group.name }} · {{ sanction.createdAt|date('format.date'|trans) }}
         </p>
         <p class="mt-2">
             <a href="{{ path('app_sanctions_show', {id: sanction.id}) }}" class="text-sm text-forest-700 hover:text-forest-900 font-medium transition-colors">

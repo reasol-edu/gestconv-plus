@@ -40,7 +40,7 @@
                                 {{ 'notification.register_report.report_ref'|trans({'%number%': report.number}, 'notifications') }}
                             </p>
                             <p class="text-xs text-gray-500 mt-0.5">
-                                {{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}
+                                {{ report.group.name }} · {{ report.occurredAt|date('format.datetime'|trans) }}
                                 · {{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}
                             </p>
                             <details class="mt-3">

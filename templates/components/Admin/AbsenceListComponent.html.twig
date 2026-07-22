@@ -98,10 +98,10 @@
                                 {{ absence.teacher.name.lastName }}, {{ absence.teacher.name.firstName }}
                             </td>
                             <td data-label="{{ 'absence.col.start_date'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-3 text-gray-700 whitespace-nowrap">
-                                {{ absence.startDate|date('d/m/Y') }}
+                                {{ absence.startDate|date('format.date'|trans) }}
                             </td>
                             <td data-label="{{ 'absence.col.end_date'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-3 text-gray-700 whitespace-nowrap">
-                                {{ absence.endDate|date('d/m/Y') }}
+                                {{ absence.endDate|date('format.date'|trans) }}
                             </td>
                             <td data-label="{{ 'absence.col.activities'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-3 text-gray-700">
                                 {{ absence.activities|length }}

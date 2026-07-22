@@ -67,10 +67,10 @@
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-3.5">
                                     <a href="{{ path('app_absences_show', {id: absence.id}) }}" class="font-medium text-forest-700 hover:text-forest-900 transition-colors">
-                                        {{ absence.startDate|date('d/m/Y') }}
+                                        {{ absence.startDate|date('format.date'|trans) }}
                                     </a>
                                 </td>
-                                <td class="px-6 py-3.5 text-gray-700">{{ absence.endDate|date('d/m/Y') }}</td>
+                                <td class="px-6 py-3.5 text-gray-700">{{ absence.endDate|date('format.date'|trans) }}</td>
                                 <td class="px-6 py-3.5 text-gray-700">{{ absence.activities|length }}</td>
                                 <td class="px-6 py-3.5 text-right">
                                     <a href="{{ path('app_absences_show', {id: absence.id}) }}"

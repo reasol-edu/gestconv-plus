@@ -2,7 +2,7 @@
 
 {% block content %}
     <p class="section-title">
-        {{ 'group_stats.title'|trans({}, 'admin') }} · {{ year.name }} · {{ from|date('d/m/Y') }} – {{ to|date('d/m/Y') }}
+        {{ 'group_stats.title'|trans({}, 'admin') }} · {{ year.name }} · {{ from|date('format.date'|trans) }} – {{ to|date('format.date'|trans) }}
     </p>
 
     {% for course in report.courses %}

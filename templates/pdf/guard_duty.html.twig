@@ -25,7 +25,7 @@
                 <tr>
                     <td>
                         <strong>{{ row.label }}</strong><br>
-                        <span class="cell-sub">{{ row.startTime|date('H:i') }} – {{ row.endTime|date('H:i') }}</span>
+                        <span class="cell-sub">{{ row.startTime|date('format.time'|trans) }} – {{ row.endTime|date('format.time'|trans) }}</span>
                     </td>
                     {% for day in 0..4 %}
                         <td>

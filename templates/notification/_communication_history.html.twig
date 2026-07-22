@@ -15,7 +15,7 @@
             <tbody class="divide-y divide-gray-100">
                 {% for communication in history %}
                     <tr>
-                        <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ communication.performedAt|date('d/m/Y H:i') }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ communication.performedAt|date('format.datetime'|trans) }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ communication.method.name }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ communication.performedBy.name.lastName }}, {{ communication.performedBy.name.firstName }}</td>
                         <td class="px-4 py-3 whitespace-nowrap">

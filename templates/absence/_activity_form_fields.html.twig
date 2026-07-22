@@ -16,7 +16,7 @@
                 <p class="mt-1 text-xs text-red-600">{{ errors.date }}</p>
             {% else %}
                 <p class="mt-1 text-xs text-gray-400">
-                    {{ 'activity.field.date_help'|trans({'%start%': absence.startDate|date('d/m/Y'), '%end%': absence.endDate|date('d/m/Y')}, 'admin') }}
+                    {{ 'activity.field.date_help'|trans({'%start%': absence.startDate|date('format.date'|trans), '%end%': absence.endDate|date('format.date'|trans)}, 'admin') }}
                 </p>
             {% endif %}
         </div>
@@ -34,7 +34,7 @@
                     <option value="{{ timeSlot.id }}" data-day-of-week="{{ timeSlot.dayOfWeek }}"
                             {{ formData.time_slot_id == timeSlot.id.toRfc4122 ? 'selected' : '' }}>
                         {{ ('weekday.' ~ (timeSlot.dayOfWeek + 1))|trans({}, 'calendar') }}
-                        {{ timeSlot.startTime|date('H:i') }}–{{ timeSlot.endTime|date('H:i') }} · {{ timeSlot.name }}
+                        {{ timeSlot.startTime|date('format.time'|trans) }}–{{ timeSlot.endTime|date('format.time'|trans) }} · {{ timeSlot.name }}
                     </option>
                 {% endfor %}
             </select>

@@ -14,6 +14,11 @@ ui.move_down: 'Bajar'
 ui.move_up_category: 'Subir categoría'
 ui.move_down_category: 'Bajar categoría'
 
+# Formato de fecha y hora
+format.date: 'd/m/Y'
+format.datetime: 'd/m/Y H:i'
+format.time: 'H:i'
+
 # Perfil del usuario
 profile.title: 'Mi perfil'
 profile.tab.personal: 'Datos personales'

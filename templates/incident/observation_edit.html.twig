@@ -44,7 +44,7 @@
                                   focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                 {% else %}
                     <input type="text" id="observation_registered_at" readonly
-                           value="{{ observation.registeredAt|date('d/m/Y H:i') }}"
+                           value="{{ observation.registeredAt|date('format.datetime'|trans) }}"
                            class="block w-full rounded-xl border border-gray-200 bg-gray-100 py-2.5 px-3.5
                                   text-sm text-gray-500 cursor-not-allowed">
                     <p class="mt-1.5 text-xs text-gray-500">{{ 'incident.observation.field.registered_at_admin_only'|trans({}, 'admin') }}</p>

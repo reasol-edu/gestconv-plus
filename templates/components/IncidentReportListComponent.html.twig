@@ -120,7 +120,7 @@
                             <tr class="hover:bg-gray-50 transition-colors {{ report.prescribed ? 'opacity-60' : '' }}">
                                 <td class="px-6 py-4 text-xs font-mono text-gray-400 whitespace-nowrap">#{{ report.number }}</td>
                                 <td data-label="{{ 'incident.col.occurred_at'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('d/m/Y H:i') }}</td>
+                                    class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('format.datetime'|trans) }}</td>
                                 <td data-label="{{ 'incident.col.student'|trans({}, 'admin')|e('html_attr') }}"
                                     class="px-6 py-4 font-medium text-gray-900">
                                     <a href="{{ path('app_students_show', {id: report.student.id}) }}"

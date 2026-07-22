@@ -11,7 +11,7 @@
             <a href="{{ path('app_absences_index') }}" class="hover:text-forest-600 transition-colors">{{ 'absence.title'|trans({}, 'admin') }}</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
             <a href="{{ path('app_absences_show', {id: absence.id}) }}" class="hover:text-forest-600 transition-colors">
-                {{ absence.startDate|date('d/m/Y') }}
+                {{ absence.startDate|date('format.date'|trans) }}
             </a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
             <span aria-current="page" class="text-gray-700 font-medium">{{ 'absence.edit'|trans({}, 'admin') }}</span>

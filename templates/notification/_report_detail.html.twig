@@ -17,7 +17,7 @@
             {{ ux_icon('heroicons:shield-check', {class: 'h-3 w-3 mr-1'}) }}
             {{ 'incident.badge.prescribed'|trans({}, 'admin') }}
         </span>
-        <span class="text-sm text-gray-500">{{ report.prescribedAt|date('d/m/Y') }}</span>
+        <span class="text-sm text-gray-500">{{ report.prescribedAt|date('format.date'|trans) }}</span>
     </div>
 {% endif %}
 

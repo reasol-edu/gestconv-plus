@@ -20,7 +20,7 @@
                 </a>
             </h1>
             <p class="mt-1 text-sm text-gray-500">
-                {{ report.group.name }} · {{ report.occurredAt|date('d/m/Y H:i') }}
+                {{ report.group.name }} · {{ report.occurredAt|date('format.datetime'|trans) }}
             </p>
             <div class="mt-2">
                 {% set notifyUrl = is_granted('incident_report.notify', report) and not is_viewing_past_year() ? path('app_notifications_register_report', {id: report.id}) : null %}
@@ -91,7 +91,7 @@
             </div>
             <div>
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</p>
-                <p class="text-gray-900">{{ report.occurredAt|date('d/m/Y H:i') }}</p>
+                <p class="text-gray-900">{{ report.occurredAt|date('format.datetime'|trans) }}</p>
             </div>
             {% if report.location %}
                 <div>

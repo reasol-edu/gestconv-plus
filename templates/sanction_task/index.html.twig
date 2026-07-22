@@ -38,7 +38,7 @@
                             <td class="px-6 py-3.5 text-gray-700">{{ task.groupTeacher.subject }}</td>
                             <td class="px-6 py-3.5 text-gray-700">
                                 {% if task.sanction.effectiveFrom and task.sanction.effectiveTo %}
-                                    {{ task.sanction.effectiveFrom|date('d/m/Y') }} – {{ task.sanction.effectiveTo|date('d/m/Y') }}
+                                    {{ task.sanction.effectiveFrom|date('format.date'|trans) }} – {{ task.sanction.effectiveTo|date('format.date'|trans) }}
                                 {% else %}
                                     —
                                 {% endif %}

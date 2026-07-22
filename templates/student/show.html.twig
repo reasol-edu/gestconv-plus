@@ -97,7 +97,7 @@
                                             {{ 'student.show.entry.report'|trans({}, 'admin') }}
                                         </span>
                                         <span class="font-mono text-gray-500">#{{ report.number }}</span>
-                                        · {{ report.occurredAt|date('d/m/Y H:i') }} · {{ report.group.name }}
+                                        · {{ report.occurredAt|date('format.datetime'|trans) }} · {{ report.group.name }}
                                     </p>
                                     <p class="mt-0.5 text-xs text-gray-500 truncate">{{ report.description|striptags|slice(0, 120) }}</p>
                                 </div>
@@ -136,9 +136,9 @@
                                         <span class="inline-flex items-center rounded-full bg-blue-50 text-blue-700 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide mr-1.5">
                                             {{ 'student.show.entry.sanction'|trans({}, 'admin') }}
                                         </span>
-                                        {{ sanction.createdAt|date('d/m/Y') }} · {{ sanction.group.name }}
+                                        {{ sanction.createdAt|date('format.date'|trans) }} · {{ sanction.group.name }}
                                         {% if sanction.effectiveFrom and sanction.effectiveTo %}
-                                            · {{ sanction.effectiveFrom|date('d/m/Y') }} – {{ sanction.effectiveTo|date('d/m/Y') }}
+                                            · {{ sanction.effectiveFrom|date('format.date'|trans) }} – {{ sanction.effectiveTo|date('format.date'|trans) }}
                                         {% endif %}
                                     </p>
                                     <p class="mt-0.5 text-xs text-gray-500 truncate">
