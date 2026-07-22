@@ -17,6 +17,7 @@
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6.7",
         "dragonmantank/cron-expression": "*",
+        "johngrogg/ics-parser": "^2.1",
         "mpdf/mpdf": "^8.3.1",
         "openspout/openspout": "^5.7",
         "phpseclib/phpseclib": "^3.0.55",
