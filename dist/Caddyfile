@@ -26,6 +26,15 @@
         -Server
     }
 
+    # Caché de ficheros estáticos. public/assets/ lo genera AssetMapper con el
+    # hash del contenido en el nombre de fichero, así que es seguro cachear
+    # "para siempre"; public/static/ (favicons, logo, fuentes) no lleva hash,
+    # así que usa una duración moderada en vez de "immutable".
+    @assets path /assets/*
+    header @assets Cache-Control "public, max-age=31536000, immutable"
+    @static path /static/*
+    header @static Cache-Control "public, max-age=2592000"
+
     # FrankenPHP gestiona tanto PHP como ficheros estáticos
     php_server
 }
