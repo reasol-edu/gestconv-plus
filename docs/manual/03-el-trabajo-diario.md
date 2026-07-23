@@ -297,7 +297,7 @@ excepción: tienen acceso completo —crear, consultar, editar y eliminar— a l
 cualquier docente del curso, sin que el bloqueo por fecha les afecte (ver
 [Permisos de un vistazo](08-permisos-de-un-vistazo.md#ausencias)).
 
-Si quien accede es administrador (global o de centro) y además pertenece al curso escolar
+Si quien accede es administrador (global o de centro) y además pertenece al curso académico
 visualizado, la sección muestra dos pestañas:
 
 - **Mis ausencias** — las propias, igual que para cualquier docente.

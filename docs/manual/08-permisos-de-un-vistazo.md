@@ -86,7 +86,7 @@ administradores, en cambio, tienen acceso completo a las de cualquier docente de
 | Añadir, editar o eliminar actividades y adjuntos | ✓ | — | — | ✓ | ✓ |
 
 Los administradores de centro y globales pueden registrar una ausencia para cualquier docente que
-pertenezca al curso escolar visualizado, y su acceso no se ve afectado por el bloqueo de fecha que
+pertenezca al curso académico visualizado, y su acceso no se ve afectado por el bloqueo de fecha que
 sí aplica al profesorado normal. Ningún otro docente, ni siquiera compartiendo grupo, puede ver
 las ausencias de otra persona.
 
