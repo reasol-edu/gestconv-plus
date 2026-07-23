@@ -5,13 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-
-- Los despliegues Docker y binario nativo (Caddy) cachean ahora los ficheros estáticos igual que ya hacía Apache/Plesk: `public/assets/` indefinidamente (el hash de contenido en el nombre de fichero garantiza que un cambio siempre genera una URL nueva) y `public/static/` (favicons, logo, fuentes, sin hash) durante 30 días.
-
-## [1.0.0] - 2026-07-22
+## [1.0.0] - 2026-07-23
 
 ### Added
 
@@ -92,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - En el registro y edición de un parte, la casilla "El estudiante fue expulsado del aula" se
   sustituye por un selector Sí/No de dos tarjetas, más cómodo de usar en móvil.
 - La pantalla **Centro educativo › Docentes › Grupos asignados** pasa a llamarse **Materias**: en vez de un formulario con casillas para marcar grupos, permite añadir, modificar o eliminar cada asignación de grupo y materia una a una. Al modificar o eliminar una asignación con tareas de sanción cumplimentadas o con adjuntos, se bloquea esa operación en concreto y se muestra un aviso indicando que hay que usar «Refrescar materias» desde la sanción correspondiente, igual que ya ocurre al quitar la asignación desde la oferta formativa.
+- Los despliegues Docker y binario nativo (Caddy) cachean ahora los ficheros estáticos igual que ya hacía Apache/Plesk: `public/assets/` indefinidamente (el hash de contenido en el nombre de fichero garantiza que un cambio siempre genera una URL nueva) y `public/static/` (favicons, logo, fuentes, sin hash) durante 30 días.
 
 ### Fixed
 
