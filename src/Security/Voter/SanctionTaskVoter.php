@@ -37,6 +37,12 @@ final class SanctionTaskVoter extends Voter
 
         /** @var SanctionTask $subject */
 
+        // Global admin or centre admin: full access over any task, not just their own
+        $centre = $subject->getSanction()->getAcademicYear()->getEducationalCentre();
+        if ($user->isAdmin() || $centre->getAdmins()->contains($user)) {
+            return true;
+        }
+
         $isAssignedTeacher = $subject->getGroupTeacher()->getTeacher() === $user;
 
         return match ($attribute) {

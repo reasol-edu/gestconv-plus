@@ -78,18 +78,45 @@ class SanctionTaskControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
-    public function testAdminCannotOpenEditFormOfSomeoneElsesTask(): void
+    public function testAdminCanOpenEditFormOfSomeoneElsesTask(): void
     {
         $world = $this->makeWorld('admin');
         $task  = $this->makeTask($world, requiresDates: true);
-        $admin = $this->makeTeacher('admin-noaccess');
+        $admin = $this->makeTeacher('admin-access');
         $world['centre']->addAdmin($admin);
         $this->persist($world['centre']);
         $this->loginAs($admin, $world['centre']);
 
         $this->client->request('GET', $this->editUrl($task->getSanction(), $task));
 
-        self::assertResponseStatusCodeSame(403);
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testAdminCanCompleteSomeoneElsesTask(): void
+    {
+        $world  = $this->makeWorld('admin-post');
+        $task   = $this->makeTask($world, requiresDates: true);
+        $taskId = $task->getId()->toRfc4122();
+        $admin  = $this->makeTeacher('admin-post-access');
+        $world['centre']->addAdmin($admin);
+        $this->persist($world['centre']);
+        $this->loginAs($admin, $world['centre']);
+
+        $crawler = $this->client->request('GET', $this->editUrl($task->getSanction(), $task));
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', $this->editUrl($task->getSanction(), $task), [
+            '_token'      => $token,
+            'description' => '<p>Completado por un administrador.</p>',
+        ]);
+
+        self::assertResponseRedirects('/tareas-de-sancion');
+
+        $this->em->clear();
+        /** @var SanctionTask $reloaded */
+        $reloaded = $this->em->getRepository(SanctionTask::class)->find($taskId);
+        self::assertNotNull($reloaded->getCompletedAt());
+        self::assertSame('<p>Completado por un administrador.</p>', $reloaded->getDescription());
     }
 
     public function testUnrelatedTeacherPostReturns403(): void

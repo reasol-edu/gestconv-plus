@@ -102,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Al crear un centro educativo desde el panel de administración no se sembraba su catálogo de ubicaciones por defecto, a diferencia del resto de catálogos (conductas contrarias, medidas y vías de comunicación).
 - La barra lateral no reflejaba las secciones del centro educativo al crear el primer centro (cuando no existía ninguno) ni al eliminar el centro activo mientras quedaba otro registrado: en ambos casos había que navegar manualmente a otra pantalla para que se seleccionara el centro correspondiente.
 - El editor de tramos horarios no mostraba el mensaje de confirmación al guardar o eliminar un cambio hasta navegar a otra pantalla, por tratarse de una recarga parcial (LiveComponent) que no repinta el resto de la página.
+- La administración (global o de centro) no podía editar las tareas de guardia de sanciones asignadas a otro docente; ahora tiene acceso completo aunque no sean propias, igual que ya ocurría con las actividades de una ausencia.
 
 ### Security
 
