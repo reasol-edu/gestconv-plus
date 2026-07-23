@@ -28,6 +28,7 @@ class SanctionTaskController extends AbstractController
 {
     use PastYearGuardTrait;
     use TranslatorTrait;
+    use UploadSizeGuardTrait;
 
     private const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
@@ -104,53 +105,55 @@ class SanctionTaskController extends AbstractController
         ];
 
         if ($request->isMethod('POST')) {
-            if (!$this->isCsrfTokenValid('edit_sanction_task_' . $taskId, $request->request->getString('_token'))) {
+            if ($this->isUploadTooLarge($request)) {
+                $errors['attachments'] = $this->t('sanction_task.error.attachments_total_too_large');
+            } elseif (!$this->isCsrfTokenValid('edit_sanction_task_' . $taskId, $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
-            }
+            } else {
+                $notApplicable = $request->request->getBoolean('not_applicable');
+                $description   = trim($request->request->getString('description'));
+                $formData      = ['description' => $description, 'not_applicable' => $notApplicable];
 
-            $notApplicable = $request->request->getBoolean('not_applicable');
-            $description   = trim($request->request->getString('description'));
-            $formData      = ['description' => $description, 'not_applicable' => $notApplicable];
+                if (!$notApplicable && strip_tags($description) === '') {
+                    $errors['description'] = $this->t('sanction_task.error.description_required');
+                }
 
-            if (!$notApplicable && strip_tags($description) === '') {
-                $errors['description'] = $this->t('sanction_task.error.description_required');
-            }
+                $newAttachments = $notApplicable ? [] : $this->processUploadedAttachments($task, $request, $errors);
 
-            $newAttachments = $notApplicable ? [] : $this->processUploadedAttachments($task, $request, $errors);
+                /** @var list<string> $removeIds */
+                $removeIds = array_values(array_filter($request->request->all('remove_attachments'), 'is_string'));
 
-            /** @var list<string> $removeIds */
-            $removeIds = array_values(array_filter($request->request->all('remove_attachments'), 'is_string'));
+                if (empty($errors)) {
+                    $wasCompleted = $task->getCompletedAt() !== null;
 
-            if (empty($errors)) {
-                $wasCompleted = $task->getCompletedAt() !== null;
+                    $task->setNotApplicable($notApplicable);
+                    $task->setDescription($notApplicable ? null : $description);
 
-                $task->setNotApplicable($notApplicable);
-                $task->setDescription($notApplicable ? null : $description);
-
-                foreach ($task->getAttachments()->toArray() as $attachment) {
-                    if ($notApplicable || in_array($attachment->getId()->toRfc4122(), $removeIds, true)) {
-                        $task->removeAttachment($attachment);
-                        $this->em->remove($attachment);
+                    foreach ($task->getAttachments()->toArray() as $attachment) {
+                        if ($notApplicable || in_array($attachment->getId()->toRfc4122(), $removeIds, true)) {
+                            $task->removeAttachment($attachment);
+                            $this->em->remove($attachment);
+                        }
                     }
+                    foreach ($newAttachments as $attachment) {
+                        $task->addAttachment($attachment);
+                    }
+
+                    if (!$wasCompleted) {
+                        $task->setCompletedAt(new \DateTimeImmutable());
+                    }
+
+                    $this->em->flush();
+
+                    $this->activityLog->log($wasCompleted ? 'sanction_task.updated' : 'sanction_task.completed', [
+                        'entityId'   => $task->getId()->toRfc4122(),
+                        'sanctionId' => $sanction->getId()->toRfc4122(),
+                    ]);
+
+                    $this->addFlash('success', $this->t('sanction_task.flash.updated'));
+
+                    return $this->redirectToRoute('app_sanction_tasks_index');
                 }
-                foreach ($newAttachments as $attachment) {
-                    $task->addAttachment($attachment);
-                }
-
-                if (!$wasCompleted) {
-                    $task->setCompletedAt(new \DateTimeImmutable());
-                }
-
-                $this->em->flush();
-
-                $this->activityLog->log($wasCompleted ? 'sanction_task.updated' : 'sanction_task.completed', [
-                    'entityId'   => $task->getId()->toRfc4122(),
-                    'sanctionId' => $sanction->getId()->toRfc4122(),
-                ]);
-
-                $this->addFlash('success', $this->t('sanction_task.flash.updated'));
-
-                return $this->redirectToRoute('app_sanction_tasks_index');
             }
         }
 

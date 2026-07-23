@@ -35,6 +35,7 @@ class AbsenceController extends AbstractController
 {
     use PastYearGuardTrait;
     use TranslatorTrait;
+    use UploadSizeGuardTrait;
 
     private const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
@@ -341,41 +342,43 @@ class AbsenceController extends AbstractController
         $formData = ['date' => $absence->getStartDate()->format('Y-m-d'), 'time_slot_id' => '', 'description' => '', 'subject_ids' => []];
 
         if ($request->isMethod('POST')) {
-            if (!$this->isCsrfTokenValid('new_activity_' . $id, $request->request->getString('_token'))) {
+            if ($this->isUploadTooLarge($request)) {
+                $errors['attachments'] = $this->t('activity.error.attachments_total_too_large');
+            } elseif (!$this->isCsrfTokenValid('new_activity_' . $id, $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
-            }
+            } else {
+                $result   = $this->parseActivityFields($request, $absence, $owner, $year);
+                $errors   = $result['errors'];
+                $formData = $result['formData'];
 
-            $result   = $this->parseActivityFields($request, $absence, $owner, $year);
-            $errors   = $result['errors'];
-            $formData = $result['formData'];
+                $activity       = new Activity();
+                $newAttachments = $this->processUploadedAttachments($activity, $request, $errors);
 
-            $activity       = new Activity();
-            $newAttachments = $this->processUploadedAttachments($activity, $request, $errors);
+                if (empty($errors) && $result['date'] !== null && $result['timeSlot'] !== null) {
+                    $activity->setAbsence($absence)
+                             ->setDate($result['date'])
+                             ->setTimeSlot($result['timeSlot'])
+                             ->setDescription($result['description']);
 
-            if (empty($errors) && $result['date'] !== null && $result['timeSlot'] !== null) {
-                $activity->setAbsence($absence)
-                         ->setDate($result['date'])
-                         ->setTimeSlot($result['timeSlot'])
-                         ->setDescription($result['description']);
+                    foreach ($result['subjects'] as $subject) {
+                        $activity->addSubject($subject);
+                    }
+                    foreach ($newAttachments as $attachment) {
+                        $activity->addAttachment($attachment);
+                    }
 
-                foreach ($result['subjects'] as $subject) {
-                    $activity->addSubject($subject);
+                    $this->em->persist($activity);
+                    $this->em->flush();
+
+                    $this->activityLog->log('activity.created', [
+                        'entityId'  => $activity->getId()->toRfc4122(),
+                        'absenceId' => $absence->getId()->toRfc4122(),
+                    ]);
+
+                    $this->addFlash('success', $this->t('activity.flash.created'));
+
+                    return $this->redirectToRoute('app_absences_show', ['id' => $id]);
                 }
-                foreach ($newAttachments as $attachment) {
-                    $activity->addAttachment($attachment);
-                }
-
-                $this->em->persist($activity);
-                $this->em->flush();
-
-                $this->activityLog->log('activity.created', [
-                    'entityId'  => $activity->getId()->toRfc4122(),
-                    'absenceId' => $absence->getId()->toRfc4122(),
-                ]);
-
-                $this->addFlash('success', $this->t('activity.flash.created'));
-
-                return $this->redirectToRoute('app_absences_show', ['id' => $id]);
             }
         }
 
@@ -424,51 +427,53 @@ class AbsenceController extends AbstractController
         ];
 
         if ($request->isMethod('POST')) {
-            if (!$this->isCsrfTokenValid('edit_activity_' . $activityId, $request->request->getString('_token'))) {
+            if ($this->isUploadTooLarge($request)) {
+                $errors['attachments'] = $this->t('activity.error.attachments_total_too_large');
+            } elseif (!$this->isCsrfTokenValid('edit_activity_' . $activityId, $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
-            }
+            } else {
+                $result   = $this->parseActivityFields($request, $absence, $owner, $year);
+                $errors   = $result['errors'];
+                $formData = $result['formData'];
 
-            $result   = $this->parseActivityFields($request, $absence, $owner, $year);
-            $errors   = $result['errors'];
-            $formData = $result['formData'];
+                $newAttachments = $this->processUploadedAttachments($activity, $request, $errors);
 
-            $newAttachments = $this->processUploadedAttachments($activity, $request, $errors);
+                /** @var list<string> $removeIds */
+                $removeIds = array_values(array_filter($request->request->all('remove_attachments'), 'is_string'));
 
-            /** @var list<string> $removeIds */
-            $removeIds = array_values(array_filter($request->request->all('remove_attachments'), 'is_string'));
+                if (empty($errors) && $result['date'] !== null && $result['timeSlot'] !== null) {
+                    $activity->setDate($result['date'])
+                             ->setTimeSlot($result['timeSlot'])
+                             ->setDescription($result['description']);
 
-            if (empty($errors) && $result['date'] !== null && $result['timeSlot'] !== null) {
-                $activity->setDate($result['date'])
-                         ->setTimeSlot($result['timeSlot'])
-                         ->setDescription($result['description']);
-
-                foreach ($activity->getSubjects()->toArray() as $subject) {
-                    $activity->removeSubject($subject);
-                }
-                foreach ($result['subjects'] as $subject) {
-                    $activity->addSubject($subject);
-                }
-
-                foreach ($activity->getAttachments()->toArray() as $attachment) {
-                    if (in_array($attachment->getId()->toRfc4122(), $removeIds, true)) {
-                        $activity->removeAttachment($attachment);
-                        $this->em->remove($attachment);
+                    foreach ($activity->getSubjects()->toArray() as $subject) {
+                        $activity->removeSubject($subject);
                     }
+                    foreach ($result['subjects'] as $subject) {
+                        $activity->addSubject($subject);
+                    }
+
+                    foreach ($activity->getAttachments()->toArray() as $attachment) {
+                        if (in_array($attachment->getId()->toRfc4122(), $removeIds, true)) {
+                            $activity->removeAttachment($attachment);
+                            $this->em->remove($attachment);
+                        }
+                    }
+                    foreach ($newAttachments as $attachment) {
+                        $activity->addAttachment($attachment);
+                    }
+
+                    $this->em->flush();
+
+                    $this->activityLog->log('activity.updated', [
+                        'entityId'  => $activity->getId()->toRfc4122(),
+                        'absenceId' => $absence->getId()->toRfc4122(),
+                    ]);
+
+                    $this->addFlash('success', $this->t('activity.flash.updated'));
+
+                    return $this->redirectToRoute('app_absences_show', ['id' => $id]);
                 }
-                foreach ($newAttachments as $attachment) {
-                    $activity->addAttachment($attachment);
-                }
-
-                $this->em->flush();
-
-                $this->activityLog->log('activity.updated', [
-                    'entityId'  => $activity->getId()->toRfc4122(),
-                    'absenceId' => $absence->getId()->toRfc4122(),
-                ]);
-
-                $this->addFlash('success', $this->t('activity.flash.updated'));
-
-                return $this->redirectToRoute('app_absences_show', ['id' => $id]);
             }
         }
 
