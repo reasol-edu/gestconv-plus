@@ -57,6 +57,8 @@ La descripción empieza en minúscula y no supera los 70 caracteres.
 | `refactor` | Reestructuración de código sin cambio de comportamiento observable, incluida la reorganización del modelo existente |
 | `test` | Cambios exclusivos en la batería de pruebas (sin tocar código de producción) |
 | `docs` | Cambios exclusivos en documentación (README, CHANGELOG, comentarios…) |
+| `perf` | Mejora de rendimiento sin cambio de comportamiento observable (caché, reducción de consultas N+1, tamaño de assets) |
+| `style` | Cambios puramente de formato o estilo visual/de código sin alterar la lógica (indentación, unificación de clases CSS, orden de imports) |
 
 La distinción clave entre `feat` y `refactor` aplicada al modelo:
 
@@ -74,29 +76,47 @@ fix!: el comando app:create-admin ahora exige especificar el nombre de usuario
 
 ### Ámbitos opcionales
 
-El ámbito indica la capa técnica o el área de la aplicación afectada. Se pueden combinar separados por `/` cuando el cambio cruza varias dimensiones.
+El ámbito indica la capa técnica o el área de la aplicación afectada. No es un campo de texto libre: usa siempre uno de los valores de las tablas siguientes. Se pueden combinar separados por `/` cuando el cambio cruza varias dimensiones (por ejemplo, `centro/i18n`). Si un cambio no encaja claramente en ninguno, omite el ámbito.
 
 #### Capas técnicas
 
-| Ámbito | Capa |
-|--------|------|
-| `model` | Entidades y modelo de dominio |
-| `migrations` | Migraciones de base de datos |
-| `command` | Comandos de consola |
-| `i18n` | Traducciones e internacionalización |
-| `dist` | Scripts o configuración de distribución y *build* |
-| `ci` | Configuración de integración continua |
-| `deps` | Dependencias del proyecto |
+Transversales: no pertenecen a un dominio concreto, sino a un tipo de código o de proceso.
+
+| Ámbito | Cubre commits que... |
+|--------|------------------------|
+| `model` | Añaden, renombran o reorganizan entidades, campos o relaciones del modelo de dominio |
+| `migrations` | Crean o modifican migraciones de base de datos |
+| `command` | Añaden o cambian comandos de consola (`bin/console`) |
+| `i18n` | Tocan traducciones o el mecanismo de internacionalización, sin ser un cambio funcional de un dominio concreto |
+| `ui` | Ajustan interfaz, maquetación o estilos genéricos no ligados a un único dominio (layout, componentes compartidos, Tailwind) |
+| `a11y` | Mejoran accesibilidad (foco, ARIA, contraste, navegación por teclado) |
+| `adjuntos` | Afectan a la subida, descarga o gestión de archivos adjuntos |
+| `assets` | Añaden o actualizan iconos, imágenes u otros recursos estáticos |
+| `quality` | Son auditorías o correcciones de calidad y seguridad del código sin ser una `feat`/`fix` de un dominio concreto |
+| `release` | Preparan una publicación de versión: changelog, número de versión, etiquetas |
+| `dist` | Cambian scripts o configuración de distribución y *build* |
+| `ci` | Cambian la configuración de integración continua |
+| `deps` | Actualizan dependencias del proyecto |
 
 #### Dominios de la aplicación
 
-| Ámbito         | Sección                                                    |
-|----------------|------------------------------------------------------------|
-| `incident`     | Partes                                                     |
-| `sanction`     | Sanciones                                                  |
-| `notification` | Notificaciones                                            |
-| `centre`       | Centro educativo: docentes, estudiantes y oferta formativa |
-| `admin`        | Administración global                                      |
+Las distintas áreas funcionales de GestConv+, alineadas con sus controladores y entidades principales.
+
+| Ámbito         | Cubre commits que afectan a... |
+|----------------|----------------------------------|
+| `incident`     | Partes de incidencia (convivencia): registro, conductas, observaciones |
+| `sanction`     | Sanciones, sus medidas y las tareas de guardia asociadas |
+| `absence`      | Ausencias del profesorado y las actividades de cobertura durante ellas |
+| `guards`       | Guardias, franjas horarias y su asignación |
+| `calendar`     | Calendario, días no lectivos y el modo tablón |
+| `notification` | Notificaciones a los usuarios y su envío |
+| `dashboard`    | Panel de indicadores y estadísticas |
+| `reports`      | Informes, exportaciones y reportes |
+| `student`      | Estudiantes: ficha, importación (p. ej. desde Séneca) y datos asociados |
+| `tutorship`    | Tutorías y la relación entre tutor y estudiante |
+| `centre`       | Centro educativo: docentes, grupos, cursos y oferta formativa |
+| `admin`        | Administración global multi-centro (no confundir con el namespace `Admin` del código, que también incluye pantallas de gestión de un solo centro) |
+| `security`     | Autenticación, autorización y control de acceso |
 
 ### Referencias a incidencias
 
@@ -130,8 +150,10 @@ Closes #51
 ```
 chore(deps): actualizar Symfony a 8.2
 refactor(centre/i18n): unificar cadenas de traducción en un solo dominio
-test(centre): cubrir el caso de importación con CSV en codificación Windows-1252
+test(student): cubrir el caso de importación con CSV en codificación Windows-1252
 docs: documentar el modo de despliegue con Docker en el README
+perf(guards): elimina consultas N+1 al listar franjas horarias
+style(ui): unifica los botones "Ver"/"Editar" en listados
 ```
 
 ---
