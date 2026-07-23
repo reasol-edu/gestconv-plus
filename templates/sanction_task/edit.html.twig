@@ -136,22 +136,14 @@
                 </div>
             {% endif %}
 
-            <div>
-                <label for="attachments" class="block text-sm font-medium text-gray-700 mb-1.5">
-                    {{ 'sanction_task.field.attachments'|trans({}, 'admin') }}
-                </label>
-                <input type="file" id="attachments" name="attachments[]" multiple
-                       accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.txt,.zip"
-                       {% if errors.attachments is defined %}aria-invalid="true"{% endif %}
-                       class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900 file:mr-3 file:rounded-lg
-                              file:border-0 file:bg-forest-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-forest-700
-                              hover:file:bg-forest-100 focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
-                {% if errors.attachments is defined %}
-                    <p class="mt-1 text-xs text-red-600">{{ errors.attachments }}</p>
-                {% else %}
-                    <p class="mt-1 text-xs text-gray-400">{{ 'activity.field.attachments_help'|trans({}, 'admin') }}</p>
-                {% endif %}
-            </div>
+            <twig:Form:AttachmentDropzone
+                id="attachments"
+                name="attachments[]"
+                label="{{ 'sanction_task.field.attachments'|trans({}, 'admin') }}"
+                accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.txt,.zip"
+                help="{{ 'activity.field.attachments_help'|trans({}, 'admin') }}"
+                :error="errors.attachments ?? null"
+            />
         </div>
 
         <div class="flex items-center justify-end gap-3">

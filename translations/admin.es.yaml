@@ -642,6 +642,12 @@ activity.field.attachments: 'Adjuntar ficheros'
 activity.field.attachments_help: 'Formatos admitidos: PDF, imágenes, Word, Excel, PowerPoint, OpenDocument, texto o ZIP. Tamaño máximo por fichero: 10 MB.'
 activity.field.existing_attachments: 'Adjuntos actuales'
 activity.field.remove: 'Eliminar'
+
+# Zona de arrastrar y soltar adjuntos (compartida entre actividades y tareas de sanción)
+attachment.dropzone.hint: 'Arrastra los ficheros aquí o haz clic para seleccionarlos'
+attachment.remove: 'Quitar'
+attachment.error.too_large: 'El fichero «%filename%» supera el tamaño máximo permitido (%max%).'
+
 activity.error.date_required: 'La fecha es obligatoria.'
 activity.error.date_out_of_range: 'La fecha debe estar dentro del periodo de la ausencia.'
 activity.error.date_non_working: 'La fecha no puede ser un día no lectivo.'
