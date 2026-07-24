@@ -46,6 +46,12 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 
 <div class="step">
   <span class="num">7</span>
+  <div class="text"><p>Definir los días no lectivos (festivos y puentes), importándolos desde el
+  calendario escolar oficial.</p></div>
+</div>
+
+<div class="step">
+  <span class="num">8</span>
   <div class="text"><p>Revisar conductas, medidas, ubicaciones, métodos de comunicación y
   perfiles de comisión/orientación.</p></div>
 </div>
@@ -205,7 +211,37 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 
 <p class="kicker">GestConv+ · Ficha rápida · Equipo directivo</p>
 
-# 7. Revisar los catálogos del centro
+# 7. Definir los días no lectivos
+
+<div class="steps sin-capturas">
+
+<div class="step">
+  <span class="num">1</span>
+  <div class="text">
+    <p>Desde <strong>Centro educativo › Días no lectivos › Importar</strong>, sube el fichero
+    <strong>.ics</strong> del calendario escolar oficial. La pantalla enlaza directamente a la
+    Secretaría Virtual de la Consejería de Educación, de donde se descarga.</p>
+    <p>Se dan de alta de golpe todos los festivos y puentes del fichero; las fechas repetidas se
+    detectan y no se duplican, así que el mismo fichero se puede reimportar sin riesgo. También se
+    pueden añadir, editar o eliminar días sueltos a mano, uno a uno.</p>
+    <img class="captura-escritorio" src="img/curso-nuevo-16-dias-no-lectivos.png" alt="Listado de días no lectivos del curso tras importar el calendario escolar">
+  </div>
+</div>
+
+</div>
+
+<div class="nota">
+  <p>Una vez declarados, se reflejan en toda la aplicación: se marcan en el calendario y el
+  tablón, guardias avisa de ellos y salta el fin de semana al navegar día a día, la sanción
+  muestra un contador de días lectivos entre inicio y fin, y ningún selector de fecha (sanciones,
+  ausencias, actividades) permite ya elegir un día no lectivo.</p>
+</div>
+
+---
+
+<p class="kicker">GestConv+ · Ficha rápida · Equipo directivo</p>
+
+# 8. Revisar los catálogos del centro
 
 <div class="steps sin-capturas">
 
@@ -262,9 +298,9 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
   <span class="num">✓</span>
   <div class="text">
     <p>Con los pasos anteriores, el curso <strong>2026-2027</strong> queda activo, con su
-    profesorado, alumnado, oferta formativa, tutorías, tramos horarios y catálogos revisados.
-    Solo falta asignar los perfiles de comisión de convivencia y orientación (ver el capítulo
-    «Administrar el centro educativo» del manual).</p>
+    profesorado, alumnado, oferta formativa, tutorías, tramos horarios, días no lectivos y
+    catálogos revisados. Solo falta asignar los perfiles de comisión de convivencia y orientación
+    (ver el capítulo «Administrar el centro educativo» del manual).</p>
     <img class="captura-escritorio" src="img/curso-nuevo-14-centro-listo.png" alt="Panel de Centro educativo con el curso 2026-2027 activo y todas las secciones disponibles">
   </div>
 </div>

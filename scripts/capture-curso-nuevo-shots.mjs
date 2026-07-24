@@ -8,10 +8,12 @@
  * puesta a punto de un curso académico: crea y activa el curso 2026-2027, importa profesorado y
  * alumnado desde los CSV de Séneca reutilizados de src/DataFixtures/data/ (los mismos que usa
  * AppFixtures para 2025-2026), asigna una tutoría, importa asignaciones docente-grupo desde
- * src/DataFixtures/data/asignaciones-ada-lovelace.csv y define un tramo horario con dos docentes
- * de guardia. El paso «Revisar los catálogos del centro» de la ficha no lleva captura (son cuatro
- * pantallas de catálogo con la misma mecánica; el texto ya lo deja claro), así que no tiene
- * bloque correspondiente aquí.
+ * src/DataFixtures/data/asignaciones-ada-lovelace.csv, define un tramo horario con dos docentes
+ * de guardia e importa los días no lectivos desde
+ * src/DataFixtures/data/dias-no-lectivos-ada-lovelace.ics (fichero de muestra, no el calendario
+ * oficial de ningún centro real). El paso «Revisar los catálogos del centro» de la ficha no lleva
+ * captura (son cuatro pantallas de catálogo con la misma mecánica; el texto ya lo deja claro), así
+ * que no tiene bloque correspondiente aquí.
  *
  * Requiere, por tanto, una BASE DE DATOS DESECHABLE PROPIA para esta ejecución (no la reutilices
  * con capture-tutorial-shots.mjs ni capture-cheatsheet-shots.mjs en la misma pasada): este script
@@ -169,6 +171,17 @@ await page.click('form[data-live-action-param="saveDetail"] button[type="submit"
 await page.waitForLoadState('networkidle');
 await hideToolbar(page);
 await page.screenshot({ path: `${root}/curso-nuevo-15-tramos-horarios.png` });
+
+// ── 7. Definir los días no lectivos ──────────────────────────────────────────
+await page.goto(`${baseUrl}/centro/${centreId}/dias-no-lectivos/importar`);
+await page.waitForLoadState('networkidle');
+await hideToolbar(page);
+
+await page.setInputFiles('#ics', 'src/DataFixtures/data/dias-no-lectivos-ada-lovelace.ics');
+await page.click('button[type="submit"]');
+await page.waitForLoadState('networkidle');
+await hideToolbar(page);
+await page.screenshot({ path: `${root}/curso-nuevo-16-dias-no-lectivos.png` });
 
 // ── Resultado: el centro, listo para trabajar ────────────────────────────────
 await page.goto(`${baseUrl}/centro/${centreId}`);
