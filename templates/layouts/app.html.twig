@@ -198,6 +198,7 @@
             {% if active_centre and is_granted('educational_centre.section', active_centre) %}
                 {% set reports_active = current_route starts with 'app_reports_' %}
                 <a href="{{ path('app_reports_index', {centreId: active_centre.id}) }}"
+                    {{ reports_active ? 'aria-current="page"' : '' }}
                    class="{{ reports_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:chart-bar', {class: 'h-5 w-5 shrink-0'}) }}
@@ -209,6 +210,7 @@
             {% if active_centre and is_granted('educational_centre.section', active_centre) %}
                 {% set centre_active = current_route starts with 'app_centre_' %}
                 <a href="{{ path('app_centre_index', {centreId: active_centre.id}) }}"
+                    {{ centre_active ? 'aria-current="page"' : '' }}
                    class="{{ centre_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:building-library', {class: 'h-5 w-5 shrink-0'}) }}
@@ -219,13 +221,9 @@
             {# Administración — solo para admins #}
             {% if is_granted('ROLE_ADMIN') %}
                 <div class="my-3 h-px bg-white/8"></div>
-                {% set admin_active = current_route == 'app_admin'
-                    or current_route starts with 'app_admin_teachers'
-                    or current_route starts with 'app_admin_centres'
-                    or current_route starts with 'app_admin_sanction'
-                    or current_route starts with 'app_admin_incident'
-                    or current_route == 'app_admin_settings' %}
+                {% set admin_active = current_route starts with 'app_admin' %}
                 <a href="{{ path('app_admin') }}"
+                    {{ admin_active ? 'aria-current="page"' : '' }}
                    class="{{ admin_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:cog-6-tooth', {class: 'h-5 w-5 shrink-0'}) }}
