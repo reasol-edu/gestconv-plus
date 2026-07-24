@@ -1,5 +1,5 @@
 /**
- * Captura las capturas móviles de las 7 fichas rápidas (docs/cheatsheets/img/).
+ * Captura las capturas móviles de las fichas rápidas (docs/cheatsheets/img/).
  *
  * Mismo patrón que scripts/capture-tutorial-shots.mjs y capture-misc-shots.mjs (servidor ya
  * arrancado en SHOTS_BASE_URL, datos sembrados), pero con el viewport móvil de Playwright
@@ -353,6 +353,36 @@ async function fillQuill(page, mountSelector, text) {
     await page.waitForLoadState('networkidle');
     await hideToolbar(page);
     await page.screenshot({ path: `${root}/instalar-app-1.png` });
+
+    await page.close();
+}
+
+// ── Buscar con la paleta de comandos (carmen.diaz, admin de centro) ────────
+{
+    const page = await browser.newPage({ ...iphone, locale: 'es-ES' });
+    await login(page, 'carmen.diaz', 'ejemplo');
+
+    await page.goto(`${baseUrl}/`);
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/busqueda-rapida-1.png` });
+
+    await page.click('header button[data-action="command-palette#open"]:visible');
+    await page.waitForTimeout(200);
+    await hideToolbar(page);
+    await page.locator('[data-command-palette-target="dialog"]').screenshot({ path: `${root}/busqueda-rapida-2.png` });
+
+    const paletteInput = page.locator('[data-command-palette-target="input"]');
+    await paletteInput.click();
+    await page.keyboard.type('García', { delay: 30 });
+    await page.waitForTimeout(700);
+    await hideToolbar(page);
+    await page.locator('[data-command-palette-target="dialog"]').screenshot({ path: `${root}/busqueda-rapida-3.png` });
+
+    await page.locator('a[data-item]').first().click();
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/busqueda-rapida-4.png` });
 
     await page.close();
 }

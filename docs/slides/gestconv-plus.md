@@ -764,9 +764,10 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   en una página cada función básica: registrar y notificar un parte,
   registrar una ausencia, cumplimentar tareas de sanción, «Mis guardias»,
   editar los datos de contacto de un estudiante como tutor/a de grupo,
-  para la comisión de convivencia registrar una sanción, y cómo **añadir la
-  app a la pantalla de inicio** del móvil. Para el equipo directivo, otra
-  ficha resume cómo **configurar un curso académico nuevo**.
+  para la comisión de convivencia registrar una sanción, buscar con la
+  **paleta de comandos** (⌘K/Ctrl+K), y cómo **añadir la app a la pantalla
+  de inicio** del móvil. Para el equipo directivo, otra ficha resume cómo
+  **configurar un curso académico nuevo**.
 - Ante cualquier duda sobre un permiso o un ajuste concreto, consulta primero
   la sección de **ajustes** o el capítulo de **roles y permisos** del manual.
 - El equipo del centro que administra GestConv+ es el primer punto de
