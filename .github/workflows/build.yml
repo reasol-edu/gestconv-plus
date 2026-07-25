@@ -295,11 +295,13 @@ jobs:
             gestconv-plus-presentacion-*.pdf
             gestconv-plus-ficha-*.pdf
             gestconv-plus-manual-web-*.zip
-          # body: "" fuerza a que se considere "especificado": si se omite, al
-          # re-publicar un tag ya existente la acción retiene el body anterior
-          # (que ya incluye el "Full Changelog" del run previo) y lo antepone
-          # a las notas recién generadas, acumulándolo en cada rerelease.
-          body: ""
+          # body: " " (un espacio, no "") es intencional: la acción calcula
+          # `body = workflowBody || existingReleaseBody`, y en JS "" es
+          # falsy, así que un body vacío seguía cayendo al body del release
+          # anterior (que ya incluía el "Full Changelog" del run previo) y
+          # generate_release_notes lo anteponía de nuevo en cada rerelease.
+          # Un espacio es "truthy" y evita ese fallback.
+          body: " "
           generate_release_notes: true
 
 # ── Job 5: publicar la web en GitHub Pages (solo última versión estable) ─────
