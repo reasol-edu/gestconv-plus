@@ -12,6 +12,7 @@ use App\Repository\SanctionMeasureRepository;
 use App\Service\SanctionMeasureExporter;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Uuid;
 
 class SanctionMeasureExporterTest extends TestCase
@@ -26,7 +27,7 @@ class SanctionMeasureExporterTest extends TestCase
         $this->categoryRepo = $this->createStub(SanctionMeasureCategoryRepository::class);
         $this->measureRepo  = $this->createStub(SanctionMeasureRepository::class);
 
-        $this->exporter = new SanctionMeasureExporter($this->categoryRepo, $this->measureRepo);
+        $this->exporter = new SanctionMeasureExporter($this->categoryRepo, $this->measureRepo, new MockClock());
 
         $this->centre = (new EducationalCentre())->setName('IES Prueba');
         $this->setId($this->centre);

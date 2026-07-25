@@ -6,6 +6,7 @@ namespace App\Security\Voter;
 
 use App\Entity\Absence;
 use App\Entity\Teacher;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -18,6 +19,10 @@ final class AbsenceVoter extends Voter
     public const VIEW   = 'absence.view';
     public const EDIT   = 'absence.edit';
     public const DELETE = 'absence.delete';
+
+    public function __construct(
+        private readonly ClockInterface $clock,
+    ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -52,7 +57,7 @@ final class AbsenceVoter extends Voter
 
         // Owner: full access, except edit/delete once the end date has passed
         if (in_array($attribute, [self::EDIT, self::DELETE], true)
-            && $subject->getEndDate() < new \DateTimeImmutable('today')) {
+            && $subject->getEndDate() < $this->clock->now()->setTime(0, 0, 0)) {
             return false;
         }
 

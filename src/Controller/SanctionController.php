@@ -33,6 +33,7 @@ use App\Service\SanctionFormHandler;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -77,6 +78,7 @@ class SanctionController extends AbstractController
         private readonly SanctionFormHandler $formHandler,
         private readonly ObservationFormHandler $observationHandler,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -520,7 +522,7 @@ class SanctionController extends AbstractController
             return $this->redirectToRoute('app_sanctions_show', ['id' => $id]);
         }
 
-        $observation = new SanctionObservation($sanction, $user, new \DateTimeImmutable(), $text);
+        $observation = new SanctionObservation($sanction, $user, $this->clock->now(), $text);
         $this->observationHandler->create($observation);
 
         $this->activityLog->log('sanction_observation.created', [

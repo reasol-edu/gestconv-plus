@@ -18,6 +18,7 @@ use App\Service\AttachmentDownloadResponder;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,6 +61,7 @@ class SanctionTaskController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
         private readonly AttachmentDownloadResponder $downloadResponder,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('/tareas-de-sancion', name: 'app_sanction_tasks_index')]
@@ -140,7 +142,7 @@ class SanctionTaskController extends AbstractController
                     }
 
                     if (!$wasCompleted) {
-                        $task->setCompletedAt(new \DateTimeImmutable());
+                        $task->setCompletedAt($this->clock->now());
                     }
 
                     $this->em->flush();

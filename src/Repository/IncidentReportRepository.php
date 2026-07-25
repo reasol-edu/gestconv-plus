@@ -14,14 +14,17 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Clock\ClockInterface;
 
 /**
  * @extends ServiceEntityRepository<IncidentReport>
  */
 class IncidentReportRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private readonly ClockInterface $clock,
+    ) {
         parent::__construct($registry, IncidentReport::class);
     }
 
@@ -181,7 +184,7 @@ class IncidentReportRepository extends ServiceEntityRepository
      */
     public function countRecentByCentre(EducationalCentre $centre, Teacher $viewer, AcademicYear $year, int $days = 30): int
     {
-        $since = new \DateTimeImmutable('-' . $days . ' days');
+        $since = $this->clock->now()->modify('-' . $days . ' days');
 
         $qb = $this->createQueryBuilder('r')
             ->select('COUNT(DISTINCT r.id)')

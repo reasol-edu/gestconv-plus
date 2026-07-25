@@ -8,14 +8,17 @@ use App\Entity\ActivityLog;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Clock\ClockInterface;
 
 /**
  * @extends ServiceEntityRepository<ActivityLog>
  */
 class ActivityLogRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private readonly ClockInterface $clock,
+    ) {
         parent::__construct($registry, ActivityLog::class);
     }
 
@@ -97,7 +100,7 @@ class ActivityLogRepository extends ServiceEntityRepository
 
     public function countToday(): int
     {
-        $today = new \DateTimeImmutable('today');
+        $today = $this->clock->now()->setTime(0, 0, 0);
 
         return (int) $this->createQueryBuilder('l')
             ->select('COUNT(l.id)')

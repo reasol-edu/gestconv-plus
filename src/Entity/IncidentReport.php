@@ -12,6 +12,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
+use function Symfony\Component\Clock\now;
+
 #[ORM\Entity(repositoryClass: IncidentReportRepository::class)]
 #[ORM\UniqueConstraint(name: 'uq_ir_year_number', columns: ['academic_year_id', 'number'])]
 #[ORM\Index(columns: ['occurred_at'], name: 'idx_incident_report_occurred')]
@@ -93,7 +95,7 @@ class IncidentReport
         $this->behaviors      = new ArrayCollection();
         $this->communications = new ArrayCollection();
         $this->observations   = new ArrayCollection();
-        $this->createdAt      = new \DateTimeImmutable();
+        $this->createdAt      = now();
     }
 
     public function getId(): Uuid

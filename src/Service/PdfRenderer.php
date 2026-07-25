@@ -7,6 +7,7 @@ namespace App\Service;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
 use Mpdf\WatermarkText;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -17,6 +18,7 @@ class PdfRenderer
     public function __construct(
         private readonly Environment $twig,
         private readonly TranslatorInterface $translator,
+        private readonly ClockInterface $clock,
     ) {}
 
     /**
@@ -40,7 +42,7 @@ class PdfRenderer
     ): Response {
         $context += [
             'pdfTitle'       => $title,
-            'pdfGeneratedAt' => new \DateTimeImmutable(),
+            'pdfGeneratedAt' => $this->clock->now(),
             'headerLeft'     => $header?->leftHtml,
             'headerRight'    => $header?->rightHtml,
         ];

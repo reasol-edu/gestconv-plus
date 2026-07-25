@@ -27,6 +27,7 @@ use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Tests\Integration\RepositoryTestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\RawMessage;
@@ -767,6 +768,7 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
             self::getContainer()->get(IncidentReportObservationRepository::class),
             self::getContainer()->get(SanctionObservationRepository::class),
             self::getContainer()->get(CommunicationRepository::class),
+            self::getContainer()->get(ClockInterface::class),
             'no-responder@ejemplo.local',
             'GestConv+',
         );

@@ -18,6 +18,7 @@ use App\Repository\LocationOptionRepository;
 use App\Repository\StudentRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -34,6 +35,7 @@ class IncidentReportFormHandler
         private readonly StudentRepository $students,
         private readonly GroupRepository $groups,
         private readonly TranslatorInterface $translator,
+        private readonly ClockInterface $clock,
     ) {}
 
     /**
@@ -77,7 +79,7 @@ class IncidentReportFormHandler
                 $errors['occurred_at'] = $this->t('incident.field.occurred_at') . ' inválida.';
             }
         } elseif ($forCreation) {
-            $occurredAt = new \DateTimeImmutable();
+            $occurredAt = $this->clock->now();
         }
 
         /** @var list<IncidentBehavior> $selectedBehaviors */

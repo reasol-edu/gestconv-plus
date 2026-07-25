@@ -7,6 +7,7 @@ namespace App\MessageHandler;
 use App\Message\PurgeEmailNotificationLogMessage;
 use App\Repository\EmailNotificationLogRepository;
 use App\Service\AppSettingsInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -15,6 +16,7 @@ final class PurgeEmailNotificationLogHandler
     public function __construct(
         private readonly EmailNotificationLogRepository $logs,
         private readonly AppSettingsInterface $settings,
+        private readonly ClockInterface $clock,
     ) {}
 
     public function __invoke(PurgeEmailNotificationLogMessage $message): void
@@ -24,7 +26,7 @@ final class PurgeEmailNotificationLogHandler
             return;
         }
 
-        $cutoff = new \DateTimeImmutable("-{$days} days");
+        $cutoff = $this->clock->now()->modify("-{$days} days");
         $this->logs->deleteOlderThan($cutoff);
     }
 }

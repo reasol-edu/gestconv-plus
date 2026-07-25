@@ -11,6 +11,7 @@ use App\Repository\TimeSlotRepository;
 use App\Service\TimeSlotExporter;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Uuid;
 
 class TimeSlotExporterTest extends TestCase
@@ -22,7 +23,7 @@ class TimeSlotExporterTest extends TestCase
     protected function setUp(): void
     {
         $this->repo     = $this->createStub(TimeSlotRepository::class);
-        $this->exporter = new TimeSlotExporter($this->repo);
+        $this->exporter = new TimeSlotExporter($this->repo, new MockClock());
 
         $centre     = (new EducationalCentre())->setName('IES Prueba');
         $this->year = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);

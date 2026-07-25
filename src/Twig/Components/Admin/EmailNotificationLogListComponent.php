@@ -11,6 +11,7 @@ use App\Repository\EmailNotificationLogRepository;
 use App\Service\AppSettings;
 use App\Twig\Components\PaginatedListTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveArg;
@@ -44,6 +45,7 @@ class EmailNotificationLogListComponent extends AbstractController
     public function __construct(
         private readonly EmailNotificationLogRepository $logs,
         private readonly AppSettings $appSettings,
+        private readonly ClockInterface $clock,
     ) {}
 
     public function mount(EducationalCentre $centre): void
@@ -78,7 +80,7 @@ class EmailNotificationLogListComponent extends AbstractController
     #[LiveAction]
     public function quickRange(#[LiveArg] string $range): void
     {
-        $now = new \DateTimeImmutable();
+        $now = $this->clock->now();
 
         [$from, $to] = match ($range) {
             'last_24h'   => [$now->modify('-24 hours'), $now],

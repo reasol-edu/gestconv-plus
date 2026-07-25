@@ -9,6 +9,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
+use function Symfony\Component\Clock\now;
+
 #[ORM\Entity(repositoryClass: SanctionObservationRepository::class)]
 class SanctionObservation implements ObservationInterface
 {
@@ -46,7 +48,7 @@ class SanctionObservation implements ObservationInterface
         $this->registeredBy = $registeredBy;
         $this->registeredAt = $registeredAt;
         $this->text         = $text;
-        $this->createdAt    = $createdAt ?? new \DateTimeImmutable();
+        $this->createdAt    = $createdAt ?? now();
     }
 
     public function getId(): Uuid

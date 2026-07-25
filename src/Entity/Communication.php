@@ -9,6 +9,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
+use function Symfony\Component\Clock\now;
+
 #[ORM\Entity(repositoryClass: CommunicationRepository::class)]
 class Communication
 {
@@ -48,7 +50,7 @@ class Communication
 
     private function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = now();
     }
 
     public static function forIncidentReport(

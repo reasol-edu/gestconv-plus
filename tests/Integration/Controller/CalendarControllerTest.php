@@ -943,13 +943,13 @@ class CalendarControllerTest extends ControllerTestCase
     }
 
     /**
-     * Returns a weekday (Mon–Fri) date within the current real-world month, so the
+     * Returns a weekday (Mon–Fri) date within the mocked "today" month, so the
      * default calendar view (which opens on today's month) always shows it regardless
      * of which day of the week the test suite happens to run on.
      */
     private function weekdayInCurrentMonth(): \DateTimeImmutable
     {
-        $today = new \DateTimeImmutable();
+        $today = Clock::get()->now();
         $date  = $today->setDate((int) $today->format('Y'), (int) $today->format('n'), 15)->setTime(0, 0, 0);
 
         return match ((int) $date->format('N')) {

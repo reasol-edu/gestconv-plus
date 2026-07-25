@@ -9,6 +9,7 @@ use App\Service\PasswordPolicy;
 use App\Service\ProfileMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +30,7 @@ class PasswordResetController extends AbstractController
         private readonly PasswordPolicy $passwordPolicy,
         #[Target('password_reset')]
         private readonly RateLimiterFactoryInterface $passwordResetLimiter,
+        private readonly ClockInterface $clock,
         #[Autowire(param: 'app.password_reset.request_min_duration_us')]
         private readonly int $requestMinDurationUs = self::REQUEST_MIN_DURATION_US,
     ) {}
@@ -76,7 +78,7 @@ class PasswordResetController extends AbstractController
             ) {
                 $token = bin2hex(random_bytes(32));
                 $teacher->setPasswordResetToken($token)
-                        ->setPasswordResetTokenExpiresAt(new \DateTimeImmutable('+1 hour'));
+                        ->setPasswordResetTokenExpiresAt($this->clock->now()->modify('+1 hour'));
                 $this->em->flush();
                 $this->mailer->sendPasswordReset($teacher, $token);
             }

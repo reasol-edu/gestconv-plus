@@ -7,6 +7,7 @@ namespace App\Service\Catalog;
 use App\Entity\Catalog\CatalogCategoryInterface;
 use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
+use Symfony\Component\Clock\ClockInterface;
 
 /**
  * Exportación a array de un catálogo administrable (IncidentBehavior, LocationOption,
@@ -14,6 +15,10 @@ use App\Entity\EducationalCentre;
  */
 abstract class AbstractCatalogExporter
 {
+    public function __construct(
+        protected readonly ClockInterface $clock,
+    ) {}
+
     /** Clave bajo la que se listan las entradas ('behaviors', 'options', 'measures', 'methods'). */
     abstract protected function itemsKey(): string;
 
@@ -53,7 +58,7 @@ abstract class AbstractCatalogExporter
     public function export(EducationalCentre $centre): array
     {
         $data = [
-            'exported_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            'exported_at' => $this->clock->now()->format(\DateTimeInterface::ATOM),
             'centre'      => $centre->getName(),
         ];
 

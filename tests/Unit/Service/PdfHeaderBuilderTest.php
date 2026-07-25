@@ -8,6 +8,7 @@ use App\Entity\EducationalCentre;
 use App\Service\AppSettingsInterface;
 use App\Service\PdfHeaderBuilder;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -197,6 +198,6 @@ class PdfHeaderBuilderTest extends TestCase
                 : $id,
         );
 
-        return new PdfHeaderBuilder($settings, $sanitizer, $translator);
+        return new PdfHeaderBuilder($settings, $sanitizer, $translator, new MockClock());
     }
 }

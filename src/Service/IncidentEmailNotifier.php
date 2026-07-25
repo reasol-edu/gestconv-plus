@@ -18,6 +18,7 @@ use App\Repository\SanctionObservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -50,6 +51,7 @@ final class IncidentEmailNotifier
         private readonly IncidentReportObservationRepository $observations,
         private readonly SanctionObservationRepository $sanctionObservations,
         private readonly CommunicationRepository $communications,
+        private readonly ClockInterface $clock,
         #[Autowire(env: 'MAILER_FROM')]
         private readonly string $fromAddress,
         #[Autowire('%app.name%')]
@@ -275,7 +277,7 @@ final class IncidentEmailNotifier
         }
 
         $centre = $this->centreForGroup($items[0]->getSanction()->getGroup());
-        $now    = new \DateTimeImmutable();
+        $now    = $this->clock->now();
 
         $rows = array_map(
             function (SanctionTask $task) use ($now): array {
@@ -551,7 +553,7 @@ final class IncidentEmailNotifier
             $subject,
             $success,
             $errorMessage,
-            new \DateTimeImmutable(),
+            $this->clock->now(),
         ));
         $this->em->flush();
     }

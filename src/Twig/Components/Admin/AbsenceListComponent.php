@@ -13,6 +13,7 @@ use App\Repository\TeacherRepository;
 use App\Service\AppSettings;
 use App\Twig\Components\PaginatedListTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -40,6 +41,7 @@ class AbsenceListComponent extends AbstractController
         private readonly AbsenceRepository $absences,
         private readonly TeacherRepository $teachers,
         private readonly AppSettings $appSettings,
+        private readonly ClockInterface $clock,
     ) {}
 
     public function mount(AcademicYear $year): void
@@ -74,7 +76,7 @@ class AbsenceListComponent extends AbstractController
     #[LiveAction]
     public function quickToday(): void
     {
-        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $today = $this->clock->now()->setTime(0, 0, 0)->format('Y-m-d');
 
         $this->dateFrom = $today;
         $this->dateTo   = $today;

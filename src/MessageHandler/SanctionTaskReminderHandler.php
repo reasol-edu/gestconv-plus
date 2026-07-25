@@ -11,6 +11,7 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Service\AppSettingsInterface;
 use App\Service\IncidentEmailNotifier;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -21,6 +22,7 @@ final class SanctionTaskReminderHandler
         private readonly SanctionTaskRepository $tasks,
         private readonly AppSettingsInterface $settings,
         private readonly IncidentEmailNotifier $notifier,
+        private readonly ClockInterface $clock,
     ) {}
 
     public function __invoke(SanctionTaskReminderMessage $message): void
@@ -31,7 +33,7 @@ final class SanctionTaskReminderHandler
                 continue;
             }
 
-            $from = new \DateTimeImmutable('today');
+            $from = $this->clock->now()->setTime(0, 0, 0);
             $to   = $from->modify("+{$reminderDays} days");
 
             /** @var array<string, Teacher> $teachersById */

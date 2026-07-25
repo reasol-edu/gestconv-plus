@@ -12,6 +12,7 @@ use App\Repository\IncidentBehaviorRepository;
 use App\Service\IncidentBehaviorExporter;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Uuid;
 
 class IncidentBehaviorExporterTest extends TestCase
@@ -26,7 +27,7 @@ class IncidentBehaviorExporterTest extends TestCase
         $this->categoryRepo = $this->createStub(IncidentBehaviorCategoryRepository::class);
         $this->behaviorRepo = $this->createStub(IncidentBehaviorRepository::class);
 
-        $this->exporter = new IncidentBehaviorExporter($this->categoryRepo, $this->behaviorRepo);
+        $this->exporter = new IncidentBehaviorExporter($this->categoryRepo, $this->behaviorRepo, new MockClock());
 
         $this->centre = (new EducationalCentre())->setName('IES Prueba');
         $this->setId($this->centre);

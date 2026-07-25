@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\EducationalCentre;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -23,6 +24,7 @@ final class PdfHeaderBuilder
         #[Autowire(service: 'html_sanitizer.sanitizer.app.rich_text')]
         private readonly HtmlSanitizerInterface $sanitizer,
         private readonly TranslatorInterface $translator,
+        private readonly ClockInterface $clock,
     ) {}
 
     /**
@@ -59,7 +61,7 @@ final class PdfHeaderBuilder
      */
     private function buildReplacements(EducationalCentre $centre, array $placeholders): array
     {
-        $now = new \DateTimeImmutable();
+        $now = $this->clock->now();
 
         $placeholders += [
             'city'                => $centre->getCity(),

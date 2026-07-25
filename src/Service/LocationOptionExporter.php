@@ -10,13 +10,17 @@ use App\Entity\LocationOptionCategory;
 use App\Repository\LocationOptionCategoryRepository;
 use App\Repository\LocationOptionRepository;
 use App\Service\Catalog\AbstractCatalogExporter;
+use Symfony\Component\Clock\ClockInterface;
 
 class LocationOptionExporter extends AbstractCatalogExporter
 {
     public function __construct(
         private readonly LocationOptionCategoryRepository $categories,
         private readonly LocationOptionRepository $options,
-    ) {}
+        ClockInterface $clock,
+    ) {
+        parent::__construct($clock);
+    }
 
     protected function itemsKey(): string
     {

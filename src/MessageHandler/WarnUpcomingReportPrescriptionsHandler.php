@@ -11,6 +11,7 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\IncidentReportRepository;
 use App\Service\AppSettingsInterface;
 use App\Service\IncidentEmailNotifier;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -21,6 +22,7 @@ final class WarnUpcomingReportPrescriptionsHandler
         private readonly IncidentReportRepository $reports,
         private readonly AppSettingsInterface $settings,
         private readonly IncidentEmailNotifier $notifier,
+        private readonly ClockInterface $clock,
     ) {}
 
     public function __invoke(WarnUpcomingReportPrescriptionsMessage $message): void
@@ -34,7 +36,7 @@ final class WarnUpcomingReportPrescriptionsHandler
             $notifierSetting = $this->settings->getForCentre('notifications.report_notifier', $centre);
             $notifierSetting = is_string($notifierSetting) ? $notifierSetting : 'both';
 
-            $now = new \DateTimeImmutable();
+            $now = $this->clock->now();
 
             /** @var array<string, Teacher> $teachersById */
             $teachersById = [];

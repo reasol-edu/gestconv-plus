@@ -19,6 +19,7 @@ use App\Service\AppSettingsInterface;
 use App\Service\PendingNotificationQueue;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -35,6 +36,7 @@ class DashboardController extends AbstractController
         private readonly TimeSlotRepository $timeSlotRepository,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
         private readonly AppSettingsInterface $settings,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('/', name: 'app_dashboard')]
@@ -92,7 +94,7 @@ class DashboardController extends AbstractController
         $canSanction     = $this->isGranted(SanctionVoter::CREATE, $centre);
         $hasGuardsAccess = $this->timeSlotRepository->hasGuardDutyInYear($centre, $viewer, $year);
 
-        $today      = new \DateTimeImmutable('today');
+        $today      = $this->clock->now()->setTime(0, 0, 0);
         $dow        = (int) $today->format('N'); // 1 = lunes … 7 = domingo
         $thisMonday = $today->modify('-' . ($dow - 1) . ' days')->setTime(0, 0, 0);
         $thisSunday = $thisMonday->modify('+6 days')->setTime(23, 59, 59);

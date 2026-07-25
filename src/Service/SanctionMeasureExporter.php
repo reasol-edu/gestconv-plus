@@ -12,13 +12,17 @@ use App\Entity\SanctionMeasureCategory;
 use App\Repository\SanctionMeasureCategoryRepository;
 use App\Repository\SanctionMeasureRepository;
 use App\Service\Catalog\AbstractCatalogExporter;
+use Symfony\Component\Clock\ClockInterface;
 
 class SanctionMeasureExporter extends AbstractCatalogExporter
 {
     public function __construct(
         private readonly SanctionMeasureCategoryRepository $categories,
         private readonly SanctionMeasureRepository $measures,
-    ) {}
+        ClockInterface $clock,
+    ) {
+        parent::__construct($clock);
+    }
 
     protected function itemsKey(): string
     {

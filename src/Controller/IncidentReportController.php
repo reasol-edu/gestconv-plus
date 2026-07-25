@@ -32,6 +32,7 @@ use App\Service\PdfRenderer;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -74,6 +75,7 @@ class IncidentReportController extends AbstractController
         private readonly AppSettingsInterface $settings,
         private readonly IncidentReportFormHandler $formHandler,
         private readonly ObservationFormHandler $observationHandler,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('', name: 'app_incidents_index')]
@@ -387,7 +389,7 @@ class IncidentReportController extends AbstractController
             return $this->redirectToRoute('app_incidents_show', ['id' => $id]);
         }
 
-        $observation = new IncidentReportObservation($report, $user, new \DateTimeImmutable(), $text);
+        $observation = new IncidentReportObservation($report, $user, $this->clock->now(), $text);
         $this->observationHandler->create($observation);
 
         $this->activityLog->log('incident_report_observation.created', [

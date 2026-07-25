@@ -10,6 +10,7 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Service\AppSettingsInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -22,11 +23,12 @@ final class PurgeSanctionTaskAttachmentsHandler
         private readonly AppSettingsInterface $settings,
         private readonly TranslatorInterface $translator,
         private readonly EntityManagerInterface $em,
+        private readonly ClockInterface $clock,
     ) {}
 
     public function __invoke(PurgeSanctionTaskAttachmentsMessage $message): void
     {
-        $now = new \DateTimeImmutable();
+        $now = $this->clock->now();
 
         foreach ($this->centres->findAll() as $centre) {
             $days = $this->settings->getForCentre('sanction_tasks.attachment_retention_days', $centre);
@@ -34,7 +36,7 @@ final class PurgeSanctionTaskAttachmentsHandler
                 continue;
             }
 
-            $cutoff = new \DateTimeImmutable("-{$days} days");
+            $cutoff = $now->modify("-{$days} days");
 
             foreach ($this->tasks->findWithAttachmentsOlderThan($centre, $cutoff) as $task) {
                 $notes = '';

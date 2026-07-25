@@ -11,13 +11,17 @@ use App\Entity\IncidentBehaviorCategory;
 use App\Repository\IncidentBehaviorCategoryRepository;
 use App\Repository\IncidentBehaviorRepository;
 use App\Service\Catalog\AbstractCatalogExporter;
+use Symfony\Component\Clock\ClockInterface;
 
 class IncidentBehaviorExporter extends AbstractCatalogExporter
 {
     public function __construct(
         private readonly IncidentBehaviorCategoryRepository $categories,
         private readonly IncidentBehaviorRepository $behaviors,
-    ) {}
+        ClockInterface $clock,
+    ) {
+        parent::__construct($clock);
+    }
 
     protected function itemsKey(): string
     {

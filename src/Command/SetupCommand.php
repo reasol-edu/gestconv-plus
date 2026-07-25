@@ -9,6 +9,7 @@ use App\Entity\Teacher;
 use App\Repository\TeacherRepository;
 use App\Service\CentreProvisioner;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,6 +28,7 @@ class SetupCommand extends Command
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly TranslatorInterface $translator,
         private readonly CentreProvisioner $centreProvisioner,
+        private readonly ClockInterface $clock,
     ) {
         parent::__construct();
     }
@@ -63,7 +65,7 @@ class SetupCommand extends Command
         $demoData = (bool) $input->getOption('demo-data');
 
         if ($demoData) {
-            $year     = (int) (new \DateTimeImmutable())->format('Y');
+            $year     = (int) $this->clock->now()->format('Y');
             $yearName = $year . '-' . ($year + 1);
 
             $this->centreProvisioner->provision('23999999', 'IES Test', 'Linares', $yearName);

@@ -18,6 +18,7 @@ use App\Service\StudentContactVisibility;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -45,6 +46,7 @@ class StudentController extends AbstractController
         private readonly EntityChangeTracker $changeTracker,
         private readonly ActivityLogService $activityLog,
         private readonly TranslatorInterface $translator,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('/{id}', name: 'app_students_show', methods: ['GET'])]
@@ -85,7 +87,7 @@ class StudentController extends AbstractController
             }
         }
 
-        $today           = new \DateTimeImmutable('today');
+        $today           = $this->clock->now()->setTime(0, 0, 0);
         $activeSanctions = 0;
         foreach ($sanctions as $sanction) {
             if ($sanction->isNotified()

@@ -10,6 +10,7 @@ use App\Repository\CommunicationMethodRepository;
 use App\Service\CommunicationMethodExporter;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Uuid;
 
 class CommunicationMethodExporterTest extends TestCase
@@ -22,7 +23,7 @@ class CommunicationMethodExporterTest extends TestCase
     {
         $this->methodRepo = $this->createStub(CommunicationMethodRepository::class);
 
-        $this->exporter = new CommunicationMethodExporter($this->methodRepo);
+        $this->exporter = new CommunicationMethodExporter($this->methodRepo, new MockClock());
 
         $this->centre = (new EducationalCentre())->setName('IES Prueba');
         $this->setId($this->centre);

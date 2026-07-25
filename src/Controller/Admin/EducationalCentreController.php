@@ -21,6 +21,7 @@ use App\Service\SanctionMeasureSeeder;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,6 +51,7 @@ class EducationalCentreController extends AbstractController
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
         private readonly TenantContext $tenantContext,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('', name: 'app_admin_centres_index')]
@@ -87,7 +89,7 @@ class EducationalCentreController extends AbstractController
                     ->setName($values['name'])
                     ->setCity($values['city']);
 
-                $year = (int) (new \DateTimeImmutable())->format('Y');
+                $year = (int) $this->clock->now()->format('Y');
                 $academicYear = (new AcademicYear())
                     ->setName($year . '-' . ($year + 1))
                     ->setEducationalCentre($centre);

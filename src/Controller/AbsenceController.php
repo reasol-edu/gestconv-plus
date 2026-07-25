@@ -24,6 +24,7 @@ use App\Service\NonWorkingDayChecker;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,6 +72,7 @@ class AbsenceController extends AbstractController
         private readonly ActivityLogService $activityLog,
         private readonly AttachmentDownloadResponder $downloadResponder,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('', name: 'app_absences_index')]
@@ -130,7 +132,7 @@ class AbsenceController extends AbstractController
 
         $isAdmin = $user->isAdmin() || $centre->getAdmins()->contains($user);
 
-        $today            = (new \DateTimeImmutable())->format('Y-m-d');
+        $today            = $this->clock->now()->format('Y-m-d');
         $errors           = [];
         $formData         = ['start_date' => $today, 'end_date' => $today, 'teacher_id' => $isAdmin ? '' : $user->getId()->toRfc4122()];
         $selectedTeacher  = null;

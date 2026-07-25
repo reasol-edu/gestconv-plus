@@ -11,6 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
+use function Symfony\Component\Clock\now;
 
 #[ORM\Entity(repositoryClass: SanctionRepository::class)]
 class Sanction
@@ -97,7 +98,7 @@ class Sanction
 
     public function __construct()
     {
-        $this->createdAt      = new \DateTimeImmutable();
+        $this->createdAt      = now();
         $this->reports        = new ArrayCollection();
         $this->measures       = new ArrayCollection();
         $this->communications = new ArrayCollection();

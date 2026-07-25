@@ -6,6 +6,7 @@ namespace App\Security\Voter;
 
 use App\Entity\IncidentReportObservation;
 use App\Entity\Teacher;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -18,6 +19,10 @@ final class IncidentReportObservationVoter extends Voter
     public const EDIT      = 'incident_report_observation.edit';
     public const EDIT_DATE = 'incident_report_observation.edit_date';
     public const DELETE    = 'incident_report_observation.delete';
+
+    public function __construct(
+        private readonly ClockInterface $clock,
+    ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -54,6 +59,6 @@ final class IncidentReportObservationVoter extends Voter
 
         $editableUntil = $subject->getCreatedAt()->add(new \DateInterval('PT1H'));
 
-        return new \DateTimeImmutable() < $editableUntil;
+        return $this->clock->now() < $editableUntil;
     }
 }

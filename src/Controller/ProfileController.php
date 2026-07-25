@@ -11,6 +11,7 @@ use App\Service\PasswordPolicy;
 use App\Service\ProfileMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -31,6 +32,7 @@ class ProfileController extends AbstractController
         private readonly ProfileMailer $profileMailer,
         private readonly PasswordPolicy $passwordPolicy,
         private readonly TeacherRepository $teachers,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('', name: 'app_profile')]
@@ -111,7 +113,7 @@ class ProfileController extends AbstractController
                     $teacher
                         ->setPendingEmail($newEmail)
                         ->setEmailVerificationToken($token)
-                        ->setEmailVerificationTokenExpiresAt(new \DateTimeImmutable('+24 hours'));
+                        ->setEmailVerificationTokenExpiresAt($this->clock->now()->modify('+24 hours'));
                     $this->em->flush();
                     $this->profileMailer->sendEmailVerification($teacher, $newEmail, $token);
                     $this->addFlash('success', $this->t('profile.flash.email_verification_sent'));

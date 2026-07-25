@@ -12,6 +12,7 @@ use App\Repository\LocationOptionRepository;
 use App\Service\LocationOptionExporter;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Uuid;
 
 class LocationOptionExporterTest extends TestCase
@@ -26,7 +27,7 @@ class LocationOptionExporterTest extends TestCase
         $this->categoryRepo = $this->createStub(LocationOptionCategoryRepository::class);
         $this->optionRepo   = $this->createStub(LocationOptionRepository::class);
 
-        $this->exporter = new LocationOptionExporter($this->categoryRepo, $this->optionRepo);
+        $this->exporter = new LocationOptionExporter($this->categoryRepo, $this->optionRepo, new MockClock());
 
         $this->centre = (new EducationalCentre())->setName('IES Prueba');
         $this->setId($this->centre);

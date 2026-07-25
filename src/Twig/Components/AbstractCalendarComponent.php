@@ -8,6 +8,7 @@ use App\Entity\EducationalCentre;
 use App\Service\NonWorkingDayChecker;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -33,11 +34,12 @@ abstract class AbstractCalendarComponent extends AbstractController
         private readonly TenantContext $tenantContext,
         private readonly TranslatorInterface $translator,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
+        private readonly ClockInterface $clock,
     ) {}
 
     public function mount(): void
     {
-        $today = new \DateTimeImmutable();
+        $today = $this->clock->now();
         if ($this->year < 2000 || $this->year > 2100) {
             $this->year = (int) $today->format('Y');
         }
@@ -49,7 +51,7 @@ abstract class AbstractCalendarComponent extends AbstractController
     #[LiveAction]
     public function previousMonth(): void
     {
-        $d = (new \DateTimeImmutable())->setDate($this->year, $this->month, 1)->modify('-1 month');
+        $d = $this->clock->now()->setDate($this->year, $this->month, 1)->modify('-1 month');
         $this->year  = (int) $d->format('Y');
         $this->month = (int) $d->format('n');
     }
@@ -57,7 +59,7 @@ abstract class AbstractCalendarComponent extends AbstractController
     #[LiveAction]
     public function nextMonth(): void
     {
-        $d = (new \DateTimeImmutable())->setDate($this->year, $this->month, 1)->modify('+1 month');
+        $d = $this->clock->now()->setDate($this->year, $this->month, 1)->modify('+1 month');
         $this->year  = (int) $d->format('Y');
         $this->month = (int) $d->format('n');
     }
@@ -65,7 +67,7 @@ abstract class AbstractCalendarComponent extends AbstractController
     #[LiveAction]
     public function goToday(): void
     {
-        $today       = new \DateTimeImmutable();
+        $today       = $this->clock->now();
         $this->year  = (int) $today->format('Y');
         $this->month = (int) $today->format('n');
     }
@@ -82,7 +84,7 @@ abstract class AbstractCalendarComponent extends AbstractController
 
     public function isToday(\DateTimeImmutable $day): bool
     {
-        return $day->format('Y-m-d') === (new \DateTimeImmutable())->format('Y-m-d');
+        return $day->format('Y-m-d') === $this->clock->now()->format('Y-m-d');
     }
 
     public function isCurrentMonth(\DateTimeImmutable $day): bool

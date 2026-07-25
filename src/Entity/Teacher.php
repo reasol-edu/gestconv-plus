@@ -13,6 +13,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
+use function Symfony\Component\Clock\now;
+
 #[ORM\Entity(repositoryClass: TeacherRepository::class)]
 class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -245,7 +247,7 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
     public function isEmailVerificationTokenExpired(): bool
     {
         return $this->emailVerificationTokenExpiresAt === null
-            || $this->emailVerificationTokenExpiresAt < new \DateTimeImmutable();
+            || $this->emailVerificationTokenExpiresAt < now();
     }
 
     public function getPasswordResetToken(): ?string
@@ -275,7 +277,7 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
     public function isPasswordResetTokenExpired(): bool
     {
         return $this->passwordResetTokenExpiresAt === null
-            || $this->passwordResetTokenExpiresAt < new \DateTimeImmutable();
+            || $this->passwordResetTokenExpiresAt < now();
     }
 
     /** @return Collection<int, AcademicYear> */
