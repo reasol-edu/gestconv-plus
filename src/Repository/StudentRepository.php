@@ -157,6 +157,30 @@ class StudentRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param list<string> $studentIds
+     * @return array<string, Student> Keyed by studentId
+     */
+    public function findByStudentIds(array $studentIds): array
+    {
+        if ($studentIds === []) {
+            return [];
+        }
+
+        $students = $this->createQueryBuilder('s')
+            ->where('s.studentId IN (:studentIds)')
+            ->setParameter('studentIds', $studentIds)
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($students as $student) {
+            $map[$student->getStudentId()] = $student;
+        }
+
+        return $map;
+    }
+
+    /**
      * A student with no groups yet has no centre affiliation to check against
      * (e.g. just imported, not yet assigned) and is treated as belonging to
      * whichever centre is asking. Otherwise, at least one of its groups must

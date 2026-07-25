@@ -340,7 +340,8 @@ class StudentController extends AbstractController
             $groupsByName  = $this->buildGroupsByName($centre);
             $coursesByName = $this->buildCoursesByName($centre);
             $rows          = $this->csvReader->parse($content)['rows'];
-            $result        = $this->processCsvImport($rows, $groupsByName, $coursesByName, dryRun: false, allowedGroupIds: $allowedGroupIds);
+            $studentsById  = $this->buildStudentsByStudentId($rows);
+            $result        = $this->processCsvImport($rows, $groupsByName, $coursesByName, $studentsById, dryRun: false, allowedGroupIds: $allowedGroupIds);
             $this->em->flush();
 
             $this->activityLog->log('student.imported', [
@@ -382,7 +383,8 @@ class StudentController extends AbstractController
 
         $groupsByName  = $this->buildGroupsByName($centre);
         $coursesByName = $this->buildCoursesByName($centre);
-        $result        = $this->processCsvImport($parsed['rows'], $groupsByName, $coursesByName, dryRun: true);
+        $studentsById  = $this->buildStudentsByStudentId($parsed['rows']);
+        $result        = $this->processCsvImport($parsed['rows'], $groupsByName, $coursesByName, $studentsById, dryRun: true);
 
         $importId = Uuid::v4()->toRfc4122();
         $dir      = dirname($this->getTempImportPath($importId));
@@ -411,8 +413,9 @@ class StudentController extends AbstractController
 
     /**
      * @param list<array<string, string>> $rows
-     * @param array<string, Group>        $groupsByName  Keyed by mb_strtolower(name)
-     * @param array<string, Course>       $coursesByName Keyed by mb_strtolower(name)
+     * @param array<string, Group>        $groupsByName    Keyed by mb_strtolower(name)
+     * @param array<string, Course>       $coursesByName   Keyed by mb_strtolower(name)
+     * @param array<string, Student>      $studentsById    Keyed by studentId, see {@see buildStudentsByStudentId()}
      * @param list<string>|null           $allowedGroupIds RFC4122 UUIDs; null = all (dry-run)
      * @return array{
      *   created: int,
@@ -427,6 +430,7 @@ class StudentController extends AbstractController
         array $rows,
         array $groupsByName,
         array $coursesByName,
+        array $studentsById,
         bool $dryRun,
         ?array $allowedGroupIds = null,
     ): array {
@@ -537,7 +541,7 @@ class StudentController extends AbstractController
                 }
             }
 
-            $existing = $this->students->findByStudentId($studentId);
+            $existing = $studentsById[$studentId] ?? null;
             $isNew    = $existing === null;
 
             if (!$dryRun) {
@@ -545,6 +549,7 @@ class StudentController extends AbstractController
                     $student = new Student(new PersonName($firstName, $lastName));
                     $student->setStudentId($studentId);
                     $this->em->persist($student);
+                    $studentsById[$studentId] = $student;
                     $created++;
                 } else {
                     $existing->setName(new PersonName($firstName, $lastName));
@@ -639,6 +644,23 @@ class StudentController extends AbstractController
         }
 
         return $map;
+    }
+
+    /**
+     * @param list<array<string, string>> $rows
+     * @return array<string, Student> Keyed by studentId
+     */
+    private function buildStudentsByStudentId(array $rows): array
+    {
+        $studentIds = [];
+        foreach ($rows as $row) {
+            $studentId = $row['Nº Id. Escolar'] ?? '';
+            if ($studentId !== '') {
+                $studentIds[] = $studentId;
+            }
+        }
+
+        return $this->students->findByStudentIds(array_values(array_unique($studentIds)));
     }
 
     /** @return array<string, Course> */

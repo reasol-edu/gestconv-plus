@@ -20,6 +20,9 @@ class NotificationBellComponent extends AbstractController
 
     public const MAX_ITEMS = 8;
 
+    /** @var list<array{type: 'report'|'sanction', entity: IncidentReport|Sanction, date: \DateTimeImmutable}>|null */
+    private ?array $items = null;
+
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
@@ -28,15 +31,19 @@ class NotificationBellComponent extends AbstractController
     /** @return list<array{type: 'report'|'sanction', entity: IncidentReport|Sanction, date: \DateTimeImmutable}> */
     public function getItems(): array
     {
+        if ($this->items !== null) {
+            return $this->items;
+        }
+
         $centre = $this->tenantContext->getSelectedCentre();
         $user   = $this->getUser();
         if ($centre === null || !$user instanceof Teacher) {
-            return [];
+            return $this->items = [];
         }
 
         $year = $this->tenantContext->getViewYear($centre);
         if ($year === null) {
-            return [];
+            return $this->items = [];
         }
 
         $queue = $this->pendingNotificationQueue->forViewer($centre, $user, $year);
@@ -51,7 +58,7 @@ class NotificationBellComponent extends AbstractController
 
         usort($items, static fn (array $a, array $b): int => $a['date'] <=> $b['date']);
 
-        return $items;
+        return $this->items = $items;
     }
 
     public function getTotal(): int

@@ -286,9 +286,10 @@ class IncidentReportController extends AbstractController
             50,
         );
 
+        $reportsById    = $this->reports->findByIds($ids);
         $createdReports = [];
         foreach ($ids as $id) {
-            $report = $this->reports->findById($id);
+            $report = $reportsById[$id] ?? null;
             if ($report !== null && $this->isGranted(IncidentReportVoter::VIEW, $report)) {
                 $createdReports[] = $report;
             }

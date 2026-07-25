@@ -41,7 +41,7 @@ class Sanction
     private \DateTimeImmutable $createdAt;
 
     /** @var Collection<int, IncidentReport> */
-    #[ORM\OneToMany(targetEntity: IncidentReport::class, mappedBy: 'sanction')]
+    #[ORM\OneToMany(targetEntity: IncidentReport::class, mappedBy: 'sanction', fetch: 'EXTRA_LAZY')]
     private Collection $reports;
 
     /** @var Collection<int, SanctionMeasure> */

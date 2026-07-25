@@ -77,6 +77,47 @@ class SanctionTaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns every task of each given sanction, keyed by sanction UUID (RFC4122), ordered like
+     * {@see findBySanction()}. Single query; avoids N+1 per row on the guards board.
+     *
+     * @param  Sanction[] $sanctions
+     * @return array<string, list<SanctionTask>>
+     */
+    public function findBySanctions(array $sanctions): array
+    {
+        if ($sanctions === []) {
+            return [];
+        }
+
+        $qb           = $this->createQueryBuilder('t')
+            ->addSelect('s', 'gt', 'te');
+        $placeholders = [];
+        foreach ($sanctions as $i => $sanction) {
+            $placeholders[] = ":sanction{$i}";
+            $qb->setParameter("sanction{$i}", $sanction->getId(), 'uuid');
+        }
+
+        /** @var list<SanctionTask> $result */
+        $result = $qb
+            ->join('t.sanction', 's')
+            ->join('t.groupTeacher', 'gt')
+            ->join('gt.teacher', 'te')
+            ->where('IDENTITY(t.sanction) IN (' . implode(', ', $placeholders) . ')')
+            ->orderBy('gt.subject', 'ASC')
+            ->addOrderBy('te.name.lastName', 'ASC')
+            ->addOrderBy('te.name.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($result as $task) {
+            $map[$task->getSanction()->getId()->toRfc4122()][] = $task;
+        }
+
+        return $map;
+    }
+
+    /**
      * Returns the teacher's own tasks (own subjects) for the given centre/year, pending tasks
      * first, then completed/not-applicable ones.
      *

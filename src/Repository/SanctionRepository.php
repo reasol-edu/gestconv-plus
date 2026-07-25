@@ -209,6 +209,37 @@ class SanctionRepository extends ServiceEntityRepository
             return ['rows' => [], 'total' => 0];
         }
 
+        $whereClause = '
+            WHERE ay = :activeYear
+            AND EXISTS (
+                SELECT r0.id FROM App\Entity\IncidentReport r0
+                WHERE r0.student = s AND r0.group = g
+                AND r0.prescribedAt IS NULL AND r0.sanction IS NULL
+                AND r0.notifiedCommunication IS NOT NULL
+            )
+        ';
+        if ($search !== '') {
+            $whereClause .= ' AND (LOWER(s.name.firstName) LIKE LOWER(:search)
+                           OR LOWER(s.name.lastName) LIKE LOWER(:search)
+                           OR LOWER(g.name) LIKE LOWER(:search))';
+        }
+
+        // Two-query approach (count + page) so the SQL server sorts/paginates instead of loading
+        // every matching (student, group) row into PHP just to usort()/array_slice() 20 of them.
+        $countQuery = $this->getEntityManager()
+            ->createQuery('
+                SELECT COUNT(s.id)
+                FROM App\Entity\Student s
+                JOIN s.groups g
+                JOIN g.course c
+                JOIN c.academicYear ay
+                ' . $whereClause)
+            ->setParameter('activeYear', $activeYear->getId(), 'uuid');
+        if ($search !== '') {
+            $countQuery->setParameter('search', '%' . $search . '%');
+        }
+        $total = (int) $countQuery->getSingleScalarResult();
+
         $dql = '
             SELECT
                 s.id AS studentId,
@@ -235,25 +266,16 @@ class SanctionRepository extends ServiceEntityRepository
             JOIN s.groups g
             JOIN g.course c
             JOIN c.academicYear ay
-            WHERE ay = :activeYear
-            AND EXISTS (
-                SELECT r0.id FROM App\Entity\IncidentReport r0
-                WHERE r0.student = s AND r0.group = g
-                AND r0.prescribedAt IS NULL AND r0.sanction IS NULL
-                AND r0.notifiedCommunication IS NOT NULL
-            )
+            ' . $whereClause . '
+            ORDER BY sanctionableCount DESC, s.name.lastName ASC, s.name.firstName ASC
         ';
-
-        if ($search !== '') {
-            $dql .= ' AND (LOWER(s.name.firstName) LIKE LOWER(:search)
-                           OR LOWER(s.name.lastName) LIKE LOWER(:search)
-                           OR LOWER(g.name) LIKE LOWER(:search))';
-        }
 
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('activeYear', $activeYear->getId(), 'uuid')
-            ->setParameter('serious', true);
+            ->setParameter('serious', true)
+            ->setFirstResult(max(0, ($page - 1) * $perPage))
+            ->setMaxResults($perPage);
 
         if ($search !== '') {
             $query->setParameter('search', '%' . $search . '%');
@@ -261,27 +283,6 @@ class SanctionRepository extends ServiceEntityRepository
 
         /** @var list<array<string, mixed>> $raw */
         $raw = $query->getArrayResult();
-
-        usort($raw, static function (array $a, array $b): int {
-            $aSanc = $a['sanctionableCount'];
-            $bSanc = $b['sanctionableCount'];
-            $diff  = (is_scalar($bSanc) ? intval($bSanc) : 0) - (is_scalar($aSanc) ? intval($aSanc) : 0);
-            if ($diff !== 0) {
-                return $diff;
-            }
-            $aLast = $a['lastName'];
-            $bLast = $b['lastName'];
-            $lc    = strcmp(is_string($aLast) ? $aLast : '', is_string($bLast) ? $bLast : '');
-            if ($lc !== 0) {
-                return $lc;
-            }
-            $aFirst = $a['firstName'];
-            $bFirst = $b['firstName'];
-            return strcmp(is_string($aFirst) ? $aFirst : '', is_string($bFirst) ? $bFirst : '');
-        });
-
-        $total  = count($raw);
-        $offset = max(0, ($page - 1) * $perPage);
 
         /** @var list<array{studentId: string, firstName: string, lastName: string, groupId: string, groupName: string, sanctionableCount: int, seriousCount: int, prescribedCount: int}> $rows */
         $rows = array_map(
@@ -306,7 +307,7 @@ class SanctionRepository extends ServiceEntityRepository
                     'prescribedCount'   => is_scalar($prescribed) ? intval($prescribed) : 0,
                 ];
             },
-            array_slice($raw, $offset, $perPage),
+            $raw,
         );
 
         return ['rows' => $rows, 'total' => $total];
@@ -340,11 +341,14 @@ class SanctionRepository extends ServiceEntityRepository
     private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer, AcademicYear $year): QueryBuilder
     {
         $qb = $this->createQueryBuilder('s')
-            ->addSelect('st', 'g')
+            ->addSelect('st', 'g', 't', 'rep', 'rrb')
             ->join('s.student', 'st')
             ->join('s.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
+            ->leftJoin('g.tutors', 't')
+            ->leftJoin('s.reports', 'rep')
+            ->leftJoin('rep.registeredBy', 'rrb')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('s.notifiedCommunication IS NULL')
@@ -357,10 +361,9 @@ class SanctionRepository extends ServiceEntityRepository
             || $centre->getCounselors()->contains($viewer);
         if (!$viewer->isAdmin() && !$hasFullAccess) {
             $qb->distinct()
-               ->join('s.reports', 'r')
                ->andWhere(
                    $qb->expr()->orX(
-                       'r.registeredBy = :viewer',
+                       'rep.registeredBy = :viewer',
                        ':viewer MEMBER OF g.tutors',
                    )
                )

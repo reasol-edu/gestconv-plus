@@ -98,8 +98,10 @@ class GuardsController extends AbstractController
 
         /** @var array<string, list<array{sanction: \App\Entity\Sanction, tasks: list<\App\Entity\SanctionTask>, hasAttachments: bool}>> $sanctionsByGroup */
         $sanctionsByGroup = [];
-        foreach ($this->sanctions->findActiveOn($year, $date) as $sanction) {
-            $tasks          = $this->tasks->findBySanction($sanction);
+        $activeSanctions  = $this->sanctions->findActiveOn($year, $date);
+        $tasksBySanction  = $this->tasks->findBySanctions($activeSanctions);
+        foreach ($activeSanctions as $sanction) {
+            $tasks          = $tasksBySanction[$sanction->getId()->toRfc4122()] ?? [];
             $hasAttachments = false;
             foreach ($tasks as $task) {
                 if (!$task->getAttachments()->isEmpty()) {

@@ -388,11 +388,12 @@ class IncidentReportRepository extends ServiceEntityRepository
     private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer, AcademicYear $year): QueryBuilder
     {
         $qb = $this->createQueryBuilder('r')
-            ->addSelect('s', 'g')
+            ->addSelect('s', 'g', 't')
             ->join('r.student', 's')
             ->join('r.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
+            ->leftJoin('g.tutors', 't')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('r.notifiedCommunication IS NULL')
@@ -552,6 +553,44 @@ class IncidentReportRepository extends ServiceEntityRepository
     }
 
     /**
+     * Batch lookup for the "recently created" confirmation screen, which navigates here with up
+     * to 50 report ids in the query string. Single query; avoids N+1 per id.
+     *
+     * @param  list<string> $ids
+     * @return array<string, IncidentReport> Keyed by id (RFC4122)
+     */
+    public function findByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $qb           = $this->createQueryBuilder('r')
+            ->addSelect('s', 'g', 't');
+        $placeholders = [];
+        foreach ($ids as $i => $id) {
+            $placeholders[] = ":id{$i}";
+            $qb->setParameter("id{$i}", $id, 'uuid');
+        }
+
+        /** @var list<IncidentReport> $result */
+        $result = $qb
+            ->join('r.student', 's')
+            ->join('r.group', 'g')
+            ->leftJoin('g.tutors', 't')
+            ->where('r.id IN (' . implode(', ', $placeholders) . ')')
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($result as $report) {
+            $map[$report->getId()->toRfc4122()] = $report;
+        }
+
+        return $map;
+    }
+
+    /**
      * Reports of the given centre that are still un-notified, not already prescribed, and whose
      * incident occurred at or before the cutoff — candidates for automatic prescription.
      *
@@ -561,9 +600,13 @@ class IncidentReportRepository extends ServiceEntityRepository
     {
         /** @var list<IncidentReport> $result */
         $result = $this->createQueryBuilder('r')
+            ->addSelect('s', 'g', 't', 'rb')
+            ->join('r.student', 's')
+            ->join('r.registeredBy', 'rb')
             ->join('r.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
+            ->leftJoin('g.tutors', 't')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('r.notifiedCommunication IS NULL')
             ->andWhere('r.prescribedAt IS NULL')
@@ -624,10 +667,13 @@ class IncidentReportRepository extends ServiceEntityRepository
     {
         /** @var list<IncidentReport> $result */
         $result = $this->createQueryBuilder('r')
-            ->addSelect('g')
+            ->addSelect('s', 'g', 't', 'rb')
+            ->join('r.student', 's')
+            ->join('r.registeredBy', 'rb')
             ->join('r.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
+            ->leftJoin('g.tutors', 't')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('r.notifiedCommunication IS NULL')
             ->andWhere('r.prescribedAt IS NULL')
