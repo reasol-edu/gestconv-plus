@@ -13,19 +13,15 @@
   <a href="https://reasol-edu.github.io/gestconv-plus/">Documentación</a> &nbsp;·&nbsp;
   <a href="CHANGELOG.md">Cambios</a> &nbsp;·&nbsp;
   <a href="CONTRIBUTING.md">Contribuir</a> &nbsp;·&nbsp;
+  <a href="SECURITY.md">Seguridad</a> &nbsp;·&nbsp;
   <a href="http://www.gnu.org/licenses/agpl.html">AGPL-3.0</a>
 </p>
 
 <p align="center">
+  <a href="https://github.com/reasol-edu/gestconv-plus/actions/workflows/tests.yml"><img src="https://github.com/reasol-edu/gestconv-plus/actions/workflows/tests.yml/badge.svg" alt="Estado de los tests"></a>
   <img src="https://img.shields.io/badge/licencia-AGPL--3.0-blue" alt="Licencia AGPL-3.0">
   <img src="https://img.shields.io/badge/PHP-8.4+-777bb4" alt="PHP 8.4+">
   <img src="https://img.shields.io/badge/Symfony-8-black" alt="Symfony 8">
-</p>
-
----
-
-<p align="center">
-  <img src="docs/manual/img/inicio.png" alt="Panel de inicio de GestConv+ con las métricas del curso actual" width="800">
 </p>
 
 ---
@@ -43,8 +39,18 @@ Es **multi-centro**: un mismo servidor puede alojar varios centros educativos co
 separados. Cada docente accede únicamente a los datos del centro que tiene asignado, y los
 administradores globales pueden gestionar todos los centros desde la sección **Administración**.
 
-Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para la guía de contribución y [CHANGELOG.md](CHANGELOG.md)
-para el historial de cambios.
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para la guía de contribución, [CHANGELOG.md](CHANGELOG.md)
+para el historial de cambios y [SECURITY.md](SECURITY.md) para reportar vulnerabilidades.
+
+### Stack tecnológico
+
+- **Backend**: [Symfony] 8 / PHP 8.4+, Doctrine ORM (PostgreSQL, MySQL/MariaDB o SQLite), Symfony
+  Messenger para tareas asíncronas.
+- **Frontend**: Symfony UX (Live Components, Autocomplete, Icons) y Tailwind CSS, sin build de
+  JavaScript aparte del Asset Mapper nativo de Symfony.
+- **PDF**: mPDF, con maquetación propia para partes, sanciones y documentación oficial.
+- **Despliegue**: [FrankenPHP](https://frankenphp.dev) (servidor de aplicaciones embebido) vía Docker
+  o binario nativo autocontenido.
 
 ---
 
@@ -57,6 +63,10 @@ sistema (Windows, Mac o Linux), descomprímelo y haz doble clic en el script de 
 (`demo.bat` en Windows, `demo.command` en Mac, `demo.sh` en Linux). En unos segundos tendrás la
 aplicación funcionando con datos de ejemplo: abre tu navegador en **<http://localhost:8080>** y entra
 con el usuario `admin` y la contraseña `admin`.
+
+<p align="center">
+  <img src="docs/manual/img/inicio.png" alt="Panel de inicio de GestConv+ con las métricas del curso actual" width="800">
+</p>
 
 ---
 
@@ -208,7 +218,11 @@ La web requiere **MkDocs Material** (`pip install -r docs/manual/requirements.tx
 
 ## Licencia
 
-Esta aplicación se ofrece bajo licencia [AGPL versión 3].
+Esta aplicación se ofrece bajo licencia [AGPL versión 3] — consulta el fichero [`LICENSE`](LICENSE) para
+el texto completo.
+
+Forma parte del proyecto de innovación educativa REASOL (PIN-219/23 y PIN-354/24), financiado
+por la Consejería de Desarrollo Educativo y Formación Profesional de la Junta de Andalucía.
 
 [Symfony]: http://symfony.com/
 [Marp]: https://marp.app
