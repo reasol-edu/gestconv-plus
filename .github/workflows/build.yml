@@ -295,6 +295,11 @@ jobs:
             gestconv-plus-presentacion-*.pdf
             gestconv-plus-ficha-*.pdf
             gestconv-plus-manual-web-*.zip
+          # body: "" fuerza a que se considere "especificado": si se omite, al
+          # re-publicar un tag ya existente la acción retiene el body anterior
+          # (que ya incluye el "Full Changelog" del run previo) y lo antepone
+          # a las notas recién generadas, acumulándolo en cada rerelease.
+          body: ""
           generate_release_notes: true
 
 # ── Job 5: publicar la web en GitHub Pages (solo última versión estable) ─────
