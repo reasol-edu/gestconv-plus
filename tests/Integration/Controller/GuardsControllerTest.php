@@ -24,11 +24,23 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Entity\TimeSlot;
 use App\Tests\Integration\ControllerTestCase;
+use Symfony\Component\Clock\Clock;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class GuardsControllerTest extends ControllerTestCase
 {
+    use ClockSensitiveTrait;
+
+    protected function setUp(): void
+    {
+        // Miércoles fijo: evita que los tests dependan del día real de
+        // ejecución (fines de semana ocultan los tramos horarios).
+        self::mockTime('2024-01-10');
+        parent::setUp();
+    }
+
     // ── acceso ───────────────────────────────────────────────────────────────
 
     public function testTeacherWithoutGuardDutyAndNotAdminIsForbidden(): void
@@ -127,7 +139,7 @@ class GuardsControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString($this->trans('guards.today_prefix', 'admin'), $crawler->html());
 
-        $otherDate = (new \DateTimeImmutable('today'))->modify('+5 days')->format('Y-m-d');
+        $otherDate = (self::today())->modify('+5 days')->format('Y-m-d');
         $crawler   = $this->client->request('GET', '/guardias?date=' . $otherDate);
         self::assertResponseIsSuccessful();
         self::assertStringNotContainsString($this->trans('guards.today_prefix', 'admin'), $crawler->html());
@@ -181,7 +193,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world     = $this->makeWorld('wiring');
         $todayDow  = self::todayDayOfWeek();
-        $otherDate = (new \DateTimeImmutable('today'))->modify('+5 days');
+        $otherDate = (self::today())->modify('+5 days');
         $this->persist(
             $this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55'),
             // Necesitamos un tramo ese otro día para poder comprobar la ausencia del cableado.
@@ -300,7 +312,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world    = $this->makeWorld('activity');
         $todayDow = self::todayDayOfWeek();
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $slot     = $this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55');
         $this->persist($slot);
 
@@ -328,7 +340,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world    = $this->makeWorld('noactivity');
         $todayDow = self::todayDayOfWeek();
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $slot     = $this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55');
         $this->persist($slot);
 
@@ -369,7 +381,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world = $this->makeWorld('nonworking');
 
-        $today         = new \DateTimeImmutable('today');
+        $today         = self::today();
         $nonWorkingDay = (new NonWorkingDay())
             ->setAcademicYear($world['year'])
             ->setDate($today)
@@ -403,7 +415,7 @@ class GuardsControllerTest extends ControllerTestCase
             $this->makeTimeSlot($world['year'], 'Tramo 2', $todayDow, '09:00', '09:55'),
         );
 
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $sanction = $this->makeNotifiedSanction($world, $today->modify('-1 day'), $today->modify('+1 day'));
         $task     = new SanctionTask($sanction, $world['groupTeacher']);
         $task->setDescription('<p>Ejercicios de la materia.</p>')->setCompletedAt($today);
@@ -433,7 +445,7 @@ class GuardsControllerTest extends ControllerTestCase
         $todayDow = self::todayDayOfWeek();
         $this->persist($this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55'));
 
-        $today = new \DateTimeImmutable('today');
+        $today = self::today();
         $this->makeNotifiedSanction($world, $today->modify('-1 day'), $today->modify('+1 day'));
 
         $admin = $this->makeTeacher('admin-sanctionjump');
@@ -583,7 +595,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world    = $this->makeWorld('slotzip');
         $todayDow = self::todayDayOfWeek();
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $slot     = $this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55');
         $slot->addGuard($world['teacher']);
         $this->persist($slot);
@@ -620,7 +632,7 @@ class GuardsControllerTest extends ControllerTestCase
         $this->persist($slot);
 
         $this->loginAs($world['teacher'], $world['centre']);
-        $this->client->request('GET', $this->timeSlotAttachmentsZipUrl($slot, new \DateTimeImmutable('today')));
+        $this->client->request('GET', $this->timeSlotAttachmentsZipUrl($slot, self::today()));
 
         self::assertResponseIsSuccessful();
         self::assertSame([], $this->readZipEntries());
@@ -636,7 +648,7 @@ class GuardsControllerTest extends ControllerTestCase
         $unrelated = $this->makeTeacher('unrelated-slotzip');
         $this->loginAs($unrelated, $world['centre']);
 
-        $this->client->request('GET', $this->timeSlotAttachmentsZipUrl($slot, new \DateTimeImmutable('today')));
+        $this->client->request('GET', $this->timeSlotAttachmentsZipUrl($slot, self::today()));
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -657,7 +669,7 @@ class GuardsControllerTest extends ControllerTestCase
         $todayDow = self::todayDayOfWeek();
         $this->persist($this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55')->addGuard($world['teacher']));
 
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $sanction = $this->makeNotifiedSanction($world, $today->modify('-1 day'), $today->modify('+1 day'));
 
         $taskMaths       = new SanctionTask($sanction, $world['groupTeacher']);
@@ -735,7 +747,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world    = $this->makeWorld('slotzipbtnempty');
         $todayDow = self::todayDayOfWeek();
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $slot     = $this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55');
         $this->persist($slot);
 
@@ -753,7 +765,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world    = $this->makeWorld('slotzipbtnfull');
         $todayDow = self::todayDayOfWeek();
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $slot     = $this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55');
         $this->persist($slot);
 
@@ -780,7 +792,7 @@ class GuardsControllerTest extends ControllerTestCase
         $todayDow = self::todayDayOfWeek();
         $this->persist($this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55'));
 
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $sanction = $this->makeNotifiedSanction($world, $today->modify('-1 day'), $today->modify('+1 day'));
         $task     = new SanctionTask($sanction, $world['groupTeacher']);
         $task->setDescription('<p>Sin adjuntos.</p>')->setCompletedAt($today);
@@ -802,7 +814,7 @@ class GuardsControllerTest extends ControllerTestCase
         $todayDow = self::todayDayOfWeek();
         $this->persist($this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55'));
 
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $sanction = $this->makeNotifiedSanction($world, $today->modify('-1 day'), $today->modify('+1 day'));
         $task     = new SanctionTask($sanction, $world['groupTeacher']);
         $task->setDescription('<p>Con adjunto.</p>')->setCompletedAt($today);
@@ -925,7 +937,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world    = $this->makeWorld($suffix);
         $todayDow = self::todayDayOfWeek();
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
 
         $slot = $this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55');
         $slot->addGuard($world['teacher']);
@@ -945,7 +957,7 @@ class GuardsControllerTest extends ControllerTestCase
     {
         $world    = $this->makeWorld($suffix);
         $todayDow = self::todayDayOfWeek();
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
 
         $slot = $this->makeTimeSlot($world['year'], 'Tramo', $todayDow, '08:00', '08:55');
         $slot->addGuard($world['teacher']);
@@ -976,7 +988,7 @@ class GuardsControllerTest extends ControllerTestCase
         $slot->addGuard($world['teacher']);
         $this->persist($slot);
 
-        $today    = new \DateTimeImmutable('today');
+        $today    = self::today();
         $sanction = $this->makeNotifiedSanction($world, $today->modify('-1 day'), $today->modify('+1 day'));
         $task       = new SanctionTask($sanction, $world['groupTeacher']);
         $attachment = new SanctionTaskAttachment($task, 'tarea.txt', 'text/plain', 4, 'test');
@@ -1044,9 +1056,14 @@ class GuardsControllerTest extends ControllerTestCase
         return $entries;
     }
 
+    private static function today(): \DateTimeImmutable
+    {
+        return Clock::get()->now()->setTime(0, 0, 0);
+    }
+
     private static function todayDayOfWeek(): int
     {
-        return ((int) (new \DateTimeImmutable('today'))->format('N')) - 1;
+        return ((int) self::today()->format('N')) - 1;
     }
 
     private function trans(string $key, string $domain): string

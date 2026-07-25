@@ -18,6 +18,7 @@ use App\Service\KioskMode;
 use App\Service\NonWorkingDayChecker;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -30,6 +31,7 @@ class CalendarController extends AbstractController
         private readonly AppSettings $appSettings,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
         private readonly TranslatorInterface $translator,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('/calendario', name: 'app_calendar')]
@@ -59,7 +61,7 @@ class CalendarController extends AbstractController
             ? $this->toBoardItems($sanctionRepository->findWithDatesForAcademicYear($academicYear))
             : [];
 
-        $today = new \DateTimeImmutable('today');
+        $today = $this->clock->now()->setTime(0, 0, 0);
 
         // Activar el modo tablón bloquea el resto de la aplicación en esta
         // sesión del navegador: solo se podrá salir cerrando sesión.

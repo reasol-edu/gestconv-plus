@@ -24,9 +24,21 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Entity\TimeSlot;
 use App\Tests\Integration\ControllerTestCase;
+use Symfony\Component\Clock\Clock;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
 class CalendarControllerTest extends ControllerTestCase
 {
+    use ClockSensitiveTrait;
+
+    protected function setUp(): void
+    {
+        // Miércoles fijo: evita que los tests dependan del día real de
+        // ejecución (fines de semana ocultan los tramos horarios).
+        self::mockTime('2024-01-10');
+        parent::setUp();
+    }
+
     public function testRedirectsToLoginWhenAnonymous(): void
     {
         $this->client->request('GET', '/calendario');
@@ -360,7 +372,7 @@ class CalendarControllerTest extends ControllerTestCase
         $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.board.dates')->setAdmin(true);
         $this->persist($creator);
 
-        $monday = (new \DateTimeImmutable('today'))->modify('monday this week');
+        $monday = ($this->today())->modify('monday this week');
         $friday = $monday->modify('+2 days');
 
         $sanction = (new Sanction())
@@ -580,7 +592,7 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $content = (string) $this->client->getResponse()->getContent();
-        $today   = new \DateTimeImmutable('today');
+        $today   = $this->today();
         self::assertStringContainsString($this->weekdayLabel($today) . ', ' . $today->format('d/m/Y'), $content);
     }
 
@@ -615,7 +627,7 @@ class CalendarControllerTest extends ControllerTestCase
         $this->persist($groupTeacher);
 
         $timeSlot = $this->makeTimeSlot($world['year'], $this->todayDayOfWeek());
-        $today    = new \DateTimeImmutable('today');
+        $today    = $this->today();
 
         $absence = (new Absence())
             ->setTeacher($absent)
@@ -663,7 +675,7 @@ class CalendarControllerTest extends ControllerTestCase
         $ruiz  = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('calendar.board.today.ruiz');
         $this->persist($bravo, $ruiz);
 
-        $today = new \DateTimeImmutable('today');
+        $today = $this->today();
         foreach ([$ruiz, $bravo] as $teacher) {
             $absence = (new Absence())
                 ->setTeacher($teacher)
@@ -704,7 +716,7 @@ class CalendarControllerTest extends ControllerTestCase
         $this->persist($absent);
 
         $timeSlot = $this->makeTimeSlot($world['year'], $this->todayDayOfWeek());
-        $today    = new \DateTimeImmutable('today');
+        $today    = $this->today();
 
         $absence = (new Absence())
             ->setTeacher($absent)
@@ -755,7 +767,7 @@ class CalendarControllerTest extends ControllerTestCase
         $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.board.today.sanction.label');
         $this->persist($creator);
 
-        $today    = new \DateTimeImmutable('today');
+        $today    = $this->today();
         $sanction = (new Sanction())
             ->setAcademicYear($world['year'])
             ->setStudent($world['student'])
@@ -788,7 +800,7 @@ class CalendarControllerTest extends ControllerTestCase
         $creator = (new Teacher(new PersonName('Creator', 'Teacher')))->setUsername('calendar.board.today.sanction.details');
         $this->persist($creator);
 
-        $today    = new \DateTimeImmutable('today');
+        $today    = $this->today();
         $longText = str_repeat('Comportamiento disruptivo en clase de matemáticas. ', 3);
         $sanction = (new Sanction())
             ->setAcademicYear($world['year'])
@@ -847,7 +859,7 @@ class CalendarControllerTest extends ControllerTestCase
 
         $nonWorkingDay = (new NonWorkingDay())
             ->setAcademicYear($world['year'])
-            ->setDate(new \DateTimeImmutable('today'))
+            ->setDate($this->today())
             ->setDescription('Día del Centro');
         $this->persist($nonWorkingDay);
 
@@ -865,7 +877,7 @@ class CalendarControllerTest extends ControllerTestCase
     public function testBoardWeekMarksNonWorkingDayColumnWithItsLabel(): void
     {
         $world  = $this->makeScenario();
-        $monday = (new \DateTimeImmutable('today'))->modify('monday this week');
+        $monday = ($this->today())->modify('monday this week');
 
         $nonWorkingDay = (new NonWorkingDay())
             ->setAcademicYear($world['year'])
@@ -885,9 +897,14 @@ class CalendarControllerTest extends ControllerTestCase
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
+    private function today(): \DateTimeImmutable
+    {
+        return Clock::get()->now()->setTime(0, 0, 0);
+    }
+
     private function todayDayOfWeek(): int
     {
-        return ((int) (new \DateTimeImmutable('today'))->format('N')) - 1;
+        return ((int) $this->today()->format('N')) - 1;
     }
 
     private function weekdayLabel(\DateTimeImmutable $date): string

@@ -21,6 +21,7 @@ use App\Service\AttachmentZipExporter;
 use App\Service\BoardTodayBuilder;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,6 +42,7 @@ class GuardsController extends AbstractController
         private readonly SanctionTaskAttachmentRepository $taskAttachments,
         private readonly AttachmentDownloadResponder $downloadResponder,
         private readonly AttachmentZipExporter $zipExporter,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('', name: 'app_guards_index')]
@@ -61,8 +63,8 @@ class GuardsController extends AbstractController
 
         $this->assertAccess($centre, $year);
 
-        $date    = self::parseDate($request->query->getString('date')) ?? new \DateTimeImmutable('today');
-        $isToday = $date->format('Y-m-d') === (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $date    = self::parseDate($request->query->getString('date')) ?? $this->today();
+        $isToday = $date->format('Y-m-d') === $this->today()->format('Y-m-d');
         $isAdmin = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
 
         $report = $this->boardTodayBuilder->build($year, $date);
@@ -192,7 +194,7 @@ class GuardsController extends AbstractController
         $year = $timeSlot->getAcademicYear();
         $this->assertAccess($year->getEducationalCentre(), $year);
 
-        $date   = self::parseDate($request->query->getString('date')) ?? new \DateTimeImmutable('today');
+        $date   = self::parseDate($request->query->getString('date')) ?? $this->today();
         $report = $this->boardTodayBuilder->build($year, $date);
 
         $entries = [];
@@ -261,6 +263,11 @@ class GuardsController extends AbstractController
             sprintf('adjuntos-sancion-%s.zip', $sanction->getId()->toRfc4122()),
             $entries,
         );
+    }
+
+    private function today(): \DateTimeImmutable
+    {
+        return $this->clock->now()->setTime(0, 0, 0);
     }
 
     private function assertAccess(EducationalCentre $centre, AcademicYear $year): void
