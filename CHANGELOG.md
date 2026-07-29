@@ -5,11 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-07-29
+## [1.0.0] - 2026-07-30
 
 ### Fixed
 
 - El script de instalación automatizada (`install-ubuntu.sh`) fallaba al ejecutarse vía `curl | bash`. Cuando bash lee el script desde la tubería de curl, cualquier `read` ve EOF en cuanto curl termina. Redirigir stdin globalmente con `exec </dev/tty` tampoco funciona: bash lee el script en fragmentos y, tras el `exec`, intenta leer las siguientes líneas del script desde el terminal en lugar de desde curl. La solución correcta es añadir `</dev/tty` a cada uno de los cinco `read` interactivos; así bash sigue leyendo el script desde curl y solo los prompts toman la entrada del terminal.
+- La sentencia `CREATE DATABASE` en el heredoc SQL del mismo script omitía el nombre de la base de datos en el `SELECT` pasado a `\gexec`, lo que provocaba «syntax error at end of input» al intentar crear la base de datos.
 
 ### Added
 
