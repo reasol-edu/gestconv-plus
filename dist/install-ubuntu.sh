@@ -114,7 +114,7 @@ BEGIN
   END IF;
 END
 \$\$;
-SELECT 'CREATE DATABASE' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'gestconv')\gexec
+SELECT 'CREATE DATABASE gestconv' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'gestconv')\gexec
 GRANT ALL PRIVILEGES ON DATABASE gestconv TO gestconv;
 ALTER DATABASE gestconv OWNER TO gestconv;
 SQL
