@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- El script de instalación automatizada (`install-ubuntu.sh`) fallaba al ejecutarse vía `curl | bash` porque bash recibía el script por stdin y cualquier `read` posterior encontraba EOF. Se redirige stdin a `/dev/tty` antes del primer prompt, de forma que todos los `read` interactivos leen del terminal real con independencia de cómo se haya lanzado el script.
+- El script de instalación automatizada (`install-ubuntu.sh`) fallaba al ejecutarse vía `curl | bash`. Cuando bash lee el script desde la tubería de curl, cualquier `read` ve EOF en cuanto curl termina. Redirigir stdin globalmente con `exec </dev/tty` tampoco funciona: bash lee el script en fragmentos y, tras el `exec`, intenta leer las siguientes líneas del script desde el terminal en lugar de desde curl. La solución correcta es añadir `</dev/tty` a cada uno de los cinco `read` interactivos; así bash sigue leyendo el script desde curl y solo los prompts toman la entrada del terminal.
 
 ### Added
 

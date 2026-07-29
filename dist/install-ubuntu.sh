@@ -40,21 +40,13 @@ die()  { echo -e "\n${RED}✘  Error: $*${NC}" >&2; exit 1; }
 # ── verificaciones previas ────────────────────────────────────────────────────
 [[ $EUID -eq 0 ]] || die "Ejecuta el script como root:  sudo bash $0"
 
-# Cuando el script se ejecuta vía «curl | bash», stdin está conectado a la
-# tubería de curl y queda en EOF en cuanto termina la descarga. Redirigir
-# stdin a /dev/tty garantiza que los «read» interactivos lean del terminal
-# real aunque el script llegue por pipe.
-if [[ ! -t 0 ]]; then
-    exec </dev/tty || die "No se puede abrir el terminal (/dev/tty). Ejecuta el script desde una sesión interactiva."
-fi
-
 if [[ -f /etc/os-release ]]; then
     # shellcheck source=/dev/null
     source /etc/os-release
     if [[ "${ID:-}" != "ubuntu" ]]; then
         warn "Este script está diseñado para Ubuntu. Tu sistema es: ${PRETTY_NAME:-desconocido}."
         warn "Puede funcionar en distribuciones derivadas, pero no está garantizado."
-        read -rp "   ¿Continuar de todas formas? [s/N] " FORCE
+        read -rp "   ¿Continuar de todas formas? [s/N] " FORCE </dev/tty
         [[ "${FORCE:-N}" =~ ^[Ss]$ ]] || { echo "Instalación cancelada."; exit 0; }
     fi
 fi
@@ -82,19 +74,19 @@ Este script instalará GestConv+ con:
 step "Configuración"
 
 while true; do
-    read -rp "   Nombre de dominio (p.ej. gestconv.tucentro.es): " DOMAIN
+    read -rp "   Nombre de dominio (p.ej. gestconv.tucentro.es): " DOMAIN </dev/tty
     [[ -n "$DOMAIN" && "$DOMAIN" != *" "* ]] && break
     warn "El dominio no puede estar vacío ni contener espacios."
 done
 
 while true; do
-    read -rsp "   Contraseña de la base de datos (mín. 12 caracteres, sin comillas simples): " DB_PASS
+    read -rsp "   Contraseña de la base de datos (mín. 12 caracteres, sin comillas simples): " DB_PASS </dev/tty
     echo
     [[ ${#DB_PASS} -ge 12 && "$DB_PASS" != *"'"* ]] && break
     warn "Contraseña inválida: mínimo 12 caracteres y sin comillas simples (')."
 done
 
-read -rp "   Dirección de correo remitente [no-responder@${DOMAIN}]: " MAIL_FROM
+read -rp "   Dirección de correo remitente [no-responder@${DOMAIN}]: " MAIL_FROM </dev/tty
 MAIL_FROM="${MAIL_FROM:-no-responder@${DOMAIN}}"
 
 echo -e "
@@ -102,7 +94,7 @@ echo -e "
    ${BOLD}Base BD:${NC}   gestconv  (usuario: gestconv)
    ${BOLD}Correo:${NC}    ${MAIL_FROM}
 "
-read -rp "   ¿Empezar la instalación? [S/n] " CONFIRM
+read -rp "   ¿Empezar la instalación? [S/n] " CONFIRM </dev/tty
 [[ "${CONFIRM:-S}" =~ ^[Ss]?$ ]] || { echo "Instalación cancelada."; exit 0; }
 
 # ── 1. PostgreSQL ─────────────────────────────────────────────────────────────
