@@ -96,13 +96,16 @@ ejemplo, «Puente de la Constitución»).
 - **Añadir día no lectivo** — al pie del listado, un formulario con la fecha y una descripción
   opcional lo crea de inmediato. No se admite repetir una fecha ya registrada en el mismo curso.
 - **Editar** y **Eliminar** — junto a cada entrada; eliminar pide confirmación.
-- **Importar desde iCal** — sube un fichero `.ics` y da de alta de golpe todos los eventos que
-  contenga, usando su fecha y su título como descripción. Las fechas que ya existan en el curso se
-  cuentan como «ya existentes» y no se duplican, así que el mismo fichero se puede volver a
-  importar sin riesgo (por ejemplo, tras una actualización del calendario oficial). La propia
-  pantalla de importación enlaza a la
-  [Secretaría Virtual de la Consejería de Educación](https://www.juntadeandalucia.es/educacion/secretariavirtual/consulta/calendario-escolar/),
-  donde se puede descargar el calendario escolar oficial del centro en este formato.
+- **Importar días no lectivos** — la pantalla de importación ofrece dos vías:
+  - *Desde CSV de Séneca* (opción recomendada): exporta desde
+    **Centro › Organización del centro › Calendario y Jornada › Calendario escolar › Días festivos**
+    y sube el CSV directamente. Solo se importan los días marcados con «Sí» en la columna
+    *Afecta al personal docente*; el resto se contabilizan como descartados y no se crean.
+  - *Desde iCal*: sube el fichero `.ics` descargado desde la
+    [Secretaría Virtual de la Consejería de Educación](https://www.juntadeandalucia.es/educacion/secretariavirtual/consulta/calendario-escolar/).
+
+  En ambos casos, las fechas que ya existan en el curso no se duplican, así que el mismo fichero
+  se puede volver a importar sin riesgo (por ejemplo, tras una actualización del calendario oficial).
 
 Esta iteración solo gestiona el catálogo de días no lectivos: todavía no se usa para excluir esas
 fechas de otras pantallas (tramos horarios, ausencias, calendario de sanciones).

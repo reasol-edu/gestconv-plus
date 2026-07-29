@@ -11,6 +11,7 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\NonWorkingDayRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
+use App\Service\NonWorkingDayCsvImporter;
 use App\Service\NonWorkingDayIcsImporter;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,6 +33,7 @@ class NonWorkingDayController extends AbstractController
         private readonly NonWorkingDayRepository $nonWorkingDays,
         private readonly TenantContext $tenantContext,
         private readonly NonWorkingDayIcsImporter $icsImporter,
+        private readonly NonWorkingDayCsvImporter $csvImporter,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
     ) {}
@@ -217,6 +219,50 @@ class NonWorkingDayController extends AbstractController
         $this->addFlash('success', $this->translator->trans('non_working_day.import.flash.summary', [
             '%new%'      => $stats['new'],
             '%existing%' => $stats['existing'],
+        ], 'admin'));
+
+        return $this->redirectToRoute('app_centre_non_working_days_index', ['centreId' => $centreId]);
+    }
+
+    #[Route('/importar-seneca', name: 'app_centre_non_working_days_import_seneca', methods: ['POST'])]
+    public function importSeneca(string $centreId, Request $request): Response
+    {
+        $centre = $this->requireCentre($centreId);
+        $year   = $this->tenantContext->getViewYear($centre);
+        if ($year === null) {
+            throw $this->createNotFoundException();
+        }
+
+        if (!$this->isCsrfTokenValid('import_seneca_non_working_days', $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $file = $request->files->get('csv');
+        if (!$file instanceof UploadedFile || !$file->isValid()) {
+            $this->addFlash('error', $this->t('non_working_day.import.error.no_file'));
+
+            return $this->redirectToRoute('app_centre_non_working_days_import', ['centreId' => $centreId]);
+        }
+
+        try {
+            $stats = $this->csvImporter->import($file->getPathname(), $year);
+        } catch (\Throwable) {
+            $this->addFlash('error', $this->t('non_working_day.import.seneca.error.invalid_file'));
+
+            return $this->redirectToRoute('app_centre_non_working_days_import', ['centreId' => $centreId]);
+        }
+
+        $this->activityLog->log('non_working_day.imported', [
+            'centreId' => $centre->getId()->toRfc4122(),
+            'source'   => 'seneca',
+            'new'      => $stats['new'],
+            'existing' => $stats['existing'],
+        ]);
+
+        $this->addFlash('success', $this->translator->trans('non_working_day.import.seneca.flash.summary', [
+            '%new%'      => $stats['new'],
+            '%existing%' => $stats['existing'],
+            '%skipped%'  => $stats['skipped'],
         ], 'admin'));
 
         return $this->redirectToRoute('app_centre_non_working_days_index', ['centreId' => $centreId]);

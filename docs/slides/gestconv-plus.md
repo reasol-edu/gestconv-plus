@@ -588,11 +588,12 @@ el centro**, no solo de sus propios grupos:
 - Catálogo de festivos, puentes y demás jornadas sin clase del curso académico, con fecha y
   descripción opcional.
 - Alta, edición y borrado manual, uno a uno.
-- **Importar desde iCal**: sube un fichero `.ics` y da de alta de golpe todos sus eventos; las
-  fechas repetidas se detectan y no se duplican, así que el mismo fichero se puede reimportar sin
+- **Importar días no lectivos** por dos vías:
+  - *CSV de Séneca* (recomendado) — exporta desde Séneca «Días festivos»; solo se cargan los
+    días que afectan al personal docente.
+  - *iCal* — descarga el `.ics` desde la Secretaría Virtual de la Consejería de Educación.
+- Las fechas ya existentes se detectan y no se duplican: el mismo fichero se puede reimportar sin
   riesgo.
-- La pantalla de importación enlaza directamente a la Secretaría Virtual de la Consejería de
-  Educación, de donde se descarga el calendario escolar oficial del centro en ese formato.
 - Una vez declarados, se reflejan en toda la aplicación: se marcan en el calendario y el tablón,
   guardias los avisa y salta el fin de semana al navegar día a día, la sanción muestra un contador
   de días lectivos entre inicio y fin, y ningún selector de fecha (sanciones, ausencias,

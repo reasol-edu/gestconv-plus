@@ -218,12 +218,17 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 <div class="step">
   <span class="num">1</span>
   <div class="text">
-    <p>Desde <strong>Centro educativo › Días no lectivos › Importar</strong>, sube el fichero
-    <strong>.ics</strong> del calendario escolar oficial. La pantalla enlaza directamente a la
-    Secretaría Virtual de la Consejería de Educación, de donde se descarga.</p>
-    <p>Se dan de alta de golpe todos los festivos y puentes del fichero; las fechas repetidas se
-    detectan y no se duplican, así que el mismo fichero se puede reimportar sin riesgo. También se
-    pueden añadir, editar o eliminar días sueltos a mano, uno a uno.</p>
+    <p>Desde <strong>Centro educativo › Días no lectivos › Importar días no lectivos</strong>
+    tienes dos vías:</p>
+    <ul>
+      <li><strong>CSV de Séneca</strong> (recomendado) — en Séneca: <em>Centro › Organización del
+      centro › Calendario y Jornada › Calendario escolar › Días festivos › Exportar a CSV</em>. Solo
+      se importan los días que afectan al personal docente.</li>
+      <li><strong>iCal</strong> — descarga el <code>.ics</code> desde la Secretaría Virtual de la
+      Consejería de Educación (la pantalla enlaza directamente).</li>
+    </ul>
+    <p>Las fechas repetidas se detectan y no se duplican, así que el mismo fichero se puede
+    reimportar sin riesgo. También se pueden añadir, editar o eliminar días sueltos a mano.</p>
     <img class="captura-escritorio" src="img/curso-nuevo-16-dias-no-lectivos.png" alt="Listado de días no lectivos del curso tras importar el calendario escolar">
   </div>
 </div>
