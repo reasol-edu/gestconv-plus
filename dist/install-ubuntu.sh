@@ -40,6 +40,14 @@ die()  { echo -e "\n${RED}✘  Error: $*${NC}" >&2; exit 1; }
 # ── verificaciones previas ────────────────────────────────────────────────────
 [[ $EUID -eq 0 ]] || die "Ejecuta el script como root:  sudo bash $0"
 
+# Cuando el script se ejecuta vía «curl | bash», stdin está conectado a la
+# tubería de curl y queda en EOF en cuanto termina la descarga. Redirigir
+# stdin a /dev/tty garantiza que los «read» interactivos lean del terminal
+# real aunque el script llegue por pipe.
+if [[ ! -t 0 ]]; then
+    exec </dev/tty || die "No se puede abrir el terminal (/dev/tty). Ejecuta el script desde una sesión interactiva."
+fi
+
 if [[ -f /etc/os-release ]]; then
     # shellcheck source=/dev/null
     source /etc/os-release
@@ -381,8 +389,8 @@ ${GREEN}${BOLD}╔════════════════════�
      Puede tardar 30-60 segundos hasta que HTTPS esté disponible.${NC}
 
   Comandos útiles:
-    Ver estado:   sudo systemctl status gestconv-plus gestConv-plus-worker
-    Ver logs:     sudo journalctl -u gestConv-plus -f
-    Reiniciar:    sudo systemctl restart gestConv-plus gestConv-plus-worker
-    Configurar:   sudo nano /opt/gestConv-plus/.env.local
+    Ver estado:   sudo systemctl status gestconv-plus gestconv-plus-worker
+    Ver logs:     sudo journalctl -u gestconv-plus -f
+    Reiniciar:    sudo systemctl restart gestconv-plus gestconv-plus-worker
+    Configurar:   sudo nano /opt/gestconv-plus/.env.local
 "
