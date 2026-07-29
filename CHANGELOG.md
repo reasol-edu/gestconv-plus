@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-07-29
 
+### Fixed
+
+- El script de instalación automatizada (`install-ubuntu.sh`) fallaba al ejecutarse vía `curl | bash` porque bash recibía el script por stdin y cualquier `read` posterior encontraba EOF. Se redirige stdin a `/dev/tty` antes del primer prompt, de forma que todos los `read` interactivos leen del terminal real con independencia de cómo se haya lanzado el script.
+
 ### Added
 
 - Los **días no lectivos** se pueden importar ahora también desde el CSV que genera Séneca en **Centro › Organización del centro › Calendario y Jornada › Calendario escolar › Días festivos**. Solo se importan los días marcados con «Sí» en la columna *Afecta al personal docente*; las filas restantes se contabilizan como descartadas. La pantalla de importación ofrece ambas vías (CSV de Séneca e iCal) y acepta ficheros en UTF-8 y Windows-1252.
