@@ -145,7 +145,7 @@ step "4/7 · Descargar el binario de GestConv+ (última versión)"
 VERSION=$(curl -fsSL https://api.github.com/repos/reasol-edu/gestconv-plus/releases/latest \
     | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
 [[ -n "$VERSION" ]] || die "No se pudo obtener la versión más reciente desde GitHub."
-TARBALL_URL="https://github.com/reasol-edu/gestconv-plus/releases/download/v${VERSION}/gestconv-plus-${VERSION}-${ASSET_ARCH}.tar.gz"
+TARBALL_URL="https://github.com/reasol-edu/gestconv-plus/releases/download/v${VERSION}/gestconv-plus-v${VERSION}-${ASSET_ARCH}.tar.gz"
 echo "   Descargando gestconv-plus v${VERSION} (${ASSET_ARCH})..."
 curl -fsSL "$TARBALL_URL" | sudo -u gestconvplus tar xzf - -C /opt/gestconv-plus --strip-components=1
 ok "GestConv+ v${VERSION} extraído en /opt/gestconv-plus"
