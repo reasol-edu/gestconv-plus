@@ -223,8 +223,12 @@ export MESSENGER_TRANSPORT_DSN="${MESSENGER_TRANSPORT_DSN:-doctrine://default?au
 
 mkdir -p "${DATA}"
 
-# Generar APP_SECRET en el primer arranque y guardarlo en data/.secret
-if [[ ! -f "${DATA}/.secret" ]]; then
+# Generar APP_SECRET en el primer arranque y guardarlo en data/.secret.
+# Se usa -s (existe Y no está vacío) en vez de -f: una ejecución anterior
+# interrumpida a mitad de camino (p.ej. por un fallo posterior en las
+# migraciones) puede dejar el fichero creado pero con 0 bytes, y un simple
+# -f nunca lo regeneraría, propagando un secreto vacío en cada arranque.
+if [[ ! -s "${DATA}/.secret" ]]; then
     "${FP}" php-cli -r 'echo bin2hex(random_bytes(32));' > "${DATA}/.secret"
 fi
 export APP_SECRET="$(< "${DATA}/.secret")"
@@ -289,8 +293,10 @@ export MAILER_DSN="${MAILER_DSN:-null://null}"
 export MAILER_FROM="${MAILER_FROM:-no-responder@example.com}"
 export MESSENGER_TRANSPORT_DSN="${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}"
 
-# Esperar a que gestconv-start.sh haya generado el secreto (primer arranque)
-until [[ -f "${DATA}/.secret" ]]; do
+# Esperar a que gestconv-start.sh haya generado el secreto (primer arranque).
+# -s (existe Y no está vacío), no solo -f: ver el comentario equivalente en
+# gestconv-start.sh.
+until [[ -s "${DATA}/.secret" ]]; do
     sleep 1
 done
 export APP_SECRET="$(< "${DATA}/.secret")"
