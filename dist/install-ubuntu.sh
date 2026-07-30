@@ -80,10 +80,17 @@ while true; do
 done
 
 while true; do
-    read -rsp "   Contraseña de la base de datos (mín. 12 caracteres, sin comillas simples): " DB_PASS </dev/tty
+    read -rsp "   Contraseña de la base de datos (mín. 12 caracteres, sin comillas ni \\ \$ \`): " DB_PASS </dev/tty
     echo
-    [[ ${#DB_PASS} -ge 12 && "$DB_PASS" != *"'"* ]] && break
-    warn "Contraseña inválida: mínimo 12 caracteres y sin comillas simples (')."
+    if [[ ${#DB_PASS} -ge 12 ]] \
+        && [[ "$DB_PASS" != *"'"* ]] \
+        && [[ "$DB_PASS" != *'"'* ]] \
+        && [[ "$DB_PASS" != *'\'* ]] \
+        && [[ "$DB_PASS" != *'$'* ]] \
+        && [[ "$DB_PASS" != *'`'* ]]; then
+        break
+    fi
+    warn "Contraseña inválida: mínimo 12 caracteres, sin comillas simples/dobles, barra invertida (\\), signo dólar (\$) ni acento grave (\`)."
 done
 
 read -rp "   Dirección de correo remitente [no-responder@${DOMAIN}]: " MAIL_FROM </dev/tty
@@ -161,13 +168,13 @@ sudo -u gestconvplus tee /opt/gestconv-plus/.env.local > /dev/null << ENVFILE
 # Edita este fichero para cambiar dominio, correo, etc.
 # Después: sudo systemctl restart gestconv-plus gestconv-plus-worker
 
-SERVER_ADDR=${DOMAIN}
-DEFAULT_URI=https://${DOMAIN}
-DATABASE_URL=postgresql://gestconv:${DB_PASS}@localhost:5432/gestconv?serverVersion=16&charset=utf8
-MIGRATIONS_PATH=migrations/postgresql
-MAILER_DSN=null://null
-MAILER_FROM=${MAIL_FROM}
-APP_EXTERNAL_ENABLED=true
+SERVER_ADDR="${DOMAIN}"
+DEFAULT_URI="https://${DOMAIN}"
+DATABASE_URL="postgresql://gestconv:${DB_PASS}@localhost:5432/gestconv?serverVersion=16&charset=utf8"
+MIGRATIONS_PATH="migrations/postgresql"
+MAILER_DSN="null://null"
+MAILER_FROM="${MAIL_FROM}"
+APP_EXTERNAL_ENABLED="true"
 ENVFILE
 chmod 600 /opt/gestconv-plus/.env.local
 ok ".env.local creado con permisos 600"
