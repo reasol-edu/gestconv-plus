@@ -101,6 +101,12 @@ class AppFixtures extends Fixture
             'DELETE FROM ' . $q('course'),
             'DELETE FROM ' . $q('teacher_academic_year'),
             'DELETE FROM ' . $q('educational_centre_admins'),
+            // absence (vía activity, activity_attachment, activity_group_teacher en cascada) antes
+            // que time_slot: activity.time_slot_id no tiene ON DELETE, así que borrar time_slot
+            // mientras queden actividades que lo referencien fallaría por clave foránea.
+            'DELETE FROM ' . $q('absence'),
+            'DELETE FROM ' . $q('time_slot'),
+            'DELETE FROM ' . $q('non_working_day'),
             'DELETE FROM ' . $q('academic_year'),
             'DELETE FROM ' . $q('teacher_setting_value'),
             'DELETE FROM ' . $q('centre_setting_value'),
