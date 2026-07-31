@@ -159,7 +159,15 @@ class IncidentReportController extends AbstractController
         $preloadedStudents   = [];
         $preloadedLocation   = null;
         $canChooseTeacher    = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
+        $activeYear          = $centre->getActiveAcademicYear();
         $registeredBy        = $user;
+        // El usuario actual solo se preselecciona si es un docente válido del
+        // curso académico activo; si no lo es (p. ej. un administrador que no
+        // imparte clase), dejar el desplegable vacío obliga a elegir un
+        // docente en vez de guardar con un valor que fallaría la validación.
+        $selectedTeacher     = $activeYear !== null && $this->teachers->findByAcademicYearAndId($activeYear, $user->getId()->toRfc4122()) !== null
+            ? $user
+            : null;
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_incident', $request->request->getString('_token'))) {
@@ -168,13 +176,16 @@ class IncidentReportController extends AbstractController
 
             $data = IncidentReportFormData::fromRequest($request);
 
-            if ($canChooseTeacher && $data->registeredByRaw !== '') {
-                $activeYear      = $centre->getActiveAcademicYear();
-                $selectedTeacher = $activeYear !== null ? $this->teachers->findByAcademicYearAndId($activeYear, $data->registeredByRaw) : null;
-                if ($selectedTeacher === null) {
+            if ($canChooseTeacher) {
+                $chosenTeacher = $activeYear !== null && $data->registeredByRaw !== ''
+                    ? $this->teachers->findByAcademicYearAndId($activeYear, $data->registeredByRaw)
+                    : null;
+                if ($chosenTeacher === null) {
                     $errors['registered_by'] = $this->t('incident.error.invalid_teacher');
+                    $selectedTeacher         = null;
                 } else {
-                    $registeredBy = $selectedTeacher;
+                    $registeredBy    = $chosenTeacher;
+                    $selectedTeacher = $chosenTeacher;
                 }
             }
 
@@ -271,7 +282,7 @@ class IncidentReportController extends AbstractController
             'preloadedStudents'   => $preloadedStudents,
             'preloadedLocation'   => $preloadedLocation,
             'canChooseTeacher'    => $canChooseTeacher,
-            'selectedTeacher'     => $registeredBy,
+            'selectedTeacher'     => $selectedTeacher,
         ]);
     }
 

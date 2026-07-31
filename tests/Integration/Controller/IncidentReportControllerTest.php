@@ -256,6 +256,60 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertSelectorExists('select[name="registered_by"]');
     }
 
+    public function testNewGetDoesNotPreselectAdminWhoIsNotATeacherInActiveYear(): void
+    {
+        // Un administrador de centro que no imparte clase en el curso activo
+        // (no está en AcademicYear::teachers) ve el desplegable de docente
+        // vacío en lugar de aparecer preseleccionado él mismo: si guardara el
+        // parte sin tocar el campo, ese valor no sería un docente válido.
+        [$teacher, $centre] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('cadmin.new.notateacher');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/nuevo');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('select[name="registered_by"] option[selected]');
+    }
+
+    public function testNewPostAsAdminWithoutTeacherRoleWithoutChoosingTeacherShowsError(): void
+    {
+        // Si ese mismo administrador guarda el parte sin elegir un docente
+        // (porque el campo ya no viene preseleccionado con su propio
+        // usuario), debe ver el error de docente inválido en vez de crear el
+        // parte con un registered_by inválido.
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $cadmin = $this->makeTeacher('cadmin.new.notateacher.post');
+        $this->persist($cadmin);
+        $centre->addAdmin($cadmin);
+        $location = $this->makeLocation($centre);
+        $this->flush();
+        $this->loginAs($cadmin, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $studentPair = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
+
+        $this->client->request('POST', '/partes/nuevo', [
+            '_token'      => $token,
+            'students'    => [$studentPair],
+            'behaviors'   => [$behavior->getId()->toRfc4122()],
+            'location_id' => $location->getId()->toRfc4122(),
+            'occurred_at' => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'description' => '<p>Sin docente elegido.</p>',
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'docente');
+
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(IncidentReport::class)->findAll());
+    }
+
     public function testNewGetHidesTeacherFieldFromRegularTeacher(): void
     {
         [$teacher, $centre] = $this->makeScenario();

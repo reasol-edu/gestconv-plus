@@ -102,9 +102,11 @@
                             data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                             data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
                             class="w-full">
-                        <option value="{{ selectedTeacher.id }}" selected>
-                            {{ selectedTeacher.name.lastName }}, {{ selectedTeacher.name.firstName }}
-                        </option>
+                        {% if selectedTeacher is not null %}
+                            <option value="{{ selectedTeacher.id }}" selected>
+                                {{ selectedTeacher.name.lastName }}, {{ selectedTeacher.name.firstName }}
+                            </option>
+                        {% endif %}
                     </select>
                     {% if errors.registered_by is defined %}
                         <p class="mt-1 text-xs text-red-600">{{ errors.registered_by }}</p>
