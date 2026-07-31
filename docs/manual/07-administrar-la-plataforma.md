@@ -413,6 +413,13 @@ php bin/console messenger:failed:retry   # reintentarlos
     - **Docker** — `docker compose pull && docker compose up -d`.
     - **Binario nativo** — sigue los pasos de
       [Actualizar a una nueva versión](01-instalacion-y-puesta-en-marcha.md#actualizar-a-una-nueva-version).
+    - **Ubuntu Server** — ejecuta el script de actualización:
+      ```bash
+      curl -fsSL https://raw.githubusercontent.com/reasol-edu/gestconv-plus/main/dist/update-ubuntu.sh \
+        | sudo bash
+      ```
+      Ver [Actualización en Ubuntu Server](01-instalacion-y-puesta-en-marcha.md#actualizacion-en-ubuntu-server)
+      para el flag `--force` y la alternativa manual.
 3. Las **migraciones de base de datos se aplican automáticamente** al arrancar la nueva versión;
    no hay que ejecutar nada a mano.
 4. Comprueba que la aplicación arranca y revisa el
