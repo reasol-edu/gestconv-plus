@@ -32,6 +32,13 @@ Para una actualización puntual, sin automatizar nada, basta con ejecutarlo dire
 sudo bash /opt/gestconv-plus/gestconv-update.sh
 ```
 
+Admite `--force` para reinstalar aunque la versión publicada parezca igual a la instalada (por
+ejemplo, tras una re-release que mueve la misma etiqueta a otro commit):
+
+```bash
+sudo bash /opt/gestconv-plus/gestconv-update.sh --force
+```
+
 ## Opción A — Sondeo periódico con systemd timer
 
 El timer comprueba si hay nueva versión cada 15 minutos. No requiere abrir ningún puerto extra ni

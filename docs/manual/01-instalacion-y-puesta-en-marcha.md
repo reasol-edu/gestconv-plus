@@ -504,6 +504,15 @@ El directorio `data/` (secretos y base de datos) y el fichero `.env.local` no fo
 paquete descargado, por lo que se conservan intactos. `gestconv-start.sh` aplica automáticamente
 las migraciones pendientes y regenera la caché en el siguiente arranque.
 
+Si necesitas reinstalar la versión ya publicada aunque el script la detecte como igual a la
+instalada (por ejemplo, tras una re-release que mueve la misma etiqueta a un commit distinto),
+añade `--force`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/reasol-edu/gestconv-plus/main/dist/update-ubuntu.sh \
+  | sudo bash -s -- --force
+```
+
 !!! info "¿Prefieres los pasos manuales?"
     1. Descarga el paquete de la nueva versión desde la
        [página de Releases](https://github.com/reasol-edu/gestconv-plus/releases) y detén los
