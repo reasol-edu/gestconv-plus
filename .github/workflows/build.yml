@@ -258,6 +258,7 @@ jobs:
             name=$(basename "$f" .pdf)
             cp "$f" "_docs-dist/gestconv-plus-${name}-${VERSION}.pdf"
           done
+          (cd _docs-dist && zip "gestconv-plus-documentacion-${VERSION}.zip" ./*.pdf)
 
       - uses: actions/upload-artifact@v4
         with:
@@ -295,6 +296,7 @@ jobs:
             gestconv-plus-presentacion-*.pdf
             gestconv-plus-ficha-*.pdf
             gestconv-plus-manual-web-*.zip
+            gestconv-plus-documentacion-*.zip
           # body: " " (un espacio, no "") es intencional: la acción calcula
           # `body = workflowBody || existingReleaseBody`, y en JS "" es
           # falsy, así que un body vacío seguía cayendo al body del release
