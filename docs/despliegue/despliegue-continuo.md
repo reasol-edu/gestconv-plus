@@ -44,39 +44,14 @@ sudo bash /opt/gestconv-plus/gestconv-update.sh --force
 El timer comprueba si hay nueva versión cada 15 minutos. No requiere abrir ningún puerto extra ni
 configurar el repositorio remoto.
 
+El script `dist/setup-update-timer.sh` del repositorio hace todo esto: descarga
+`gestconv-update.sh`, crea el servicio y el timer de systemd, y activa el timer. Es idempotente
+(puede volver a ejecutarse sin duplicar nada, p. ej. para refrescar `gestconv-update.sh` a su
+última versión):
+
 ```bash
-sudo tee /etc/systemd/system/gestconv-update.service > /dev/null << 'UNIT'
-[Unit]
-Description=GestConv+ — actualización automática
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-# update-ubuntu.sh para y arranca los servicios systemd y escribe en
-# /opt/gestconv-plus (propiedad de gestconvplus), así que necesita root —
-# igual que al ejecutarlo a mano con «sudo bash».
-User=root
-ExecStart=/opt/gestconv-plus/gestconv-update.sh
-StandardOutput=journal
-StandardError=journal
-UNIT
-
-sudo tee /etc/systemd/system/gestconv-update.timer > /dev/null << 'UNIT'
-[Unit]
-Description=GestConv+ — comprueba actualizaciones cada 15 minutos
-
-[Timer]
-OnBootSec=2min
-OnUnitActiveSec=15min
-RandomizedDelaySec=60
-
-[Install]
-WantedBy=timers.target
-UNIT
-
-sudo systemctl daemon-reload
-sudo systemctl enable --now gestconv-update.timer
+curl -fsSL https://raw.githubusercontent.com/reasol-edu/gestconv-plus/main/dist/setup-update-timer.sh \
+  | sudo bash
 ```
 
 Verifica que el timer está activo:
