@@ -12,73 +12,24 @@ puerto adicional).
 
 ## Script de actualización compartido
 
-Crea `/opt/gestconv-plus/gestconv-update.sh` con el usuario `gestconvplus`:
+El script `dist/update-ubuntu.sh` del repositorio hace exactamente esto: compara la versión
+instalada (fichero `.version`) con la última publicada en GitHub Releases y, si difieren, para los
+servicios, descarga y extrae el paquete nuevo, y los vuelve a arrancar. Si ya está en la última
+versión no hace nada y termina en `0`, así que es seguro invocarlo repetidamente desde un timer o
+un webhook.
+
+Descárgalo a la instalación:
 
 ```bash
-sudo -u gestconvplus tee /opt/gestconv-plus/gestconv-update.sh > /dev/null << 'EOF'
-#!/usr/bin/env bash
-# Actualiza GestConv+ a la última versión publicada en GitHub.
-# Compara la versión instalada con la etiqueta remota más reciente; si difieren,
-# descarga el paquete y reinicia los servicios.
-set -euo pipefail
-
-INSTALL_DIR=/opt/gestconv-plus
-REPO=reasol-edu/gestconv-plus
-LOG_TAG=gestconv-update
-
-log()  { logger -t "$LOG_TAG" "$*"; echo "$*"; }
-error(){ logger -t "$LOG_TAG" -p user.err "ERROR: $*"; echo "ERROR: $*" >&2; }
-
-# ── Obtener etiqueta remota más reciente ──────────────────────────────────────
-REMOTE_TAG=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
-  | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": *"\(.*\)".*/\1/')
-
-if [[ -z "$REMOTE_TAG" ]]; then
-  error "No se pudo obtener la versión remota."
-  exit 1
-fi
-
-# ── Comparar con la versión instalada ────────────────────────────────────────
-# El paquete incluye la versión en el fichero .version de la raíz.
-LOCAL_TAG="v$(cat "${INSTALL_DIR}/.version" 2>/dev/null || echo "none")"
-
-if [[ "$LOCAL_TAG" == "$REMOTE_TAG" ]]; then
-  log "Ya en ${REMOTE_TAG}. Sin cambios."
-  exit 0
-fi
-
-log "Actualizando ${LOCAL_TAG} → ${REMOTE_TAG}…"
-
-# ── Descarga ──────────────────────────────────────────────────────────────────
-# Ruta fija dentro del directorio de instalación (solo escribible por gestconvplus).
-# Evita el comodín en /tmp, que sudo rechaza en los argumentos de la regla.
-VERSION=${REMOTE_TAG#v}
-PKG="${INSTALL_DIR}/.gestconv-plus-update.tar.gz"
-curl -fsSL \
-  "https://github.com/${REPO}/releases/download/${REMOTE_TAG}/gestconv-plus-${VERSION}-linux-x86_64.tar.gz" \
-  -o "$PKG"
-
-# ── Parada, extracción y arranque ─────────────────────────────────────────────
-sudo systemctl stop gestconv-plus-worker gestconv-plus
-sudo tar xzf "$PKG" -C "$INSTALL_DIR" --strip-components=1
-rm -f "$PKG"
-sudo systemctl start gestconv-plus gestconv-plus-worker
-
-log "Actualización a ${REMOTE_TAG} completada."
-EOF
+sudo curl -fsSL https://raw.githubusercontent.com/reasol-edu/gestconv-plus/main/dist/update-ubuntu.sh \
+  -o /opt/gestconv-plus/gestconv-update.sh
 sudo chmod +x /opt/gestconv-plus/gestconv-update.sh
 ```
 
-El script necesita poder invocar `sudo systemctl` sin contraseña. Añade la regla de sudoers:
+Para una actualización puntual, sin automatizar nada, basta con ejecutarlo directamente:
 
 ```bash
-sudo tee /etc/sudoers.d/gestconv-update > /dev/null << 'EOF'
-gestconvplus ALL=(root) NOPASSWD: \
-  /usr/bin/systemctl stop gestconv-plus gestconv-plus-worker, \
-  /usr/bin/systemctl start gestconv-plus gestconv-plus-worker, \
-  /usr/bin/tar xzf /opt/gestconv-plus/.gestconv-plus-update.tar.gz -C /opt/gestconv-plus --strip-components=1
-EOF
-sudo chmod 440 /etc/sudoers.d/gestconv-update
+sudo bash /opt/gestconv-plus/gestconv-update.sh
 ```
 
 ## Opción A — Sondeo periódico con systemd timer
@@ -95,7 +46,10 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=gestconvplus
+# update-ubuntu.sh para y arranca los servicios systemd y escribe en
+# /opt/gestconv-plus (propiedad de gestconvplus), así que necesita root —
+# igual que al ejecutarlo a mano con «sudo bash».
+User=root
 ExecStart=/opt/gestconv-plus/gestconv-update.sh
 StandardOutput=journal
 StandardError=journal
@@ -150,7 +104,10 @@ sudo -u gestconvplus tee /opt/gestconv-plus/webhook.json > /dev/null << 'EOF'
 [
   {
     "id": "gestconv-update",
-    "execute-command": "/opt/gestconv-plus/gestconv-update.sh",
+    "execute-command": "/usr/bin/sudo",
+    "pass-arguments-to-command": [
+      { "source": "string", "name": "/opt/gestconv-plus/gestconv-update.sh" }
+    ],
     "command-working-directory": "/opt/gestconv-plus",
     "response-message": "Actualización iniciada",
     "trigger-rule": {
@@ -180,7 +137,15 @@ Sustituye `WEBHOOK_SECRET` por una cadena aleatoria larga (p. ej. `openssl rand 
 
 **3. Crea el servicio systemd para el receptor:**
 
+El propio proceso `webhook` se ejecuta sin privilegios, como `gestconvplus`; solo el script de
+actualización necesita root, así que se le concede permiso justo para ese único comando:
+
 ```bash
+sudo tee /etc/sudoers.d/gestconv-update > /dev/null << 'EOF'
+gestconvplus ALL=(root) NOPASSWD: /opt/gestconv-plus/gestconv-update.sh
+EOF
+sudo chmod 440 /etc/sudoers.d/gestconv-update
+
 sudo tee /etc/systemd/system/gestconv-webhook.service > /dev/null << 'UNIT'
 [Unit]
 Description=GestConv+ — receptor de webhooks

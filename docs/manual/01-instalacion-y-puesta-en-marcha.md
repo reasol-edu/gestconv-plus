@@ -450,8 +450,8 @@ Docker. Se requiere acceso SSH con sudo.
 
 ### Instalación automatizada
 
-El script `install-ubuntu.sh` (incluido en el paquete descargado o disponible directamente en el
-repositorio) realiza la instalación completa sin intervención manual.
+El script `install-ubuntu.sh`, disponible en el repositorio (carpeta `dist/`), realiza la
+instalación completa sin intervención manual.
 
 **Requisitos antes de ejecutarlo:**
 
@@ -461,17 +461,17 @@ repositorio) realiza la instalación completa sin intervención manual.
 
 **Ejecución:**
 
-Desde el directorio donde descomprimiste el paquete:
-
-```bash
-sudo bash install-ubuntu.sh
-```
-
-O directamente desde el repositorio, sin descargar el paquete:
+Directamente desde el repositorio, sin descargar nada más:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/reasol-edu/gestconv-plus/main/dist/install-ubuntu.sh \
   | sudo bash
+```
+
+O, si ya tienes el script descargado (por ejemplo, tras clonar el repositorio):
+
+```bash
+sudo bash install-ubuntu.sh
 ```
 
 El script solicita tres datos: el **nombre de dominio**, la **contraseña de la base de datos** y la
@@ -491,33 +491,31 @@ worker).
 
 ### Actualización en Ubuntu Server
 
-1. Descarga el nuevo paquete y detén los servicios:
+El script `update-ubuntu.sh`, disponible en el repositorio (carpeta `dist/`), comprueba la última
+versión publicada contra la instalada y, si es más reciente, para los servicios, descarga el
+paquete nuevo, lo extrae y los vuelve a arrancar. Si ya está en la última versión no hace nada:
 
-   ```bash
-   VERSION=X.Y.Z
-   curl -fsSL https://github.com/reasol-edu/gestconv-plus/releases/download/v${VERSION}/gestconv-plus-${VERSION}-linux-x86_64.tar.gz \
-     -o /tmp/gestconv-plus-new.tar.gz
-   sudo systemctl stop gestconv-plus-worker gestconv-plus
-   ```
+```bash
+curl -fsSL https://raw.githubusercontent.com/reasol-edu/gestconv-plus/main/dist/update-ubuntu.sh \
+  | sudo bash
+```
 
-2. Extrae el nuevo paquete sobre la instalación existente. El directorio `data/` (secretos y base de
-   datos) y el fichero `.env.local` no están en el paquete, por lo que se conservan intactos:
+El directorio `data/` (secretos y base de datos) y el fichero `.env.local` no forman parte del
+paquete descargado, por lo que se conservan intactos. `gestconv-start.sh` aplica automáticamente
+las migraciones pendientes y regenera la caché en el siguiente arranque.
 
-   ```bash
-   sudo -u gestconvplus tar xzf /tmp/gestconv-plus-new.tar.gz -C /opt/gestconv-plus --strip-components=1
-   ```
-
-3. Vuelve a arrancar los servicios. `gestconv-start.sh` aplica automáticamente las migraciones
-   pendientes y regenera la caché:
-
-   ```bash
-   sudo systemctl start gestconv-plus gestconv-plus-worker
-   ```
+!!! info "¿Prefieres los pasos manuales?"
+    1. Descarga el paquete de la nueva versión desde la
+       [página de Releases](https://github.com/reasol-edu/gestconv-plus/releases) y detén los
+       servicios: `sudo systemctl stop gestconv-plus-worker gestconv-plus`.
+    2. Extrae el paquete sobre la instalación existente:
+       `sudo -u gestconvplus tar xzf gestconv-plus-vX.Y.Z-linux-x86_64.tar.gz -C /opt/gestconv-plus --strip-components=1`.
+    3. Vuelve a arrancarlos: `sudo systemctl start gestconv-plus gestconv-plus-worker`.
 
 Si prefieres que el servidor se actualice solo con cada nueva versión —mediante un systemd timer o
 un webhook de GitHub—, sigue la
 **[guía de despliegue continuo](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/despliegue-continuo.md)**
-del repositorio.
+del repositorio, que usa este mismo script.
 
 ## Desarrollo local
 
