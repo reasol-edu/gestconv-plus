@@ -125,12 +125,26 @@ class StudentController extends AbstractController
             && $this->contactVisibility->canEditContact($viewer, $student, $year);
 
         $isTutorOfStudent = false;
+        $teachesStudent   = false;
         foreach ($activeGroups as $group) {
             if ($group->getTutors()->contains($viewer)) {
                 $isTutorOfStudent = true;
-                break;
+            }
+            if ($group->getTeachers()->contains($viewer)) {
+                $teachesStudent = true;
             }
         }
+
+        $hasFullAccess = $viewer->isAdmin()
+            || $centre->getAdmins()->contains($viewer)
+            || $centre->getCommitteeMembers()->contains($viewer)
+            || $centre->getCounselors()->contains($viewer);
+
+        // También cuenta como "relacionado" haber registrado tú mismo algún parte o sanción del
+        // estudiante, aunque no le des clase ni lo tutorices: cualquier docente puede registrar un
+        // parte sobre cualquier estudiante del centro y siempre debe poder ver lo que registró.
+        $isRelatedToStudent = $hasFullAccess || $isTutorOfStudent || $teachesStudent
+            || $reports !== [] || $sanctions !== [];
 
         $noteStats = [];
         if ($year !== null) {
@@ -145,19 +159,20 @@ class StudentController extends AbstractController
         }
 
         return $this->render('student/show.html.twig', [
-            'centre'           => $centre,
-            'student'          => $student,
-            'activeGroups'     => $activeGroups,
-            'timeline'         => $timeline,
-            'reportCount'      => count($reports),
-            'seriousCount'     => $seriousCount,
-            'prescribedCount'  => $prescribedCount,
-            'activeSanctions'  => $activeSanctions,
-            'canSeeContact'    => $canSeeContact,
-            'canEditContact'   => $canEditContact,
-            'isTutorOfStudent' => $isTutorOfStudent,
-            'noteStats'        => $noteStats,
-            'academicYear'     => $year,
+            'centre'             => $centre,
+            'student'            => $student,
+            'activeGroups'       => $activeGroups,
+            'timeline'           => $timeline,
+            'reportCount'        => count($reports),
+            'seriousCount'       => $seriousCount,
+            'prescribedCount'    => $prescribedCount,
+            'activeSanctions'    => $activeSanctions,
+            'canSeeContact'      => $canSeeContact,
+            'canEditContact'     => $canEditContact,
+            'isTutorOfStudent'   => $isTutorOfStudent,
+            'isRelatedToStudent' => $isRelatedToStudent,
+            'noteStats'          => $noteStats,
+            'academicYear'       => $year,
         ]);
     }
 

@@ -37,6 +37,8 @@ action_import_students: 'Importar estudiantes'
 
 quick_action_new_report: 'Nuevo parte'
 quick_action_new_report_help: 'Registrar una conducta contraria'
+quick_action_new_note: 'Nueva nota'
+quick_action_new_note_help: 'Registrar un retraso, salida al baño, etc.'
 quick_action_guards: 'Guardias'
 quick_action_guards_help: 'Ausencias, actividades y sancionados del día'
 quick_action_notify: 'Notificar'

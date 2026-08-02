@@ -1,9 +1,10 @@
 import { Controller } from '@hotwired/stimulus';
 
 const GROUP_LABELS = {
-    actions:  'Acciones',
-    students: 'Estudiantes',
-    teachers: 'Docentes',
+    actions:         'Acciones',
+    students_taught: 'Tu alumnado',
+    students_other:  'Otro alumnado',
+    teachers:        'Docentes',
 };
 
 const normalize = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();

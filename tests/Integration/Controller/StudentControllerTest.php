@@ -104,6 +104,40 @@ class StudentControllerTest extends ControllerTestCase
         self::assertStringNotContainsString('María Tutora', $content);
     }
 
+    public function testShowOnlyDisplaysDailyNotesForUnrelatedTeacher(): void
+    {
+        [, $centre, $group, $student] = $this->makeScenario();
+        $unrelated = $this->makeTeacher('student.unrelated.90');
+        $this->persist($unrelated);
+
+        $type = (new \App\Entity\DailyNoteType())
+            ->setEducationalCentre($centre)
+            ->setName('Retraso')
+            ->setOccurrencesForReport(0)
+            ->setPosition(0);
+        $note = (new \App\Entity\DailyNote())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setType($type)
+            ->setRegisteredBy($unrelated);
+        $this->persist($type, $note);
+        $this->flush();
+
+        $this->loginAs($unrelated, $centre);
+        $this->client->request('GET', '/alumnado/' . $student->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Retraso', $content);
+        self::assertSelectorExists('a[href*="/partes/nuevo"]');
+        self::assertSelectorExists('a[href*="/notas/nuevo"]');
+        self::assertStringNotContainsString('Historial de convivencia', $content);
+        self::assertStringNotContainsString('Datos de contacto', $content);
+        self::assertStringNotContainsString('Sanciones vigentes hoy', $content);
+        self::assertStringNotContainsString('Con conducta grave', $content);
+    }
+
     public function testShowDisplaysHistoryAndContactForGroupTutor(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();

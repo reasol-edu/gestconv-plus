@@ -49,15 +49,47 @@ class SearchController extends AbstractController
         $user   = $this->getUser();
         $viewer = $user instanceof Teacher ? $user : null;
 
-        $students = $this->studentRepository->searchByCentre($centre, $q, 5, $viewer);
+        $year     = $centre->getActiveAcademicYear();
+        $students = $year !== null ? $this->studentRepository->searchByCentre($centre, $q, 30) : [];
         if ($students !== []) {
-            $groups['students'] = array_map(fn ($s) => [
-                'label'    => $s->getName()->getLastName() . ', ' . $s->getName()->getFirstName(),
-                'sublabel' => $s->getStudentId(),
-                'url'      => $this->generateUrl('app_students_show', [
-                    'id' => $s->getId()->toRfc4122(),
-                ]),
-            ], $students);
+            $taught = [];
+            $other  = [];
+
+            foreach ($students as $s) {
+                $groupNames = [];
+                $isTaught   = false;
+
+                foreach ($s->getGroups() as $group) {
+                    if ($group->getAcademicYear() !== $year) {
+                        continue;
+                    }
+                    $groupNames[] = $group->getName();
+                    if ($viewer !== null && ($group->getTeachers()->contains($viewer) || $group->getTutors()->contains($viewer))) {
+                        $isTaught = true;
+                    }
+                }
+
+                $entry = [
+                    'label'    => $s->getName()->getLastName() . ', ' . $s->getName()->getFirstName(),
+                    'sublabel' => implode(', ', $groupNames),
+                    'url'      => $this->generateUrl('app_students_show', [
+                        'id' => $s->getId()->toRfc4122(),
+                    ]),
+                ];
+
+                if ($isTaught) {
+                    $taught[] = $entry;
+                } else {
+                    $other[] = $entry;
+                }
+            }
+
+            if ($taught !== []) {
+                $groups['students_taught'] = array_slice($taught, 0, 5);
+            }
+            if ($other !== []) {
+                $groups['students_other'] = array_slice($other, 0, 5);
+            }
         }
 
         if ($this->isGranted('educational_centre.section', $centre)) {

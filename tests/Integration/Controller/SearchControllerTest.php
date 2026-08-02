@@ -51,8 +51,9 @@ class SearchControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
-        self::assertArrayHasKey('students', $data['groups']);
-        self::assertStringContainsString('Buscable', $data['groups']['students'][0]['label']);
+        self::assertArrayHasKey('students_other', $data['groups']);
+        self::assertStringContainsString('Buscable', $data['groups']['students_other'][0]['label']);
+        self::assertSame('1DAW-A', $data['groups']['students_other'][0]['sublabel']);
     }
 
     public function testSearchReturnsStudentForGlobalAdmin(): void
@@ -76,8 +77,8 @@ class SearchControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
-        self::assertArrayHasKey('students', $data['groups']);
-        self::assertStringContainsString('GlobalAdmin', $data['groups']['students'][0]['label']);
+        self::assertArrayHasKey('students_other', $data['groups']);
+        self::assertStringContainsString('GlobalAdmin', $data['groups']['students_other'][0]['label']);
     }
 
     public function testSearchReturnsStudentInOwnGroupForNonAdminTeacher(): void
@@ -101,11 +102,12 @@ class SearchControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
-        self::assertArrayHasKey('students', $data['groups']);
-        self::assertStringContainsString('Visible', $data['groups']['students'][0]['label']);
+        self::assertArrayHasKey('students_taught', $data['groups']);
+        self::assertStringContainsString('Visible', $data['groups']['students_taught'][0]['label']);
+        self::assertSame('1DAW-A', $data['groups']['students_taught'][0]['sublabel']);
     }
 
-    public function testSearchDoesNotReturnStudentFromOtherGroupForNonAdminTeacher(): void
+    public function testSearchSeparatesTaughtAndOtherStudentsForNonAdminTeacher(): void
     {
         [$centre, , $course] = $this->makeChain('41000079', 'search.admin.79');
 
@@ -131,10 +133,40 @@ class SearchControllerTest extends ControllerTestCase
         $this->client->request('GET', '/buscar?q=Grupo');
 
         self::assertResponseIsSuccessful();
-        $data    = json_decode((string) $this->client->getResponse()->getContent(), true);
-        $labels  = array_column($data['groups']['students'] ?? [], 'label');
-        self::assertCount(1, $labels);
-        self::assertStringContainsString('MiGrupo', $labels[0]);
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+
+        $taughtLabels = array_column($data['groups']['students_taught'] ?? [], 'label');
+        $otherLabels  = array_column($data['groups']['students_other'] ?? [], 'label');
+        self::assertCount(1, $taughtLabels);
+        self::assertStringContainsString('MiGrupo', $taughtLabels[0]);
+        self::assertCount(1, $otherLabels);
+        self::assertStringContainsString('OtroGrupo', $otherLabels[0]);
+        self::assertSame('1DAW-B', $data['groups']['students_other'][0]['sublabel']);
+    }
+
+    public function testSearchPutsTutoredStudentInTaughtGroupEvenWithoutTeachingSubject(): void
+    {
+        [$centre, , $course] = $this->makeChain('41000080', 'search.admin.80');
+
+        $group   = (new Group())->setCourse($course)->setName('1DAW-A');
+        $student = new Student(new PersonName('Elena', 'Tutorizada'));
+        $student->setStudentId('NIE-80A');
+        $group->addStudent($student);
+
+        $tutor = (new Teacher(new PersonName('Tutor', 'Sin materia')))->setUsername('search.tutor.80');
+        $tutor->setPassword('x');
+        $group->addTutor($tutor);
+
+        $this->persist($group, $student, $tutor);
+
+        $this->loginAs($tutor, $centre);
+
+        $this->client->request('GET', '/buscar?q=Tutorizada');
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+        self::assertArrayHasKey('students_taught', $data['groups']);
+        self::assertStringContainsString('Tutorizada', $data['groups']['students_taught'][0]['label']);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

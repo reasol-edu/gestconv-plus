@@ -6,8 +6,6 @@ namespace App\Repository;
 
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
-use App\Entity\Group;
-
 use App\Entity\Student;
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -238,7 +236,8 @@ class StudentRepository extends ServiceEntityRepository
      *
      * @return list<Student>
      */
-    public function searchByCentre(EducationalCentre $centre, string $q, int $limit = 5, ?Teacher $viewer = null): array
+    /** @return list<Student> */
+    public function searchByCentre(EducationalCentre $centre, string $q, int $limit = 5): array
     {
         $year = $centre->getActiveAcademicYear();
         if ($year === null) {
@@ -262,15 +261,6 @@ class StudentRepository extends ServiceEntityRepository
                 'LOWER(s.name.lastName) LIKE LOWER(:search)',
             )
         )->setParameter('search', '%' . $q . '%');
-
-        if ($viewer !== null && !$viewer->isAdmin() && !$centre->getAdmins()->contains($viewer)) {
-            $qb->andWhere(
-                $qb->expr()->orX(
-                    'EXISTS (SELECT 1 FROM ' . Group::class . ' vg JOIN vg.groupTeachers vgt WHERE vg.id = g.id AND vgt.teacher = :viewerId)',
-                    'EXISTS (SELECT 1 FROM ' . Group::class . ' vg2 JOIN vg2.tutors vgtu WHERE vg2.id = g.id AND vgtu.id = :viewerId)',
-                )
-            )->setParameter('viewerId', $viewer->getId(), 'uuid');
-        }
 
         /** @var list<Student> $result */
         $result = $qb->setMaxResults($limit)->getQuery()->getResult();
