@@ -20,6 +20,8 @@ En la parte superior están los **accesos rápidos**: botones grandes pensados p
 por cada acción habitual, que solo aparecen para quien puede realizarlas:
 
 - **Nuevo parte** — todo el profesorado.
+- **Nueva nota** — todo el profesorado; para registrar un [aviso de comportamiento del día a
+  día](#notas) sin abrir un parte.
 - **Notificar** — con un contador en rojo si hay algo pendiente de comunicar; en gris y sin
   contador cuando no queda nada pendiente.
 - **Nueva sanción** — solo quien puede registrar sanciones.
@@ -163,7 +165,8 @@ la aplicación avisa de que conviene registrar también un parte.
 
 ![Formulario de nueva nota, vacío](img/notas/nueva-nota-vacio.png)
 
-1. Pulsa **Nueva nota** en la sección o desde la ficha del alumno, junto a **Nuevo parte**.
+1. Pulsa **Nueva nota** en la sección, en el acceso rápido del inicio o desde la ficha del
+   alumno, siempre junto a **Nuevo parte**.
 2. **Estudiante** — escribe el nombre o el NIE en el buscador; a diferencia de los partes, una
    nota es siempre para un único estudiante.
 3. **Tipo de nota** — elige uno de los tipos activos del centro. Los tipos que, de añadir esta
@@ -212,6 +215,11 @@ la cola de partes y sanciones cuya familia todavía no ha sido informada, e **Hi
 notificaciones**, con todas las comunicaciones registradas en el curso activo.
 
 ![Cola de notificaciones pendientes](img/notificaciones/notificaciones-pendientes.png)
+
+Los mismos partes y sanciones pendientes de notificar, junto con las [tareas de
+sanción](#tareas-de-sancion) propias todavía sin cumplimentar, aparecen también en la campana
+**Tareas pendientes** de la cabecera, ordenados por antigüedad. Cada elemento enlaza directamente
+a su pantalla de registro o de cumplimentación.
 
 Antes de las colas de partes y sanciones, la pestaña muestra los **estudiantes con partes
 pendientes de notificar** (solo los que el docente puede notificar), ordenados de más a menos
@@ -293,11 +301,15 @@ tutor/a del grupo**, o **ambos** (opción por defecto). Se configura en los ajus
 ## Ficha del estudiante
 
 La ficha del estudiante reúne en una sola pantalla toda la información de convivencia de un
-estudiante:
+estudiante. Su contenido depende de la relación del docente con ese estudiante:
 
 ![Ficha del estudiante con su historial de convivencia](img/alumnado/alumnado-ficha.png)
 
-- **Datos básicos** — nombre y grupo.
+- **Datos básicos** — nombre y grupo. Siempre visibles.
+- **Accesos directos** para registrar un nuevo parte o una nueva nota con el estudiante ya
+  seleccionado (y una nueva sanción, si se tienen permisos). Siempre visibles.
+- **Notas diarias** — el histórico y las ocurrencias por tipo (ver [Notas](#notas)). Siempre
+  visibles.
 - **Contadores** — partes registrados (indicando cuántos incluyen conductas graves y cuántos han
   prescrito) y sanciones vigentes hoy.
 - **Datos de contacto** — tutores legales, teléfonos y observaciones. Solo visibles para los
@@ -308,8 +320,11 @@ estudiante:
   curso académico distinto del activo y cada cambio se registra en el registro de actividad.
 - **Historial de convivencia** — los partes y sanciones del estudiante en orden cronológico, cada
   uno con su estado de notificación. Cada docente ve solo los que le permiten sus permisos.
-- **Accesos directos** para registrar un nuevo parte o una nueva sanción con el estudiante ya
-  seleccionado.
+
+Los dos últimos bloques (**Contadores** e **Historial de convivencia**) solo se muestran si el
+docente es administrador, tutor/a o imparte clase al estudiante, o si ha registrado él mismo algún
+parte o sanción suyo; para el resto del profesorado la ficha se reduce a los datos básicos, los
+accesos directos y las notas diarias.
 
 Se llega a la ficha desde el buscador global, los listados y detalles de partes y sanciones, y la
 lista *Alumnado con partes pendientes de sanción* del inicio.
@@ -525,7 +540,10 @@ agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni
 
 ![Paleta de búsqueda global abierta con resultados filtrados](img/buscar/buscar-global.png)
 
-- **Estudiantes** — abre la [ficha del estudiante](#ficha-del-estudiante) correspondiente.
+- **Estudiantes** — cada resultado muestra el grupo del estudiante y abre su
+  [ficha](#ficha-del-estudiante). Se muestran todos los del centro, separados entre **Tu
+  alumnado** (a quienes se imparte clase o se tutoriza) y **Otro alumnado**; sobre estos últimos
+  la ficha no muestra datos de contacto ni el historial de convivencia, solo las notas diarias.
 - **Docentes** — solo para administradores.
 - **Acciones** — accesos directos a **Nuevo parte**, **Ir a notificaciones** y **Cambiar de
   curso** (esta última requiere permisos de administración).

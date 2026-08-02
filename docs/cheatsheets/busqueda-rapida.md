@@ -33,7 +33,7 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 <div class="step">
   <span class="num">3</span>
   <div class="text">
-    <p>Escribe al menos 2 letras del nombre: aparecen estudiantes y, si eres del equipo directivo, también docentes.</p>
+    <p>Escribe al menos 2 letras: los estudiantes aparecen con su grupo, separados entre tu alumnado y el resto, y docentes si eres del equipo directivo.</p>
     <img src="img/busqueda-rapida-3.png" alt="Resultados de búsqueda de estudiantes y docentes">
   </div>
 </div>

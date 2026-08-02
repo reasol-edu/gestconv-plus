@@ -224,11 +224,13 @@ El parte pasa a **"Notificado"** y queda en el historial.
 
 ## Ficha del estudiante: qué ve un docente normal
 
-- Datos básicos del estudiante y su grupo.
-- Listado de **partes y sanciones** en los que aparece, con su estado.
-- Acceso directo para registrar un nuevo parte sobre ese mismo estudiante.
-- Un docente normal ve aquí **la misma información que en sus listados**: solo
-  lo relativo a los grupos donde imparte docencia.
+- Cualquier docente puede abrir la ficha de **cualquier estudiante del
+  centro**, no solo el suyo.
+- **Datos básicos**, accesos directos y **notas diarias**: siempre visibles.
+- **Contadores**, datos de contacto e **historial de convivencia** (partes y
+  sanciones): solo si le da clase, lo tutoriza o ha registrado algo suyo.
+- Para el resto del alumnado, la ficha se reduce a esos datos básicos y las
+  notas diarias.
 
 ---
 
