@@ -151,6 +151,60 @@ registrado, y son los únicos que pueden **eliminarlo** definitivamente (una acc
 Mientras el parte esté pendiente de comunicar a la familia y no esté prescrito, quien tenga
 permiso para notificarlo ve también un botón **Notificar** junto a los de editar y eliminar.
 
+## Notas
+
+La sección **Notas** del menú lateral permite registrar avisos de comportamiento del día a día
+(un retraso, salir al baño, usar el móvil en clase…) sin necesidad de abrir un parte de
+convivencia formal. Cada tipo de nota tiene un umbral de ocurrencias configurable por el centro
+(ver [Tipos de notas diarias](06-administrar-el-centro.md#tipos-de-notas-diarias)); al superarlo,
+la aplicación avisa de que conviene registrar también un parte.
+
+### Registrar una nota nueva
+
+![Formulario de nueva nota, vacío](img/notas/nueva-nota-vacio.png)
+
+1. Pulsa **Nueva nota** en la sección o desde la ficha del alumno, junto a **Nuevo parte**.
+2. **Estudiante** — escribe el nombre o el NIE en el buscador; a diferencia de los partes, una
+   nota es siempre para un único estudiante.
+3. **Tipo de nota** — elige uno de los tipos activos del centro. Los tipos que, de añadir esta
+   nota, alcanzarían el umbral de ocurrencias que dan lugar a parte se muestran resaltados en
+   rojo. Al elegir un tipo aparece, sin recargar la página, el historial de ese tipo para el
+   estudiante seleccionado (fecha/hora, docente y observaciones; las notas ya ignoradas se ven
+   atenuadas).
+
+   ![Tipo de nota resaltado en rojo con el historial del estudiante](img/notas/nueva-nota-tipo-historial.png)
+
+4. **Observaciones** — campo de texto libre, opcional.
+5. Pulsa **Guardar**. La pantalla de resumen muestra los datos de la nota y, si con ella se
+   alcanza o se supera el umbral del tipo elegido, un botón destacado para registrar un parte de
+   convivencia para ese mismo estudiante.
+
+> La fecha y hora de la nota se registran automáticamente en el momento de guardarla, y no se
+> pueden elegir manualmente.
+
+Si accedes como administrador y no impartes clase en el curso académico activo, el campo de
+docente aparece vacío para obligar a elegir a quién corresponde la nota, igual que en los partes.
+
+### Listado, filtros e historial del estudiante
+
+![Listado de notas con una fila ignorada mostrada en gris](img/notas/notas-listado.png)
+
+El listado admite búsqueda libre (estudiante, docente u observaciones), filtro por grupo (solo se
+listan los que tienen notas) y por tipo. Cada docente ve, como mínimo, sus propias notas y las de
+los grupos que tutoriza; solo los administradores ven todas. Quien tutoriza algún grupo dispone
+además de los botones **Mis notas** y **De mi tutoría** para acotar la vista.
+
+Puedes editar el texto de tus propias observaciones o eliminar una nota propia durante los 30
+minutos posteriores a su registro. Pasado ese tiempo, solo un administrador puede modificarla o
+eliminarla. Los tutores del grupo del estudiante pueden además marcar cualquier nota como
+**ignorada**, para que deje de contar en el umbral sin borrar el registro.
+
+La [ficha del estudiante](#ficha-del-estudiante) muestra también un histórico paginado de sus
+notas y las ocurrencias acumuladas por tipo, con accesos directos para registrar un parte o, para
+tutores y administradores, ignorar de golpe todas las notas actuales de un tipo.
+
+![Bloque de notas diarias en la ficha del estudiante, con estadísticas por tipo](img/notas/ficha-notas.png)
+
 ## Notificaciones
 
 La sección **Notificaciones** del menú lateral tiene dos pestañas: **Notificaciones pendientes**,

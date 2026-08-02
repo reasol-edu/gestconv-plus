@@ -95,6 +95,82 @@ async function fillQuill(page, mountSelector, text) {
     await page.close();
 }
 
+// ── Registrar una nota (roberto.guerrero) ────────────────────────────────────
+// Necesita datos sembrados con `tmp:seed-daily-notes` (ver
+// src/Command/TmpSeedDailyNotesCommand.php): dos notas previas de tipo «Retraso»
+// (umbral 3) para la misma estudiante, para que esta tercera nota alcance el
+// umbral y dispare el aviso de parte en la confirmación.
+{
+    const page = await browser.newPage({ ...iphone, locale: 'es-ES' });
+    await login(page, 'roberto.guerrero', 'ejemplo');
+
+    await page.goto(`${baseUrl}/notas`);
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    await page.locator('a:has-text("Nueva nota")').scrollIntoViewIfNeeded();
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/registrar-nota-1.png` });
+
+    await page.goto(`${baseUrl}/notas/nuevo`);
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+
+    const studentControl = page.locator('#student-select').locator('..').locator('.ts-control');
+    await studentControl.click();
+    await page.keyboard.type('Gil Cabrera', { delay: 30 });
+    await page.waitForTimeout(700);
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/registrar-nota-2.png` });
+    await page.locator('.ts-dropdown .option').first().click();
+    await page.waitForTimeout(500);
+
+    const retrasoLabel = page.locator('.type-radio-label', { hasText: 'Retraso' });
+    await retrasoLabel.click();
+    await page.waitForTimeout(500);
+    // scrollIntoViewIfNeeded sobre el historial deja el radio seleccionado fuera de la pantalla
+    // (por encima del viewport); en su lugar se calcula un desplazamiento fijo que deja tanto el
+    // radio resaltado en rojo como el historial visibles a la vez.
+    await retrasoLabel.evaluate(el => {
+        const rect = el.getBoundingClientRect();
+        window.scrollBy(0, rect.top - 90);
+    });
+    await page.waitForTimeout(150);
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/registrar-nota-3.png` });
+
+    await page.fill('#observations', 'Tercer retraso esta semana, sin justificante.');
+    await page.locator('button[type="submit"]').scrollIntoViewIfNeeded();
+    await hideToolbar(page);
+    await page.screenshot({ path: `${root}/registrar-nota-4.png` });
+
+    await page.click('button[type="submit"]');
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    // Un pantallazo del viewport completo (o incluso recortado solo por abajo) deja el botón fuera
+    // de la ficha impresa: a la altura máxima de imagen del tema (62mm) le sobra alto de sitio de
+    // página en este paso. Se recorta también por arriba, descartando la barra de navegación y la
+    // tarjeta con los datos (ya vistos en los pasos anteriores) y dejando solo el recuento de
+    // ocurrencias y el botón de aviso, con lo que la imagen queda más apaisada y el tema la
+    // encaja a una altura bastante menor de esos 62mm.
+    const reportButton = page.locator('a', { hasText: 'debería ir acompañada de un parte' });
+    let clipTop, clipBottom;
+    if (await reportButton.count() > 0) {
+        const box = await reportButton.boundingBox();
+        clipTop    = Math.max(0, box.y - 130);
+        clipBottom = box.y + box.height;
+    } else {
+        const box = await page.locator('.rounded-2xl.border').first().boundingBox();
+        clipTop    = box.y;
+        clipBottom = box.y + box.height;
+    }
+    await page.screenshot({
+        path: `${root}/registrar-nota-5.png`,
+        clip: { x: 0, y: clipTop, width: 390, height: Math.ceil(clipBottom - clipTop + 16) },
+    });
+
+    await page.close();
+}
+
 // ── Notificar un parte (beatriz.alonso) ──────────────────────────────────────
 {
     const page = await browser.newPage({ ...iphone, locale: 'es-ES' });

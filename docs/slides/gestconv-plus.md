@@ -117,6 +117,7 @@ Cada bloque solo añade lo que ese rol tiene **de más** sobre el anterior.
 Sin ningún rol especial, todo docente puede:
 
 - **Registrar partes de convivencia** de los estudiantes de sus grupos.
+- **Registrar notas diarias** (retraso, uso del móvil…) sin necesidad de un parte formal.
 - Consultar y filtrar **los partes que él mismo ha registrado**.
 - **Notificar a la familia** los partes cuyo aviso le corresponde (según el
   ajuste "quién notifica" del centro).
@@ -146,6 +147,21 @@ necesidad de ser tutor/a ni de pertenecer a la comisión de convivencia.
 
 Un mismo parte puede implicar a **varios estudiantes** a la vez si el
 incidente los afecta conjuntamente.
+
+---
+
+## Notas diarias: avisos sin abrir un parte
+
+- Sección **Notas**, para incidencias menores del día a día: retraso, salida
+  al baño, uso del móvil…
+- Cada **tipo de nota** tiene un umbral de ocurrencias que, al alcanzarse, se
+  resalta en rojo y sugiere abrir un parte de convivencia.
+- Al elegir el tipo se muestra al instante el **historial** de ese tipo para
+  el estudiante, sin recargar la página.
+- Puedes editar o eliminar tus propias notas durante los **30 minutos**
+  posteriores al registro.
+- La ficha del estudiante muestra el histórico y las ocurrencias acumuladas
+  por tipo, con acceso directo para registrar el parte si corresponde.
 
 ---
 
@@ -627,6 +643,19 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   notificación.
 - Si el centro no tiene ningún método activo, no se puede registrar ninguna
   comunicación hasta configurarlo.
+
+---
+
+## Tipos de notas diarias
+
+- Catálogo por centro, igual que métodos de comunicación: nombre, activar,
+  desactivar, reordenar.
+- Cada tipo tiene un umbral de **ocurrencias que dan lugar a parte** (0 =
+  nunca lo sugiere).
+- 4 tipos por defecto: **Salida al baño** (0), **Uso del móvil** (2),
+  **Retraso** (3) y **Otros** (0).
+- Exportable e importable en JSON, igual que el resto de catálogos del
+  centro.
 
 ---
 

@@ -175,14 +175,28 @@ son: Llamada telefónica, Mensajería Pasen, Correo electrónico, SMS, WhatsApp 
 Un método que ya se ha usado en alguna comunicación no se puede eliminar (aparece un aviso);
 desactívalo en su lugar.
 
+### Tipos de notas diarias
+
+En **Centro educativo › Tipos de notas diarias** se configura la lista —plana, sin categorías— de
+tipos disponibles al [registrar una nota](03-el-trabajo-diario.md#notas), con un campo adicional
+por tipo: **Ocurrencias que dan lugar a parte** (0 = este tipo nunca lo sugiere). Los 4 tipos por
+defecto son: Salida al baño (0), Uso del móvil (2), Retraso (3) y Otros (0); los centros que ya
+existían antes de esta funcionalidad los reciben automáticamente al actualizar.
+
+![Administración de tipos de notas diarias](img/notas/admin-tipos-notas.png)
+
+Un tipo que ya se ha usado en alguna nota no se puede eliminar (aparece un aviso); desactívalo en
+su lugar.
+
 ### Copiar catálogos entre centros
 
-Los cuatro catálogos incluyen botones **Exportar configuración** e **Importar configuración**
+Los cinco catálogos incluyen botones **Exportar configuración** e **Importar configuración**
 para copiar la configuración de un centro a otro: la exportación descarga un fichero con los elementos y sus
 categorías, y la importación lo vuelve a cargar, creando lo que no exista y actualizando el resto
 por nombre (sin distinguir mayúsculas). Al importar se puede marcar la opción de **vaciar el
 catálogo existente** antes de incorporar el fichero; esta acción no se puede deshacer (los
-métodos de comunicación ya usados en alguna comunicación se conservan aunque se marque).
+elementos ya usados —métodos de comunicación en alguna comunicación, tipos de nota en alguna
+nota— se conservan aunque se marque).
 
 ## Ajustes del centro
 
