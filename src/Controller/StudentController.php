@@ -9,6 +9,8 @@ use App\Entity\EducationalCentre;
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\Teacher;
+use App\Repository\DailyNoteRepository;
+use App\Repository\DailyNoteTypeRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\StudentRepository;
@@ -41,6 +43,8 @@ class StudentController extends AbstractController
         private readonly StudentRepository $students,
         private readonly IncidentReportRepository $reports,
         private readonly SanctionRepository $sanctions,
+        private readonly DailyNoteRepository $dailyNotes,
+        private readonly DailyNoteTypeRepository $dailyNoteTypes,
         private readonly StudentContactVisibility $contactVisibility,
         private readonly EntityManagerInterface $em,
         private readonly EntityChangeTracker $changeTracker,
@@ -128,6 +132,18 @@ class StudentController extends AbstractController
             }
         }
 
+        $noteStats = [];
+        if ($year !== null) {
+            foreach ($this->dailyNoteTypes->findByCentreOrdered($centre) as $type) {
+                $count       = $this->dailyNotes->countActiveByStudentAndType($student, $type, $year);
+                $noteStats[] = [
+                    'type'           => $type,
+                    'count'          => $count,
+                    'triggersReport' => $type->getOccurrencesForReport() > 0 && $count >= $type->getOccurrencesForReport(),
+                ];
+            }
+        }
+
         return $this->render('student/show.html.twig', [
             'centre'           => $centre,
             'student'          => $student,
@@ -140,6 +156,8 @@ class StudentController extends AbstractController
             'canSeeContact'    => $canSeeContact,
             'canEditContact'   => $canEditContact,
             'isTutorOfStudent' => $isTutorOfStudent,
+            'noteStats'        => $noteStats,
+            'academicYear'     => $year,
         ]);
     }
 

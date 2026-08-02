@@ -56,6 +56,32 @@ class StudentControllerTest extends ControllerTestCase
         self::assertStringContainsString('/sanciones/' . $sanction->getId()->toRfc4122(), $content);
     }
 
+    public function testShowDisplaysDailyNoteStatsAndReportButtonWhenThresholdReached(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $type = (new \App\Entity\DailyNoteType())
+            ->setEducationalCentre($centre)
+            ->setName('Retraso')
+            ->setOccurrencesForReport(1)
+            ->setPosition(0);
+        $note = (new \App\Entity\DailyNote())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setType($type)
+            ->setRegisteredBy($teacher);
+        $this->persist($type, $note);
+
+        $this->loginAs($teacher, $centre);
+        $this->client->request('GET', '/alumnado/' . $student->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Retraso', $content);
+        self::assertStringContainsString('/notas/nuevo', $content);
+        self::assertSelectorExists('a[href*="/partes/nuevo"]');
+    }
+
     public function testShowHidesOtherTeachersReportsAndContactFromPlainTeacher(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();

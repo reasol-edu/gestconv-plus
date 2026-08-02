@@ -1,0 +1,245 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'daily_note.new'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block stylesheets %}{{ parent() }}
+<style>
+.ts-wrapper { font-size: 0.875rem; }
+.ts-control {
+    border-radius: 0.75rem !important;
+    border-color: #e5e7eb !important;
+    background-color: #f9fafb !important;
+    padding: 0.5rem 0.875rem !important;
+    box-shadow: none !important;
+    gap: 0.25rem;
+}
+.ts-control:focus-within {
+    border-color: var(--color-forest-500) !important;
+    background-color: #fff !important;
+    box-shadow: 0 0 0 3px rgb(119 150 203 / 0.18) !important;
+}
+.ts-dropdown { border-radius: 0.75rem; border-color: #e5e7eb; box-shadow: 0 4px 12px rgb(0 0 0 / 0.08); overflow: hidden; }
+.ts-dropdown .option { padding: 0.5rem 0.875rem; font-size: 0.875rem; }
+.ts-dropdown .active { background: var(--color-forest-50); color: var(--color-forest-800); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_daily_notes_index') }}" class="hover:text-forest-600 transition-colors">{{ 'daily_note.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'daily_note.new'|trans({}, 'admin') }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'daily_note.new'|trans({}, 'admin') }}</h1>
+    </div>
+
+    {% if errors is not empty %}
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 space-y-1">
+            {% for error in errors %}
+                <p class="text-sm text-red-700">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{{ path('app_daily_notes_new') }}" class="space-y-8">
+        <input type="hidden" name="_token" value="{{ csrf_token('new_daily_note') }}">
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+                {{ 'daily_note.section.student'|trans({}, 'admin') }}
+            </h2>
+
+            {% if canChooseTeacher and centre.activeAcademicYear is not null %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                        {{ 'daily_note.field.registered_by'|trans({}, 'admin') }}
+                    </label>
+                    <select name="registered_by" required
+                            {% if errors.registered_by is defined %}aria-invalid="true"{% endif %}
+                            data-controller="symfony--ux-autocomplete--autocomplete"
+                            data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
+                            data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
+                            data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
+                            data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
+                            class="w-full">
+                        {% if selectedTeacher is not null %}
+                            <option value="{{ selectedTeacher.id }}" selected>
+                                {{ selectedTeacher.name.lastName }}, {{ selectedTeacher.name.firstName }}
+                            </option>
+                        {% endif %}
+                    </select>
+                    {% if errors.registered_by is defined %}
+                        <p class="mt-1 text-xs text-red-600">{{ errors.registered_by }}</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'daily_note.field.student'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+                </label>
+                <select id="student-select" name="student_pair" required
+                        {% if errors.student is defined %}aria-invalid="true"{% endif %}
+                        class="w-full">
+                    {% if preloadedStudent %}
+                        <option value="{{ preloadedStudent.value }}" selected>{{ preloadedStudent.label }}</option>
+                    {% endif %}
+                </select>
+                {% if errors.student is defined %}
+                    <p class="mt-1 text-xs text-red-600">{{ errors.student }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+                {{ 'daily_note.section.type'|trans({}, 'admin') }}
+            </h2>
+
+            {% if errors.type is defined %}
+                <p class="text-xs text-red-600">{{ errors.type }}</p>
+            {% endif %}
+
+            <div id="type-radios" class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {% for type in types %}
+                    <label class="type-radio-label flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer
+                                  hover:border-forest-300 transition-colors has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50"
+                           data-type-id="{{ type.id.toRfc4122 }}"
+                           data-occurrences="{{ type.occurrencesForReport }}">
+                        <input type="radio" name="type_id" value="{{ type.id.toRfc4122 }}"
+                               {{ formData.type_id ?? '' == type.id.toRfc4122 ? 'checked' : '' }}
+                               class="h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span class="type-radio-text text-sm font-medium text-gray-700">{{ type.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div id="type-history" class="pt-2"></div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+                {{ 'daily_note.section.observations'|trans({}, 'admin') }}
+            </h2>
+            <div>
+                <label for="observations" class="block text-sm font-medium text-gray-700 mb-1.5">
+                    {{ 'daily_note.field.observations'|trans({}, 'admin') }}
+                </label>
+                <textarea id="observations" name="observations" rows="3"
+                          class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                                 focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">{{ formData.observations ?? '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+            <a href="{{ path('app_daily_notes_index') }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors">
+                {{ 'daily_note.cancel'|trans({}, 'admin') }}
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                {{ 'daily_note.save'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script type="module">
+import TomSelect from 'tom-select';
+
+const preloadedStudent = {{ preloadedStudent ? preloadedStudent|json_encode(constant('JSON_HEX_TAG'))|raw : 'null' }};
+
+const studentSelect = new TomSelect('#student-select', {
+    valueField: 'value',
+    labelField: 'label',
+    searchField: ['label', 'secondary'],
+    maxItems: 1,
+    options: preloadedStudent ? [preloadedStudent] : [],
+    items: preloadedStudent ? [preloadedStudent.value] : [],
+    load: function(query, callback) {
+        if (query.length < 2) return callback();
+        fetch('{{ path('app_incidents_search_students') }}?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(callback)
+            .catch(() => callback());
+    },
+    render: {
+        option: (data, esc) => `<div><span class="font-medium">${esc(data.label)}</span> <span class="text-xs text-gray-400 ml-1">${esc(data.secondary || '')}</span></div>`,
+        item: (data, esc) => `<span>${esc(data.label)}</span>`,
+        no_results: () => `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`,
+    },
+    shouldLoad: (q) => q.length >= 2,
+    onChange: onStudentChanged,
+});
+
+const typeRadios       = document.querySelectorAll('#type-radios input[name="type_id"]');
+const typeHistoryPanel = document.getElementById('type-history');
+
+function currentStudentId() {
+    const value = studentSelect.getValue();
+    return value ? String(value).split('::')[0] : '';
+}
+
+function onStudentChanged() {
+    updateTypeStatus();
+    const checked = document.querySelector('#type-radios input[name="type_id"]:checked');
+    if (checked) loadTypeHistory(checked.value);
+}
+
+function updateTypeStatus() {
+    const studentId = currentStudentId();
+    document.querySelectorAll('.type-radio-label').forEach(label => {
+        label.querySelector('.type-radio-text').classList.remove('text-red-600', 'font-semibold');
+    });
+    if (!studentId) return;
+
+    fetch('{{ path('app_daily_notes_type_status') }}?studentId=' + encodeURIComponent(studentId))
+        .then(r => r.json())
+        .then(data => {
+            (data.types || []).forEach(t => {
+                if (!t.warn) return;
+                const label = document.querySelector('.type-radio-label[data-type-id="' + t.id + '"]');
+                if (label) label.querySelector('.type-radio-text').classList.add('text-red-600', 'font-semibold');
+            });
+        })
+        .catch(() => {});
+}
+
+function loadTypeHistory(typeId, page) {
+    const studentId = currentStudentId();
+    if (!studentId || !typeId) {
+        typeHistoryPanel.innerHTML = '';
+        return;
+    }
+    const url = '{{ path('app_daily_notes_type_history') }}?studentId=' + encodeURIComponent(studentId)
+        + '&typeId=' + encodeURIComponent(typeId) + '&page=' + (page || 1);
+    fetch(url)
+        .then(r => r.text())
+        .then(html => { typeHistoryPanel.innerHTML = html; })
+        .catch(() => {});
+}
+
+typeRadios.forEach(radio => {
+    radio.addEventListener('change', () => loadTypeHistory(radio.value));
+});
+
+typeHistoryPanel.addEventListener('click', (event) => {
+    const link = event.target.closest('[data-history-page]');
+    if (!link) return;
+    event.preventDefault();
+    const checked = document.querySelector('#type-radios input[name="type_id"]:checked');
+    if (checked) loadTypeHistory(checked.value, link.dataset.historyPage);
+});
+
+if (preloadedStudent) onStudentChanged();
+</script>
+{% endblock %}

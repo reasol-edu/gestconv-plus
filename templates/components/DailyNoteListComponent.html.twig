@@ -1,0 +1,150 @@
+{% import 'components/_pagination_live.html.twig' as pager %}
+<div {{ attributes }}>
+    {% if centre.activeAcademicYear is null %}
+        <div class="px-6 py-16 text-center">
+            {{ ux_icon('heroicons:exclamation-circle', {class: 'mx-auto h-10 w-10 text-amber-300 mb-3'}) }}
+            <p class="text-sm text-gray-500">{{ 'daily_note.no_active_year'|trans({}, 'admin') }}</p>
+        </div>
+    {% else %}
+        {% set pagination = this.pagination %}
+        {% set groups = this.groups %}
+        {% set types = this.types %}
+
+        {# Barra de filtros #}
+        <div class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
+
+            {# Búsqueda libre #}
+            <div class="relative flex-1 min-w-48">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    {{ ux_icon('heroicons:magnifying-glass', {class: 'h-4 w-4 text-gray-400'}) }}
+                </div>
+                <input type="search"
+                       data-model="norender|search"
+                       data-action="input->live#action"
+                       data-live-action-param="resetPage"
+                       placeholder="{{ 'students.search'|trans({}, 'admin') }}"
+                       value="{{ search }}"
+                       class="block w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm
+                              text-gray-900 placeholder-gray-400 focus:border-forest-500 focus:outline-none
+                              focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+
+            {# Filtro por grupo #}
+            {% if groups is not empty %}
+                <select data-model="norender|groupId"
+                        data-action="change->live#action"
+                        data-live-action-param="resetPage"
+                        class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
+                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0 min-w-[8rem]">
+                    <option value="">{{ 'daily_note.filter.all'|trans({}, 'admin') }}</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id.toRfc4122 }}"
+                                {{ groupId == group.id.toRfc4122 ? 'selected' : '' }}>
+                            {{ group.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            {# Filtro por tipo de nota #}
+            {% if types is not empty %}
+                <select data-model="norender|typeId"
+                        data-action="change->live#action"
+                        data-live-action-param="resetPage"
+                        class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
+                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0 min-w-[8rem]">
+                    <option value="">{{ 'daily_note.filter.all'|trans({}, 'admin') }}</option>
+                    {% for type in types %}
+                        <option value="{{ type.id.toRfc4122 }}"
+                                {{ typeId == type.id.toRfc4122 ? 'selected' : '' }}>
+                            {{ type.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            {% if tutors_any_group() or is_centre_admin() %}
+                <button data-action="live#action" data-live-action-param="toggleOwnOnly"
+                        class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                               {{ ownOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
+                    {{ ux_icon('heroicons:user', {class: 'h-3.5 w-3.5'}) }}
+                    {{ 'daily_note.filter.own_only'|trans({}, 'admin') }}
+                </button>
+            {% endif %}
+
+            {% if tutors_any_group() %}
+                <button data-action="live#action" data-live-action-param="toggleTutoringOnly"
+                        class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                               {{ tutoringOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
+                    {{ ux_icon('heroicons:academic-cap', {class: 'h-3.5 w-3.5'}) }}
+                    {{ 'daily_note.filter.tutoring_only'|trans({}, 'admin') }}
+                </button>
+            {% endif %}
+
+            <svg data-loading class="hidden h-4 w-4 text-forest-500 animate-spin shrink-0 ml-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 22 6.477 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+            </svg>
+        </div>
+
+        <div data-loading="addClass(opacity-50 pointer-events-none animate-pulse)" class="transition-opacity">
+        {% if pagination.totalItems == 0 %}
+            <div class="px-6 py-16 text-center">
+                {{ ux_icon('heroicons:document-text', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+                <p class="text-sm text-gray-500">
+                    {{ (this.hasActiveFilters ? 'daily_note.search_empty' : 'daily_note.empty')|trans({}, 'admin') }}
+                </p>
+            </div>
+        {% else %}
+            <div class="overflow-x-auto">
+                <table class="table-cards w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-100 bg-gray-50">
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'daily_note.col.occurred_at'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'daily_note.col.student'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'daily_note.col.group'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'daily_note.col.type'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'daily_note.col.teacher'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'daily_note.col.observations'|trans({}, 'admin') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for note in pagination.items %}
+                            <tr class="hover:bg-gray-50 transition-colors {{ note.ignored ? 'opacity-50' : '' }}">
+                                <td data-label="{{ 'daily_note.col.occurred_at'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ note.occurredAt|date('format.datetime'|trans) }}</td>
+                                <td data-label="{{ 'daily_note.col.student'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 font-medium text-gray-900">
+                                    <a href="{{ path('app_students_show', {id: note.student.id}) }}"
+                                       class="hover:text-forest-700 hover:underline transition-colors">
+                                        {{ note.student.name.lastName }}, {{ note.student.name.firstName }}
+                                    </a>
+                                </td>
+                                <td data-label="{{ 'daily_note.col.group'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 text-gray-600">{{ note.group.name }}</td>
+                                <td data-label="{{ 'daily_note.col.type'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 text-gray-600">{{ note.type.name }}</td>
+                                <td data-label="{{ 'daily_note.col.teacher'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4 text-gray-600">{{ note.registeredBy.name.lastName }}, {{ note.registeredBy.name.firstName }}</td>
+                                <td data-label="{{ 'daily_note.col.observations'|trans({}, 'admin')|e('html_attr') }}"
+                                    class="px-6 py-4">
+                                    <div class="w-[220px] truncate text-xs text-gray-500">
+                                        {{ note.observations }}
+                                        {% if note.ignored %}
+                                            <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[11px] font-medium ml-1">
+                                                {{ 'daily_note.badge.ignored'|trans({}, 'admin') }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {{ pager.nav(pagination) }}
+        {% endif %}
+        </div>
+    {% endif %}
+</div>

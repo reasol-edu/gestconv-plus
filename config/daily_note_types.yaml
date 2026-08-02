@@ -1,0 +1,9 @@
+types:
+    - name: 'Salida al baño'
+      occurrences_for_report: 0
+    - name: 'Uso del móvil'
+      occurrences_for_report: 2
+    - name: 'Retraso'
+      occurrences_for_report: 3
+    - name: 'Otros'
+      occurrences_for_report: 0

@@ -1,0 +1,39 @@
+{% if pagination is null %}
+    <p class="text-xs text-gray-400">{{ 'daily_note.type_history.select_hint'|trans({}, 'admin') }}</p>
+{% elseif pagination.totalItems == 0 %}
+    <p class="text-xs text-gray-400">{{ 'daily_note.type_history.empty'|trans({}, 'admin') }}</p>
+{% else %}
+    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">{{ 'daily_note.type_history.title'|trans({}, 'admin') }}</p>
+    <ul class="divide-y divide-gray-100 rounded-xl border border-gray-200 overflow-hidden">
+        {% for note in pagination.items %}
+            <li class="px-4 py-2.5 {{ note.ignored ? 'opacity-50' : '' }}">
+                <p class="text-xs font-medium text-gray-700">
+                    {{ note.occurredAt|date('format.datetime'|trans) }}
+                    · {{ note.registeredBy.name.lastName }}, {{ note.registeredBy.name.firstName }}
+                    {% if note.ignored %}
+                        <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[10px] font-medium ml-1">
+                            {{ 'daily_note.badge.ignored'|trans({}, 'admin') }}
+                        </span>
+                    {% endif %}
+                </p>
+                {% if note.observations %}
+                    <p class="mt-0.5 text-xs text-gray-500">{{ note.observations }}</p>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    {% if pagination.totalPages > 1 %}
+        <div class="mt-2 flex items-center justify-center gap-1">
+            {% if pagination.hasPreviousPage %}
+                <button type="button" data-history-page="{{ pagination.previousPage }}"
+                        class="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50">‹</button>
+            {% endif %}
+            <span class="text-xs text-gray-400 px-2">{{ pagination.currentPage }} / {{ pagination.totalPages }}</span>
+            {% if pagination.hasNextPage %}
+                <button type="button" data-history-page="{{ pagination.nextPage }}"
+                        class="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50">›</button>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endif %}

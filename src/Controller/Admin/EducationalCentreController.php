@@ -14,6 +14,7 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\TeacherRepository;
 use App\Service\ActivityLogService;
 use App\Service\CommunicationMethodSeeder;
+use App\Service\DailyNoteTypeSeeder;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentBehaviorSeeder;
 use App\Service\LocationOptionSeeder;
@@ -48,6 +49,7 @@ class EducationalCentreController extends AbstractController
         private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
         private readonly CommunicationMethodSeeder $communicationMethodSeeder,
         private readonly LocationOptionSeeder $locationOptionSeeder,
+        private readonly DailyNoteTypeSeeder $dailyNoteTypeSeeder,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
         private readonly TenantContext $tenantContext,
@@ -101,6 +103,7 @@ class EducationalCentreController extends AbstractController
                 $this->sanctionMeasureSeeder->seedForCentre($centre);
                 $this->communicationMethodSeeder->seedForCentre($centre);
                 $this->locationOptionSeeder->seedForCentre($centre);
+                $this->dailyNoteTypeSeeder->seedForCentre($centre);
                 $this->em->flush();
 
                 if (!$this->tenantContext->isSelected()) {

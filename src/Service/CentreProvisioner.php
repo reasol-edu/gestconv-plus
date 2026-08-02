@@ -24,6 +24,7 @@ final class CentreProvisioner
         private readonly SanctionMeasureSeeder $sanctionMeasureSeeder,
         private readonly CommunicationMethodSeeder $communicationMethodSeeder,
         private readonly LocationOptionSeeder $locationOptionSeeder,
+        private readonly DailyNoteTypeSeeder $dailyNoteTypeSeeder,
     ) {}
 
     public function provision(string $code, string $name, string $city, string $academicYearName): EducationalCentre
@@ -46,6 +47,7 @@ final class CentreProvisioner
         $this->sanctionMeasureSeeder->seedForCentre($centre);
         $this->communicationMethodSeeder->seedForCentre($centre);
         $this->locationOptionSeeder->seedForCentre($centre);
+        $this->dailyNoteTypeSeeder->seedForCentre($centre);
 
         $this->em->flush();
 

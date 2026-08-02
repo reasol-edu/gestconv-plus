@@ -39,6 +39,12 @@
                 {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
                 {{ 'incident.new'|trans({}, 'admin') }}
             </a>
+            <a href="{{ firstGroup ? path('app_daily_notes_new', {studentId: student.id, groupId: firstGroup.id}) : path('app_daily_notes_new') }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
+                {{ 'daily_note.new'|trans({}, 'admin') }}
+            </a>
             {% if firstGroup and is_granted('sanction.create', centre) %}
                 <a href="{{ path('app_sanctions_new', {studentId: student.id, groupId: firstGroup.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
@@ -72,6 +78,52 @@
 
     {# ── Datos de contacto ─────────────────────────────────────────────────── #}
     {% include 'student/_contact.html.twig' with { student: student, canSeeContact: canSeeContact, canEditContact: canEditContact } %}
+
+    {# ── Notas diarias ─────────────────────────────────────────────────────── #}
+    {% if academicYear is not null %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+            <div class="border-b border-gray-100 px-6 py-3.5">
+                <h2 class="text-sm font-semibold text-gray-800">{{ 'daily_note.student_history_title'|trans({}, 'admin') }}</h2>
+            </div>
+            <twig:DailyNoteStudentHistoryComponent :student="student" :academicYear="academicYear" />
+
+            {% if noteStats is not empty %}
+                <div class="border-t border-gray-100 px-6 py-4 space-y-2">
+                    {% for stat in noteStats %}
+                        <div class="flex items-center justify-between gap-3 text-sm">
+                            <span class="text-gray-600">
+                                {{ stat.type.name }}
+                                <span class="text-gray-400 tabular-nums">({{ stat.count }}{% if stat.type.occurrencesForReport > 0 %}/{{ stat.type.occurrencesForReport }}{% endif %})</span>
+                            </span>
+                            <div class="flex items-center gap-2">
+                                {% if stat.triggersReport %}
+                                    <a href="{{ firstGroup ? path('app_incidents_new', {studentId: student.id, groupId: firstGroup.id}) : path('app_incidents_new') }}"
+                                       class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors">
+                                        {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3.5 w-3.5'}) }}
+                                        {{ 'daily_note.stats.register_report'|trans({}, 'admin') }}
+                                    </a>
+                                {% endif %}
+                                {% if (isTutorOfStudent or is_centre_admin()) and stat.count > 0 %}
+                                    <form method="post" action="{{ path('app_daily_notes_ignore_type') }}"
+                                          class="js-confirm-form"
+                                          data-confirm="{{ 'daily_note.stats.ignore_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('ignore_daily_note_type_' ~ student.id ~ '_' ~ stat.type.id) }}">
+                                        <input type="hidden" name="studentId" value="{{ student.id }}">
+                                        <input type="hidden" name="typeId" value="{{ stat.type.id }}">
+                                        <button type="submit"
+                                                class="js-confirm-trigger inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium
+                                                       text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                            {{ 'daily_note.stats.ignore_current'|trans({}, 'admin') }}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
 
     {# ── Historial ─────────────────────────────────────────────────────────── #}
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">

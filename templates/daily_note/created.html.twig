@@ -1,0 +1,70 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'daily_note.created.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-2xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_daily_notes_index') }}" class="hover:text-forest-600 transition-colors">{{ 'daily_note.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'daily_note.created.title'|trans({}, 'admin') }}</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
+                {{ ux_icon('heroicons:check', {class: 'h-5 w-5'}) }}
+            </span>
+            <h1 class="text-2xl font-bold text-gray-900">{{ 'daily_note.created.title'|trans({}, 'admin') }}</h1>
+        </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-3">
+        <p class="text-sm font-medium text-gray-900">
+            <a href="{{ path('app_students_show', {id: note.student.id}) }}" class="hover:text-forest-700 hover:underline">
+                {{ note.student.name.lastName }}, {{ note.student.name.firstName }}
+            </a>
+            · {{ note.group.name }}
+        </p>
+        <p class="text-sm text-gray-600">
+            <span class="inline-flex items-center rounded-full bg-sky-50 text-sky-700 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide">
+                {{ note.type.name }}
+            </span>
+            <span class="ml-2 text-xs text-gray-400">{{ note.occurredAt|date('format.datetime'|trans) }}</span>
+        </p>
+        {% if note.observations %}
+            <p class="text-sm text-gray-600">{{ note.observations }}</p>
+        {% endif %}
+        {% if note.type.occurrencesForReport > 0 %}
+            <p class="text-xs text-gray-400">
+                {{ 'daily_note.created.occurrence_count'|trans({'%count%': count, '%threshold%': note.type.occurrencesForReport}, 'admin') }}
+            </p>
+        {% endif %}
+    </div>
+
+    {% if triggersReport %}
+        <a href="{{ path('app_incidents_new', {studentId: note.student.id, groupId: note.group.id}) }}"
+           class="flex items-center justify-center gap-3 rounded-2xl bg-red-600 px-6 py-5 text-base font-semibold text-white
+                  hover:bg-red-700 transition-colors shadow-sm">
+            {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-6 w-6'}) }}
+            {{ 'daily_note.created.should_report'|trans({}, 'admin') }}
+        </a>
+    {% endif %}
+
+    <div class="flex items-center justify-end gap-3">
+        <a href="{{ path('app_daily_notes_index') }}"
+           class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                  hover:bg-gray-50 transition-colors">
+            {{ 'daily_note.created.back_to_list'|trans({}, 'admin') }}
+        </a>
+        <a href="{{ path('app_daily_notes_new') }}"
+           class="inline-flex items-center gap-2 rounded-xl border border-forest-200 bg-forest-50 px-4 py-2.5 text-sm font-medium text-forest-700
+                  hover:bg-forest-100 transition-colors">
+            {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+            {{ 'daily_note.created.create_another'|trans({}, 'admin') }}
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -89,9 +89,11 @@ class AppFixtures extends Fixture
         $stmts = [
             'DELETE FROM ' . $q('incident_report_behavior'),
             'DELETE FROM ' . $q('incident_report'),
+            'DELETE FROM ' . $q('daily_note'),
             'DELETE FROM ' . $q('sanction_sanction_measure'),
             'DELETE FROM ' . $q('sanction'),
             'DELETE FROM ' . $q('incident_behavior'),
+            'DELETE FROM ' . $q('daily_note_type'),
             'DELETE FROM ' . $q('student_groups'),
             'DELETE FROM ' . $q('student'),
             'DELETE FROM ' . $q('group_tutor'),
