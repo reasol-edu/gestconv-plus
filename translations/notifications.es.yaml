@@ -6,6 +6,7 @@ bell:
     item:
         report: 'Parte de %student% pendiente de notificar'
         sanction: 'Sanción de %student% pendiente de notificar'
+        task: 'Tarea de sanción de %student% pendiente de cumplimentar'
 
 item:
     signature_due: '{1} 1 firma pendiente (la estancia termina pronto)|]1,Inf[ %count% firmas pendientes (la estancia termina pronto)'

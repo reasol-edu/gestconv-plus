@@ -6,7 +6,9 @@ namespace App\Twig\Components;
 
 use App\Entity\IncidentReport;
 use App\Entity\Sanction;
+use App\Entity\SanctionTask;
 use App\Entity\Teacher;
+use App\Repository\SanctionTaskRepository;
 use App\Service\PendingNotificationQueue;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,15 +22,16 @@ class NotificationBellComponent extends AbstractController
 
     public const MAX_ITEMS = 8;
 
-    /** @var list<array{type: 'report'|'sanction', entity: IncidentReport|Sanction, date: \DateTimeImmutable}>|null */
+    /** @var list<array{type: 'report'|'sanction'|'task', entity: IncidentReport|Sanction|SanctionTask, date: \DateTimeImmutable}>|null */
     private ?array $items = null;
 
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
+        private readonly SanctionTaskRepository $sanctionTaskRepository,
     ) {}
 
-    /** @return list<array{type: 'report'|'sanction', entity: IncidentReport|Sanction, date: \DateTimeImmutable}> */
+    /** @return list<array{type: 'report'|'sanction'|'task', entity: IncidentReport|Sanction|SanctionTask, date: \DateTimeImmutable}> */
     public function getItems(): array
     {
         if ($this->items !== null) {
@@ -55,6 +58,13 @@ class NotificationBellComponent extends AbstractController
         foreach ($queue['sanctions'] as $sanction) {
             $items[] = ['type' => 'sanction', 'entity' => $sanction, 'date' => $sanction->getCreatedAt()];
         }
+        foreach ($this->sanctionTaskRepository->findPendingForTeacher($centre, $user, $year) as $task) {
+            $items[] = [
+                'type'   => 'task',
+                'entity' => $task,
+                'date'   => $task->getSanction()->getEffectiveFrom() ?? $task->getSanction()->getCreatedAt(),
+            ];
+        }
 
         usort($items, static fn (array $a, array $b): int => $a['date'] <=> $b['date']);
 
@@ -66,7 +76,7 @@ class NotificationBellComponent extends AbstractController
         return count($this->getItems());
     }
 
-    /** @return list<array{type: 'report'|'sanction', entity: IncidentReport|Sanction, date: \DateTimeImmutable}> */
+    /** @return list<array{type: 'report'|'sanction'|'task', entity: IncidentReport|Sanction|SanctionTask, date: \DateTimeImmutable}> */
     public function getVisibleItems(): array
     {
         return array_slice($this->getItems(), 0, self::MAX_ITEMS);

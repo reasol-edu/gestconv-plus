@@ -149,6 +149,32 @@ class SanctionTaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns the teacher's own pending (incomplete) tasks for the given centre/year, most
+     * urgent (earliest sanction start) first — for the header bell.
+     *
+     * @return list<SanctionTask>
+     */
+    public function findPendingForTeacher(EducationalCentre $centre, Teacher $teacher, AcademicYear $year): array
+    {
+        /** @var list<SanctionTask> $result */
+        $result = $this->createQueryBuilder('t')
+            ->addSelect('s', 'gt', 'st')
+            ->join('t.sanction', 's')
+            ->join('s.student', 'st')
+            ->join('t.groupTeacher', 'gt')
+            ->where('s.academicYear = :year')
+            ->andWhere('gt.teacher = :teacher')
+            ->andWhere('t.completedAt IS NULL')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('teacher', $teacher->getId(), 'uuid')
+            ->orderBy('s.effectiveFrom', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
      * Counts the teacher's own pending tasks for the given centre/year (dashboard widget).
      */
     public function countPendingForTeacher(EducationalCentre $centre, Teacher $teacher, AcademicYear $year): int

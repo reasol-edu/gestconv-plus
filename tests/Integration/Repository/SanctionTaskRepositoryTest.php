@@ -103,6 +103,39 @@ class SanctionTaskRepositoryTest extends RepositoryTestCase
         self::assertSame($other, $result[0]->getGroupTeacher()->getTeacher());
     }
 
+    public function testFindPendingForTeacherReturnsOnlyIncompleteOwnTasksOrderedByEffectiveFrom(): void
+    {
+        $world  = $this->makeWorld('pending');
+        $other  = $this->makeTeacher('pending-other');
+        $world['group']->addTeacher($other, 'Física');
+        $this->flush();
+
+        $sanctionA = $this->makeSanction($world, requiresDates: true);
+        $sanctionA->setEffectiveFrom(new \DateTimeImmutable('+10 days'));
+        $tasksA    = $this->generator->generateFor($sanctionA);
+
+        $sanctionB = $this->makeSanction($world, requiresDates: true);
+        $sanctionB->setEffectiveFrom(new \DateTimeImmutable('+2 days'));
+        $tasksB    = $this->generator->generateFor($sanctionB);
+
+        foreach ($tasksA as $task) {
+            if ($task->getGroupTeacher()->getTeacher() === $other) {
+                $task->setCompletedAt(new \DateTimeImmutable());
+            }
+        }
+        $this->flush();
+
+        $result = $this->repository->findPendingForTeacher($world['centre'], $world['teacher'], $world['year']);
+
+        self::assertCount(2, $result);
+        self::assertSame($sanctionB, $result[0]->getSanction());
+        self::assertSame($sanctionA, $result[1]->getSanction());
+        foreach ($result as $task) {
+            self::assertNull($task->getCompletedAt());
+            self::assertSame($world['teacher'], $task->getGroupTeacher()->getTeacher());
+        }
+    }
+
     public function testCountPendingForTeacherCountsOnlyIncompleteOwnTasks(): void
     {
         $world    = $this->makeWorld('count');
