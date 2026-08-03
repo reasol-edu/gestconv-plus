@@ -20,7 +20,8 @@
                                   hover:border-forest-300 transition-colors {{ typeId == t.id.toRfc4122 ? 'border-forest-400 bg-forest-50' : '' }}">
                         <input type="radio" name="type_id" value="{{ t.id.toRfc4122 }}"
                                {{ typeId == t.id.toRfc4122 ? 'checked' : '' }}
-                               data-action="live#action" data-live-action-param="selectType" data-live-id-param="{{ t.id.toRfc4122 }}"
+                               data-model="typeId"
+                               data-action="change->live#action" data-live-action-param="resetTypeFilters"
                                class="h-4 w-4 border-gray-300 text-forest-600 focus:ring-forest-500">
                         <span class="text-sm font-medium text-gray-700">{{ t.name }}</span>
                     </label>

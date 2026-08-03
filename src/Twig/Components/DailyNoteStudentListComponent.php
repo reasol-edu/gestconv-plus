@@ -17,7 +17,6 @@ use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
-use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
@@ -117,9 +116,8 @@ class DailyNoteStudentListComponent extends AbstractController
     }
 
     #[LiveAction]
-    public function selectType(#[LiveArg] string $id): void
+    public function resetTypeFilters(): void
     {
-        $this->typeId  = $id;
         $this->groupId = '';
         $this->page    = 1;
     }
