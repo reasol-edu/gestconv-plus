@@ -19,6 +19,7 @@ use App\Entity\NonWorkingDay;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\Sanction;
+use App\Entity\SchoolEvent;
 use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -142,6 +143,49 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertStringNotContainsString('<strong>', $content);
     }
 
+    public function testUnifiedCalendarShowsGeneralEventToAnyTeacher(): void
+    {
+        $world   = $this->makeScenario();
+        $viewer  = (new Teacher(new PersonName('Viewer', 'Teacher')))->setUsername('calendar.event.viewer');
+        $this->persist($viewer);
+        $event = (new SchoolEvent())
+            ->setAcademicYear($world['year'])
+            ->setDate($this->weekdayInCurrentMonth())
+            ->setStartTime(new \DateTimeImmutable('09:00'))
+            ->setEndTime(new \DateTimeImmutable('10:00'))
+            ->setName('Claustro')
+            ->setGeneral(true);
+        $this->persist($event);
+
+        $this->loginAs($viewer, $world['centre']);
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Claustro', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testUnifiedCalendarHidesRestrictedEventFromUnrelatedTeacher(): void
+    {
+        $world   = $this->makeScenario();
+        $viewer  = (new Teacher(new PersonName('Viewer', 'Teacher')))->setUsername('calendar.event.unrelated');
+        $this->persist($viewer);
+        $event = (new SchoolEvent())
+            ->setAcademicYear($world['year'])
+            ->setDate($this->weekdayInCurrentMonth())
+            ->setStartTime(new \DateTimeImmutable('09:00'))
+            ->setEndTime(new \DateTimeImmutable('10:00'))
+            ->setName('Reunión de 1ºA')
+            ->setGeneral(false);
+        $event->addGroup($world['group']);
+        $this->persist($event);
+
+        $this->loginAs($viewer, $world['centre']);
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('Reunión de 1ºA', (string) $this->client->getResponse()->getContent());
+    }
+
     public function testHidesSaturdayAndSundayColumns(): void
     {
         $centre = $this->makeCentre('46000031');
@@ -255,6 +299,101 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         $content = (string) $this->client->getResponse()->getContent();
         self::assertStringContainsString('Marta Ruiz', $content);
+    }
+
+    // ── Vista de día ─────────────────────────────────────────────────────────
+
+    public function testDayViewRendersSuccessfully(): void
+    {
+        $world = $this->makeScenario();
+        $admin = $this->makeAdmin('calendar.day.render');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testDayViewReturns404ForInvalidDateFormat(): void
+    {
+        $world = $this->makeScenario();
+        $admin = $this->makeAdmin('calendar.day.invalid');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/dia/not-a-date');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testDayViewShowsPrevAndNextDayLinks(): void
+    {
+        $world = $this->makeScenario();
+        $admin = $this->makeAdmin('calendar.day.nav');
+        $this->loginAs($admin, $world['centre']);
+
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+
+        self::assertSelectorExists('a[href="/calendario/dia/2026-03-09"]');
+        self::assertSelectorExists('a[href="/calendario/dia/2026-03-11"]');
+    }
+
+    public function testDayViewShowsAddEventButtonToAdminOnly(): void
+    {
+        $world   = $this->makeScenario();
+        $admin   = $this->makeAdmin('calendar.day.addbtn.admin');
+        $teacher = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.day.addbtn.teacher');
+        $this->persist($teacher);
+
+        $this->loginAs($admin, $world['centre']);
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+        self::assertSelectorExists('a[href="/eventos/nuevo?date=2026-03-10"]');
+
+        $this->loginAs($teacher, $world['centre']);
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+        self::assertSelectorNotExists('a[href="/eventos/nuevo?date=2026-03-10"]');
+    }
+
+    public function testDayViewHidesAbsencesFromNonAdmin(): void
+    {
+        $world   = $this->makeScenario();
+        $absent  = (new Teacher(new PersonName('Marta', 'Ruiz')))->setUsername('calendar.day.absence.teacher');
+        $teacher = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.day.absence.viewer');
+        $this->persist($absent, $teacher);
+        $absence = (new Absence())
+            ->setTeacher($absent)
+            ->setAcademicYear($world['year'])
+            ->setStartDate(new \DateTimeImmutable('2026-03-10'))
+            ->setEndDate(new \DateTimeImmutable('2026-03-10'));
+        $this->persist($absence);
+
+        $this->loginAs($teacher, $world['centre']);
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+        self::assertStringNotContainsString('Marta Ruiz', (string) $this->client->getResponse()->getContent());
+
+        $admin = $this->makeAdmin('calendar.day.absence.admin');
+        $this->loginAs($admin, $world['centre']);
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+        self::assertStringContainsString('Marta Ruiz', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testDayViewShowsGeneralEventToAnyTeacher(): void
+    {
+        $world   = $this->makeScenario();
+        $teacher = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.day.event.viewer');
+        $this->persist($teacher);
+        $event = (new SchoolEvent())
+            ->setAcademicYear($world['year'])
+            ->setDate(new \DateTimeImmutable('2026-03-10'))
+            ->setStartTime(new \DateTimeImmutable('09:00'))
+            ->setEndTime(new \DateTimeImmutable('10:00'))
+            ->setName('Jornada de puertas abiertas')
+            ->setGeneral(true);
+        $this->persist($event);
+
+        $this->loginAs($teacher, $world['centre']);
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+
+        self::assertStringContainsString('Jornada de puertas abiertas', (string) $this->client->getResponse()->getContent());
     }
 
     // ── Modo tablón ──────────────────────────────────────────────────────────

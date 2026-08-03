@@ -20,6 +20,7 @@ use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\Sanction;
 use App\Entity\SanctionTask;
+use App\Entity\SchoolEvent;
 use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
@@ -34,6 +35,65 @@ class DashboardControllerTest extends ControllerTestCase
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/login', (string) $this->client->getResponse()->headers->get('Location'));
+    }
+
+    public function testShowsTodayGeneralEventToRegularTeacher(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $event = (new SchoolEvent())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setDate(new \DateTimeImmutable('today'))
+            ->setStartTime(new \DateTimeImmutable('09:00'))
+            ->setEndTime(new \DateTimeImmutable('10:00'))
+            ->setName('Claustro de hoy')
+            ->setGeneral(true);
+        $this->persist($event);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Claustro de hoy', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testHidesRestrictedEventFromUnrelatedTeacher(): void
+    {
+        [$teacher, $centre, $group] = $this->makeScenarioWithActiveYear(false);
+        $event = (new SchoolEvent())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setDate(new \DateTimeImmutable('today'))
+            ->setStartTime(new \DateTimeImmutable('09:00'))
+            ->setEndTime(new \DateTimeImmutable('10:00'))
+            ->setName('Reunión de 1ºA')
+            ->setGeneral(false);
+        $event->addGroup($group);
+        $this->persist($event);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('Reunión de 1ºA', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testShowsRestrictedEventToAdminEvenWithoutGroupMembership(): void
+    {
+        [$admin, $centre, $group] = $this->makeScenarioWithActiveYear(true);
+        $event = (new SchoolEvent())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setDate(new \DateTimeImmutable('today'))
+            ->setStartTime(new \DateTimeImmutable('09:00'))
+            ->setEndTime(new \DateTimeImmutable('10:00'))
+            ->setName('Reunión restringida')
+            ->setGeneral(false);
+        $event->addGroup($group);
+        $this->persist($event);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Reunión restringida', (string) $this->client->getResponse()->getContent());
     }
 
     public function testTutoredGroupsLinksToTutorshipFilteredByThatGroup(): void
