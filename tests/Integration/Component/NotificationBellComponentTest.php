@@ -6,6 +6,8 @@ namespace App\Tests\Integration\Component;
 
 use App\Entity\AcademicYear;
 use App\Entity\Course;
+use App\Entity\DailyNote;
+use App\Entity\DailyNoteType;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -86,6 +88,55 @@ class NotificationBellComponentTest extends ControllerTestCase
         self::assertCount(2, $labels);
         self::assertStringContainsString('Parte de Bruno Ruiz pendiente de notificar', $labels[0]);
         self::assertStringContainsString('Tarea de sanción de Ana García pendiente de cumplimentar', $labels[1]);
+    }
+
+    public function testBellIncludesNoteThresholdForTutor(): void
+    {
+        [$centre, $year, $course, $group, $teacher] = $this->makeScenario('threshold');
+        $group->addTutor($teacher);
+        $this->flush();
+
+        $type = (new DailyNoteType())->setEducationalCentre($centre)->setName('Retraso a primera hora')->setOccurrencesForReport(2)->setPosition(0);
+        $this->persist($type);
+        $student = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-nbc-threshold');
+        $student->addGroup($group);
+        $this->persist($student);
+
+        $note1 = (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher);
+        $note2 = (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher);
+        $this->persist($note1, $note2);
+
+        $this->loginAs($teacher, $centre);
+
+        $render = $this->createLiveComponent('NotificationBellComponent', [], $this->client)->render();
+
+        self::assertStringContainsString(
+            'Ana García ha alcanzado 2 notas de «Retraso a primera hora»',
+            $render->crawler()->text(),
+        );
+    }
+
+    public function testBellExcludesNoteThresholdForUnrelatedTeacher(): void
+    {
+        [$centre, $year, $course, $group, $teacher] = $this->makeScenario('threshold-unrelated');
+        $other = (new Teacher(new PersonName('Test', 'Teacher')))->setUsername('teacher.nbc.unrelated' . uniqid('', false));
+        $this->persist($other);
+        $this->flush();
+
+        $type = (new DailyNoteType())->setEducationalCentre($centre)->setName('Retraso a primera hora')->setOccurrencesForReport(1)->setPosition(0);
+        $this->persist($type);
+        $student = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-nbc-threshold-unrelated');
+        $student->addGroup($group);
+        $this->persist($student);
+
+        $note = (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($other);
+        $this->persist($note);
+
+        $this->loginAs($other, $centre);
+
+        $render = $this->createLiveComponent('NotificationBellComponent', [], $this->client)->render();
+
+        self::assertStringContainsString('No tienes tareas pendientes', $render->crawler()->text());
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────

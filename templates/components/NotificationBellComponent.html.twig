@@ -32,20 +32,29 @@
             <ul class="max-h-80 divide-y divide-gray-100 overflow-y-auto">
                 {% for item in this.visibleItems %}
                     {% set entity = item.entity %}
-                    {% set student = item.type == 'task' ? entity.sanction.student : entity.student %}
-                    {% set href = item.type == 'report'
-                            ? path('app_notifications_register_report', {id: entity.id})
-                            : item.type == 'sanction'
-                                ? path('app_notifications_register_sanction', {id: entity.id})
-                                : path('app_sanction_tasks_edit', {id: entity.sanction.id, taskId: entity.id}) %}
-                    {% set label = item.type == 'report' ? 'bell.item.report' : item.type == 'sanction' ? 'bell.item.sanction' : 'bell.item.task' %}
                     <li>
-                        <a href="{{ href }}" class="block px-4 py-2.5 hover:bg-gray-50 transition-colors">
-                            <p class="text-sm text-gray-800">
-                                {{ label|trans({'%student%': student.name.firstName ~ ' ' ~ student.name.lastName}, 'notifications') }}
-                            </p>
-                            <p class="mt-0.5 text-xs text-gray-400">{{ item.date|date('format.date'|trans) }}</p>
-                        </a>
+                        {% if item.type == 'note_threshold' %}
+                            <a href="{{ path('app_daily_notes_index', {tab: 'students', typeId: entity.typeId}) }}" class="block px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                <p class="text-sm text-gray-800">
+                                    {{ 'bell.item.note_threshold'|trans({'%student%': entity.firstName ~ ' ' ~ entity.lastName, '%count%': entity.activeCount, '%type%': entity.typeName}, 'notifications') }}
+                                </p>
+                                <p class="mt-0.5 text-xs text-gray-400">{{ item.date|date('format.date'|trans) }}</p>
+                            </a>
+                        {% else %}
+                            {% set student = item.type == 'task' ? entity.sanction.student : entity.student %}
+                            {% set href = item.type == 'report'
+                                    ? path('app_notifications_register_report', {id: entity.id})
+                                    : item.type == 'sanction'
+                                        ? path('app_notifications_register_sanction', {id: entity.id})
+                                        : path('app_sanction_tasks_edit', {id: entity.sanction.id, taskId: entity.id}) %}
+                            {% set label = item.type == 'report' ? 'bell.item.report' : item.type == 'sanction' ? 'bell.item.sanction' : 'bell.item.task' %}
+                            <a href="{{ href }}" class="block px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                <p class="text-sm text-gray-800">
+                                    {{ label|trans({'%student%': student.name.firstName ~ ' ' ~ student.name.lastName}, 'notifications') }}
+                                </p>
+                                <p class="mt-0.5 text-xs text-gray-400">{{ item.date|date('format.date'|trans) }}</p>
+                            </a>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>

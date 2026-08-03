@@ -39,6 +39,9 @@ class DailyNoteTypeExporter extends AbstractCatalogExporter
     {
         assert($item instanceof DailyNoteType);
 
-        return ['occurrences_for_report' => $item->getOccurrencesForReport()];
+        return [
+            'occurrences_for_report' => $item->getOccurrencesForReport(),
+            'expiry_days'            => $item->getExpiryDays(),
+        ];
     }
 }

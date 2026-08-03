@@ -8,6 +8,8 @@ use App\Entity\AcademicYear;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
+use App\Entity\DailyNote;
+use App\Entity\DailyNoteType;
 use App\Entity\EducationalCentre;
 use App\Entity\GlobalSettingValue;
 use App\Entity\Group;
@@ -134,6 +136,66 @@ class IncidentReportControllerTest extends ControllerTestCase
 
         $this->em->clear();
         self::assertCount(2, $this->em->getRepository(IncidentReport::class)->findAll());
+    }
+
+    public function testNewGetWithFromDailyNotesLocksStudentField(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $student->addGroup($group);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $studentPair = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
+
+        $crawler = $this->client->request('GET', '/partes/nuevo?studentId=' . $student->getId()->toRfc4122() . '&groupId=' . $group->getId()->toRfc4122() . '&fromDailyNotes=1');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('select#students-select');
+        self::assertSelectorExists('input[type="hidden"][name="students[]"][value="' . $studentPair . '"]');
+        self::assertSelectorExists('input[type="hidden"][name="from_daily_notes"][value="1"]');
+    }
+
+    public function testNewPostWithFromDailyNotesDeactivatesActiveNotesAndShowsCountOnCreatedPage(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $location = $this->makeLocation($centre);
+        $year     = $centre->getActiveAcademicYear();
+
+        $type  = (new DailyNoteType())->setEducationalCentre($centre)->setName('Retraso a primera hora')->setPosition(0);
+        $this->persist($type);
+        $note1 = (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher);
+        $note2 = (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher);
+        $this->persist($note1, $note2);
+
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/partes/nuevo?studentId=' . $student->getId()->toRfc4122() . '&groupId=' . $group->getId()->toRfc4122() . '&fromDailyNotes=1');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $studentPair = $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
+
+        $this->client->request('POST', '/partes/nuevo', [
+            '_token'              => $token,
+            'students'            => [$studentPair],
+            'behaviors'           => [$behavior->getId()->toRfc4122()],
+            'location_id'         => $location->getId()->toRfc4122(),
+            'occurred_at'         => (new \DateTimeImmutable())->format('Y-m-d\TH:i'),
+            'description'         => '<p>Incidente de prueba.</p>',
+            'expelled_from_class' => '0',
+            'from_daily_notes'    => '1',
+        ]);
+
+        self::assertResponseRedirects();
+        $location = (string) $this->client->getResponse()->headers->get('Location');
+        self::assertStringContainsString('deactivatedNotes=2', $location);
+
+        $this->em->clear();
+        self::assertFalse($this->em->find(DailyNote::class, $note1->getId())->isActive());
+        self::assertFalse($this->em->find(DailyNote::class, $note2->getId())->isActive());
+
+        $crawler = $this->client->request('GET', $location);
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Se han desactivado 2 notas diarias', $crawler->filter('body')->text());
     }
 
     public function testCreatedPageListsReports(): void

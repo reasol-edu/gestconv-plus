@@ -56,6 +56,7 @@ class DailyNoteTypeControllerTest extends ControllerTestCase
             '_token'                 => $token,
             'name'                   => 'Retraso',
             'occurrences_for_report' => '3',
+            'expiry_days'            => '30',
         ]);
 
         self::assertResponseRedirects('/centro/' . $centreId . '/tipos-notas');
@@ -65,6 +66,7 @@ class DailyNoteTypeControllerTest extends ControllerTestCase
         self::assertCount(1, $types);
         self::assertSame('Retraso', $types[0]->getName());
         self::assertSame(3, $types[0]->getOccurrencesForReport());
+        self::assertSame(30, $types[0]->getExpiryDays());
     }
 
     public function testCreateWithEmptyNameDoesNotPersist(): void
@@ -103,6 +105,7 @@ class DailyNoteTypeControllerTest extends ControllerTestCase
             '_token'                 => $token,
             'name'                   => 'Uso del móvil',
             'occurrences_for_report' => '2',
+            'expiry_days'            => '30',
             'active'                 => '1',
         ]);
 
@@ -113,6 +116,7 @@ class DailyNoteTypeControllerTest extends ControllerTestCase
         self::assertNotNull($updated);
         self::assertSame('Uso del móvil', $updated->getName());
         self::assertSame(2, $updated->getOccurrencesForReport());
+        self::assertSame(30, $updated->getExpiryDays());
     }
 
     // ── delete ────────────────────────────────────────────────────────────────
@@ -212,6 +216,7 @@ class DailyNoteTypeControllerTest extends ControllerTestCase
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
         self::assertSame($type->getName(), $data['types'][0]['name']);
         self::assertSame(3, $data['types'][0]['occurrences_for_report']);
+        self::assertSame(30, $data['types'][0]['expiry_days']);
     }
 
     public function testImportPostWithValidJsonCreatesTypes(): void
@@ -225,7 +230,7 @@ class DailyNoteTypeControllerTest extends ControllerTestCase
 
         $file = $this->makeJsonUploadFile([
             'types' => [
-                ['name' => 'Otros', 'active' => true, 'occurrences_for_report' => 0],
+                ['name' => 'Otros', 'active' => true, 'occurrences_for_report' => 0, 'expiry_days' => 15],
             ],
         ]);
 
@@ -239,6 +244,7 @@ class DailyNoteTypeControllerTest extends ControllerTestCase
         $types = $this->em->getRepository(DailyNoteType::class)->findBy(['educationalCentre' => $centre->getId()]);
         self::assertCount(1, $types);
         self::assertSame('Otros', $types[0]->getName());
+        self::assertSame(15, $types[0]->getExpiryDays());
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
@@ -265,6 +271,7 @@ class DailyNoteTypeControllerTest extends ControllerTestCase
             ->setEducationalCentre($centre)
             ->setName('Retraso')
             ->setOccurrencesForReport(3)
+            ->setExpiryDays(30)
             ->setPosition(0);
         $this->persist($type);
 

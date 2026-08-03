@@ -8,6 +8,7 @@ use App\Entity\IncidentReport;
 use App\Entity\Sanction;
 use App\Entity\SanctionTask;
 use App\Entity\Teacher;
+use App\Repository\DailyNoteRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Service\PendingNotificationQueue;
 use App\Service\TenantContext;
@@ -22,16 +23,17 @@ class NotificationBellComponent extends AbstractController
 
     public const MAX_ITEMS = 8;
 
-    /** @var list<array{type: 'report'|'sanction'|'task', entity: IncidentReport|Sanction|SanctionTask, date: \DateTimeImmutable}>|null */
+    /** @var list<array{type: 'report'|'sanction'|'task'|'note_threshold', entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable}>|null */
     private ?array $items = null;
 
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
         private readonly SanctionTaskRepository $sanctionTaskRepository,
+        private readonly DailyNoteRepository $dailyNoteRepository,
     ) {}
 
-    /** @return list<array{type: 'report'|'sanction'|'task', entity: IncidentReport|Sanction|SanctionTask, date: \DateTimeImmutable}> */
+    /** @return list<array{type: 'report'|'sanction'|'task'|'note_threshold', entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable}> */
     public function getItems(): array
     {
         if ($this->items !== null) {
@@ -65,6 +67,13 @@ class NotificationBellComponent extends AbstractController
                 'date'   => $task->getSanction()->getEffectiveFrom() ?? $task->getSanction()->getCreatedAt(),
             ];
         }
+        foreach ($this->dailyNoteRepository->findStudentsAtThreshold($centre, $user, $year) as $row) {
+            $items[] = [
+                'type'   => 'note_threshold',
+                'entity' => $row,
+                'date'   => $row['lastNoteAt'] ?? new \DateTimeImmutable('@0'),
+            ];
+        }
 
         usort($items, static fn (array $a, array $b): int => $a['date'] <=> $b['date']);
 
@@ -76,7 +85,7 @@ class NotificationBellComponent extends AbstractController
         return count($this->getItems());
     }
 
-    /** @return list<array{type: 'report'|'sanction'|'task', entity: IncidentReport|Sanction|SanctionTask, date: \DateTimeImmutable}> */
+    /** @return list<array{type: 'report'|'sanction'|'task'|'note_threshold', entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable}> */
     public function getVisibleItems(): array
     {
         return array_slice($this->getItems(), 0, self::MAX_ITEMS);

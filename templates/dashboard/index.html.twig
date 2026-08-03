@@ -285,6 +285,24 @@
             </p>
         </a>
         {% endif %}
+
+        {% if canSeeNoteThresholds %}
+        {% set has_note_thresholds = noteThresholdCount > 0 %}
+        <a href="{{ path('app_daily_notes_index', {tab: 'students'}) }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
+            <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {{ 'note_thresholds_title'|trans({}, 'dashboard') }}
+                </p>
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg {{ has_note_thresholds ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600' }}">
+                    {{ ux_icon(has_note_thresholds ? 'heroicons:exclamation-triangle' : 'heroicons:check-circle', {class: 'h-4.5 w-4.5'}) }}
+                </span>
+            </div>
+            <p class="mt-3 text-3xl font-bold tabular-nums {{ has_note_thresholds ? 'text-red-600' : 'text-green-600' }}">{{ noteThresholdCount }}</p>
+            <p class="mt-1 text-xs text-gray-500">
+                {{ (has_note_thresholds ? 'note_thresholds_help' : 'note_thresholds_none')|trans({}, 'dashboard') }}
+            </p>
+        </a>
+        {% endif %}
     </div>
     {% endif %}
     {% endif %}

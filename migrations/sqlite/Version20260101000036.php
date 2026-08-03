@@ -29,6 +29,7 @@ final class Version20260101000036 extends AbstractMigration
                 educational_centre_id   CHAR(36)     NOT NULL,
                 name                    VARCHAR(200) NOT NULL,
                 occurrences_for_report  INTEGER      NOT NULL DEFAULT 0,
+                expiry_days             INTEGER      NOT NULL DEFAULT 0,
                 position                INTEGER      NOT NULL DEFAULT 0,
                 active                  INTEGER      NOT NULL DEFAULT 1,
                 PRIMARY KEY (id),
@@ -48,7 +49,7 @@ final class Version20260101000036 extends AbstractMigration
                 occurred_at       DATETIME NOT NULL,
                 created_at        DATETIME NOT NULL,
                 observations      CLOB     DEFAULT NULL,
-                ignored           INTEGER  NOT NULL DEFAULT 0,
+                active            INTEGER  NOT NULL DEFAULT 1,
                 PRIMARY KEY (id),
                 CONSTRAINT fk_dn_academic_year FOREIGN KEY (academic_year_id) REFERENCES academic_year (id),
                 CONSTRAINT fk_dn_student       FOREIGN KEY (student_id)       REFERENCES student (id),
@@ -86,11 +87,12 @@ final class Version20260101000036 extends AbstractMigration
             }
 
             $occurrences = (int) ($typeData['occurrences_for_report'] ?? 0);
+            $expiryDays  = (int) ($typeData['expiry_days'] ?? 0);
 
             $this->addSql(
-                'INSERT INTO daily_note_type (id, educational_centre_id, name, occurrences_for_report, position, active) '
-                . 'SELECT ' . $uuid . ', id, ?, ?, ?, 1 FROM educational_centre',
-                [$name, $occurrences, $position]
+                'INSERT INTO daily_note_type (id, educational_centre_id, name, occurrences_for_report, expiry_days, position, active) '
+                . 'SELECT ' . $uuid . ', id, ?, ?, ?, ?, 1 FROM educational_centre',
+                [$name, $occurrences, $expiryDays, $position]
             );
         }
     }

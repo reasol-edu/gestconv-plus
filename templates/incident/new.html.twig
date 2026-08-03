@@ -82,6 +82,9 @@
 
     <form method="post" action="{{ path('app_incidents_new') }}" class="space-y-8" data-controller="form-submit">
         <input type="hidden" name="_token" value="{{ csrf_token('new_incident') }}">
+        {% if fromDailyNotes %}
+            <input type="hidden" name="from_daily_notes" value="1">
+        {% endif %}
 
         {# ── Alumnado implicado ─────────────────────────────────────────── #}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
@@ -94,7 +97,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">
                         {{ 'incident.field.registered_by'|trans({}, 'admin') }}
                     </label>
-                    <select name="registered_by" required
+                    <select name="registered_by" aria-required="true"
                             {% if errors.registered_by is defined %}aria-invalid="true"{% endif %}
                             data-controller="symfony--ux-autocomplete--autocomplete"
                             data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
@@ -118,11 +121,20 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                     {{ 'incident.field.students'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
                 </label>
-                <select id="students-select" name="students[]" multiple aria-required="true"
-                        {% if errors.students is defined %}aria-invalid="true"{% endif %}
-                        placeholder="{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}"
-                        class="w-full">
-                </select>
+                {% if lockedStudent %}
+                    <div class="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-800">
+                        {{ ux_icon('heroicons:lock-closed', {class: 'h-4 w-4 text-gray-400 shrink-0'}) }}
+                        <span class="font-medium">{{ preloadedStudents[0].label }}</span>
+                        <span class="text-gray-400">· {{ preloadedStudents[0].secondary }}</span>
+                    </div>
+                    <input type="hidden" name="students[]" value="{{ preloadedStudents[0].value }}">
+                {% else %}
+                    <select id="students-select" name="students[]" multiple aria-required="true"
+                            {% if errors.students is defined %}aria-invalid="true"{% endif %}
+                            placeholder="{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}"
+                            class="w-full">
+                    </select>
+                {% endif %}
                 {% if errors.students is defined %}
                     <p class="mt-1 text-xs text-red-600">{{ errors.students }}</p>
                 {% endif %}
@@ -308,6 +320,7 @@ import TomSelect from 'tom-select';
 
 const preloaded = {{ preloadedStudents|json_encode(constant('JSON_HEX_TAG'))|raw }};
 
+{% if not lockedStudent %}
 const select = new TomSelect('#students-select', {
     plugins: ['remove_button'],
     valueField: 'value',
@@ -337,6 +350,7 @@ const select = new TomSelect('#students-select', {
     },
     shouldLoad: (q) => q.length >= 2,
 });
+{% endif %}
 
 const preloadedLocation = {{ preloadedLocation ? preloadedLocation|json_encode(constant('JSON_HEX_TAG'))|raw : 'null' }};
 

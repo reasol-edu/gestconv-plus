@@ -25,6 +25,15 @@
         </p>
     </div>
 
+    {% if deactivatedNotes > 0 %}
+        <div class="flex items-center gap-3 rounded-xl border border-forest-200 bg-forest-50 px-4 py-3">
+            {{ ux_icon('heroicons:check-circle', {class: 'h-5 w-5 text-forest-600 shrink-0'}) }}
+            <p class="text-sm text-forest-800">
+                {{ 'incident.created.notes_deactivated'|trans({'%count%': deactivatedNotes}, 'admin') }}
+            </p>
+        </div>
+    {% endif %}
+
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs divide-y divide-gray-100">
         {% for report in reports %}
             <div class="flex items-center justify-between gap-4 px-6 py-4 flex-wrap">

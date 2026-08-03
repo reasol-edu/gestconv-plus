@@ -46,6 +46,9 @@ emails.sanction_task_reminder.intro: '{1} Tienes una tarea de sanción pendiente
 emails.sanction_task_reminder.row: '%subject% — %student%'
 emails.sanction_task_reminder.row_days: '{0} Empieza hoy|{1} Empieza mañana|]1,Inf[ Empieza en %count% días'
 
+emails.daily_note_threshold.subject: 'Nota que implica registro de parte: %student%'
+emails.daily_note_threshold.intro: '%student% (grupo %group%) ha alcanzado o superado las %count% ocurrencias activas del tipo de nota «%type%», que deben dar lugar a un parte de convivencia. Estas son las notas activas de ese tipo:'
+
 emails.tutor_assigned.subject: 'Te han asignado como tutor/a dual docente'
 emails.tutor_assigned.intro: 'Te han asignado como tutor/a dual docente de un puesto formativo en la estancia «%stay%».'
 emails.tutor_assigned.student: 'Estudiante'

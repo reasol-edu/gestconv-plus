@@ -97,29 +97,6 @@
                                 {{ stat.type.name }}
                                 <span class="text-gray-400 tabular-nums">({{ stat.count }}{% if stat.type.occurrencesForReport > 0 %}/{{ stat.type.occurrencesForReport }}{% endif %})</span>
                             </span>
-                            <div class="flex items-center gap-2">
-                                {% if stat.triggersReport %}
-                                    <a href="{{ firstGroup ? path('app_incidents_new', {studentId: student.id, groupId: firstGroup.id}) : path('app_incidents_new') }}"
-                                       class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors">
-                                        {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3.5 w-3.5'}) }}
-                                        {{ 'daily_note.stats.register_report'|trans({}, 'admin') }}
-                                    </a>
-                                {% endif %}
-                                {% if (isTutorOfStudent or is_centre_admin()) and stat.count > 0 %}
-                                    <form method="post" action="{{ path('app_daily_notes_ignore_type') }}"
-                                          class="js-confirm-form"
-                                          data-confirm="{{ 'daily_note.stats.ignore_confirm'|trans({}, 'admin')|e('html_attr') }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('ignore_daily_note_type_' ~ student.id ~ '_' ~ stat.type.id) }}">
-                                        <input type="hidden" name="studentId" value="{{ student.id }}">
-                                        <input type="hidden" name="typeId" value="{{ stat.type.id }}">
-                                        <button type="submit"
-                                                class="js-confirm-trigger inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium
-                                                       text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors">
-                                            {{ 'daily_note.stats.ignore_current'|trans({}, 'admin') }}
-                                        </button>
-                                    </form>
-                                {% endif %}
-                            </div>
                         </div>
                     {% endfor %}
                 </div>

@@ -11,6 +11,7 @@ use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
 use App\Entity\Teacher;
 use App\Repository\CommunicationRepository;
+use App\Repository\DailyNoteRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentBehaviorRepository;
 use App\Repository\IncidentReportObservationRepository;
@@ -65,6 +66,7 @@ class IncidentReportController extends AbstractController
         private readonly StudentRepository $students,
         private readonly TeacherRepository $teachers,
         private readonly CommunicationRepository $communications,
+        private readonly DailyNoteRepository $dailyNotes,
         private readonly IncidentReportObservationRepository $observations,
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
@@ -174,7 +176,8 @@ class IncidentReportController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $data = IncidentReportFormData::fromRequest($request);
+            $fromDailyNotes = $request->request->getBoolean('from_daily_notes');
+            $data           = IncidentReportFormData::fromRequest($request);
 
             if ($canChooseTeacher) {
                 $chosenTeacher = $activeYear !== null && $data->registeredByRaw !== ''
@@ -219,11 +222,20 @@ class IncidentReportController extends AbstractController
                     ]);
                 }
 
+                $deactivatedNotes = 0;
+                if ($fromDailyNotes && count($createdReports) === 1) {
+                    $deactivatedNotes = $this->dailyNotes->deactivateAllActiveForStudent(
+                        $createdReports[0]->getStudent(),
+                        $createdReports[0]->getAcademicYear(),
+                    );
+                }
+
                 return $this->redirectToRoute('app_incidents_created', [
                     'ids' => implode(',', array_map(
                         static fn (IncidentReport $r): string => $r->getId()->toRfc4122(),
                         $createdReports,
                     )),
+                    'deactivatedNotes' => $deactivatedNotes,
                 ]);
             }
 
@@ -256,8 +268,9 @@ class IncidentReportController extends AbstractController
                 }
             }
         } else {
-            $studentId = trim($request->query->getString('studentId'));
-            $groupId   = trim($request->query->getString('groupId'));
+            $fromDailyNotes = trim($request->query->getString('fromDailyNotes')) === '1';
+            $studentId      = trim($request->query->getString('studentId'));
+            $groupId        = trim($request->query->getString('groupId'));
             if ($studentId !== '' && $groupId !== '') {
                 $student = $this->students->findById($studentId);
                 $group   = $this->groups->findByIdAndCentre($groupId, $centre);
@@ -272,6 +285,7 @@ class IncidentReportController extends AbstractController
         }
 
         $availableGroups = $this->groups->findByActiveYearOfCentreOrderedByName($centre);
+        $lockedStudent   = $fromDailyNotes && count($preloadedStudents) === 1;
 
         return $this->render('incident/new.html.twig', [
             'centre'              => $centre,
@@ -283,6 +297,8 @@ class IncidentReportController extends AbstractController
             'preloadedLocation'   => $preloadedLocation,
             'canChooseTeacher'    => $canChooseTeacher,
             'selectedTeacher'     => $selectedTeacher,
+            'fromDailyNotes'      => $fromDailyNotes,
+            'lockedStudent'       => $lockedStudent,
         ]);
     }
 
@@ -313,8 +329,9 @@ class IncidentReportController extends AbstractController
         }
 
         return $this->render('incident/created.html.twig', [
-            'centre'  => $centre,
-            'reports' => $createdReports,
+            'centre'           => $centre,
+            'reports'          => $createdReports,
+            'deactivatedNotes' => max(0, $request->query->getInt('deactivatedNotes')),
         ]);
     }
 

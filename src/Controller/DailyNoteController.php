@@ -19,6 +19,7 @@ use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
 use App\Service\AppSettingsInterface;
 use App\Service\EntityChangeTracker;
+use App\Service\IncidentEmailNotifier;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,7 +36,7 @@ class DailyNoteController extends AbstractController
     use TranslatorTrait;
 
     /** @var list<string> */
-    private const LOGGED_FIELDS = ['observations', 'ignored'];
+    private const LOGGED_FIELDS = ['observations', 'active'];
 
     public function __construct(
         private readonly TenantContext $tenantContext,
@@ -49,17 +50,29 @@ class DailyNoteController extends AbstractController
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
         private readonly AppSettingsInterface $settings,
+        private readonly IncidentEmailNotifier $notifier,
     ) {}
 
     #[Route('', name: 'app_daily_notes_index')]
-    public function index(#[CurrentCentre] EducationalCentre $centre): Response
+    public function index(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        if (!$this->getUser() instanceof Teacher) {
+        $user = $this->getUser();
+        if (!$user instanceof Teacher) {
             throw $this->createAccessDeniedException();
         }
 
+        $year = $this->tenantContext->getViewYear($centre);
+        $canSeeStudents = $user->isAdmin()
+            || $centre->getAdmins()->contains($user)
+            || ($year !== null && $this->groups->hasTutoredGroupsInYear($centre, $user, $year));
+
+        $tab = $request->query->getString('tab', 'notes') === 'students' && $canSeeStudents ? 'students' : 'notes';
+
         return $this->render('daily_note/index.html.twig', [
-            'centre' => $centre,
+            'centre'         => $centre,
+            'tab'            => $tab,
+            'canSeeStudents' => $canSeeStudents,
+            'typeId'         => trim($request->query->getString('typeId')),
         ]);
     }
 
@@ -193,6 +206,8 @@ class DailyNoteController extends AbstractController
 
             // $group nunca es null si $student no lo es: se reinician juntos más arriba.
             if (empty($errors) && $activeYear !== null && $student !== null && $type !== null) {
+                $countBefore = $this->notes->countActiveByStudentAndType($student, $type, $activeYear);
+
                 $note = (new DailyNote())
                     ->setAcademicYear($activeYear)
                     ->setStudent($student)
@@ -209,6 +224,12 @@ class DailyNoteController extends AbstractController
                     'studentId' => $student->getId()->toRfc4122(),
                     'typeId'    => $type->getId()->toRfc4122(),
                 ]);
+
+                $threshold = $type->getOccurrencesForReport();
+                if ($threshold > 0 && $countBefore < $threshold && ($countBefore + 1) >= $threshold) {
+                    $activeNotes = $this->notes->findActiveByStudentAndType($student, $type, $activeYear);
+                    $this->notifier->dailyNoteThresholdReached($type, $student, $group, $activeNotes);
+                }
 
                 return $this->redirectToRoute('app_daily_notes_created', ['id' => $note->getId()->toRfc4122()]);
             }
@@ -235,15 +256,13 @@ class DailyNoteController extends AbstractController
 
         $this->denyAccessUnlessGranted(DailyNoteVoter::VIEW, $note);
 
-        $year = $note->getAcademicYear();
-        $type = $note->getType();
+        $year  = $note->getAcademicYear();
+        $type  = $note->getType();
         $count = $this->notes->countActiveByStudentAndType($note->getStudent(), $type, $year);
-        $triggersReport = $type->getOccurrencesForReport() > 0 && $count >= $type->getOccurrencesForReport();
 
         return $this->render('daily_note/created.html.twig', [
-            'note'            => $note,
-            'triggersReport'  => $triggersReport,
-            'count'           => $count,
+            'note'  => $note,
+            'count' => $count,
         ]);
     }
 
@@ -271,8 +290,8 @@ class DailyNoteController extends AbstractController
             $note->setObservations($observations !== '' ? $observations : null);
 
             if ($canManage) {
-                $ignored = $request->request->getBoolean('ignored');
-                $note->setIgnored($ignored);
+                $active = $request->request->getBoolean('active');
+                $note->setActive($active);
             }
 
             $this->em->flush();
@@ -323,31 +342,31 @@ class DailyNoteController extends AbstractController
         return $this->redirectToRoute('app_students_show', ['id' => $studentId]);
     }
 
-    #[Route('/{id}/ignorar', name: 'app_daily_notes_ignore_one', methods: ['POST'])]
-    public function ignoreOne(string $id, Request $request): Response
+    #[Route('/{id}/desactivar', name: 'app_daily_notes_deactivate_one', methods: ['POST'])]
+    public function deactivateOne(string $id, Request $request): Response
     {
         $note = $this->notes->findById($id);
         if ($note === null) {
             throw $this->createNotFoundException();
         }
 
-        $this->denyAccessUnlessGranted(DailyNoteVoter::IGNORE, $note);
+        $this->denyAccessUnlessGranted(DailyNoteVoter::DEACTIVATE, $note);
 
-        if (!$this->isCsrfTokenValid('ignore_daily_note_' . $id, $request->request->getString('_token'))) {
+        if (!$this->isCsrfTokenValid('deactivate_daily_note_' . $id, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
         }
 
-        $note->setIgnored(true);
+        $note->setActive(false);
         $this->em->flush();
 
-        $this->activityLog->log('daily_note.ignored', ['entityId' => $id]);
-        $this->addFlash('success', $this->t('daily_note.flash.ignored'));
+        $this->activityLog->log('daily_note.deactivated', ['entityId' => $id]);
+        $this->addFlash('success', $this->t('daily_note.flash.deactivated'));
 
         return $this->redirectToRoute('app_students_show', ['id' => $note->getStudent()->getId()->toRfc4122()]);
     }
 
-    #[Route('/ignorar-tipo', name: 'app_daily_notes_ignore_type', methods: ['POST'])]
-    public function ignoreAllOfType(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
+    #[Route('/desactivar-tipo', name: 'app_daily_notes_deactivate_type', methods: ['POST'])]
+    public function deactivateAllOfType(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
         $user = $this->getUser();
         if (!$user instanceof Teacher) {
@@ -377,7 +396,7 @@ class DailyNoteController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        if (!$this->isCsrfTokenValid('ignore_daily_note_type_' . $studentId . '_' . $typeId, $request->request->getString('_token'))) {
+        if (!$this->isCsrfTokenValid('deactivate_daily_note_type_' . $studentId . '_' . $typeId, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
         }
 
@@ -385,18 +404,18 @@ class DailyNoteController extends AbstractController
         /** @var list<DailyNote> $notesList */
         $notesList = $query->getResult();
         foreach ($notesList as $note) {
-            if (!$note->isIgnored()) {
-                $note->setIgnored(true);
+            if ($note->isActive()) {
+                $note->setActive(false);
             }
         }
         $this->em->flush();
 
-        $this->activityLog->log('daily_note.ignored_all_of_type', [
+        $this->activityLog->log('daily_note.deactivated_all_of_type', [
             'studentId' => $studentId,
             'typeId'    => $typeId,
         ]);
-        $this->addFlash('success', $this->t('daily_note.flash.ignored_all'));
+        $this->addFlash('success', $this->t('daily_note.flash.deactivated_all'));
 
-        return $this->redirectToRoute('app_students_show', ['id' => $studentId]);
+        return $this->redirectToRoute('app_daily_notes_index', ['tab' => 'students', 'typeId' => $typeId]);
     }
 }

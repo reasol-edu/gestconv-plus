@@ -6,13 +6,13 @@
     <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">{{ 'daily_note.type_history.title'|trans({}, 'admin') }}</p>
     <ul class="divide-y divide-gray-100 rounded-xl border border-gray-200 overflow-hidden">
         {% for note in pagination.items %}
-            <li class="px-4 py-2.5 {{ note.ignored ? 'opacity-50' : '' }}">
+            <li class="px-4 py-2.5 {{ not note.active ? 'opacity-50' : '' }}">
                 <p class="text-xs font-medium text-gray-700">
                     {{ note.occurredAt|date('format.datetime'|trans) }}
                     · {{ note.registeredBy.name.lastName }}, {{ note.registeredBy.name.firstName }}
-                    {% if note.ignored %}
+                    {% if not note.active %}
                         <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[10px] font-medium ml-1">
-                            {{ 'daily_note.badge.ignored'|trans({}, 'admin') }}
+                            {{ 'daily_note.badge.inactive'|trans({}, 'admin') }}
                         </span>
                     {% endif %}
                 </p>

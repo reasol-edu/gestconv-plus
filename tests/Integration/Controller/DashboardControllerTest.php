@@ -9,6 +9,8 @@ use App\Entity\CentreSettingValue;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
+use App\Entity\DailyNote;
+use App\Entity\DailyNoteType;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -283,6 +285,36 @@ class DashboardControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('a[href$="/sanciones?pendingTasksOnly=1"]');
         self::assertStringContainsString('1', $crawler->filter('a[href$="/sanciones?pendingTasksOnly=1"]')->text());
+    }
+
+    public function testNoteThresholdsCardShowsCountForAdmin(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenarioWithActiveYear(true);
+        $type = (new DailyNoteType())->setEducationalCentre($centre)->setName('Retraso a primera hora')->setOccurrencesForReport(2)->setPosition(0);
+        $this->persist($type);
+        $year = $centre->getActiveAcademicYear();
+        $this->persist(
+            (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher),
+            (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher),
+        );
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('a[href$="/notas?tab=students"]');
+        self::assertStringContainsString('1', $crawler->filter('a[href$="/notas?tab=students"]')->text());
+    }
+
+    public function testNoteThresholdsCardIsHiddenForNonTutorNonAdmin(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/notas?tab=students"]');
     }
 
     public function testQuickActionsPendingTasksIsHiddenForNonTeachingTeacher(): void

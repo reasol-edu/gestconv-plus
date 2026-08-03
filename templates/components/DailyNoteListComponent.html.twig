@@ -110,7 +110,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         {% for note in pagination.items %}
-                            <tr class="hover:bg-gray-50 transition-colors {{ note.ignored ? 'opacity-50' : '' }}">
+                            <tr class="hover:bg-gray-50 transition-colors {{ not note.active ? 'opacity-50' : '' }}">
                                 <td data-label="{{ 'daily_note.col.occurred_at'|trans({}, 'admin')|e('html_attr') }}"
                                     class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ note.occurredAt|date('format.datetime'|trans) }}</td>
                                 <td data-label="{{ 'daily_note.col.student'|trans({}, 'admin')|e('html_attr') }}"
@@ -130,9 +130,9 @@
                                     class="px-6 py-4">
                                     <div class="w-[220px] truncate text-xs text-gray-500">
                                         {{ note.observations }}
-                                        {% if note.ignored %}
+                                        {% if not note.active %}
                                             <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[11px] font-medium ml-1">
-                                                {{ 'daily_note.badge.ignored'|trans({}, 'admin') }}
+                                                {{ 'daily_note.badge.inactive'|trans({}, 'admin') }}
                                             </span>
                                         {% endif %}
                                     </div>

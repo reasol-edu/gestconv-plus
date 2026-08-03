@@ -61,6 +61,9 @@ class DailyNoteTypeImporter extends AbstractCatalogImporter
 
         $occurrences = $itemData['occurrences_for_report'] ?? 0;
         $item->setOccurrencesForReport(is_numeric($occurrences) ? (int) $occurrences : 0);
+
+        $expiryDays = $itemData['expiry_days'] ?? 0;
+        $item->setExpiryDays(is_numeric($expiryDays) ? (int) $expiryDays : 0);
     }
 
     protected function canRemove(object $entity): bool

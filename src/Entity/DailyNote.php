@@ -51,7 +51,7 @@ class DailyNote
     private ?string $observations = null;
 
     #[ORM\Column]
-    private bool $ignored = false;
+    private bool $active = true;
 
     public function __construct()
     {
@@ -161,14 +161,14 @@ class DailyNote
         return $this;
     }
 
-    public function isIgnored(): bool
+    public function isActive(): bool
     {
-        return $this->ignored;
+        return $this->active;
     }
 
-    public function setIgnored(bool $ignored): static
+    public function setActive(bool $active): static
     {
-        $this->ignored = $ignored;
+        $this->active = $active;
 
         return $this;
     }

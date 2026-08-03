@@ -26,7 +26,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class DailyNoteTypeController extends AbstractCatalogController
 {
     /** @var list<string> */
-    private const LOGGED_FIELDS = ['name', 'occurrencesForReport', 'active'];
+    private const LOGGED_FIELDS = ['name', 'occurrencesForReport', 'expiryDays', 'active'];
 
     public function __construct(
         EntityManagerInterface $em,
@@ -130,8 +130,9 @@ class DailyNoteTypeController extends AbstractCatalogController
         $centre = $this->requireCentre($centreId);
         $this->checkCsrf($request, 'new_daily_note_type_' . $centreId);
 
-        $name       = trim($request->request->getString('name'));
+        $name        = trim($request->request->getString('name'));
         $occurrences = $request->request->getInt('occurrences_for_report');
+        $expiryDays  = $request->request->getInt('expiry_days');
 
         if ($name === '') {
             $this->addFlash('error', $this->t('daily_note_type.flash.invalid'));
@@ -143,6 +144,7 @@ class DailyNoteTypeController extends AbstractCatalogController
             ->setEducationalCentre($centre)
             ->setName($name)
             ->setOccurrencesForReport($occurrences)
+            ->setExpiryDays($expiryDays)
             ->setPosition($this->types->countByCentre($centre))
             ->setActive(true);
 
@@ -174,12 +176,13 @@ class DailyNoteTypeController extends AbstractCatalogController
 
             $name        = trim($request->request->getString('name'));
             $occurrences = $request->request->getInt('occurrences_for_report');
+            $expiryDays  = $request->request->getInt('expiry_days');
             $active      = $request->request->getBoolean('active');
 
             if ($name !== '') {
                 $before = $this->changeTracker->snapshot($type, self::LOGGED_FIELDS);
 
-                $type->setName($name)->setOccurrencesForReport($occurrences)->setActive($active);
+                $type->setName($name)->setOccurrencesForReport($occurrences)->setExpiryDays($expiryDays)->setActive($active);
                 $this->em->flush();
 
                 $changes = $this->changeTracker->diff($before, $type, self::LOGGED_FIELDS);

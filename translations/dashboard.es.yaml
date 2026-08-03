@@ -33,6 +33,10 @@ sanctions_with_incomplete_tasks: 'Sanciones con materias pendientes'
 sanctions_with_incomplete_tasks_help: 'sanciones con alguna materia sin cumplimentar'
 sanctions_with_incomplete_tasks_none: 'todas las materias están cumplimentadas'
 
+note_thresholds_title: 'Notas que implican parte'
+note_thresholds_help: 'estudiantes que han alcanzado el número de ocurrencias de un tipo de nota activa'
+note_thresholds_none: 'ningún estudiante ha alcanzado el umbral de un tipo de nota'
+
 action_import_students: 'Importar estudiantes'
 
 quick_action_new_report: 'Nuevo parte'

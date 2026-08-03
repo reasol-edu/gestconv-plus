@@ -1,0 +1,31 @@
+{% extends 'email/_layout.html.twig' %}
+
+{% block content %}
+<p style="margin: 0 0 16px;">
+    {{ 'emails.greeting'|trans({'%name%': teacher.name.firstName}, 'emails') }}
+</p>
+<p style="margin: 0 0 16px;">
+    {{ (transPrefix ~ '.intro')|trans(params, 'emails') }}
+</p>
+<p style="margin: 0 0 8px;">
+    <a href="{{ studentUrl }}" style="color: #576490; font-weight: 600; text-decoration: none;">
+        {{ params['%student%'] }}
+    </a>
+</p>
+<ul style="margin: 0 0 24px; padding-left: 0; list-style: none; color: #374151; font-size: 13px;">
+    {% for note in notes %}
+    <li style="margin: 0 0 12px; padding: 12px 16px; background-color: #f9fafb; border-left: 3px solid #677dae;">
+        <div style="color: #576490; font-weight: 600;">
+            {{ note.occurredAt|date('format.datetime'|trans) }}
+        </div>
+        <div style="color: #6b7280; margin-top: 4px;">
+            {{ 'daily_note.col.teacher'|trans({}, 'admin') }}: {{ note.registeredBy.name.lastName }}, {{ note.registeredBy.name.firstName }}
+            &middot; {{ 'daily_note.col.group'|trans({}, 'admin') }}: {{ note.group.name }}
+        </div>
+        {% if note.observations %}
+            <div style="color: #6b7280; margin-top: 4px;">{{ note.observations }}</div>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

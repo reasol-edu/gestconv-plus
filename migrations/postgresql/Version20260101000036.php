@@ -29,6 +29,7 @@ final class Version20260101000036 extends AbstractMigration
                 educational_centre_id   UUID         NOT NULL,
                 name                    VARCHAR(200) NOT NULL,
                 occurrences_for_report  INT          NOT NULL DEFAULT 0,
+                expiry_days             INT          NOT NULL DEFAULT 0,
                 position                INT          NOT NULL DEFAULT 0,
                 active                  BOOLEAN      NOT NULL DEFAULT TRUE,
                 PRIMARY KEY (id)
@@ -48,7 +49,7 @@ final class Version20260101000036 extends AbstractMigration
                 occurred_at       TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
                 created_at        TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
                 observations      TEXT    DEFAULT NULL,
-                ignored           BOOLEAN NOT NULL DEFAULT FALSE,
+                active            BOOLEAN NOT NULL DEFAULT TRUE,
                 PRIMARY KEY (id)
             )
         SQL);
@@ -89,11 +90,12 @@ final class Version20260101000036 extends AbstractMigration
             }
 
             $occurrences = (int) ($typeData['occurrences_for_report'] ?? 0);
+            $expiryDays  = (int) ($typeData['expiry_days'] ?? 0);
 
             $this->addSql(
-                'INSERT INTO daily_note_type (id, educational_centre_id, name, occurrences_for_report, position, active) '
-                . 'SELECT gen_random_uuid(), id, ?, ?, ?, TRUE FROM educational_centre',
-                [$name, $occurrences, $position]
+                'INSERT INTO daily_note_type (id, educational_centre_id, name, occurrences_for_report, expiry_days, position, active) '
+                . 'SELECT gen_random_uuid(), id, ?, ?, ?, ?, TRUE FROM educational_centre',
+                [$name, $occurrences, $expiryDays, $position]
             );
         }
     }

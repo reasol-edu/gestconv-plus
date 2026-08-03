@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Attribute\CurrentCentre;
 use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
+use App\Repository\DailyNoteRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
@@ -31,6 +32,7 @@ class DashboardController extends AbstractController
         private readonly IncidentReportRepository $incidentRepository,
         private readonly SanctionRepository $sanctionRepository,
         private readonly SanctionTaskRepository $sanctionTaskRepository,
+        private readonly DailyNoteRepository $dailyNoteRepository,
         private readonly GroupRepository $groupRepository,
         private readonly TeacherRepository $teacherRepository,
         private readonly TimeSlotRepository $timeSlotRepository,
@@ -67,6 +69,8 @@ class DashboardController extends AbstractController
                 'sanctionsWithIncompleteTasksCount' => 0,
                 'pendingPrescriptionCount'          => 0,
                 'showPrescriptionWarning'           => false,
+                'canSeeNoteThresholds'              => false,
+                'noteThresholdCount'                => 0,
             ]);
         }
 
@@ -122,6 +126,13 @@ class DashboardController extends AbstractController
             )
             : 0;
 
+        $canSeeNoteThresholds = $viewer->isAdmin()
+            || $centre->getAdmins()->contains($viewer)
+            || $this->groupRepository->hasTutoredGroupsInYear($centre, $viewer, $year);
+        $noteThresholdCount = $canSeeNoteThresholds
+            ? count($this->dailyNoteRepository->findStudentsAtThreshold($centre, $viewer, $year))
+            : 0;
+
         return $this->render('dashboard/index.html.twig', [
             'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
             'groupCount'           => $this->groupRepository->countByActiveYearOfCentre($centre, $year),
@@ -144,6 +155,8 @@ class DashboardController extends AbstractController
             'sanctionsWithIncompleteTasksCount' => $this->sanctionTaskRepository->countSanctionsWithIncompleteTasks($centre, $viewer, $year),
             'pendingPrescriptionCount'          => $pendingPrescriptionCount,
             'showPrescriptionWarning'           => $showPrescriptionWarning,
+            'canSeeNoteThresholds'              => $canSeeNoteThresholds,
+            'noteThresholdCount'                => $noteThresholdCount,
         ]);
     }
 }

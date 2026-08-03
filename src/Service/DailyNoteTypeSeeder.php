@@ -47,8 +47,12 @@ final class DailyNoteTypeSeeder extends AbstractCatalogSeeder
 
         $name        = is_string($raw['name'] ?? null) ? $raw['name'] : '';
         $occurrences = $raw['occurrences_for_report'] ?? 0;
+        $expiryDays  = $raw['expiry_days'] ?? 0;
 
-        return [$name, ['occurrences_for_report' => is_numeric($occurrences) ? (int) $occurrences : 0]];
+        return [$name, [
+            'occurrences_for_report' => is_numeric($occurrences) ? (int) $occurrences : 0,
+            'expiry_days'            => is_numeric($expiryDays) ? (int) $expiryDays : 0,
+        ]];
     }
 
     protected function applyItemExtra(CatalogEntryInterface $item, array $extra): void
@@ -57,5 +61,8 @@ final class DailyNoteTypeSeeder extends AbstractCatalogSeeder
 
         $occurrences = $extra['occurrences_for_report'] ?? 0;
         $item->setOccurrencesForReport(is_numeric($occurrences) ? (int) $occurrences : 0);
+
+        $expiryDays = $extra['expiry_days'] ?? 0;
+        $item->setExpiryDays(is_numeric($expiryDays) ? (int) $expiryDays : 0);
     }
 }

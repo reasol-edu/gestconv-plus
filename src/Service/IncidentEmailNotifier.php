@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\DailyNote;
+use App\Entity\DailyNoteType;
 use App\Entity\EducationalCentre;
 use App\Entity\EmailNotificationLog;
 use App\Entity\Group;
@@ -368,6 +370,56 @@ final class IncidentEmailNotifier
                 'report'    => $report,
                 'reportUrl' => $url,
             ], $attachment);
+        }
+    }
+
+    /**
+     * Un estudiante ha alcanzado o superado, por primera vez, el número de ocurrencias de un tipo
+     * de nota diaria activa que da lugar a un aviso de parte — avisa a quien indique el ajuste
+     * "Nota que implica registro de parte" (nadie / tutor de grupo / equipo directivo / ambos),
+     * con el detalle completo de las notas activas de ese tipo para ese estudiante.
+     *
+     * @param list<DailyNote> $notes
+     */
+    public function dailyNoteThresholdReached(DailyNoteType $type, Student $student, Group $group, array $notes): void
+    {
+        $centre = $group->getAcademicYear()->getEducationalCentre();
+        $choice = $this->choiceFor('notifications.email_daily_note_threshold', $centre);
+        if ($choice === 'none') {
+            return;
+        }
+
+        /** @var array<string, Teacher> $recipients */
+        $recipients = [];
+        if ($choice === 'group_tutor' || $choice === 'both') {
+            foreach ($group->getTutors() as $tutor) {
+                $recipients[$tutor->getId()->toRfc4122()] = $tutor;
+            }
+        }
+        if ($choice === 'admin' || $choice === 'both') {
+            foreach ($centre->getAdmins() as $admin) {
+                $recipients[$admin->getId()->toRfc4122()] = $admin;
+            }
+        }
+        if ($recipients === []) {
+            return;
+        }
+
+        $url = $this->urlGenerator->generate('app_students_show', ['id' => $student->getId()->toRfc4122()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $params = [
+            '%student%' => $this->fullName($student),
+            '%group%'   => $group->getName(),
+            '%type%'    => $type->getName(),
+            '%count%'   => $type->getOccurrencesForReport(),
+        ];
+
+        foreach (array_values($recipients) as $teacher) {
+            $this->dispatch($centre, $teacher, 'daily_note_threshold', $params, 'email/daily_note_threshold.html.twig', [
+                'student'    => $student,
+                'studentUrl' => $url,
+                'notes'      => $notes,
+            ]);
         }
     }
 

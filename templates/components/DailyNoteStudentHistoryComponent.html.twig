@@ -10,7 +10,7 @@
         {% else %}
             <ul class="divide-y divide-gray-100">
                 {% for note in pagination.items %}
-                    <li class="flex items-center justify-between gap-3 px-6 py-3 {{ note.ignored ? 'opacity-50' : '' }}">
+                    <li class="flex items-center justify-between gap-3 px-6 py-3 {{ not note.active ? 'opacity-50' : '' }}">
                         <div class="min-w-0">
                             <p class="text-sm font-medium text-gray-800">
                                 <span class="inline-flex items-center rounded-full bg-sky-50 text-sky-700 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide mr-1.5">
@@ -18,9 +18,9 @@
                                 </span>
                                 {{ note.occurredAt|date('format.datetime'|trans) }}
                                 · {{ note.registeredBy.name.lastName }}, {{ note.registeredBy.name.firstName }}
-                                {% if note.ignored %}
+                                {% if not note.active %}
                                     <span class="inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[11px] font-medium ml-1">
-                                        {{ 'daily_note.badge.ignored'|trans({}, 'admin') }}
+                                        {{ 'daily_note.badge.inactive'|trans({}, 'admin') }}
                                     </span>
                                 {% endif %}
                             </p>
@@ -35,12 +35,12 @@
                                     {{ 'ui.edit'|trans }}
                                 </a>
                             {% endif %}
-                            {% if not note.ignored and is_granted('daily_note.ignore', note) %}
-                                <form method="post" action="{{ path('app_daily_notes_ignore_one', {id: note.id}) }}">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('ignore_daily_note_' ~ note.id) }}">
+                            {% if note.active and is_granted('daily_note.deactivate', note) %}
+                                <form method="post" action="{{ path('app_daily_notes_deactivate_one', {id: note.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('deactivate_daily_note_' ~ note.id) }}">
                                     <button type="submit"
                                             class="inline-flex items-center rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                                        {{ 'daily_note.field.ignored'|trans({}, 'admin') }}
+                                        {{ 'daily_note.action.deactivate'|trans({}, 'admin') }}
                                     </button>
                                 </form>
                             {% endif %}

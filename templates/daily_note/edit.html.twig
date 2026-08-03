@@ -41,12 +41,24 @@
 
             {% if canManage %}
                 <div>
-                    <p class="block text-sm font-medium text-gray-700 mb-2">{{ 'daily_note.field.ignored'|trans({}, 'admin') }}</p>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="ignored" value="1" {{ note.ignored ? 'checked' : '' }}
-                               class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
-                        <span class="text-sm text-gray-700">{{ 'daily_note.field.ignored_help'|trans({}, 'admin') }}</span>
-                    </label>
+                    <p class="block text-sm font-medium text-gray-700 mb-2">{{ 'daily_note.field.status'|trans({}, 'admin') }}</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <twig:Form:RadioCard
+                            name="active"
+                            value="1"
+                            label="{{ 'daily_note.badge.active'|trans({}, 'admin') }}"
+                            help="{{ 'daily_note.field.active_on'|trans({}, 'admin') }}"
+                            :checked="note.active"
+                        />
+                        <twig:Form:RadioCard
+                            name="active"
+                            value="0"
+                            label="{{ 'daily_note.badge.inactive'|trans({}, 'admin') }}"
+                            help="{{ 'daily_note.field.active_off'|trans({}, 'admin') }}"
+                            :checked="not note.active"
+                            tone="gray"
+                        />
+                    </div>
                 </div>
             {% endif %}
 

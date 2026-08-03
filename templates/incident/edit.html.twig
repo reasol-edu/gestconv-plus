@@ -79,7 +79,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">
                             {{ 'incident.field.registered_by'|trans({}, 'admin') }}
                         </label>
-                        <select name="registered_by" required
+                        <select name="registered_by" aria-required="true"
                                 {% if errors.registered_by is defined %}aria-invalid="true"{% endif %}
                                 data-controller="symfony--ux-autocomplete--autocomplete"
                                 data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: report.academicYear.id}) }}"

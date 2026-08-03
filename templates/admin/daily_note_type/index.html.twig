@@ -44,6 +44,7 @@
                             <th class="px-4 py-2 w-10"></th>
                             <th class="px-4 py-2">{{ 'daily_note_type.col.name'|trans({}, 'admin') }}</th>
                             <th class="px-4 py-2 w-56">{{ 'daily_note_type.field.occurrences_for_report'|trans({}, 'admin') }}</th>
+                            <th class="px-4 py-2 w-40">{{ 'daily_note_type.col.expiry_days'|trans({}, 'admin') }}</th>
                             <th class="px-4 py-2 w-28"></th>
                             <th class="px-4 py-2 w-32"></th>
                         </tr>
@@ -79,6 +80,13 @@
                                         {{ 'daily_note_type.occurrences_summary'|trans({'%count%': type.occurrencesForReport}, 'admin') }}
                                     {% else %}
                                         <span class="text-gray-400">{{ 'daily_note_type.occurrences_none'|trans({}, 'admin') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-gray-600">
+                                    {% if type.expiryDays > 0 %}
+                                        {{ 'daily_note_type.expiry_summary'|trans({'%count%': type.expiryDays}, 'admin') }}
+                                    {% else %}
+                                        <span class="text-gray-400">{{ 'daily_note_type.expiry_none'|trans({}, 'admin') }}</span>
                                     {% endif %}
                                 </td>
                                 <td class="px-4 py-3 w-28">
@@ -132,6 +140,12 @@
                 <div class="w-48">
                     <label class="block text-xs font-medium text-gray-600 mb-1">{{ 'daily_note_type.field.occurrences_for_report'|trans({}, 'admin') }}</label>
                     <input type="number" name="occurrences_for_report" min="0" step="1" value="0"
+                           class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900
+                                  focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                </div>
+                <div class="w-40">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">{{ 'daily_note_type.field.expiry_days'|trans({}, 'admin') }}</label>
+                    <input type="number" name="expiry_days" min="0" step="1" value="0"
                            class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900
                                   focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                 </div>

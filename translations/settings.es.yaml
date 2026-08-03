@@ -150,6 +150,13 @@ settings.key.notifications_email_sanction_task_assigned.description: 'Envía un 
 settings.key.notifications_sanction_task_reminder_days.label: 'Días de antelación del recordatorio de tareas de sanción'
 settings.key.notifications_sanction_task_reminder_days.description: 'Días antes del inicio de la sanción a partir de los cuales se envía un recordatorio diario a los docentes con tareas de sanción pendientes de cumplimentar. Un valor de 0 desactiva este recordatorio.'
 
+settings.key.notifications_email_daily_note_threshold.label: 'Nota que implica registro de parte'
+settings.key.notifications_email_daily_note_threshold.description: 'Determina quién recibe un correo la primera vez que un estudiante alcanza o supera el número de ocurrencias de un tipo de nota diaria activa que da lugar a un aviso de parte.'
+settings.key.notifications_email_daily_note_threshold.choice.none: 'A nadie'
+settings.key.notifications_email_daily_note_threshold.choice.group_tutor: 'Al tutor/a de grupo'
+settings.key.notifications_email_daily_note_threshold.choice.admin: 'Al equipo directivo'
+settings.key.notifications_email_daily_note_threshold.choice.both: 'A ambos'
+
 settings.key.reports_incident_header_left.label: 'Encabezado de informe de partes (izquierda)'
 settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 

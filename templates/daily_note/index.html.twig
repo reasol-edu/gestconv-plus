@@ -23,9 +23,35 @@
         {% endif %}
     </div>
 
-    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
-        <twig:DailyNoteListComponent :centre="centre" />
-    </div>
+    {% if canSeeStudents %}
+        {# ── Pestañas ─────────────────────────────────────────────────── #}
+        <nav class="flex gap-6 border-b border-gray-200" aria-label="{{ 'daily_note.tabs.notes'|trans({}, 'admin') }}">
+            <a href="{{ path('app_daily_notes_index', {tab: 'notes'}) }}"
+               {% if tab == 'notes' %}aria-current="page"{% endif %}
+               class="-mb-px inline-flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors
+                      {{ tab == 'notes' ? 'border-forest-600 text-forest-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                {{ ux_icon('heroicons:document-text', {class: 'h-4 w-4'}) }}
+                {{ 'daily_note.tabs.notes'|trans({}, 'admin') }}
+            </a>
+            <a href="{{ path('app_daily_notes_index', {tab: 'students'}) }}"
+               {% if tab == 'students' %}aria-current="page"{% endif %}
+               class="-mb-px inline-flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors
+                      {{ tab == 'students' ? 'border-forest-600 text-forest-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                {{ ux_icon('heroicons:users', {class: 'h-4 w-4'}) }}
+                {{ 'daily_note.tabs.students'|trans({}, 'admin') }}
+            </a>
+        </nav>
+    {% endif %}
+
+    {% if tab == 'students' %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+            <twig:DailyNoteStudentListComponent :centre="centre" :viewer="app.user" initialTypeId="{{ typeId }}" />
+        </div>
+    {% else %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+            <twig:DailyNoteListComponent :centre="centre" />
+        </div>
+    {% endif %}
 
 </div>
 {% endblock %}

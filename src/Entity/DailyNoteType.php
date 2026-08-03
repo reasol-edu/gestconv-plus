@@ -25,9 +25,13 @@ class DailyNoteType implements CatalogEntryInterface
     #[ORM\Column(length: 200)]
     private string $name;
 
-    /** Ocurrencias no ignoradas de este tipo que, para un mismo estudiante, dan lugar a un aviso de parte. 0 = nunca. */
+    /** Ocurrencias activas de este tipo que, para un mismo estudiante, dan lugar a un aviso de parte. 0 = nunca. */
     #[ORM\Column]
     private int $occurrencesForReport = 0;
+
+    /** Días desde el registro tras los que una nota de este tipo se desactiva automáticamente. 0 = no caduca nunca. */
+    #[ORM\Column]
+    private int $expiryDays = 0;
 
     #[ORM\Column]
     private int $position = 0;
@@ -72,6 +76,18 @@ class DailyNoteType implements CatalogEntryInterface
     public function setOccurrencesForReport(int $occurrencesForReport): static
     {
         $this->occurrencesForReport = max(0, $occurrencesForReport);
+
+        return $this;
+    }
+
+    public function getExpiryDays(): int
+    {
+        return $this->expiryDays;
+    }
+
+    public function setExpiryDays(int $expiryDays): static
+    {
+        $this->expiryDays = max(0, $expiryDays);
 
         return $this;
     }

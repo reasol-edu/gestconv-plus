@@ -128,30 +128,32 @@ class DailyNoteControllerTest extends ControllerTestCase
 
     // ── created ───────────────────────────────────────────────────────────────
 
-    public function testCreatedShowsReportButtonWhenThresholdReached(): void
+    public function testCreatedNeverShowsReportButtonEvenAtThreshold(): void
     {
         [$teacher, $centre, $group, $student, $type] = $this->makeScenario(occurrencesForReport: 1);
         $note = $this->makeNote($centre, $student, $group, $type, $teacher);
         $this->persist($note);
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/notas/' . $note->getId()->toRfc4122() . '/creada');
+        $crawler = $this->client->request('GET', '/notas/' . $note->getId()->toRfc4122() . '/creada');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists('a[href*="/partes/nuevo"]');
+        self::assertSelectorNotExists('a[href*="/partes/nuevo"]');
+        self::assertStringContainsString('1 de 1', $crawler->filter('body')->text());
     }
 
-    public function testCreatedHidesReportButtonWhenBelowThreshold(): void
+    public function testCreatedShowsOccurrenceCountBelowThreshold(): void
     {
         [$teacher, $centre, $group, $student, $type] = $this->makeScenario(occurrencesForReport: 5);
         $note = $this->makeNote($centre, $student, $group, $type, $teacher);
         $this->persist($note);
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/notas/' . $note->getId()->toRfc4122() . '/creada');
+        $crawler = $this->client->request('GET', '/notas/' . $note->getId()->toRfc4122() . '/creada');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists('a[href*="/partes/nuevo"]');
+        self::assertStringContainsString('1 de 5', $crawler->filter('body')->text());
     }
 
     // ── edit ──────────────────────────────────────────────────────────────────
@@ -219,7 +221,7 @@ class DailyNoteControllerTest extends ControllerTestCase
         $crawler = $this->client->request('GET', '/notas/' . $note->getId()->toRfc4122() . '/editar');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists('input[name="ignored"]');
+        self::assertSelectorExists('input[name="active"]');
     }
 
     // ── delete ────────────────────────────────────────────────────────────────
@@ -260,21 +262,21 @@ class DailyNoteControllerTest extends ControllerTestCase
         self::assertNotNull($this->em->find(DailyNote::class, $note->getId()));
     }
 
-    // ── ignore ────────────────────────────────────────────────────────────────
+    // ── deactivate ───────────────────────────────────────────────────────────
 
-    public function testIgnoreOneAllowedForTutor(): void
+    public function testDeactivateOneAllowedForTutor(): void
     {
         [$teacher, $centre, $group, $student, $type] = $this->makeScenario();
-        $tutor = $this->makeTeacher('tutor.ignore.note');
+        $tutor = $this->makeTeacher('tutor.deactivate.note');
         $group->addTutor($tutor);
         $note = $this->makeNote($centre, $student, $group, $type, $teacher);
         $this->persist($tutor, $note);
         $this->loginAs($tutor, $centre);
 
         $crawler = $this->client->request('GET', '/alumnado/' . $student->getId()->toRfc4122());
-        $token   = $crawler->filter('form[action$="/ignorar"] [name="_token"]')->first()->attr('value');
+        $token   = $crawler->filter('form[action$="/desactivar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/notas/' . $note->getId()->toRfc4122() . '/ignorar', [
+        $this->client->request('POST', '/notas/' . $note->getId()->toRfc4122() . '/desactivar', [
             '_token' => $token,
         ]);
 
@@ -282,41 +284,41 @@ class DailyNoteControllerTest extends ControllerTestCase
         $this->em->clear();
         $updated = $this->em->find(DailyNote::class, $note->getId());
         self::assertNotNull($updated);
-        self::assertTrue($updated->isIgnored());
+        self::assertFalse($updated->isActive());
     }
 
-    public function testIgnoreOneDeniedForUnrelatedTeacher(): void
+    public function testDeactivateOneDeniedForUnrelatedTeacher(): void
     {
         [$teacher, $centre, $group, $student, $type] = $this->makeScenario();
-        $other = $this->makeTeacher('other.ignore.note');
+        $other = $this->makeTeacher('other.deactivate.note');
         $note  = $this->makeNote($centre, $student, $group, $type, $teacher);
         $this->persist($other, $note);
         $this->loginAs($other, $centre);
 
-        $this->client->request('POST', '/notas/' . $note->getId()->toRfc4122() . '/ignorar', [
+        $this->client->request('POST', '/notas/' . $note->getId()->toRfc4122() . '/desactivar', [
             '_token' => 'whatever',
         ]);
 
         self::assertResponseStatusCodeSame(403);
     }
 
-    public function testIgnoreAllOfTypeMarksAllNonIgnoredNotes(): void
+    public function testDeactivateAllOfTypeMarksAllActiveNotes(): void
     {
         [$teacher, $centre, $group, $student, $type] = $this->makeScenario();
-        $tutor = $this->makeTeacher('tutor.ignore.all');
+        $tutor = $this->makeTeacher('tutor.deactivate.all');
         $group->addTutor($tutor);
         $note1 = $this->makeNote($centre, $student, $group, $type, $teacher);
         $note2 = $this->makeNote($centre, $student, $group, $type, $teacher);
         $this->persist($tutor, $note1, $note2);
         $this->loginAs($tutor, $centre);
 
-        $crawler = $this->client->request('GET', '/alumnado/' . $student->getId()->toRfc4122());
-        $token   = $crawler->filter('form[action$="/ignorar-tipo"] [name="_token"]')->first()->attr('value');
-
         $studentId = $student->getId()->toRfc4122();
         $typeId    = $type->getId()->toRfc4122();
 
-        $this->client->request('POST', '/notas/ignorar-tipo', [
+        $crawler = $this->client->request('GET', '/notas?tab=students&typeId=' . $typeId);
+        $token   = $crawler->filter('form[action$="/desactivar-tipo"] [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/notas/desactivar-tipo', [
             '_token'    => $token,
             'studentId' => $studentId,
             'typeId'    => $typeId,
@@ -326,20 +328,20 @@ class DailyNoteControllerTest extends ControllerTestCase
         $this->em->clear();
         $updated1 = $this->em->find(DailyNote::class, $note1->getId());
         $updated2 = $this->em->find(DailyNote::class, $note2->getId());
-        self::assertTrue($updated1->isIgnored());
-        self::assertTrue($updated2->isIgnored());
+        self::assertFalse($updated1->isActive());
+        self::assertFalse($updated2->isActive());
     }
 
-    public function testIgnoreAllOfTypeDeniedForNonTutorNonAdmin(): void
+    public function testDeactivateAllOfTypeDeniedForNonTutorNonAdmin(): void
     {
         [$teacher, $centre, $group, $student, $type] = $this->makeScenario();
-        $other = $this->makeTeacher('other.ignore.all');
+        $other = $this->makeTeacher('other.deactivate.all');
         $this->persist($other);
         $this->loginAs($other, $centre);
 
         // La comprobación de permisos ocurre antes que la de CSRF, así que un token
         // cualquiera basta para probar que se deniega el acceso.
-        $this->client->request('POST', '/notas/ignorar-tipo', [
+        $this->client->request('POST', '/notas/desactivar-tipo', [
             '_token'    => 'whatever',
             'studentId' => $student->getId()->toRfc4122(),
             'typeId'    => $type->getId()->toRfc4122(),

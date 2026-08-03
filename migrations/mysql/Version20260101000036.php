@@ -29,6 +29,7 @@ final class Version20260101000036 extends AbstractMigration
                 educational_centre_id   BINARY(16)   NOT NULL,
                 name                    VARCHAR(200) NOT NULL,
                 occurrences_for_report  INT          NOT NULL DEFAULT 0,
+                expiry_days             INT          NOT NULL DEFAULT 0,
                 position                INT          NOT NULL DEFAULT 0,
                 active                  TINYINT(1)   NOT NULL DEFAULT 1,
                 PRIMARY KEY (id),
@@ -48,7 +49,7 @@ final class Version20260101000036 extends AbstractMigration
                 occurred_at       DATETIME   NOT NULL COMMENT '(DC2Type:datetime_immutable)',
                 created_at        DATETIME   NOT NULL COMMENT '(DC2Type:datetime_immutable)',
                 observations      LONGTEXT   DEFAULT NULL,
-                ignored           TINYINT(1) NOT NULL DEFAULT 0,
+                active            TINYINT(1) NOT NULL DEFAULT 1,
                 PRIMARY KEY (id),
                 INDEX idx_daily_note_academic_year (academic_year_id),
                 INDEX idx_daily_note_student       (student_id),
@@ -83,11 +84,12 @@ final class Version20260101000036 extends AbstractMigration
             }
 
             $occurrences = (int) ($typeData['occurrences_for_report'] ?? 0);
+            $expiryDays  = (int) ($typeData['expiry_days'] ?? 0);
 
             $this->addSql(
-                'INSERT INTO daily_note_type (id, educational_centre_id, name, occurrences_for_report, position, active) '
-                . 'SELECT UNHEX(REPLACE(UUID(), \'-\', \'\')), id, ?, ?, ?, 1 FROM educational_centre',
-                [$name, $occurrences, $position]
+                'INSERT INTO daily_note_type (id, educational_centre_id, name, occurrences_for_report, expiry_days, position, active) '
+                . 'SELECT UNHEX(REPLACE(UUID(), \'-\', \'\')), id, ?, ?, ?, ?, 1 FROM educational_centre',
+                [$name, $occurrences, $expiryDays, $position]
             );
         }
     }

@@ -20,7 +20,7 @@ final class DailyNoteVoter extends Voter
     public const EDIT_OBSERVATIONS = 'daily_note.edit_observations';
     public const DELETE_OWN        = 'daily_note.delete_own';
     public const MANAGE            = 'daily_note.manage';
-    public const IGNORE            = 'daily_note.ignore';
+    public const DEACTIVATE        = 'daily_note.deactivate';
 
     public function __construct(
         private readonly ClockInterface $clock,
@@ -28,7 +28,7 @@ final class DailyNoteVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::EDIT_OBSERVATIONS, self::DELETE_OWN, self::MANAGE, self::IGNORE], true)
+        return in_array($attribute, [self::VIEW, self::EDIT_OBSERVATIONS, self::DELETE_OWN, self::MANAGE, self::DEACTIVATE], true)
             && $subject instanceof DailyNote;
     }
 
@@ -52,7 +52,7 @@ final class DailyNoteVoter extends Voter
                                         || $subject->getGroup()->getTutors()->contains($user),
             self::EDIT_OBSERVATIONS,
             self::DELETE_OWN        => $subject->getRegisteredBy() === $user && $this->withinOwnWindow($subject),
-            self::IGNORE            => $subject->getGroup()->getTutors()->contains($user),
+            self::DEACTIVATE        => $subject->getGroup()->getTutors()->contains($user),
             self::MANAGE            => false,
             default                 => false,
         };

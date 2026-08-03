@@ -149,11 +149,9 @@ class StudentController extends AbstractController
         $noteStats = [];
         if ($year !== null) {
             foreach ($this->dailyNoteTypes->findByCentreOrdered($centre) as $type) {
-                $count       = $this->dailyNotes->countActiveByStudentAndType($student, $type, $year);
                 $noteStats[] = [
-                    'type'           => $type,
-                    'count'          => $count,
-                    'triggersReport' => $type->getOccurrencesForReport() > 0 && $count >= $type->getOccurrencesForReport(),
+                    'type'  => $type,
+                    'count' => $this->dailyNotes->countActiveByStudentAndType($student, $type, $year),
                 ];
             }
         }
