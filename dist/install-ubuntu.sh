@@ -14,17 +14,24 @@
 #
 # Qué instala este script:
 #   1. PostgreSQL (paquete oficial de Ubuntu) + base de datos y usuario
-#   2. Cortafuegos UFW con los puertos mínimos abiertos (SSH, HTTP, HTTPS)
+#   2. Cortafuegos UFW con los puertos mínimos abiertos (SSH, y HTTP/HTTPS salvo
+#      que se use Cloudflare Tunnel, ver más abajo)
 #   3. Usuario del sistema «gestconvplus» y directorio /opt/gestconv-plus
 #   4. Binario de GestConv+ (última versión publicada en GitHub Releases)
-#   5. Scripts de arranque del servidor y del worker de mensajería
-#   6. Servicios systemd gestconv-plus y gestconv-plus-worker (arranque automático)
+#   5. Fichero de configuración (.env.local)
+#   6. Si el servidor está detrás de un NAT/cortafuegos sin puertos abiertos:
+#      Cloudflare Tunnel (cloudflared), en vez de exponer 80/443 directamente
+#   7. Scripts de arranque del servidor y del worker de mensajería
+#   8. Servicios systemd gestconv-plus y gestconv-plus-worker (arranque automático)
 #
 # Requisitos previos:
 #   - Ubuntu Server 26.04 LTS (o posterior) con acceso a Internet
 #   - Ejecutar como root o con: sudo bash install-ubuntu.sh
 #   - Un nombre de dominio (p. ej. gestconv.tucentro.es) apuntando a este servidor,
-#     necesario para que FrankenPHP/Caddy obtenga el certificado TLS automático
+#     necesario para que FrankenPHP/Caddy obtenga el certificado TLS automático —
+#     salvo que el servidor esté detrás de un NAT/cortafuegos sin puertos abiertos,
+#     en cuyo caso el script puede configurar Cloudflare Tunnel en su lugar (hace
+#     falta un token de túnel ya creado, ver docs/despliegue/cloudflare-tunnel.md)
 # =============================================================================
 set -euo pipefail
 
@@ -65,9 +72,10 @@ ${BOLD}╔═══════════════════════�
 ╚══════════════════════════════════════════════════════╝${NC}
 
 Este script instalará GestConv+ con:
-  •  FrankenPHP como servidor web (HTTPS automático vía Let's Encrypt)
+  •  FrankenPHP como servidor web (HTTPS automático vía Let's Encrypt,
+     o Cloudflare Tunnel si el servidor está detrás de un NAT/cortafuegos)
   •  PostgreSQL como base de datos
-  •  Dos servicios systemd con arranque automático al reiniciar
+  •  Dos o tres servicios systemd con arranque automático al reiniciar
 "
 
 # ── solicitar configuración ───────────────────────────────────────────────────
@@ -97,15 +105,39 @@ read -rp "   Dirección de correo remitente [no-responder@${DOMAIN}]: " MAIL_FRO
 MAIL_FROM="${MAIL_FROM:-no-responder@${DOMAIN}}"
 
 echo -e "
+   Si este servidor está detrás de un NAT o de un cortafuegos sobre el que no
+   tienes control (no puedes pedir la apertura de los puertos 80/443), puedes
+   usar Cloudflare Tunnel: el servidor abre una conexión saliente hacia
+   Cloudflare y no hace falta abrir ningún puerto entrante. Hace falta tener
+   ya creado el túnel en el dashboard de Cloudflare (Zero Trust → Networks →
+   Tunnels → Create a tunnel → Cloudflared) y el token que se muestra en el
+   comando 'cloudflared service install <token>'. Más detalles en
+   docs/despliegue/cloudflare-tunnel.md.
+"
+read -rp "   ¿Usar Cloudflare Tunnel en vez de exponer 80/443 directamente? [s/N] " USE_TUNNEL_RAW </dev/tty
+if [[ "${USE_TUNNEL_RAW:-N}" =~ ^[Ss]$ ]]; then
+    USE_TUNNEL=true
+    while true; do
+        read -rsp "   Token del túnel de Cloudflare: " TUNNEL_TOKEN </dev/tty
+        echo
+        [[ -n "$TUNNEL_TOKEN" ]] && break
+        warn "El token no puede estar vacío."
+    done
+else
+    USE_TUNNEL=false
+fi
+
+echo -e "
    ${BOLD}Dominio:${NC}   ${DOMAIN}
    ${BOLD}Base BD:${NC}   gestconv  (usuario: gestconv)
    ${BOLD}Correo:${NC}    ${MAIL_FROM}
+   ${BOLD}Acceso:${NC}    $([[ "$USE_TUNNEL" == true ]] && echo "Cloudflare Tunnel" || echo "HTTPS directo (Let's Encrypt)")
 "
 read -rp "   ¿Empezar la instalación? [S/n] " CONFIRM </dev/tty
 [[ "${CONFIRM:-S}" =~ ^[Ss]?$ ]] || { echo "Instalación cancelada."; exit 0; }
 
 # ── 1. PostgreSQL ─────────────────────────────────────────────────────────────
-step "1/7 · Instalar PostgreSQL"
+step "1/8 · Instalar PostgreSQL"
 DEBIAN_FRONTEND=noninteractive apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-client curl
 ok "PostgreSQL instalado"
@@ -128,16 +160,23 @@ SQL
 ok "Base de datos 'gestconv' y usuario 'gestconv' listos"
 
 # ── 2. Cortafuegos ────────────────────────────────────────────────────────────
-step "2/7 · Configurar cortafuegos (UFW)"
+step "2/8 · Configurar cortafuegos (UFW)"
 ufw allow OpenSSH  > /dev/null
-ufw allow 80/tcp   > /dev/null
-ufw allow 443/tcp  > /dev/null
-ufw allow 443/udp  > /dev/null   # HTTP/3 (QUIC)
-ufw --force enable > /dev/null
-ok "UFW activo: SSH, HTTP y HTTPS abiertos"
+if [[ "$USE_TUNNEL" == true ]]; then
+    # Con Cloudflare Tunnel la conexión es siempre saliente: no hace falta
+    # abrir ningún puerto entrante más que SSH.
+    ufw --force enable > /dev/null
+    ok "UFW activo: solo SSH abierto (Cloudflare Tunnel no necesita 80/443)"
+else
+    ufw allow 80/tcp   > /dev/null
+    ufw allow 443/tcp  > /dev/null
+    ufw allow 443/udp  > /dev/null   # HTTP/3 (QUIC)
+    ufw --force enable > /dev/null
+    ok "UFW activo: SSH, HTTP y HTTPS abiertos"
+fi
 
 # ── 3. Usuario del sistema ────────────────────────────────────────────────────
-step "3/7 · Crear usuario del sistema 'gestconvplus'"
+step "3/8 · Crear usuario del sistema 'gestconvplus'"
 if ! id gestconvplus &> /dev/null; then
     useradd -r -d /opt/gestconv-plus -s /usr/sbin/nologin gestconvplus
     ok "Usuario 'gestconvplus' creado"
@@ -148,7 +187,7 @@ mkdir -p /opt/gestconv-plus
 chown gestconvplus:gestconvplus /opt/gestconv-plus
 
 # ── 4. Binario de GestConv+ ─────────────────────────────────────────────────────
-step "4/7 · Descargar el binario de GestConv+ (última versión)"
+step "4/8 · Descargar el binario de GestConv+ (última versión)"
 VERSION=$(curl -fsSL https://api.github.com/repos/reasol-edu/gestconv-plus/releases/latest \
     | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
 [[ -n "$VERSION" ]] || die "No se pudo obtener la versión más reciente desde GitHub."
@@ -158,30 +197,60 @@ curl -fsSL "$TARBALL_URL" | sudo -u gestconvplus tar xzf - -C /opt/gestconv-plus
 ok "GestConv+ v${VERSION} extraído en /opt/gestconv-plus"
 
 # ── 5. Configuración ─────────────────────────────────────────────────────────
-step "5/7 · Crear fichero de configuración (.env.local)"
+step "5/8 · Crear fichero de configuración (.env.local)"
 if [[ -f /opt/gestconv-plus/.env.local ]]; then
     warn ".env.local ya existe; se conserva. Revisa que DATABASE_URL y SERVER_ADDR sean correctos."
 else
+if [[ "$USE_TUNNEL" == true ]]; then
+    # Caddy escucha solo en local sin TLS automático: lo termina Cloudflare.
+    # SYMFONY_TRUSTED_PROXIES es necesario para que la aplicación lea la IP
+    # real del visitante y el esquema https:// originales, que cloudflared
+    # reenvía como cabeceras X-Forwarded-* a través de Caddy en localhost.
+    SERVER_ADDR_VALUE="127.0.0.1:8080"
+    TRUSTED_PROXIES_LINE='SYMFONY_TRUSTED_PROXIES="127.0.0.1"'
+else
+    SERVER_ADDR_VALUE="${DOMAIN}"
+    TRUSTED_PROXIES_LINE=""
+fi
 sudo -u gestconvplus tee /opt/gestconv-plus/.env.local > /dev/null << ENVFILE
 # GestConv+ — configuración de producción en Ubuntu Server
 # Generado automáticamente el $(date '+%Y-%m-%d %H:%M:%S')
 # Edita este fichero para cambiar dominio, correo, etc.
 # Después: sudo systemctl restart gestconv-plus gestconv-plus-worker
 
-SERVER_ADDR="${DOMAIN}"
+SERVER_ADDR="${SERVER_ADDR_VALUE}"
 DEFAULT_URI="https://${DOMAIN}"
 DATABASE_URL="postgresql://gestconv:${DB_PASS}@localhost:5432/gestconv?serverVersion=16&charset=utf8"
 MIGRATIONS_PATH="migrations/postgresql"
 MAILER_DSN="null://null"
 MAILER_FROM="${MAIL_FROM}"
 APP_EXTERNAL_ENABLED="true"
+${TRUSTED_PROXIES_LINE}
 ENVFILE
 chmod 600 /opt/gestconv-plus/.env.local
 ok ".env.local creado con permisos 600"
 fi
 
-# ── 6. Scripts de arranque ────────────────────────────────────────────────────
-step "6/7 · Crear scripts de arranque"
+# ── 6. Cloudflare Tunnel ──────────────────────────────────────────────────────
+if [[ "$USE_TUNNEL" == true ]]; then
+    step "6/8 · Instalar y configurar Cloudflare Tunnel"
+    mkdir -p --mode=0755 /usr/share/keyrings
+    curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg \
+        | tee /usr/share/keyrings/cloudflare-main.gpg > /dev/null
+    echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs 2>/dev/null || echo noble) main" \
+        | tee /etc/apt/sources.list.d/cloudflared.list > /dev/null
+    DEBIAN_FRONTEND=noninteractive apt-get update -qq
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq cloudflared
+    cloudflared service install "${TUNNEL_TOKEN}"
+    ok "cloudflared instalado y arrancado como servicio systemd"
+    warn "Falta configurar el «Public Hostname» del túnel en el dashboard de Cloudflare"
+    warn "(pestaña Public Hostname del túnel → ${DOMAIN} → HTTP → localhost:8080), si no lo has hecho ya."
+else
+    step "6/8 · Cloudflare Tunnel (omitido)"
+fi
+
+# ── 7. Scripts de arranque ────────────────────────────────────────────────────
+step "7/8 · Crear scripts de arranque"
 
 # — gestconv-start.sh (servidor web) ——————————————————————————————————————————————
 sudo -u gestconvplus tee /opt/gestconv-plus/gestconv-start.sh > /dev/null << 'STARTSCRIPT'
@@ -327,8 +396,8 @@ WORKERSCRIPT
 chmod +x /opt/gestconv-plus/gestconv-start.sh /opt/gestconv-plus/gestconv-worker.sh
 ok "gestconv-start.sh y gestconv-worker.sh creados"
 
-# ── 7. Servicios systemd ──────────────────────────────────────────────────────
-step "7/7 · Instalar y arrancar los servicios systemd"
+# ── 8. Servicios systemd ──────────────────────────────────────────────────────
+step "8/8 · Instalar y arrancar los servicios systemd"
 
 tee /etc/systemd/system/gestconv-plus.service > /dev/null << 'UNIT'
 [Unit]
@@ -381,6 +450,19 @@ systemctl enable --now gestconv-plus gestconv-plus-worker
 ok "Servicios activos y habilitados para el arranque automático"
 
 # ── resultado ─────────────────────────────────────────────────────────────────
+if [[ "$USE_TUNNEL" == true ]]; then
+    TUNNEL_NOTE="
+  ${YELLOW}⚠  Revisa que el Public Hostname del túnel esté configurado en el
+     dashboard de Cloudflare (${DOMAIN} → HTTP → localhost:8080); sin eso el
+     dominio no responderá aunque el servicio esté activo.${NC}"
+    STATUS_CMD="sudo systemctl status gestconv-plus gestconv-plus-worker cloudflared"
+else
+    TUNNEL_NOTE="
+  ${YELLOW}⚠  En el primer arranque FrankenPHP solicita el certificado TLS.
+     Puede tardar 30-60 segundos hasta que HTTPS esté disponible.${NC}"
+    STATUS_CMD="sudo systemctl status gestconv-plus gestconv-plus-worker"
+fi
+
 echo -e "
 ${GREEN}${BOLD}╔══════════════════════════════════════════════════════╗
 ║              ✔  Instalación completada               ║
@@ -389,12 +471,10 @@ ${GREEN}${BOLD}╔════════════════════�
   URL de acceso: ${BOLD}https://${DOMAIN}${NC}
   Usuario:       ${BOLD}admin${NC}
   Contraseña:    ${BOLD}admin${NC}  ← cámbiala ahora en Perfil
-
-  ${YELLOW}⚠  En el primer arranque FrankenPHP solicita el certificado TLS.
-     Puede tardar 30-60 segundos hasta que HTTPS esté disponible.${NC}
+${TUNNEL_NOTE}
 
   Comandos útiles:
-    Ver estado:   sudo systemctl status gestconv-plus gestconv-plus-worker
+    Ver estado:   ${STATUS_CMD}
     Ver logs:     sudo journalctl -u gestconv-plus -f
     Reiniciar:    sudo systemctl restart gestconv-plus gestconv-plus-worker
     Configurar:   sudo nano /opt/gestconv-plus/.env.local

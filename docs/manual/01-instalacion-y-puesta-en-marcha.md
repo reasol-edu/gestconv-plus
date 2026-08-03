@@ -338,6 +338,12 @@ HTTPS_PORT=443
 
 FrankenPHP (Caddy) gestionará el certificado TLS sin configuración adicional.
 
+Si el servidor está detrás de un NAT o un cortafuegos sobre el que no tienes control (no puedes
+abrir los puertos 80/443), la
+**[guía de Cloudflare Tunnel](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/cloudflare-tunnel.md)**
+del repositorio describe una alternativa sin puertos entrantes, con un overlay de Docker Compose
+dedicado.
+
 ### Datos persistentes
 
 Los datos se almacenan en el directorio `./data/` del proyecto:
@@ -525,6 +531,16 @@ Si prefieres que el servidor se actualice solo con cada nueva versión —median
 un webhook de GitHub—, sigue la
 **[guía de despliegue continuo](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/despliegue-continuo.md)**
 del repositorio, que usa este mismo script.
+
+### Exposición sin abrir puertos (Cloudflare Tunnel)
+
+Si el servidor está en una red sin IP pública o detrás de un cortafuegos en el que no puedes pedir
+la apertura de los puertos 80/443, `install-ubuntu.sh` puede configurar en su lugar
+**[Cloudflare Tunnel](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/cloudflare-tunnel.md)**:
+el servidor abre una conexión saliente hacia Cloudflare y no hace falta abrir ningún puerto
+entrante. La guía cubre también el caso de un centro que solo dispone de un subdominio delegado
+dentro del dominio de su organización (Consejería, ayuntamiento…), sin necesidad de migrar el
+dominio completo.
 
 ## Desarrollo local
 
