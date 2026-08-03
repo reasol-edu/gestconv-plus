@@ -86,7 +86,8 @@
                 <div class="relative z-10 grid grid-cols-5">
                     {% for day in week.days %}
                         {% set nonWorking = this.isNonWorkingDay(day) %}
-                        <div class="py-1 px-1.5 text-right text-xs
+                        <a href="{{ path('app_calendar_day', {date: day.format('Y-m-d')}) }}"
+                           class="block py-1 px-1.5 text-right text-xs hover:font-semibold transition-colors
                                     {{ this.isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-300' }}
                                     {{ nonWorking ? 'line-through decoration-gray-300' : '' }}"
                              {% if nonWorking %}title="{{ this.nonWorkingDayDescription(day) ?? 'non_working_day'|trans({}, 'calendar') }}"{% endif %}>
@@ -97,7 +98,7 @@
                             {% else %}
                                 {{ day.format('j') }}
                             {% endif %}
-                        </div>
+                        </a>
                     {% endfor %}
                 </div>
 
