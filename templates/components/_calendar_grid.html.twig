@@ -1,7 +1,6 @@
-{# Grid del calendario mensual (navegación, cabecera de días, semanas y segmentos).
-   Compartido por CalendarComponent y AbsenceCalendarComponent vía {% include %}
-   para poder llamar a this.isToday()/this.isCurrentMonth()/etc. del componente
-   que lo incluye. Variable esperada: showBoardLink (bool). #}
+{# Grid del calendario mensual (navegación, cabecera de días, semanas y segmentos),
+   incluido por CalendarComponent para poder llamar a this.isToday()/this.isCurrentMonth()/etc.
+   del componente. Variable esperada: showBoardLink (bool). #}
 <div {{ attributes.defaults({class: 'rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden'}) }}>
 
     {# ── Navigation ───────────────────────────────────────────────────────── #}
@@ -106,13 +105,18 @@
                     <div class="relative z-10 grid grid-cols-5 gap-x-1 gap-y-1 px-1 pb-1"
                          style="grid-template-rows: repeat({{ week.maxLane + 1 }}, minmax(1.25rem, auto));">
                         {% for segment in week.segments %}
-                            <div class="truncate rounded-md border px-1.5 py-0.5 text-[11px] leading-tight {{ segment.color.bg }} {{ segment.color.text }} {{ segment.color.border }}"
+                            <div class="flex items-center gap-1 truncate rounded-md border px-1.5 py-0.5 text-[11px] leading-tight {{ segment.color.bg }} {{ segment.color.text }} {{ segment.color.border }}"
                                  style="grid-column: {{ segment.startCol + 1 }} / span {{ segment.span }}; grid-row: {{ segment.lane + 1 }};"
                                  title="{{ segment.details is not empty ? segment.label ~ ' — ' ~ segment.details : segment.label }}">
-                                <span class="font-semibold">{{ segment.label }}</span>
-                                {% if segment.details is not empty %}
-                                    <span class="opacity-80">{{ segment.details }}</span>
+                                {% if segment.icon is not empty %}
+                                    {{ ux_icon(segment.icon, {class: 'h-3 w-3 shrink-0'}) }}
                                 {% endif %}
+                                <span class="truncate">
+                                    <span class="font-semibold">{{ segment.label }}</span>
+                                    {% if segment.details is not empty %}
+                                        <span class="opacity-80">{{ segment.details }}</span>
+                                    {% endif %}
+                                </span>
                             </div>
                         {% endfor %}
                     </div>

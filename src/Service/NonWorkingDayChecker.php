@@ -7,10 +7,13 @@ namespace App\Service;
 use App\Entity\AcademicYear;
 use App\Repository\NonWorkingDayRepository;
 
-final readonly class NonWorkingDayChecker
+final class NonWorkingDayChecker
 {
+    /** @var array<string, array<string, ?string>> curso académico (uuid) => [fecha ISO => descripción] */
+    private array $mapCache = [];
+
     public function __construct(
-        private NonWorkingDayRepository $nonWorkingDays,
+        private readonly NonWorkingDayRepository $nonWorkingDays,
     ) {
     }
 
@@ -21,22 +24,22 @@ final readonly class NonWorkingDayChecker
 
     public function isNonWorkingDay(AcademicYear $year, \DateTimeImmutable $date): bool
     {
-        return $this->isWeekend($date) || $this->nonWorkingDays->findByAcademicYearAndDate($year, $date) !== null;
+        return $this->isWeekend($date) || array_key_exists($date->format('Y-m-d'), $this->nonWorkingDayMap($year));
     }
 
     public function descriptionFor(AcademicYear $year, \DateTimeImmutable $date): ?string
     {
-        return $this->nonWorkingDays->findByAcademicYearAndDate($year, $date)?->getDescription();
+        return $this->nonWorkingDayMap($year)[$date->format('Y-m-d')] ?? null;
     }
 
     public function countSchoolDays(AcademicYear $year, \DateTimeImmutable $from, \DateTimeImmutable $to): int
     {
-        $holidays = $this->holidaySet($year);
+        $holidays = $this->nonWorkingDayMap($year);
 
         $count  = 0;
         $cursor = $from;
         while ($cursor <= $to) {
-            if (!$this->isWeekend($cursor) && !isset($holidays[$cursor->format('Y-m-d')])) {
+            if (!$this->isWeekend($cursor) && !array_key_exists($cursor->format('Y-m-d'), $holidays)) {
                 ++$count;
             }
             $cursor = $cursor->modify('+1 day');
@@ -47,12 +50,12 @@ final readonly class NonWorkingDayChecker
 
     public function addSchoolDays(AcademicYear $year, \DateTimeImmutable $from, int $schoolDays): \DateTimeImmutable
     {
-        $holidays = $this->holidaySet($year);
+        $holidays = $this->nonWorkingDayMap($year);
 
         $remaining = $schoolDays;
         $cursor    = $from;
         while (true) {
-            if (!$this->isWeekend($cursor) && !isset($holidays[$cursor->format('Y-m-d')])) {
+            if (!$this->isWeekend($cursor) && !array_key_exists($cursor->format('Y-m-d'), $holidays)) {
                 --$remaining;
                 if ($remaining <= 0) {
                     return $cursor;
@@ -70,17 +73,27 @@ final readonly class NonWorkingDayChecker
      */
     public function datesFor(AcademicYear $year): array
     {
-        return array_keys($this->holidaySet($year));
+        return array_keys($this->nonWorkingDayMap($year));
     }
 
-    /** @return array<string, true> */
-    private function holidaySet(AcademicYear $year): array
+    /**
+     * Fechas no lectivas registradas del curso, cargadas en una sola consulta y
+     * memoizadas por curso académico para el resto de la petición: evita el N+1
+     * que suponía consultar la base de datos por cada día visible del calendario.
+     *
+     * @return array<string, ?string> fecha ISO (Y-m-d) => descripción (o null)
+     */
+    private function nonWorkingDayMap(AcademicYear $year): array
     {
-        $set = [];
-        foreach ($this->nonWorkingDays->findByAcademicYearOrdered($year) as $day) {
-            $set[$day->getDate()->format('Y-m-d')] = true;
+        $yearId = $year->getId()->toRfc4122();
+        if (!isset($this->mapCache[$yearId])) {
+            $map = [];
+            foreach ($this->nonWorkingDays->findByAcademicYearOrdered($year) as $day) {
+                $map[$day->getDate()->format('Y-m-d')] = $day->getDescription();
+            }
+            $this->mapCache[$yearId] = $map;
         }
 
-        return $set;
+        return $this->mapCache[$yearId];
     }
 }

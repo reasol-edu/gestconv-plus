@@ -39,7 +39,7 @@ class CalendarController extends AbstractController
     {
         $isAdmin      = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
         $requestedTab = $request->query->getString('tab');
-        $tab          = $isAdmin && in_array($requestedTab, ['absences', 'events'], true) ? $requestedTab : 'sanctions';
+        $tab          = $isAdmin && $requestedTab === 'events' ? 'events' : 'calendar';
 
         return $this->render('calendar/index.html.twig', [
             'centre'  => $centre,

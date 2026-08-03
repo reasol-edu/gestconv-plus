@@ -20,25 +20,18 @@
     {% if isAdmin %}
     {# ── Pestañas ─────────────────────────────────────────────────────── #}
     <nav class="flex gap-6 border-b border-gray-200" aria-label="{{ 'tabs.aria'|trans({}, 'calendar') }}">
-        <a href="{{ path('app_calendar', {tab: 'sanctions'}) }}"
-           {% if tab == 'sanctions' %}aria-current="page"{% endif %}
+        <a href="{{ path('app_calendar', {tab: 'calendar'}) }}"
+           {% if tab == 'calendar' %}aria-current="page"{% endif %}
            class="-mb-px inline-flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors
-                  {{ tab == 'sanctions' ? 'border-forest-600 text-forest-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-            {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4 w-4'}) }}
-            {{ 'tabs.sanctions'|trans({}, 'calendar') }}
-        </a>
-        <a href="{{ path('app_calendar', {tab: 'absences'}) }}"
-           {% if tab == 'absences' %}aria-current="page"{% endif %}
-           class="-mb-px inline-flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors
-                  {{ tab == 'absences' ? 'border-forest-600 text-forest-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-            {{ ux_icon('heroicons:user-circle', {class: 'h-4 w-4'}) }}
-            {{ 'tabs.absences'|trans({}, 'calendar') }}
+                  {{ tab == 'calendar' ? 'border-forest-600 text-forest-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+            {{ ux_icon('heroicons:calendar-days', {class: 'h-4 w-4'}) }}
+            {{ 'tabs.calendar'|trans({}, 'calendar') }}
         </a>
         <a href="{{ path('app_calendar', {tab: 'events'}) }}"
            {% if tab == 'events' %}aria-current="page"{% endif %}
            class="-mb-px inline-flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors
                   {{ tab == 'events' ? 'border-forest-600 text-forest-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-            {{ ux_icon('heroicons:calendar-days', {class: 'h-4 w-4'}) }}
+            {{ ux_icon('heroicons:megaphone', {class: 'h-4 w-4'}) }}
             {{ 'tabs.events'|trans({}, 'calendar') }}
         </a>
     </nav>
@@ -48,8 +41,6 @@
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
             <twig:SchoolEventListComponent :centre="centre" />
         </div>
-    {% elseif tab == 'absences' and isAdmin %}
-        <twig:AbsenceCalendarComponent />
     {% else %}
         <twig:CalendarComponent />
     {% endif %}

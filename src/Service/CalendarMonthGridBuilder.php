@@ -6,12 +6,12 @@ namespace App\Service;
 
 /**
  * Builds the week-by-week grid (days + segments) for a given month, for the
- * admin calendar (CalendarComponent / AbsenceCalendarComponent). Weekends are
- * excluded from the grid since there is no class on Saturday/Sunday.
+ * unified calendar (CalendarComponent). Weekends are excluded from the grid
+ * since there is no class on Saturday/Sunday.
  *
  * Decoupled from any specific entity: callers provide the items plus two
  * callables to turn each item into a date range and into the segment's
- * visual decoration (label, details, color).
+ * visual decoration (label, details, color, optional icon).
  */
 final class CalendarMonthGridBuilder
 {
@@ -24,7 +24,7 @@ final class CalendarMonthGridBuilder
      *
      * @param list<T> $items
      * @param callable(T): (array{id: string, start: \DateTimeImmutable, end: \DateTimeImmutable}|null) $toRange returns null to skip an item (e.g. missing dates)
-     * @param callable(T): array{label: string, details: string, color: array{bg: string, text: string, border: string}} $toSegment
+     * @param callable(T): array{label: string, details: string, color: array{bg: string, text: string, border: string}, icon?: string} $toSegment
      *
      * @return list<array{days: list<\DateTimeImmutable>, segments: list<array<string, mixed>>, maxLane: int}>
      */
@@ -83,6 +83,7 @@ final class CalendarMonthGridBuilder
                     'label'    => $decoration['label'],
                     'details'  => $decoration['details'],
                     'color'    => $decoration['color'],
+                    'icon'     => $decoration['icon'] ?? null,
                 ];
             }, $layout['segments']);
 

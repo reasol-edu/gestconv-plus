@@ -6,8 +6,7 @@ no_active_year: 'No hay un curso académico activo para este centro.'
 non_working_day: 'Día no lectivo'
 
 tabs.aria: 'Pestañas del calendario'
-tabs.sanctions: 'Calendario de sanciones'
-tabs.absences: 'Calendario de ausencias'
+tabs.calendar: 'Calendario'
 tabs.events: 'Eventos'
 
 month.1: 'Enero'

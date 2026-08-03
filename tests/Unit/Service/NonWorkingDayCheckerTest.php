@@ -9,6 +9,7 @@ use App\Entity\NonWorkingDay;
 use App\Repository\NonWorkingDayRepository;
 use App\Service\NonWorkingDayChecker;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Uuid;
 
 class NonWorkingDayCheckerTest extends TestCase
 {
@@ -33,7 +34,7 @@ class NonWorkingDayCheckerTest extends TestCase
     public function testIsNonWorkingDayIsTrueOnWeekendWithoutQueryingRepository(): void
     {
         $repository = $this->createMock(NonWorkingDayRepository::class);
-        $repository->expects(self::never())->method('findByAcademicYearAndDate');
+        $repository->expects(self::never())->method('findByAcademicYearOrdered');
 
         $checker = new NonWorkingDayChecker($repository);
         $year    = $this->createStub(AcademicYear::class);
@@ -44,11 +45,12 @@ class NonWorkingDayCheckerTest extends TestCase
     public function testIsNonWorkingDayChecksDeclaredHolidaysOnWeekdays(): void
     {
         $year = $this->createStub(AcademicYear::class);
+        $year->method('getId')->willReturn(Uuid::v4());
         $date = new \DateTimeImmutable('2026-07-24'); // viernes
 
         $repository = $this->createStub(NonWorkingDayRepository::class);
-        $repository->method('findByAcademicYearAndDate')
-            ->willReturn($this->nonWorkingDay('2026-07-24'));
+        $repository->method('findByAcademicYearOrdered')
+            ->willReturn([$this->nonWorkingDay('2026-07-24')]);
 
         $checker = new NonWorkingDayChecker($repository);
 
@@ -58,33 +60,73 @@ class NonWorkingDayCheckerTest extends TestCase
     public function testIsNonWorkingDayIsFalseOnOrdinaryWeekday(): void
     {
         $year = $this->createStub(AcademicYear::class);
+        $year->method('getId')->willReturn(Uuid::v4());
         $date = new \DateTimeImmutable('2026-07-24');
 
         $repository = $this->createStub(NonWorkingDayRepository::class);
-        $repository->method('findByAcademicYearAndDate')->willReturn(null);
+        $repository->method('findByAcademicYearOrdered')->willReturn([]);
 
         $checker = new NonWorkingDayChecker($repository);
 
         self::assertFalse($checker->isNonWorkingDay($year, $date));
     }
 
+    public function testIsNonWorkingDayMemoizesRepositoryQueryPerAcademicYear(): void
+    {
+        $year = $this->createStub(AcademicYear::class);
+        $year->method('getId')->willReturn(Uuid::v4());
+
+        $repository = $this->createMock(NonWorkingDayRepository::class);
+        $repository->expects(self::once())
+            ->method('findByAcademicYearOrdered')
+            ->willReturn([$this->nonWorkingDay('2026-07-24')]);
+
+        $checker = new NonWorkingDayChecker($repository);
+
+        // Múltiples llamadas (isNonWorkingDay + descriptionFor, como hace la
+        // cuadrícula del calendario por cada día visible) solo deben disparar
+        // una única consulta a la base de datos.
+        self::assertTrue($checker->isNonWorkingDay($year, new \DateTimeImmutable('2026-07-24')));
+        self::assertTrue($checker->isNonWorkingDay($year, new \DateTimeImmutable('2026-07-24')));
+        self::assertFalse($checker->isNonWorkingDay($year, new \DateTimeImmutable('2026-07-20')));
+        self::assertNull($checker->descriptionFor($year, new \DateTimeImmutable('2026-07-24')));
+    }
+
     public function testDescriptionForReturnsHolidayDescription(): void
     {
         $year = $this->createStub(AcademicYear::class);
+        $year->method('getId')->willReturn(Uuid::v4());
         $date = new \DateTimeImmutable('2026-07-24');
 
         $repository = $this->createStub(NonWorkingDayRepository::class);
-        $repository->method('findByAcademicYearAndDate')
-            ->willReturn($this->nonWorkingDay('2026-07-24', 'Día del centro'));
+        $repository->method('findByAcademicYearOrdered')
+            ->willReturn([$this->nonWorkingDay('2026-07-24', 'Día del centro')]);
 
         $checker = new NonWorkingDayChecker($repository);
 
         self::assertSame('Día del centro', $checker->descriptionFor($year, $date));
     }
 
+    public function testDescriptionForReturnsNullWhenHolidayHasNoDescription(): void
+    {
+        $year = $this->createStub(AcademicYear::class);
+        $year->method('getId')->willReturn(Uuid::v4());
+        $date = new \DateTimeImmutable('2026-07-24');
+
+        $repository = $this->createStub(NonWorkingDayRepository::class);
+        $repository->method('findByAcademicYearOrdered')
+            ->willReturn([$this->nonWorkingDay('2026-07-24', null)]);
+
+        $checker = new NonWorkingDayChecker($repository);
+
+        self::assertTrue($checker->isNonWorkingDay($year, $date));
+        self::assertNull($checker->descriptionFor($year, $date));
+    }
+
     public function testCountSchoolDaysExcludesWeekendsAndHolidays(): void
     {
         $year = $this->createStub(AcademicYear::class);
+        $year->method('getId')->willReturn(Uuid::v4());
 
         // lunes 2026-07-20 .. domingo 2026-07-26, con festivo el miércoles 22
         $repository = $this->createStub(NonWorkingDayRepository::class);
@@ -106,6 +148,7 @@ class NonWorkingDayCheckerTest extends TestCase
     public function testAddSchoolDaysIsReciprocalWithCountSchoolDays(): void
     {
         $year = $this->createStub(AcademicYear::class);
+        $year->method('getId')->willReturn(Uuid::v4());
 
         $repository = $this->createStub(NonWorkingDayRepository::class);
         $repository->method('findByAcademicYearOrdered')
@@ -123,6 +166,7 @@ class NonWorkingDayCheckerTest extends TestCase
     public function testAddSchoolDaysOfOneReturnsStartDateWhenItIsAlreadyASchoolDay(): void
     {
         $year = $this->createStub(AcademicYear::class);
+        $year->method('getId')->willReturn(Uuid::v4());
 
         $repository = $this->createStub(NonWorkingDayRepository::class);
         $repository->method('findByAcademicYearOrdered')->willReturn([]);

@@ -5,8 +5,15 @@ declare(strict_types=1);
 namespace App\Twig\Components;
 
 use App\Entity\AcademicYear;
+use App\Entity\Absence;
+use App\Entity\EducationalCentre;
 use App\Entity\Sanction;
+use App\Entity\SchoolEvent;
+use App\Entity\Teacher;
+use App\Repository\AbsenceRepository;
 use App\Repository\SanctionRepository;
+use App\Repository\SchoolEventRepository;
+use App\Security\Voter\EducationalCentreVoter;
 use App\Service\CalendarMonthGridBuilder;
 use App\Service\GroupColorPalette;
 use App\Service\NonWorkingDayChecker;
@@ -15,11 +22,20 @@ use Symfony\Component\Clock\ClockInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 
+/**
+ * Calendario mensual unificado: sanciones (todo el profesorado), ausencias
+ * previstas (solo administradores de centro) y eventos de centro (según
+ * visibilidad — generales para todos, restringidos según grupo impartido o
+ * tutorizado), todo en la misma cuadrícula.
+ */
 #[AsLiveComponent]
 class CalendarComponent extends AbstractCalendarComponent
 {
-    /** @var list<Sanction>|null */
-    private ?array $sanctionsCache = null;
+    private const array ABSENCE_COLOR  = ['bg' => 'bg-amber-100', 'text' => 'text-amber-800', 'border' => 'border-amber-300'];
+    private const array GENERAL_EVENT_COLOR = ['bg' => 'bg-sky-100', 'text' => 'text-sky-800', 'border' => 'border-sky-300'];
+
+    /** @var list<Sanction|Absence|SchoolEvent>|null */
+    private ?array $itemsCache = null;
 
     public function __construct(
         TenantContext $tenantContext,
@@ -27,6 +43,8 @@ class CalendarComponent extends AbstractCalendarComponent
         NonWorkingDayChecker $nonWorkingDayChecker,
         ClockInterface $clock,
         private readonly SanctionRepository $sanctionRepository,
+        private readonly AbsenceRepository $absenceRepository,
+        private readonly SchoolEventRepository $eventRepository,
         private readonly CalendarMonthGridBuilder $gridBuilder,
         private readonly GroupColorPalette $colorPalette,
     ) {
@@ -44,45 +62,98 @@ class CalendarComponent extends AbstractCalendarComponent
             return [];
         }
 
-        $sanctions = $this->getSanctionsForYear($academicYear);
+        $items = $this->getItemsForYear($centre, $academicYear);
 
         return $this->gridBuilder->build(
             $this->year,
             $this->month,
-            $sanctions,
-            static function (Sanction $sanction): ?array {
-                $start = $sanction->getEffectiveFrom();
-                if ($start === null) {
-                    return null;
+            $items,
+            function (Sanction|Absence|SchoolEvent $item): ?array {
+                if ($item instanceof Sanction) {
+                    $start = $item->getEffectiveFrom();
+
+                    return $start === null ? null : [
+                        'id'    => 'sanction-' . $item->getId()->toRfc4122(),
+                        'start' => $start,
+                        'end'   => $item->getEffectiveTo() ?? $start,
+                    ];
+                }
+                if ($item instanceof Absence) {
+                    return [
+                        'id'    => 'absence-' . $item->getId()->toRfc4122(),
+                        'start' => $item->getStartDate(),
+                        'end'   => $item->getEndDate(),
+                    ];
                 }
 
                 return [
-                    'id'    => $sanction->getId()->toRfc4122(),
-                    'start' => $start,
-                    'end'   => $sanction->getEffectiveTo() ?? $start,
+                    'id'    => 'event-' . $item->getId()->toRfc4122(),
+                    'start' => $item->getDate(),
+                    'end'   => $item->getDate(),
                 ];
             },
-            function (Sanction $sanction): array {
-                $group = $sanction->getGroup();
+            function (Sanction|Absence|SchoolEvent $item): array {
+                if ($item instanceof Sanction) {
+                    $group = $item->getGroup();
+
+                    return [
+                        'label'   => $item->getStudent()->getName()->full() . ' · ' . $group->getName(),
+                        'details' => $item->getCalendarLabel() ?? trim(strip_tags($item->getDetails())),
+                        'color'   => $this->colorPalette->colorFor($group->getId()->toRfc4122()),
+                        'icon'    => 'heroicons:exclamation-triangle',
+                    ];
+                }
+                if ($item instanceof Absence) {
+                    return [
+                        'label'   => $item->getTeacher()->getName()->full(),
+                        'details' => '',
+                        'color'   => self::ABSENCE_COLOR,
+                        'icon'    => 'heroicons:user-circle',
+                    ];
+                }
+
+                $firstGroup = $item->getGroups()->first();
+                $color      = $item->isGeneral() || $firstGroup === false
+                    ? self::GENERAL_EVENT_COLOR
+                    : $this->colorPalette->colorFor($firstGroup->getId()->toRfc4122());
 
                 return [
-                    'label'   => $sanction->getStudent()->getName()->full() . ' · ' . $group->getName(),
-                    'details' => $sanction->getCalendarLabel() ?? trim(strip_tags($sanction->getDetails())),
-                    'color'   => $this->colorPalette->colorFor($group->getId()->toRfc4122()),
+                    'label'   => $item->getStartTime()->format('H:i') . '–' . $item->getEndTime()->format('H:i') . ' ' . $item->getName(),
+                    'details' => '',
+                    'color'   => $color,
+                    'icon'    => 'heroicons:megaphone',
                 ];
             },
         );
     }
 
     /**
-     * @return list<Sanction>
+     * @return list<Sanction|Absence|SchoolEvent>
      */
-    private function getSanctionsForYear(AcademicYear $academicYear): array
+    private function getItemsForYear(EducationalCentre $centre, AcademicYear $academicYear): array
     {
-        if ($this->sanctionsCache === null) {
-            $this->sanctionsCache = $this->sanctionRepository->findWithDatesForAcademicYear($academicYear);
+        if ($this->itemsCache !== null) {
+            return $this->itemsCache;
         }
 
-        return $this->sanctionsCache;
+        $isAdmin = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
+        $user    = $this->getUser();
+        $viewer  = $user instanceof Teacher ? $user : null;
+
+        $items = $this->sanctionRepository->findWithDatesForAcademicYear($academicYear);
+
+        if ($isAdmin) {
+            $items = [...$items, ...$this->absenceRepository->findWithDatesForAcademicYear($academicYear)];
+        }
+
+        if ($isAdmin) {
+            $items = [...$items, ...$this->eventRepository->findAllForAcademicYear($academicYear)];
+        } elseif ($viewer !== null) {
+            $items = [...$items, ...$this->eventRepository->findVisibleForTeacherInAcademicYear($viewer, $academicYear)];
+        }
+
+        $this->itemsCache = $items;
+
+        return $items;
     }
 }
