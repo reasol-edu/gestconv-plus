@@ -198,6 +198,15 @@
                             {% for sanction in report.sanctionedStudents %}{{ sanction.student.name.full() }} ({{ sanction.group.name }}){% if sanction.label %} — {{ sanction.label }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
                         {% endif %}
                     </div>
+
+                    <div class="shrink-0 px-6 py-3 border-t border-gray-200 dark:border-white/10 text-lg text-gray-600 dark:text-forest-300 text-center">
+                        <span class="font-semibold">{{ 'board_today_events_label'|trans({}, 'calendar') }}:</span>
+                        {% if report.events is empty %}
+                            <span class="text-gray-400 dark:text-forest-400">{{ 'board_today_no_events'|trans({}, 'calendar') }}</span>
+                        {% else %}
+                            {% for event in report.events %}{{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }} {{ event.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                        {% endif %}
+                    </div>
                 {% else %}
                     <h2 class="shrink-0 bg-gray-100 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-gray-600 border-b border-gray-200 dark:bg-forest-900 dark:text-forest-200 dark:border-white/10">
                         {{ screen.label|trans({}, 'calendar') }}

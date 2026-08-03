@@ -9,13 +9,16 @@ use App\Entity\Sanction;
 use App\Repository\AbsenceRepository;
 use App\Repository\ActivityRepository;
 use App\Repository\SanctionRepository;
+use App\Repository\SchoolEventRepository;
 use App\Repository\TimeSlotRepository;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Builds the "Hoy" board screen: every time slot of the given weekday with
  * its guard teachers and the activities registered for that day, plus the
- * list of teachers absent that day and the students sanctioned that day.
+ * list of teachers absent that day, the students sanctioned that day, and
+ * the school events of that day (shown even on non-working days, unlike the
+ * rest of the screen — an event like an open house can fall on a holiday).
  */
 class BoardTodayBuilder
 {
@@ -26,14 +29,17 @@ class BoardTodayBuilder
         private readonly ActivityRepository $activities,
         private readonly AbsenceRepository $absences,
         private readonly SanctionRepository $sanctions,
+        private readonly SchoolEventRepository $events,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
         private readonly TranslatorInterface $translator,
     ) {}
 
     public function build(AcademicYear $year, \DateTimeImmutable $date): BoardTodayReport
     {
+        $events = $this->events->findAllForAcademicYearAndDate($year, $date);
+
         if ($this->nonWorkingDayChecker->isNonWorkingDay($year, $date)) {
-            return new BoardTodayReport($date, [], [], [], $this->nonWorkingDayLabel($year, $date));
+            return new BoardTodayReport($date, [], [], [], $this->nonWorkingDayLabel($year, $date), $events);
         }
 
         $dayOfWeek = ((int) $date->format('N')) - 1;
@@ -68,6 +74,7 @@ class BoardTodayBuilder
             $timeSlots,
             $this->absences->findTeachersAbsentOn($year, $date),
             $sanctionedStudents,
+            events: $events,
         );
     }
 
