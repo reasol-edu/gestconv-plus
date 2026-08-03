@@ -47,6 +47,12 @@ Debajo, las tarjetas de estadísticas:
 A continuación, las **sanciones en vigor en tus grupos** de esta semana y la próxima, visible para
 quien imparte materia en algún grupo.
 
+Si hay alguno, una tarjeta **Eventos de hoy** lista los [eventos de
+centro](05-calendario-y-tablon.md#eventos-de-centro-solo-administradores) del día: los generales
+para cualquier docente, o los restringidos a algún grupo que se imparte o tutoriza; los
+administradores ven además los restringidos a grupos ajenos. Cada tarjeta enlaza a la
+[vista de detalle de ese día](05-calendario-y-tablon.md#vista-de-detalle-de-un-dia).
+
 Y por último:
 
 - **Últimos partes** — los seis partes más recientes accesibles para el docente, cada uno con su

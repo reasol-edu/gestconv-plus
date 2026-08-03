@@ -1,48 +1,73 @@
 # Calendario y tablón
 
-Cuando una sanción se comunica a la familia, entra en la parte más visible de la aplicación: el
-**calendario** de sanciones y su versión para pantallas del centro, el **modo tablón**. El
-objetivo de ambos es el mismo: que todo el claustro sepa, de un vistazo, qué sanciones están en
-vigor cada día.
+La sección **Calendario** reúne, en una sola vista mensual, todo lo que le interesa al
+profesorado día a día: las **sanciones** en vigor, las **ausencias** del profesorado (solo
+administradores) y los **eventos de centro**. Su versión para pantallas del centro, el
+**modo tablón**, muestra lo mismo de un vistazo en la sala de profesorado.
 
 ## Calendario
 
-La sección **Calendario** del menú lateral muestra, en una vista mensual, las sanciones del curso
-activo que tienen fecha de inicio (y, opcionalmente, de fin).
+La sección **Calendario** del menú lateral muestra, en una vista mensual, todo lo relevante para
+quien la consulta:
 
-![Vista mensual del calendario de sanciones](img/calendario/calendario.png)
+![Vista mensual del calendario](img/calendario/calendario.png)
 
-- Se muestran **todas las sanciones del curso ya comunicadas a la familia y con fecha**, sin
-  filtrar por autoría ni tutoría: cualquier docente del centro las ve todas. Las pendientes de
-  comunicar no aparecen hasta que se registra la comunicación (ver
-  [Notificaciones](03-el-trabajo-diario.md#notificaciones)).
-- Cada sanción aparece como una barra horizontal que puede abarcar varios días. Dentro de la
-  barra se muestra el nombre del estudiante, su grupo y la
-  **descripción para calendario y tablón** de la sanción — o, si ese campo se dejó en blanco, el
-  texto completo del campo Detalle. Por eso conviene rellenarlo siempre con algo corto y
-  descriptivo, tipo «Expulsión» o «Aula de convivencia» (ver
-  [Registrar una sanción](04-sanciones-y-comision.md#registrar-una-sancion)).
-- El color de la barra depende del grupo: todas las sanciones de estudiantes del mismo grupo
-  comparten color, lo que permite distinguir de un vistazo a qué grupos pertenecen las sanciones
-  de una misma semana.
+- **Sanciones**: todas las del curso activo ya comunicadas a la familia y con fecha, sin filtrar
+  por autoría ni tutoría — cualquier docente del centro las ve todas. Las pendientes de comunicar
+  no aparecen hasta que se registra la comunicación (ver
+  [Notificaciones](03-el-trabajo-diario.md#notificaciones)). Cada una se colorea según el grupo del
+  estudiante y muestra el icono ⚠, el nombre del estudiante, su grupo y la
+  **descripción para calendario y tablón** (o el detalle completo si ese campo está en blanco).
+- **Ausencias del profesorado** (solo administradores de centro, ver
+  [Ausencias](03-el-trabajo-diario.md#ausencias)): se colorean en ámbar con el icono de un docente
+  y muestran únicamente el nombre de quien está ausente, sin grupo ni descripción. El resto del
+  profesorado no las ve en su calendario.
+- **Eventos de centro** (ver más abajo): se colorean según el grupo si están restringidos a uno, o
+  en azul con el icono de un megáfono si son generales, y muestran la hora seguida del nombre del
+  evento.
 - Solo se muestran los días de lunes a viernes; los fines de semana no aparecen en la cuadrícula.
+  Un evento en fin de semana sigue siendo visible en su [vista de detalle](#vista-de-detalle-de-un-dia),
+  en el modo tablón y en el panel de inicio, aunque no aparezca en esta cuadrícula mensual.
 - El día actual se resalta con un color de fondo distinto en toda su columna.
 
-### Calendario de ausencias (solo administradores)
+### Vista de detalle de un día
 
-Los administradores de centro ven, junto a la pestaña **Calendario de sanciones**, una segunda
-pestaña: **Calendario de ausencias**. Reutiliza la misma vista mensual, pero en lugar de sanciones
-muestra las ausencias del profesorado registradas para el curso activo (ver
-[Ausencias](03-el-trabajo-diario.md#ausencias)).
+Al hacer clic en cualquier día de la cuadrícula se abre su ficha completa, con botones para
+avanzar o retroceder de día sin volver al calendario:
 
-- Cada ausencia aparece como una barra horizontal con **únicamente el nombre del docente**, sin
-  grupo ni descripción.
-- El color de la barra depende del docente, no del grupo.
-- El resto del comportamiento (solo días lectivos, día actual resaltado, navegación por mes) es
-  idéntico al calendario de sanciones. El botón **Modo tablón** también está disponible aquí, pero
-  siempre lleva al tablón de sanciones: no existe un modo tablón específico para ausencias.
-- El resto del profesorado no ve esta pestaña ni puede acceder a ella cambiando la URL: solo se
-  muestra el calendario de sanciones.
+- Aviso de **día no lectivo**, si aplica (con su descripción, si el día no lectivo la tiene).
+- **Tramos horarios y guardias** de ese día de la semana, con el profesorado de guardia y las
+  ausencias con actividad encomendada de cada tramo.
+- **Sanciones activas** ese día.
+- **Ausencias** del profesorado (solo administradores).
+- **Eventos** de ese día, con su horario, descripción, enlace si lo tienen, y los grupos a los que
+  están restringidos (o la etiqueta **General**).
+
+Los administradores de centro tienen además un botón **Añadir evento** que abre el formulario de
+alta con la fecha del día ya rellenada.
+
+## Eventos de centro (solo administradores)
+
+Un **evento de centro** es un aviso puntual con fecha y horario propios — una jornada de puertas
+abiertas, un claustro, una reunión de tutoría — que se muestra en el calendario, la vista de día,
+el modo tablón y el panel de inicio de quien deba verlo.
+
+Los administradores de centro gestionan los eventos desde la pestaña **Eventos**, junto a
+**Calendario**, dentro de la misma sección del menú lateral: un listado paginado con búsqueda por
+nombre o descripción y un filtro por grupo, y un botón **Añadir evento** (también disponible desde
+la vista de detalle de un día, con la fecha ya rellenada).
+
+Cada evento tiene:
+
+- **Fecha**, **hora de inicio** y **hora de fin** (obligatorias).
+- **Nombre** (obligatorio) y **descripción** (opcional).
+- **Enlace** opcional (por ejemplo, a un formulario de inscripción o más información).
+- **Visibilidad**, elegida con dos opciones:
+    - **General** — visible para todo el profesorado del centro.
+    - **Restringido a grupos** — visible solo para quien imparte clase o tutoriza alguno de los
+      grupos elegidos en un desplegable de búsqueda que admite varios grupos a la vez.
+
+Los administradores ven siempre todos los eventos, tengan o no relación con ellos.
 
 ## Modo tablón
 
@@ -69,9 +94,11 @@ los tramos horarios de la jornada:
 - El tramo horario que coincide con la hora actual se resalta con un color de fondo distinto, y el
   resaltado se recalcula solo conforme avanza el reloj, sin necesidad de recargar la pantalla.
 - Al pie se listan, en una única línea cada una, las **ausencias de hoy** (todo el profesorado
-  ausente ese día, tenga o no actividad encomendada) y el **alumnado sancionado hoy** (con su
-  grupo y la descripción para calendario y tablón, o el detalle recortado si aquella está en
-  blanco).
+  ausente ese día, tenga o no actividad encomendada), el **alumnado sancionado hoy** (con su grupo
+  y la descripción para calendario y tablón, o el detalle recortado si aquella está en blanco) y
+  los **eventos de hoy** (con su horario y nombre). Los eventos se muestran incluso en un día no
+  lectivo — el resto de la pantalla queda vacía salvo el aviso del día no lectivo, pero un evento
+  como una jornada de puertas abiertas puede caer en fiesta y sigue siendo relevante.
 
 ### Pantallas de semana
 

@@ -504,19 +504,27 @@ el centro**, no solo de sus propios grupos:
 
 ![bg right:40% fit](../manual/img/calendario/calendario.png)
 
-- Vista mensual con las **sanciones ya comunicadas** del curso activo, cada
-  una como una barra de color por grupo con el estudiante y una descripción
-  breve.
+- Vista mensual unificada: **sanciones** ya comunicadas (para todo el
+  profesorado), **ausencias** del profesorado (solo administradores) y
+  **eventos de centro**, cada tipo con su icono y su color.
 - Solo días lectivos (lunes a viernes), con el día actual resaltado.
+- Al hacer clic en un día se abre su **vista de detalle**, con navegación al
+  día anterior/siguiente y el desglose completo: tramos horarios y guardias,
+  sanciones, ausencias y eventos de ese día.
 
 ---
 
-## Calendario de ausencias
+## Eventos de centro
 
-- Segunda pestaña, **solo para administradores**: reutiliza la misma vista
-  mensual para mostrar las **ausencias del profesorado** en lugar de las
-  sanciones.
-- Cada barra muestra únicamente el **nombre del docente**, sin más detalle.
+- Nuevo catálogo, gestionado por administradores desde la pestaña
+  **Eventos** de la sección Calendario: listado paginado con búsqueda y
+  filtro por grupo.
+- Cada evento tiene fecha, hora de inicio y fin, nombre, descripción y
+  enlace opcionales, y una visibilidad **general** (todo el profesorado) o
+  **restringida a uno o varios grupos** (solo quien los imparte o
+  tutoriza).
+- Se muestra en el calendario, la vista de día, el modo tablón y el panel
+  de inicio de quien deba verlo.
 
 ---
 
@@ -530,8 +538,9 @@ el centro**, no solo de sus propios grupos:
 - Rota entre hasta tres pantallas — **Hoy**, **esta semana** y **semana que
   viene** — con botones para avanzar o retroceder sin esperar a la rotación.
 - La pantalla **Hoy** muestra el profesorado de guardia por tramo horario
-  (con el tramo actual resaltado en vivo), las ausencias con actividad
-  encomendada y, al pie, el resto de ausencias y las sanciones del día.
+  (con el tramo actual resaltado en vivo) y, al pie, las ausencias, las
+  sanciones y los **eventos del día** — estos últimos incluso en un día no
+  lectivo.
 - Es una sesión sin salida: solo se puede abandonar cerrando sesión con el
   botón de encendido/apagado.
 
