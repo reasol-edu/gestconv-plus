@@ -37,10 +37,12 @@ class CalendarController extends AbstractController
     #[Route('/calendario', name: 'app_calendar')]
     public function index(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $isAdmin = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
-        $tab     = $isAdmin && $request->query->getString('tab') === 'absences' ? 'absences' : 'sanctions';
+        $isAdmin      = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
+        $requestedTab = $request->query->getString('tab');
+        $tab          = $isAdmin && in_array($requestedTab, ['absences', 'events'], true) ? $requestedTab : 'sanctions';
 
         return $this->render('calendar/index.html.twig', [
+            'centre'  => $centre,
             'isAdmin' => $isAdmin,
             'tab'     => $tab,
         ]);

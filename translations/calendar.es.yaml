@@ -8,6 +8,7 @@ non_working_day: 'Día no lectivo'
 tabs.aria: 'Pestañas del calendario'
 tabs.sanctions: 'Calendario de sanciones'
 tabs.absences: 'Calendario de ausencias'
+tabs.events: 'Eventos'
 
 month.1: 'Enero'
 month.2: 'Febrero'
