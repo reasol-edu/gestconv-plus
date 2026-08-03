@@ -178,10 +178,13 @@ desactívalo en su lugar.
 ### Tipos de notas diarias
 
 En **Centro educativo › Tipos de notas diarias** se configura la lista —plana, sin categorías— de
-tipos disponibles al [registrar una nota](03-el-trabajo-diario.md#notas), con un campo adicional
-por tipo: **Ocurrencias que dan lugar a parte** (0 = este tipo nunca lo sugiere). Los 4 tipos por
-defecto son: Salida al baño (0), Uso del móvil (2), Retraso (3) y Otros (0); los centros que ya
-existían antes de esta funcionalidad los reciben automáticamente al actualizar.
+tipos disponibles al [registrar una nota](03-el-trabajo-diario.md#notas), con dos campos
+adicionales por tipo: **Ocurrencias que dan lugar a parte** (0 = este tipo nunca lo sugiere) y
+**Caducidad**, en días desde el registro, pasados los cuales una nota activa de ese tipo se
+desactiva automáticamente (0 = no caduca nunca). Los 4 tipos por defecto son: Salida al baño (0
+ocurrencias, no caduca), Uso del móvil (2 ocurrencias, caduca a los 30 días), Retraso a primera
+hora (3 ocurrencias, no caduca) y Otros (0 ocurrencias, no caduca); los centros que ya existían
+antes de esta funcionalidad los reciben automáticamente al actualizar.
 
 ![Administración de tipos de notas diarias](img/notas/admin-tipos-notas.png)
 

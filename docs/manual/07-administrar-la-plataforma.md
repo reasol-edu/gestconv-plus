@@ -230,6 +230,7 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Parte incorporado a una sanción | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
 | Sanción notificada a la familia | A nadie / A los docentes de los partes / Al tutor/a de grupo / A ambos | A nadie |
 | Parte sancionable (comisión de convivencia) | A nadie / A la comisión de convivencia | A nadie |
+| Nota que implica registro de parte | A nadie / Al tutor/a de grupo / Al equipo directivo / A ambos | A nadie |
 | Enviar parte adjunto al correo | Sí / No | No |
 | Enviar sanción adjunta al correo | Sí / No | No |
 | Tareas de sanción asignadas | Sí / No | Sí |
@@ -237,10 +238,13 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 Uno por cada evento de un parte o una sanción; determinan si se envía un correo y a quién. El
 aviso de parte modificado no se dispara al marcar un parte como prescrito, que tiene su propio
 ajuste independiente, y el aviso a la comisión de convivencia solo se envía cuando un parte queda
-notificado a la familia y todavía puede ser sancionado. Los dos ajustes de adjuntar PDF al correo
-adjuntan el PDF del parte o de la sanción a los correos anteriores. Ninguno tiene ámbito de docente: se fijan a
-nivel global o de centro. Salvo el último, todos están desactivados por defecto. El detalle de
-cada aviso está en
+notificado a la familia y todavía puede ser sancionado. El aviso de **nota que implica registro de
+parte** se envía la primera vez que un estudiante alcanza o supera el umbral de un tipo de
+[nota diaria](03-el-trabajo-diario.md#notas) activa; si se sigue por encima del umbral con notas
+nuevas no se repite, y el correo incluye el detalle completo de las notas activas de ese tipo. Los
+dos ajustes de adjuntar PDF al correo adjuntan el PDF del parte o de la sanción a los correos
+anteriores. Ninguno tiene ámbito de docente: se fijan a nivel global o de centro. Salvo el último,
+todos están desactivados por defecto. El detalle de cada aviso está en
 [Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones).
 
 **Tareas de sanción asignadas**, a diferencia de los anteriores, está **activado por defecto**: en

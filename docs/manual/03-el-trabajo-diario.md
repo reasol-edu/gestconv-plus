@@ -40,6 +40,9 @@ Debajo, las tarjetas de estadísticas:
   orientación y tutores/as: cuántas sanciones del curso tienen alguna materia de [tareas de
   sanción](#tareas-de-sancion) sin cumplimentar. Enlaza al listado de sanciones con el filtro
   correspondiente ya aplicado.
+- **Notas que implican parte** — visible para administradores y tutores/as: cuántos estudiantes
+  han alcanzado el umbral de ocurrencias de un tipo de nota activa. Enlaza a la pestaña
+  [Listado de estudiantes](#listado-de-estudiantes) de la sección Notas.
 
 A continuación, las **sanciones en vigor en tus grupos** de esta semana y la próxima, visible para
 quien imparte materia en algún grupo.
@@ -157,9 +160,16 @@ permiso para notificarlo ve también un botón **Notificar** junto a los de edit
 
 La sección **Notas** del menú lateral permite registrar avisos de comportamiento del día a día
 (un retraso, salir al baño, usar el móvil en clase…) sin necesidad de abrir un parte de
-convivencia formal. Cada tipo de nota tiene un umbral de ocurrencias configurable por el centro
-(ver [Tipos de notas diarias](06-administrar-el-centro.md#tipos-de-notas-diarias)); al superarlo,
-la aplicación avisa de que conviene registrar también un parte.
+convivencia formal. Cada tipo de nota tiene un umbral de ocurrencias configurable por el centro y
+una caducidad opcional (ver [Tipos de notas diarias](06-administrar-el-centro.md#tipos-de-notas-diarias)).
+
+!!! note "Quién registra el parte al alcanzar el umbral"
+    Cuando un estudiante alcanza el umbral de un tipo de nota, no es cualquier docente quien debe
+    registrar el parte de convivencia derivado, sino el tutor/a de su grupo o administración. Por
+    eso este aviso no aparece ni en el formulario de alta de una nota ni en la ficha del alumno:
+    se gestiona desde la pestaña **Listado de estudiantes** de esta misma sección (ver más abajo),
+    y opcionalmente por correo electrónico (ver
+    [Avisos por correo](07-administrar-la-plataforma.md#avisos-por-correo)).
 
 ### Registrar una nota nueva
 
@@ -172,15 +182,14 @@ la aplicación avisa de que conviene registrar también un parte.
 3. **Tipo de nota** — elige uno de los tipos activos del centro. Los tipos que, de añadir esta
    nota, alcanzarían el umbral de ocurrencias que dan lugar a parte se muestran resaltados en
    rojo. Al elegir un tipo aparece, sin recargar la página, el historial de ese tipo para el
-   estudiante seleccionado (fecha/hora, docente y observaciones; las notas ya ignoradas se ven
+   estudiante seleccionado (fecha/hora, docente y observaciones; las notas ya desactivadas se ven
    atenuadas).
 
    ![Tipo de nota resaltado en rojo con el historial del estudiante](img/notas/nueva-nota-tipo-historial.png)
 
 4. **Observaciones** — campo de texto libre, opcional.
-5. Pulsa **Guardar**. La pantalla de resumen muestra los datos de la nota y, si con ella se
-   alcanza o se supera el umbral del tipo elegido, un botón destacado para registrar un parte de
-   convivencia para ese mismo estudiante.
+5. Pulsa **Guardar**. La pantalla de resumen muestra los datos de la nota y, si el tipo tiene
+   umbral configurado, cuántas ocurrencias lleva el estudiante sobre el total.
 
 > La fecha y hora de la nota se registran automáticamente en el momento de guardarla, y no se
 > pueden elegir manualmente.
@@ -188,25 +197,50 @@ la aplicación avisa de que conviene registrar también un parte.
 Si accedes como administrador y no impartes clase en el curso académico activo, el campo de
 docente aparece vacío para obligar a elegir a quién corresponde la nota, igual que en los partes.
 
-### Listado, filtros e historial del estudiante
+### Listado de notas
 
-![Listado de notas con una fila ignorada mostrada en gris](img/notas/notas-listado.png)
+![Listado de notas con una fila desactivada mostrada en gris](img/notas/notas-listado.png)
 
-El listado admite búsqueda libre (estudiante, docente u observaciones), filtro por grupo (solo se
-listan los que tienen notas) y por tipo. Cada docente ve, como mínimo, sus propias notas y las de
-los grupos que tutoriza; solo los administradores ven todas. Quien tutoriza algún grupo dispone
-además de los botones **Mis notas** y **De mi tutoría** para acotar la vista.
+La pestaña **Listado de notas** admite búsqueda libre (estudiante, docente u observaciones),
+filtro por grupo (solo se listan los que tienen notas) y por tipo. Cada docente ve, como mínimo,
+sus propias notas y las de los grupos que tutoriza; solo los administradores ven todas. Quien
+tutoriza algún grupo dispone además de los botones **Mis notas** y **De mi tutoría** para acotar
+la vista.
 
 Puedes editar el texto de tus propias observaciones o eliminar una nota propia durante los 30
 minutos posteriores a su registro. Pasado ese tiempo, solo un administrador puede modificarla o
 eliminarla. Los tutores del grupo del estudiante pueden además marcar cualquier nota como
-**ignorada**, para que deje de contar en el umbral sin borrar el registro.
+**desactivada**, para que deje de contar en el umbral sin borrar el registro. Una nota también se
+desactiva sola, de forma automática, si su tipo tiene configurada una caducidad y pasan esos días
+desde su registro.
 
 La [ficha del estudiante](#ficha-del-estudiante) muestra también un histórico paginado de sus
-notas y las ocurrencias acumuladas por tipo, con accesos directos para registrar un parte o, para
-tutores y administradores, ignorar de golpe todas las notas actuales de un tipo.
+notas y las ocurrencias acumuladas por tipo.
 
 ![Bloque de notas diarias en la ficha del estudiante, con estadísticas por tipo](img/notas/ficha-notas.png)
+
+### Listado de estudiantes
+
+La pestaña **Listado de estudiantes**, visible solo para quien tutoriza algún grupo o es
+administrador/a de centro, reúne en una tabla a los estudiantes con notas de un tipo elegido con
+los radio buttons de la parte superior, con una fila por cada combinación de estudiante y grupo.
+Admite los mismos filtros de búsqueda y grupo que el listado de notas. Cada fila muestra cuántas
+notas de ese tipo están activas, cuántas desactivadas, y el rango de fechas de las activas; se
+resalta en rojo si el número de activas alcanza o supera el umbral del tipo, y en gris si todas
+sus notas de ese tipo están ya desactivadas.
+
+![Listado de estudiantes con una fila resaltada en rojo por alcanzar el umbral](img/notas/notas-estudiantes.png)
+
+Dos botones por fila:
+
+- **Desactivar todo** — desactiva de golpe todas las notas activas de ese tipo para ese
+  estudiante, con confirmación previa.
+- **Registrar parte** — abre el formulario de un parte nuevo con el estudiante y el grupo ya
+  fijados (no se pueden cambiar). Al guardarlo, se desactivan automáticamente **todas** las notas
+  activas del estudiante, de cualquier tipo, y la pantalla de éxito indica cuántas se han
+  desactivado.
+
+![Aviso de notas desactivadas en la pantalla de éxito al registrar un parte](img/notas/parte-notas-desactivadas.png)
 
 ## Notificaciones
 
@@ -219,7 +253,10 @@ notificaciones**, con todas las comunicaciones registradas en el curso activo.
 Los mismos partes y sanciones pendientes de notificar, junto con las [tareas de
 sanción](#tareas-de-sancion) propias todavía sin cumplimentar, aparecen también en la campana
 **Tareas pendientes** de la cabecera, ordenados por antigüedad. Cada elemento enlaza directamente
-a su pantalla de registro o de cumplimentación.
+a su pantalla de registro o de cumplimentación. Quien tutoriza algún grupo o es administrador/a
+también ve ahí, y en la tarjeta **Notas que implican parte** del [panel de inicio](#la-pantalla-de-inicio),
+los estudiantes que han alcanzado el umbral de un tipo de nota (ver
+[Listado de estudiantes](#listado-de-estudiantes)).
 
 Antes de las colas de partes y sanciones, la pestaña muestra los **estudiantes con partes
 pendientes de notificar** (solo los que el docente puede notificar), ordenados de más a menos

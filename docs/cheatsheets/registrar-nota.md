@@ -49,13 +49,13 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 <div class="step">
   <span class="num">5</span>
   <div class="text">
-    <p>Si se alcanza el umbral, la confirmación muestra un botón grande para <strong>registrar un parte</strong>.</p>
-    <img src="img/registrar-nota-5.png" alt="Confirmación con botón para registrar un parte">
+    <p>La confirmación muestra cuántas ocurrencias lleva el estudiante de ese tipo. Si se alcanza el umbral, el tutor/a del grupo o administración se encargan de registrar el parte desde el <strong>Listado de estudiantes</strong>.</p>
+    <img src="img/registrar-nota-5.png" alt="Confirmación con el recuento de ocurrencias del tipo">
   </div>
 </div>
 
 </div>
 
 <div class="nota">
-  <p>Puedes editar las observaciones o eliminar tus propias notas durante los 30 minutos siguientes al registro. Pasado ese tiempo, solo un administrador puede modificarlas. Los tutores del grupo pueden marcar cualquier nota como <strong>ignorada</strong> para que deje de contar en el umbral.</p>
+  <p>Puedes editar las observaciones o eliminar tus propias notas durante los 30 minutos siguientes al registro. Pasado ese tiempo, solo un administrador puede modificarlas. Los tutores del grupo pueden marcar cualquier nota como <strong>desactivada</strong> para que deje de contar en el umbral, y una nota también se desactiva sola si su tipo tiene caducidad configurada.</p>
 </div>

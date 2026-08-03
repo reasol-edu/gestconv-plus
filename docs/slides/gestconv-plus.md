@@ -155,13 +155,15 @@ incidente los afecta conjuntamente.
 - Sección **Notas**, para incidencias menores del día a día: retraso, salida
   al baño, uso del móvil…
 - Cada **tipo de nota** tiene un umbral de ocurrencias que, al alcanzarse, se
-  resalta en rojo y sugiere abrir un parte de convivencia.
+  resalta en rojo, y una caducidad opcional tras la que se desactiva sola.
 - Al elegir el tipo se muestra al instante el **historial** de ese tipo para
   el estudiante, sin recargar la página.
 - Puedes editar o eliminar tus propias notas durante los **30 minutos**
   posteriores al registro.
 - La ficha del estudiante muestra el histórico y las ocurrencias acumuladas
-  por tipo, con acceso directo para registrar el parte si corresponde.
+  por tipo, sin más — quien registra el parte al alcanzar el umbral es el
+  tutor/a del grupo o administración, desde la pestaña **Listado de
+  estudiantes**, no cualquier docente.
 
 ---
 
@@ -374,6 +376,8 @@ completa de su grupo**, no solo de los partes que él mismo registra:
   - Partes o sanciones **todavía sin notificar** a la familia.
   - Sanciones de su grupo con alguna **tarea de sanción sin cumplimentar**
     (ver siguiente diapositiva).
+  - Estudiantes de su grupo que han **alcanzado el umbral** de un tipo de
+    nota diaria activa, y a los que por tanto hay que registrarles un parte.
 - Estos avisos aparecen tanto en el **panel de inicio** como en la campana de
   notificaciones, para no perder de vista lo urgente.
 
@@ -653,9 +657,10 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Catálogo por centro, igual que métodos de comunicación: nombre, activar,
   desactivar, reordenar.
 - Cada tipo tiene un umbral de **ocurrencias que dan lugar a parte** (0 =
-  nunca lo sugiere).
-- 4 tipos por defecto: **Salida al baño** (0), **Uso del móvil** (2),
-  **Retraso** (3) y **Otros** (0).
+  nunca lo sugiere) y una **caducidad** en días (0 = no caduca nunca).
+- 4 tipos por defecto: **Salida al baño** (0, no caduca), **Uso del móvil**
+  (2, caduca a los 30 días), **Retraso a primera hora** (3, no caduca) y
+  **Otros** (0, no caduca).
 - Exportable e importable en JSON, igual que el resto de catálogos del
   centro.
 
