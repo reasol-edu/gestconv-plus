@@ -12,6 +12,7 @@ use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\SanctionTaskRepository;
+use App\Repository\SchoolEventRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
 use App\Repository\TimeSlotRepository;
@@ -33,6 +34,7 @@ class DashboardController extends AbstractController
         private readonly SanctionRepository $sanctionRepository,
         private readonly SanctionTaskRepository $sanctionTaskRepository,
         private readonly DailyNoteRepository $dailyNoteRepository,
+        private readonly SchoolEventRepository $schoolEventRepository,
         private readonly GroupRepository $groupRepository,
         private readonly TeacherRepository $teacherRepository,
         private readonly TimeSlotRepository $timeSlotRepository,
@@ -71,6 +73,8 @@ class DashboardController extends AbstractController
                 'showPrescriptionWarning'           => false,
                 'canSeeNoteThresholds'              => false,
                 'noteThresholdCount'                => 0,
+                'todayEvents'                       => [],
+                'today'                             => $this->clock->now()->format('Y-m-d'),
             ]);
         }
 
@@ -112,6 +116,10 @@ class DashboardController extends AbstractController
         $nextWeekSanctions = $hasTeachingGroups
             ? $this->sanctionRepository->findActiveForTeacherInDateRange($centre, $viewer, $year, $nextMonday, $nextSunday)
             : [];
+
+        $todayEvents = $hasFullAccess
+            ? $this->schoolEventRepository->findAllForAcademicYearAndDate($year, $today)
+            : $this->schoolEventRepository->findVisibleForTeacherAndDate($viewer, $year, $today);
 
         $autoPrescribeDays = $this->settings->getForCentre('notifications.report_auto_prescribe_days', $centre);
         $warningDays       = $this->settings->getForTeacherInCentre('notifications.report_prescription_warning_days', $viewer, $centre);
@@ -157,6 +165,8 @@ class DashboardController extends AbstractController
             'showPrescriptionWarning'           => $showPrescriptionWarning,
             'canSeeNoteThresholds'              => $canSeeNoteThresholds,
             'noteThresholdCount'                => $noteThresholdCount,
+            'todayEvents'                       => $todayEvents,
+            'today'                             => $today->format('Y-m-d'),
         ]);
     }
 }
