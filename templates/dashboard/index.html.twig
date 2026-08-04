@@ -183,6 +183,36 @@
         </div>
     {% endif %}
 
+    {# ── Eventos de hoy ───────────────────────────────────────────────────── #}
+    {% if todayEvents|length > 0 %}
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
+            <h2 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                {{ ux_icon('heroicons:megaphone', {class: 'h-4 w-4 text-gray-400'}) }}
+                {{ 'today_events_title'|trans({}, 'dashboard') }}
+            </h2>
+            <a href="{{ path('app_calendar_day', {date: today}) }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
+                {{ 'today_events_view_day'|trans({}, 'dashboard') }}
+            </a>
+        </div>
+        <ul class="divide-y divide-gray-100">
+            {% for event in todayEvents %}
+                <li class="flex items-start justify-between gap-3 px-5 py-3">
+                    <div class="min-w-0">
+                        <p class="truncate text-sm font-medium text-gray-800">{{ event.name }}</p>
+                        {% if event.description is not empty %}
+                            <p class="mt-0.5 truncate text-xs text-gray-500">{{ event.description }}</p>
+                        {% endif %}
+                    </div>
+                    <p class="shrink-0 text-right text-xs text-gray-400 tabular-nums whitespace-nowrap">
+                        {{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }}
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
     {# ── Tarjetas estadísticas, o avisos de configuración pendiente del curso ── #}
     {% if can_students_section and groupCount == 0 %}
         <div class="rounded-2xl border border-gray-200 bg-white px-6 py-12 text-center">
@@ -374,36 +404,6 @@
             </div>
             {% endfor %}
         </div>
-    </div>
-    {% endif %}
-
-    {# ── Eventos de hoy ───────────────────────────────────────────────────── #}
-    {% if todayEvents|length > 0 %}
-    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
-        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
-            <h2 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                {{ ux_icon('heroicons:megaphone', {class: 'h-4 w-4 text-gray-400'}) }}
-                {{ 'today_events_title'|trans({}, 'dashboard') }}
-            </h2>
-            <a href="{{ path('app_calendar_day', {date: today}) }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
-                {{ 'today_events_view_day'|trans({}, 'dashboard') }}
-            </a>
-        </div>
-        <ul class="divide-y divide-gray-100">
-            {% for event in todayEvents %}
-                <li class="flex items-start justify-between gap-3 px-5 py-3">
-                    <div class="min-w-0">
-                        <p class="truncate text-sm font-medium text-gray-800">{{ event.name }}</p>
-                        {% if event.description is not empty %}
-                            <p class="mt-0.5 truncate text-xs text-gray-500">{{ event.description }}</p>
-                        {% endif %}
-                    </div>
-                    <p class="shrink-0 text-right text-xs text-gray-400 tabular-nums whitespace-nowrap">
-                        {{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }}
-                    </p>
-                </li>
-            {% endfor %}
-        </ul>
     </div>
     {% endif %}
 
