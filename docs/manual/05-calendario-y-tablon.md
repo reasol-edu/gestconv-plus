@@ -77,7 +77,7 @@ para dejarse fija en una pantalla del centro — por ejemplo, en la sala de prof
 activarlo los administradores; el resto de docentes no ve el botón ni puede acceder a la vista
 directamente.
 
-![Modo tablón con la semana actual](img/calendario/calendario-tablon.png)
+![Modo tablón, pantalla «Hoy»](img/calendario/calendario-tablon.png)
 
 El tablón rota automáticamente entre hasta tres pantallas, en este orden: **Hoy**, **Esta semana**
 y **Semana que viene**. Cuando hay más de una pantalla activa aparecen también dos botones, a
