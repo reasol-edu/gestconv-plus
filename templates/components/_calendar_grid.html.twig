@@ -82,6 +82,16 @@
                     {% endfor %}
                 </div>
 
+                {# Celda completa clicable: cubre toda la columna del día para poder abrir su
+                   detalle desde cualquier punto vacío, por debajo del número de día (su propio
+                   enlace) y de los segmentos (que conservan su title al pasar el ratón). #}
+                <div class="absolute inset-0 grid grid-cols-5 z-[5]" aria-hidden="true">
+                    {% for day in week.days %}
+                        <a href="{{ path('app_calendar_day', {date: day.format('Y-m-d')}) }}"
+                           class="block h-full w-full" tabindex="-1"></a>
+                    {% endfor %}
+                </div>
+
                 {# Day numbers — top of each week row #}
                 <div class="relative z-10 grid grid-cols-5">
                     {% for day in week.days %}
@@ -103,10 +113,10 @@
                 </div>
 
                 {% if week.segments is not empty %}
-                    <div class="relative z-10 grid grid-cols-5 gap-x-1 gap-y-1 px-1 pb-1"
+                    <div class="relative z-10 grid grid-cols-5 gap-x-1 gap-y-1 px-1 pb-1 pointer-events-none"
                          style="grid-template-rows: repeat({{ week.maxLane + 1 }}, minmax(1.25rem, auto));">
                         {% for segment in week.segments %}
-                            <div class="flex items-center gap-1 truncate rounded-md border px-1.5 py-0.5 text-[11px] leading-tight {{ segment.color.bg }} {{ segment.color.text }} {{ segment.color.border }}"
+                            <div class="pointer-events-auto flex items-center gap-1 truncate rounded-md border px-1.5 py-0.5 text-[11px] leading-tight {{ segment.color.bg }} {{ segment.color.text }} {{ segment.color.border }}"
                                  style="grid-column: {{ segment.startCol + 1 }} / span {{ segment.span }}; grid-row: {{ segment.lane + 1 }};"
                                  title="{{ segment.details is not empty ? segment.label ~ ' — ' ~ segment.details : segment.label }}">
                                 {% if segment.icon is not empty %}
@@ -122,7 +132,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="relative z-10 min-h-2"></div>
+                    <div class="relative z-10 min-h-2 pointer-events-none"></div>
                 {% endif %}
 
             </div>
