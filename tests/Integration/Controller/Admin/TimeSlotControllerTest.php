@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller\Admin;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\PersonName;
+use App\Entity\SettingDefinition;
+use App\Entity\SettingFile;
 use App\Entity\Teacher;
 use App\Entity\TimeSlot;
 use App\Tests\Integration\ControllerTestCase;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class TimeSlotControllerTest extends ControllerTestCase
@@ -91,6 +96,30 @@ class TimeSlotControllerTest extends ControllerTestCase
     public function testPdfReturnsAPdfDocument(): void
     {
         [$cadmin, $centre] = $this->makeScenarioWithSlot();
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPdfStillGeneratesWithCentrePdfTemplateConfigured(): void
+    {
+        [$cadmin, $centre] = $this->makeScenarioWithSlot();
+
+        $defs = $this->em->getRepository(SettingDefinition::class);
+        $file = new SettingFile('hash-guard-duty-template', $this->makeSinglePagePdfBytes(), 'application/pdf', 100);
+        $this->persist(
+            $file,
+            (new CentreSettingValue())
+                ->setDefinition($defs->findOneBy(['key' => 'reports.guard_duty_pdf_template']))
+                ->setCentre($centre)
+                ->setValue('membrete.pdf')
+                ->setFile($file),
+        );
+
         $this->loginAs($cadmin);
 
         $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf');
@@ -260,6 +289,17 @@ class TimeSlotControllerTest extends ControllerTestCase
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
+
+    /** Genera un PDF de una sola página válido, para usar como plantilla de fondo en los tests. */
+    private function makeSinglePagePdfBytes(): string
+    {
+        $mpdf = new Mpdf(['tempDir' => sys_get_temp_dir()]);
+        $mpdf->WriteHTML('<p>Membrete de prueba</p>');
+        $content = $mpdf->Output('', Destination::STRING_RETURN);
+        \assert(is_string($content));
+
+        return $content;
+    }
 
     /** @return array{0: Teacher, 1: EducationalCentre} */
     private function makeScenario(): array

@@ -21,7 +21,7 @@ function formatFileSize(bytes) {
 // donde se puede quitar cada fichero antes de enviar el formulario.
 export default class extends Controller {
     static targets = ['dropzone', 'input', 'list', 'itemTemplate', 'clientError'];
-    static values  = { maxSize: Number, tooLargeMessage: String };
+    static values  = { maxSize: Number, tooLargeMessage: String, single: Boolean };
 
     connect() {
         this.dragDepth = 0;
@@ -68,6 +68,17 @@ export default class extends Controller {
     }
 
     addFiles(fileList) {
+        if (this.singleValue) {
+            // Modo de un solo fichero (p. ej. plantillas PDF de ajustes): un nuevo
+            // fichero soltado o seleccionado sustituye al anterior, no se acumula.
+            const [file] = fileList;
+            if (file) {
+                this.assignFiles([file]);
+            }
+            this.render();
+            return;
+        }
+
         const existing = Array.from(this.inputTarget.files);
         const incoming = Array.from(fileList).filter((file) => !existing.some(
             (current) => current.name === file.name && current.size === file.size && current.lastModified === file.lastModified,

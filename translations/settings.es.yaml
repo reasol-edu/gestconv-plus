@@ -23,6 +23,7 @@ settings.category.board.label: 'Modo tablón'
 settings.category.notifications.label: 'Notificaciones a familias'
 settings.category.email_alerts.label: 'Avisos por correo'
 settings.category.reports.label: 'Personalización de informes'
+settings.category.report_templates.label: 'Plantillas de informes'
 settings.category.absences.label: 'Ausencias'
 settings.category.sanction_tasks.label: 'Tareas de sanción'
 
@@ -202,6 +203,24 @@ settings.key.reports_guard_duty_header_right.description: 'Contenido alineado a 
 settings.key.reports_guard_duty_header_margin.label: 'Margen para encabezado de profesorado de guardia'
 settings.key.reports_guard_duty_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
 
+settings.key.reports_pdf_template_portrait.label: 'Plantilla PDF general (vertical)'
+settings.key.reports_pdf_template_portrait.description: 'PDF de una sola página que se usa como fondo de cada página de los informes en orientación vertical (parte, sanción, estadísticas por grupo) que no tengan una plantilla propia. Si no se sube ninguna, esos informes se generan sin fondo.'
+
+settings.key.reports_pdf_template_landscape.label: 'Plantilla PDF general (apaisada)'
+settings.key.reports_pdf_template_landscape.description: 'PDF de una sola página que se usa como fondo de cada página de los informes en orientación apaisada (profesorado de guardia) que no tengan una plantilla propia. Si no se sube ninguna, esos informes se generan sin fondo.'
+
+settings.key.reports_incident_pdf_template.label: 'Plantilla PDF de informe de partes'
+settings.key.reports_incident_pdf_template.description: 'Sustituye, solo para el PDF de partes, a la plantilla general vertical. Si no se sube ninguna, se usa la plantilla general vertical (si la hay).'
+
+settings.key.reports_sanction_pdf_template.label: 'Plantilla PDF de informe de sanciones'
+settings.key.reports_sanction_pdf_template.description: 'Sustituye, solo para el PDF de sanciones, a la plantilla general vertical. Si no se sube ninguna, se usa la plantilla general vertical (si la hay).'
+
+settings.key.reports_group_stats_pdf_template.label: 'Plantilla PDF de estadísticas por grupo'
+settings.key.reports_group_stats_pdf_template.description: 'Sustituye, solo para el PDF de estadísticas por grupo, a la plantilla general vertical. Si no se sube ninguna, se usa la plantilla general vertical (si la hay).'
+
+settings.key.reports_guard_duty_pdf_template.label: 'Plantilla PDF de profesorado de guardia'
+settings.key.reports_guard_duty_pdf_template.description: 'Sustituye, solo para el PDF de profesorado de guardia, a la plantilla general apaisada. Si no se sube ninguna, se usa la plantilla general apaisada (si la hay).'
+
 settings.key.absences_attachment_retention_days.label: 'Retención de adjuntos de actividades'
 settings.key.absences_attachment_retention_days.description: 'Días transcurridos desde la fecha de una actividad a partir de los cuales una tarea programada semanal elimina automáticamente sus ficheros adjuntos (no la actividad ni su descripción). Un valor de 0 desactiva esta eliminación automática.'
 
@@ -239,6 +258,21 @@ settings.placeholder_help.footer_default_note: 'Si no se personaliza, el pie de 
 # ── Errores de validación ──────────────────────────────────────────────────────
 settings.error.integer_range: 'Debe ser un número entre %min% y %max%'
 settings.error.invalid_value: 'Valor no válido'
+
+# ── Plantillas PDF ───────────────────────────────────────────────────────────
+settings.pdf_template.view: 'Ver'
+settings.pdf_template.delete: 'Eliminar'
+settings.pdf_template.upload: 'Subir'
+settings.pdf_template.flash.uploaded: 'Plantilla subida correctamente.'
+settings.pdf_template.flash.deleted: 'Plantilla eliminada.'
+settings.pdf_template.error.no_file: 'Selecciona un fichero PDF.'
+settings.pdf_template.error.too_large: 'El fichero supera el tamaño máximo permitido (10 MB).'
+settings.pdf_template.error.invalid_type: 'El fichero debe ser un PDF.'
+settings.pdf_template.error.invalid_pdf: 'El fichero no es un PDF válido o no se ha podido leer.'
+settings.pdf_template.error.multi_page: 'La plantilla debe tener una sola página; se usará como fondo de todas las páginas del informe.'
+settings.pdf_template.error.wrong_orientation: 'La orientación del PDF no coincide con la de esta plantilla.'
+settings.pdf_template.dropzone_hint: 'Arrastra un PDF aquí o haz clic para seleccionarlo'
+settings.pdf_template.dropzone_too_large: 'El fichero «%filename%» supera el tamaño máximo permitido (%max%).'
 
 # ── Bloqueo ────────────────────────────────────────────────────────────────────
 settings.locked_by_global: 'Bloqueado por la administración global'

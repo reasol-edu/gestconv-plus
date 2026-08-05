@@ -245,6 +245,8 @@ class SanctionController extends AbstractController
             sprintf('sancion-%s.pdf', substr($sanction->getId()->toRfc4122(), 0, 8)),
             header: $header,
             draftWatermark: !$sanction->isNotified() && $this->settings->getForCentre('reports.draft_watermark_enabled', $centre) === true,
+            centre: $centre,
+            reportType: 'sanction',
         );
     }
 

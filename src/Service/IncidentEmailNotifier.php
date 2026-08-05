@@ -510,6 +510,8 @@ final class IncidentEmailNotifier
             $filename,
             header: $header,
             draftWatermark: !$report->isNotified(),
+            centre: $centre,
+            reportType: 'incident',
         );
 
         $content = $response->getContent();
@@ -556,6 +558,8 @@ final class IncidentEmailNotifier
             $filename,
             header: $header,
             draftWatermark: !$sanction->isNotified(),
+            centre: $centre,
+            reportType: 'sanction',
         );
 
         $content = $response->getContent();

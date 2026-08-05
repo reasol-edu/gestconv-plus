@@ -8,6 +8,7 @@ use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\GlobalSettingValue;
 use App\Entity\SettingDefinition;
+use App\Entity\SettingFile;
 use App\Entity\SettingType;
 use App\Entity\Teacher;
 use App\Entity\TeacherSettingValue;
@@ -123,6 +124,15 @@ class AppSettingsTest extends TestCase
 
         self::assertIsString($service->get('notifications.report_notifier'));
         self::assertSame('both', $service->get('notifications.report_notifier'));
+    }
+
+    public function testPdfTypeCastingReturnsFilenameString(): void
+    {
+        $def = $this->makeDef('reports.incident_pdf_template', SettingType::Pdf, '');
+
+        $service = $this->makeService(defs: ['reports.incident_pdf_template' => $def]);
+
+        self::assertSame('', $service->get('reports.incident_pdf_template'));
     }
 
     // ── Single load ───────────────────────────────────────────────────────────
@@ -402,6 +412,113 @@ class AppSettingsTest extends TestCase
         );
 
         self::assertSame('group_tutor', $service->getForCentre('notifications.report_notifier', $centre));
+    }
+
+    // ── getFileForCentre: cascade global-locked → centre → global → null ─────
+
+    public function testGetFileForCentreUsesCentreFile(): void
+    {
+        $def    = $this->makeDef('reports.incident_pdf_template', SettingType::Pdf, '');
+        $centre = $this->createStub(EducationalCentre::class);
+        $file   = new SettingFile('hash-centre', 'contenido', 'application/pdf', 9);
+
+        $centreValue = (new CentreSettingValue())->setValue('membrete-centro.pdf')->setFile($file);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')
+            ->willReturn(['reports.incident_pdf_template' => $centreValue]);
+
+        $service = $this->makeServiceWithCentreRepo(
+            defs:       ['reports.incident_pdf_template' => $def],
+            globals:    [],
+            centreRepo: $centreRepo,
+        );
+
+        $resolved = $service->getFileForCentre('reports.incident_pdf_template', $centre);
+
+        self::assertNotNull($resolved);
+        self::assertSame($file, $resolved->file);
+        self::assertSame('membrete-centro.pdf', $resolved->filename);
+    }
+
+    public function testGetFileForCentreFallsBackToGlobalFile(): void
+    {
+        $def    = $this->makeDef('reports.pdf_template_portrait', SettingType::Pdf, '');
+        $centre = $this->createStub(EducationalCentre::class);
+        $file   = new SettingFile('hash-global', 'contenido', 'application/pdf', 9);
+
+        $globalValue = (new GlobalSettingValue())->setValue('membrete-global.pdf')->setFile($file);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')->willReturn([]);
+
+        $service = $this->makeServiceWithCentreRepo(
+            defs:       ['reports.pdf_template_portrait' => $def],
+            globals:    ['reports.pdf_template_portrait' => $globalValue],
+            centreRepo: $centreRepo,
+        );
+
+        $resolved = $service->getFileForCentre('reports.pdf_template_portrait', $centre);
+
+        self::assertNotNull($resolved);
+        self::assertSame($file, $resolved->file);
+        self::assertSame('membrete-global.pdf', $resolved->filename);
+    }
+
+    public function testGetFileForCentreRespectsGlobalLock(): void
+    {
+        $def    = $this->makeDef('reports.pdf_template_portrait', SettingType::Pdf, '');
+        $centre = $this->createStub(EducationalCentre::class);
+
+        $centreFile  = new SettingFile('hash-centre', 'contenido', 'application/pdf', 9);
+        $globalFile  = new SettingFile('hash-global', 'contenido', 'application/pdf', 9);
+        $centreValue = (new CentreSettingValue())->setValue('centro.pdf')->setFile($centreFile);
+        $globalValue = (new GlobalSettingValue())->setValue('global.pdf')->setFile($globalFile)->setLocked(true);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')
+            ->willReturn(['reports.pdf_template_portrait' => $centreValue]);
+
+        $service = $this->makeServiceWithCentreRepo(
+            defs:       ['reports.pdf_template_portrait' => $def],
+            globals:    ['reports.pdf_template_portrait' => $globalValue],
+            centreRepo: $centreRepo,
+        );
+
+        $resolved = $service->getFileForCentre('reports.pdf_template_portrait', $centre);
+
+        self::assertNotNull($resolved);
+        self::assertSame($globalFile, $resolved->file);
+        self::assertSame('global.pdf', $resolved->filename);
+    }
+
+    public function testGetFileForCentreReturnsNullWhenNoFileSet(): void
+    {
+        $def    = $this->makeDef('reports.pdf_template_portrait', SettingType::Pdf, '');
+        $centre = $this->createStub(EducationalCentre::class);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')->willReturn([]);
+
+        $service = $this->makeServiceWithCentreRepo(
+            defs:       ['reports.pdf_template_portrait' => $def],
+            globals:    [],
+            centreRepo: $centreRepo,
+        );
+
+        self::assertNull($service->getFileForCentre('reports.pdf_template_portrait', $centre));
+    }
+
+    public function testGetFileForCentreReturnsNullForUnknownKey(): void
+    {
+        $centre = $this->createStub(EducationalCentre::class);
+
+        $centreRepo = $this->createStub(CentreSettingValueRepository::class);
+        $centreRepo->method('findByCentreIndexedByKey')->willReturn([]);
+
+        $service = $this->makeServiceWithCentreRepo(defs: [], globals: [], centreRepo: $centreRepo);
+
+        self::assertNull($service->getFileForCentre('nonexistent.key', $centre));
     }
 
     // ── getForTeacherInCentre: cascade teacher → centre → global → default ───

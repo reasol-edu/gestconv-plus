@@ -71,7 +71,8 @@ final class AppSettings implements AppSettingsInterface
             SettingType::Integer => (int) $raw,
             SettingType::String,
             SettingType::Choice,
-            SettingType::RichText => $raw,
+            SettingType::RichText,
+            SettingType::Pdf => $raw,
         };
     }
 
@@ -99,7 +100,8 @@ final class AppSettings implements AppSettingsInterface
             SettingType::Integer => (int) $raw,
             SettingType::String,
             SettingType::Choice,
-            SettingType::RichText => $raw,
+            SettingType::RichText,
+            SettingType::Pdf => $raw,
         };
     }
 
@@ -119,7 +121,8 @@ final class AppSettings implements AppSettingsInterface
             SettingType::Integer => (int) $raw,
             SettingType::String,
             SettingType::Choice,
-            SettingType::RichText => $raw,
+            SettingType::RichText,
+            SettingType::Pdf => $raw,
         };
     }
 
@@ -151,8 +154,35 @@ final class AppSettings implements AppSettingsInterface
             SettingType::Integer => (int) $raw,
             SettingType::String,
             SettingType::Choice,
-            SettingType::RichText => $raw,
+            SettingType::RichText,
+            SettingType::Pdf => $raw,
         };
+    }
+
+    public function getFileForCentre(string $key, EducationalCentre $centre): ?ResolvedSettingFile
+    {
+        $this->ensureBaseLoaded();
+
+        $definition = $this->allDefinitions[$key] ?? null;
+        if ($definition === null) {
+            return null;
+        }
+
+        $centreMap = $this->centreValues->findByCentreIndexedByKey($centre);
+
+        $winner = match (true) {
+            isset($this->globalMap[$key]) && $this->globalMap[$key]->isLocked() => $this->globalMap[$key],
+            isset($centreMap[$key])       => $centreMap[$key],
+            isset($this->globalMap[$key]) => $this->globalMap[$key],
+            default                       => null,
+        };
+
+        $file = $winner?->getFile();
+        if ($file === null) {
+            return null;
+        }
+
+        return new ResolvedSettingFile($file, $winner->getValue());
     }
 
     public function invalidate(): void
@@ -192,7 +222,8 @@ final class AppSettings implements AppSettingsInterface
                 SettingType::Integer => (int) $raw,
                 SettingType::String,
                 SettingType::Choice,
-                SettingType::RichText => $raw,
+                SettingType::RichText,
+                SettingType::Pdf => $raw,
             };
         }
     }

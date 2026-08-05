@@ -717,6 +717,24 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 <!-- _class: tight -->
 
+## Plantillas de informes PDF
+
+![bg right:38% fit](../manual/img/ajustes/ajustes-plantillas-pdf.png)
+
+- Cada centro puede subir un **PDF de una sola página** (p. ej. un membrete
+  oficial) que se usa como **fondo de cada página** de sus informes.
+- Dos plantillas **generales**, una por orientación (vertical y apaisada), y
+  una por cada tipo de informe que sustituye a la general si se sube.
+- Se arrastra el fichero al recuadro o se elige con el selector del sistema;
+  se valida que sea un PDF de una sola página, de la orientación correcta y
+  de hasta 10 MB antes de guardarlo.
+- Ajuste exclusivo de centro, sin equivalente global: el membrete es propio
+  de cada centro educativo.
+
+---
+
+<!-- _class: tight -->
+
 ## Ajustes de centro: candados y catálogos
 
 ![bg right:30% fit](../manual/img/partes/admin-conductas.png)

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\IncidentBehavior;
@@ -12,9 +13,13 @@ use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
 use App\Entity\PersonName;
 use App\Entity\Course;
+use App\Entity\SettingDefinition;
+use App\Entity\SettingFile;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
 
 class ReportsControllerTest extends ControllerTestCase
 {
@@ -87,6 +92,34 @@ class ReportsControllerTest extends ControllerTestCase
         self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
     }
 
+    public function testGroupStatsPdfStillGeneratesWithCentrePdfTemplateConfigured(): void
+    {
+        [$admin, $centre, $year, $group] = $this->makeScenario('41100009');
+        $this->makeIncidentReport($year, $group, $admin);
+
+        $defs = $this->em->getRepository(SettingDefinition::class);
+        $file = new SettingFile('hash-group-stats-template', $this->makeSinglePagePdfBytes(), 'application/pdf', 100);
+        $this->persist(
+            $file,
+            (new CentreSettingValue())
+                ->setDefinition($defs->findOneBy(['key' => 'reports.group_stats_pdf_template']))
+                ->setCentre($centre)
+                ->setValue('membrete.pdf')
+                ->setFile($file),
+        );
+
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/informes/estadisticas-grupo/pdf', [
+            'from' => '2026-01-01',
+            'to'   => '2026-06-30',
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
     public function testGroupStatsPdfReturns404WithoutRange(): void
     {
         [$admin, $centre] = $this->makeScenario('41100006');
@@ -128,6 +161,17 @@ class ReportsControllerTest extends ControllerTestCase
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /** Genera un PDF de una sola página válido, para usar como plantilla de fondo en los tests. */
+    private function makeSinglePagePdfBytes(): string
+    {
+        $mpdf = new Mpdf(['tempDir' => sys_get_temp_dir()]);
+        $mpdf->WriteHTML('<p>Membrete de prueba</p>');
+        $content = $mpdf->Output('', Destination::STRING_RETURN);
+        \assert(is_string($content));
+
+        return $content;
+    }
 
     /**
      * @return array{0: Teacher, 1: EducationalCentre, 2: AcademicYear, 3: Group}

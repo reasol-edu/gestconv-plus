@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\SettingDefinition;
+use App\Entity\SettingFile;
 use App\Entity\Teacher;
 use App\Entity\TeacherSettingValue;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -42,5 +43,10 @@ class TeacherSettingValueRepository extends ServiceEntityRepository
     public function findByDefinitionAndTeacher(SettingDefinition $definition, Teacher $teacher): ?TeacherSettingValue
     {
         return $this->findOneBy(['definition' => $definition, 'teacher' => $teacher]);
+    }
+
+    public function countByFile(SettingFile $file): int
+    {
+        return (int) $this->count(['file' => $file]);
     }
 }

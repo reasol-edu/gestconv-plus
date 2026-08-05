@@ -154,7 +154,7 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
 Visualización, Correo electrónico, Modo tablón, Notificaciones a familias, Avisos por correo,
-Personalización de informes, Ausencias y Tareas de sanción.
+Personalización de informes, Plantillas de informes, Ausencias y Tareas de sanción.
 
 ### Visualización
 
@@ -319,6 +319,45 @@ texto enriquecido de la categoría.
 | `{current_day}` | Día del mes de generación del PDF, sin ceros a la izquierda | Todos |
 | `{current_month_name}` | Nombre del mes de generación del PDF, en minúscula (p. ej. «julio») | Todos |
 | `{current_year}` | Año de generación del PDF | Todos |
+
+### Plantillas de informes
+
+| Ajuste | Ámbito | Tipo | Por defecto |
+|---|---|---|---|
+| Plantilla PDF general (vertical) | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF general (apaisada) | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF de informe de partes | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF de informe de sanciones | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF de estadísticas por grupo | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF de profesorado de guardia | Centro | Fichero PDF | Sin plantilla |
+
+Además del encabezado, el pie y el margen, cada centro puede subir un **PDF de una sola página**
+que se usa como fondo de cada página de sus informes — por ejemplo, un membrete oficial ya
+maquetado. Solo tiene ámbito de centro, sin equivalente global: es un elemento gráfico propio de
+cada centro educativo, no un valor de texto que tenga sentido compartir entre centros.
+
+Las dos primeras filas son las plantillas **generales**, una por orientación (vertical y
+apaisada); las cuatro siguientes permiten sustituir, solo para ese tipo de informe en concreto,
+la plantilla general de su orientación. Si un tipo de informe no tiene plantilla propia, se usa la
+general de la orientación que necesita (vertical para partes, sanciones y estadísticas por grupo;
+apaisada para profesorado de guardia); si tampoco hay ninguna general, el informe se genera sin
+fondo, igual que antes de existir este ajuste.
+
+![Ajustes de plantillas de informes](img/ajustes/ajustes-plantillas-pdf.png)
+
+Para subir una plantilla, se arrastra el fichero sobre el recuadro punteado o se hace clic para
+elegirlo con el selector del sistema, y se confirma con el botón **Subir**. El PDF se valida antes
+de guardarlo:
+
+- Debe ser un PDF legible, de **una sola página** (si tuviera varias, se repetiría de forma
+  confusa como fondo de todas las páginas del informe) y de **10 MB** como máximo.
+- Su orientación debe coincidir con la del ajuste: un PDF apaisado no se admite en una plantilla
+  vertical, y viceversa.
+
+Un ajuste con plantilla ya subida muestra su nombre y tamaño junto a los botones **Ver** (la
+descarga tal cual se subió) y **Eliminar**; mientras haya una plantilla guardada, el recuadro de
+subida no se muestra — hay que eliminarla primero para poder sustituirla por otra. Si el mismo
+fichero se sube en más de un ajuste, se almacena una sola vez.
 
 ### Ausencias
 

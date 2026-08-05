@@ -219,6 +219,9 @@ el día a día:
   [Ajustes del modo tablón](05-calendario-y-tablon.md#ajustes-del-modo-tablon)).
 - **Personalización de informes** — encabezados, pies y marca de agua de los PDF (ver
   [Personalización de informes](07-administrar-la-plataforma.md#personalizacion-de-informes)).
+- **Plantillas de informes** — un PDF propio como fondo de cada página de los informes, general
+  o por tipo de informe (ver
+  [Plantillas de informes](07-administrar-la-plataforma.md#plantillas-de-informes)).
 
 La referencia completa de todos los ajustes, con sus rangos y valores por defecto, está en
 [Ajustes disponibles](07-administrar-la-plataforma.md#ajustes-disponibles); la mecánica de

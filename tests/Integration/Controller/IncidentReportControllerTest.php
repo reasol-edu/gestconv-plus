@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
@@ -21,9 +22,12 @@ use App\Entity\LocationOptionCategory;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\SettingDefinition;
+use App\Entity\SettingFile;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
 
 class IncidentReportControllerTest extends ControllerTestCase
 {
@@ -611,6 +615,31 @@ class IncidentReportControllerTest extends ControllerTestCase
             (new GlobalSettingValue())
                 ->setDefinition($defs->findOneBy(['key' => 'reports.incident_footer']))
                 ->setValue('<p>Generado en {city} el {current_date}</p>'),
+        );
+
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/' . $report->getId()->toRfc4122() . '/pdf');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPdfStillGeneratesWithCentrePdfTemplateConfigured(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+
+        $defs = $this->em->getRepository(SettingDefinition::class);
+        $file = new SettingFile('hash-incident-template', $this->makeSinglePagePdfBytes(), 'application/pdf', 100);
+        $this->persist(
+            $file,
+            (new CentreSettingValue())
+                ->setDefinition($defs->findOneBy(['key' => 'reports.incident_pdf_template']))
+                ->setCentre($centre)
+                ->setValue('membrete.pdf')
+                ->setFile($file),
         );
 
         $this->loginAs($teacher, $centre);
@@ -1353,6 +1382,17 @@ class IncidentReportControllerTest extends ControllerTestCase
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
+
+    /** Genera un PDF de una sola página válido, para usar como plantilla de fondo en los tests. */
+    private function makeSinglePagePdfBytes(): string
+    {
+        $mpdf = new Mpdf(['tempDir' => sys_get_temp_dir()]);
+        $mpdf->WriteHTML('<p>Membrete de prueba</p>');
+        $content = $mpdf->Output('', Destination::STRING_RETURN);
+        \assert(is_string($content));
+
+        return $content;
+    }
 
     /**
      * @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: Student, 4: IncidentBehavior}

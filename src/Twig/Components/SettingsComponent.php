@@ -45,9 +45,10 @@ class SettingsComponent extends AbstractController
 
     /**
      * Returns rows for the current scope, each row containing the definition,
-     * the stored raw value (null = not set), lock state and parent-lock origin.
+     * the stored raw value (null = not set), the stored file (pdf-typed
+     * settings only), lock state and parent-lock origin.
      *
-     * @return list<array{definition: SettingDefinition, storedValue: ?string, effectiveValue: string, isLocked: bool, parentLock: ?string}>
+     * @return list<array{definition: SettingDefinition, storedValue: ?string, storedFile: ?\App\Entity\SettingFile, effectiveValue: string, isLocked: bool, parentLock: ?string}>
      */
     public function getRows(): array
     {

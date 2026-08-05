@@ -21,6 +21,12 @@ interface AppSettingsInterface
     /** Returns the resolved value for a specific centre (centre → global → default, no teacher). */
     public function getForCentre(string $key, EducationalCentre $centre): mixed;
 
+    /**
+     * Returns the resolved file for a pdf-typed setting at a specific centre
+     * (global-locked → centre → global → null; there is no file "default").
+     */
+    public function getFileForCentre(string $key, EducationalCentre $centre): ?ResolvedSettingFile;
+
     /** Returns the resolved value for a specific teacher within a specific centre (teacher → centre → global → default). */
     public function getForTeacherInCentre(string $key, Teacher $teacher, EducationalCentre $centre): mixed;
 

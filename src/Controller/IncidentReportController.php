@@ -388,6 +388,8 @@ class IncidentReportController extends AbstractController
             sprintf('parte-%d.pdf', $report->getNumber()),
             header: $header,
             draftWatermark: !$report->isNotified() && $this->settings->getForCentre('reports.draft_watermark_enabled', $centre) === true,
+            centre: $centre,
+            reportType: 'incident',
         );
     }
 

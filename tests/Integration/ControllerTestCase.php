@@ -78,6 +78,12 @@ abstract class ControllerTestCase extends WebTestCase
             ['reports.group_stats_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 100, null],
             ['reports.incident_footer', SettingType::RichText, '<p>En {city} a {current_day} de {current_month_name} de {current_year}</p>', true, true, false, 0, 5000, 'settings.category.reports', 60, 110, null],
             ['reports.sanction_footer', SettingType::RichText, '<p>En {city} a {current_day} de {current_month_name} de {current_year}</p>', true, true, false, 0, 5000, 'settings.category.reports', 60, 120, null],
+            ['reports.pdf_template_portrait',    SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 10, null],
+            ['reports.pdf_template_landscape',   SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 20, null],
+            ['reports.incident_pdf_template',    SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 30, null],
+            ['reports.sanction_pdf_template',    SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 40, null],
+            ['reports.group_stats_pdf_template', SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 50, null],
+            ['reports.guard_duty_pdf_template',  SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 60, null],
         ];
 
         foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max, $category, $categoryOrder, $position, $choices]) {

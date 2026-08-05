@@ -29,6 +29,9 @@ class TeacherSettingValue
     #[ORM\Column(length: 255)]
     private string $value;
 
+    #[ORM\ManyToOne]
+    private ?SettingFile $file = null;
+
     public function getId(): Uuid
     {
         return $this->id;
@@ -66,6 +69,18 @@ class TeacherSettingValue
     public function setValue(string $value): static
     {
         $this->value = $value;
+
+        return $this;
+    }
+
+    public function getFile(): ?SettingFile
+    {
+        return $this->file;
+    }
+
+    public function setFile(?SettingFile $file): static
+    {
+        $this->file = $file;
 
         return $this;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\EducationalCentre;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
 use Mpdf\WatermarkText;
@@ -19,16 +20,18 @@ class PdfRenderer
         private readonly Environment $twig,
         private readonly TranslatorInterface $translator,
         private readonly ClockInterface $clock,
+        private readonly PdfTemplateResolver $templateResolver,
     ) {}
 
     /**
      * Renders a Twig template to a PDF response via mPDF, with a shared running
      * header/footer (pdf/_header.html.twig, pdf/_footer.html.twig).
      *
-     * @param array<string, mixed> $context        Must include 'centre' (EducationalCentre); merged into header/footer/content.
-     * @param PdfHeader|null       $header         Custom header content and top margin; falls back to pdfTitle / centre name.
-     * @param bool                 $draftWatermark Shows a diagonal "BORRADOR" watermark on every page; used while the report/sanction hasn't been notified to the family yet.
-     * @param 'P'|'L'               $orientation    'P' (portrait, default) or 'L' (landscape).
+     * @param array<string, mixed>                                     $context        Must include 'centre' (EducationalCentre); merged into header/footer/content.
+     * @param PdfHeader|null                                           $header         Custom header content and top margin; falls back to pdfTitle / centre name.
+     * @param bool                                                     $draftWatermark Shows a diagonal "BORRADOR" watermark on every page; used while the report/sanction hasn't been notified to the family yet.
+     * @param 'P'|'L'                                                  $orientation    'P' (portrait, default) or 'L' (landscape).
+     * @param 'incident'|'sanction'|'group_stats'|'guard_duty'|null    $reportType     Together with $centre, resolves and stamps the configured PDF template as the background of every page (see PdfTemplateResolver).
      */
     public function render(
         string $template,
@@ -39,6 +42,8 @@ class PdfRenderer
         ?PdfHeader $header = null,
         bool $draftWatermark = false,
         string $orientation = 'P',
+        ?EducationalCentre $centre = null,
+        ?string $reportType = null,
     ): Response {
         $context += [
             'pdfTitle'       => $title,
@@ -59,23 +64,35 @@ class PdfRenderer
             'tempDir'       => sys_get_temp_dir(),
         ]);
 
-        if ($draftWatermark) {
-            $mpdf->SetWatermarkText(new WatermarkText(
-                mb_strtoupper($this->translator->trans('pdf.watermark.draft', [], 'admin')),
-                120,
-                45,
-                '#999999',
-                0.15,
-                'dejavusans',
-            ));
-            $mpdf->showWatermarkText = true;
+        $templatePath = null;
+        if ($centre !== null && $reportType !== null) {
+            $templatePath = $this->applyDocTemplate($mpdf, $reportType, $orientation, $centre);
         }
 
-        $mpdf->SetHTMLHeader($this->twig->render('pdf/_header.html.twig', $context));
-        $mpdf->SetHTMLFooter($this->twig->render('pdf/_footer.html.twig', $context));
-        $mpdf->WriteHTML($this->twig->render($template, $context));
+        try {
+            if ($draftWatermark) {
+                $mpdf->SetWatermarkText(new WatermarkText(
+                    mb_strtoupper($this->translator->trans('pdf.watermark.draft', [], 'admin')),
+                    120,
+                    45,
+                    '#999999',
+                    0.15,
+                    'dejavusans',
+                ));
+                $mpdf->showWatermarkText = true;
+            }
 
-        $content = $mpdf->Output('', Destination::STRING_RETURN);
+            $mpdf->SetHTMLHeader($this->twig->render('pdf/_header.html.twig', $context));
+            $mpdf->SetHTMLFooter($this->twig->render('pdf/_footer.html.twig', $context));
+            $mpdf->WriteHTML($this->twig->render($template, $context));
+
+            $content = $mpdf->Output('', Destination::STRING_RETURN);
+        } finally {
+            if ($templatePath !== null) {
+                @unlink($templatePath);
+            }
+        }
+
         if (!is_string($content)) {
             throw new \RuntimeException('mPDF no devolvió el contenido del PDF esperado.');
         }
@@ -88,5 +105,31 @@ class PdfRenderer
         ));
 
         return $response;
+    }
+
+    /**
+     * Resuelve la plantilla PDF aplicable, la escribe a un fichero temporal
+     * (SetDocTemplate necesita una ruta real) y la fija como fondo de cada
+     * página generada. Devuelve la ruta del temporal para su limpieza posterior,
+     * o null si no hay ninguna plantilla configurada.
+     *
+     * @param 'incident'|'sanction'|'group_stats'|'guard_duty' $reportType
+     */
+    private function applyDocTemplate(Mpdf $mpdf, string $reportType, string $orientation, EducationalCentre $centre): ?string
+    {
+        $resolved = $this->templateResolver->resolve($reportType, $orientation, $centre);
+        if ($resolved === null) {
+            return null;
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'pdftpl_');
+        if ($path === false) {
+            return null;
+        }
+
+        file_put_contents($path, $resolved->file->getContent());
+        $mpdf->SetDocTemplate($path, true);
+
+        return $path;
     }
 }

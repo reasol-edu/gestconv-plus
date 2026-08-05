@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-08-02
+## [1.0.0] - 2026-08-05
 
 ### Fixed
 
@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `NonWorkingDayChecker::isNonWorkingDay()`/`descriptionFor()` consultaban la base de datos por cada día visible de la cuadrícula del calendario (hasta ~75 consultas por vista mensual). Ahora cargan los días no lectivos del curso en una sola consulta, memoizada por curso académico durante el resto de la petición.
 
 ### Added
+
+- **Plantillas PDF de informes**: cada centro puede subir un PDF de una sola página (por ejemplo, un membrete oficial ya maquetado) que se usa como fondo de cada página de sus informes. Dos nuevos ajustes de centro son las plantillas **generales**, una por orientación (vertical y apaisada); cuatro ajustes más permiten sustituir, solo para un tipo de informe concreto (parte, sanción, estadísticas por grupo o profesorado de guardia), la plantilla general de su orientación. Si un informe no tiene plantilla propia se usa la general de la orientación que necesita; si tampoco hay ninguna, se genera sin fondo, igual que hasta ahora. La subida admite arrastrar el fichero a un recuadro o elegirlo con el selector del sistema, y se valida antes de guardarlo: debe ser un PDF legible de una sola página (una plantilla de varias páginas se repetiría de forma confusa como fondo de todas las páginas del informe), de hasta 10 MB, y con la orientación que corresponde al ajuste. Mientras un ajuste tenga una plantilla guardada, se muestra su nombre y tamaño con botones para verla o eliminarla, en vez del recuadro de subida — hay que eliminarla primero para poder sustituirla por otra.
+
+  Técnicamente, se introduce un nuevo tipo de ajuste (`pdf`) cuyo valor no es un texto sino la referencia a un fichero, almacenado en una tabla genérica y deduplicada por hash de contenido (si el mismo PDF se sube en más de un ajuste, solo se guarda una vez; al reemplazar o eliminar una referencia, el fichero se borra si queda huérfano). El fondo se aplica en la generación del PDF mediante la función de mPDF para importar páginas de otro documento, sin necesitar ninguna dependencia nueva.
 
 - **Calendario unificado y eventos de centro**: las antiguas pestañas «Calendario de sanciones» y «Calendario de ausencias» se fusionan en una sola cuadrícula mensual (sanciones para todo el profesorado, ausencias solo para administradores, como hasta ahora, ahora en la misma vista), cada tipo de elemento con su propio icono y color. Al hacer clic en un día se abre su **vista de detalle**, con navegación al día anterior/siguiente y el desglose completo (tramos horarios y guardias, sanciones, ausencias y eventos de ese día). Nuevo catálogo de **eventos de centro** (fecha, hora de inicio y fin, nombre, descripción y enlace opcionales, y visibilidad general o restringida a uno o varios grupos, elegida con radio buttons descriptivos), gestionado por administradores desde la nueva pestaña **Eventos** (listado paginado con búsqueda y filtro por grupo). Los eventos se muestran también en el modo tablón (pantalla «Hoy», incluso en días no lectivos) y en una nueva tarjeta **Eventos de hoy** del panel de inicio.
 - Nueva sección **Notas**, para registrar y gestionar avisos de comportamiento del día a día (retraso, salida al baño, uso del móvil…) sin necesidad de un parte de convivencia formal:

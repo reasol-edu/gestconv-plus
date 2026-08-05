@@ -189,6 +189,23 @@ class SettingDefinitionTest extends TestCase
         self::assertSame('both', $def->getCastedDefaultValue());
     }
 
+    // ── Pdf — treated like String (the value is the display filename) ─────────
+
+    public function testPdfValueIsValidatedLikeString(): void
+    {
+        $def = $this->makePdfDef();
+
+        self::assertTrue($def->isValueValid('membrete.pdf'));
+        self::assertTrue($def->isValueValid(''));
+    }
+
+    public function testPdfCastedDefaultValueIsRawString(): void
+    {
+        $def = $this->makePdfDef();
+
+        self::assertSame('', $def->getCastedDefaultValue());
+    }
+
     // ── min/max getters and setters ───────────────────────────────────────────
 
     public function testMinMaxDefaultToNull(): void
@@ -268,5 +285,13 @@ class SettingDefinitionTest extends TestCase
             ->setType(SettingType::Choice)
             ->setDefaultValue('both')
             ->setChoices($choices);
+    }
+
+    private function makePdfDef(): SettingDefinition
+    {
+        return (new SettingDefinition())
+            ->setKey('reports.incident_pdf_template')
+            ->setType(SettingType::Pdf)
+            ->setDefaultValue('');
     }
 }

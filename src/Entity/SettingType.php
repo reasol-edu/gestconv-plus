@@ -11,4 +11,5 @@ enum SettingType: string
     case Boolean  = 'boolean';
     case Choice   = 'choice';
     case RichText = 'richtext';
+    case Pdf      = 'pdf';
 }

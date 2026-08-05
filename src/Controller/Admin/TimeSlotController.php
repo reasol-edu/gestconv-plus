@@ -93,6 +93,8 @@ class TimeSlotController extends AbstractController
             sprintf('profesorado-de-guardia-%s.pdf', $centre->getCode()),
             header: $header,
             orientation: 'L',
+            centre: $centre,
+            reportType: 'guard_duty',
         );
     }
 

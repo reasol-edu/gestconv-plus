@@ -97,6 +97,8 @@ class ReportsController extends AbstractController
             $title,
             sprintf('estadisticas-grupo-%s-%s.pdf', $from->format('Y-m-d'), $to->format('Y-m-d')),
             header: $header,
+            centre: $centre,
+            reportType: 'group_stats',
         );
     }
 

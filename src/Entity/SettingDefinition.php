@@ -219,6 +219,8 @@ class SettingDefinition
      * Booleans must be 'true' or 'false'.
      * Integers must be numeric, non-decimal, and within [minValue, maxValue] when set.
      * Strings must have a length within [minValue, maxValue] when set; empty is always valid.
+     * Pdf-typed values hold the display filename and are validated the same way as
+     * strings; the actual file is validated and stored separately (see SettingFile).
      */
     public function isValueValid(string $value): bool
     {
@@ -226,7 +228,8 @@ class SettingDefinition
             SettingType::Boolean => in_array($value, ['true', 'false'], true),
             SettingType::Integer => $this->isIntValueValid($value),
             SettingType::String,
-            SettingType::RichText => $this->isStringValueValid($value),
+            SettingType::RichText,
+            SettingType::Pdf     => $this->isStringValueValid($value),
             SettingType::Choice  => in_array($value, $this->getChoicesArray(), true),
         };
     }
@@ -277,7 +280,8 @@ class SettingDefinition
             SettingType::Integer => (int) $this->defaultValue,
             SettingType::String,
             SettingType::Choice,
-            SettingType::RichText => $this->defaultValue,
+            SettingType::RichText,
+            SettingType::Pdf => $this->defaultValue,
         };
     }
 }

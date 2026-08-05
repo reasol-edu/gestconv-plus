@@ -29,6 +29,9 @@ class GlobalSettingValue
     #[ORM\Column]
     private bool $locked = false;
 
+    #[ORM\ManyToOne]
+    private ?SettingFile $file = null;
+
     public function getId(): Uuid
     {
         return $this->id;
@@ -66,6 +69,18 @@ class GlobalSettingValue
     public function setLocked(bool $locked): static
     {
         $this->locked = $locked;
+
+        return $this;
+    }
+
+    public function getFile(): ?SettingFile
+    {
+        return $this->file;
+    }
+
+    public function setFile(?SettingFile $file): static
+    {
+        $this->file = $file;
 
         return $this;
     }

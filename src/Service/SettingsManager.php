@@ -8,6 +8,7 @@ use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\GlobalSettingValue;
 use App\Entity\SettingDefinition;
+use App\Entity\SettingFile;
 use App\Entity\Teacher;
 use App\Entity\TeacherSettingValue;
 use App\Repository\CentreSettingValueRepository;
@@ -34,9 +35,11 @@ final class SettingsManager
 
     /**
      * Returns rows for the given scope, each row containing the definition,
-     * the stored raw value (null = not set), lock state and parent-lock origin.
+     * the stored raw value (null = not set), the stored file (only set for
+     * pdf-typed settings that currently have one uploaded), lock state and
+     * parent-lock origin.
      *
-     * @return list<array{definition: SettingDefinition, storedValue: ?string, effectiveValue: string, isLocked: bool, parentLock: ?string}>
+     * @return list<array{definition: SettingDefinition, storedValue: ?string, storedFile: ?SettingFile, effectiveValue: string, isLocked: bool, parentLock: ?string}>
      */
     public function getRows(string $scope, ?EducationalCentre $centre, ?Teacher $teacher): array
     {
@@ -54,6 +57,7 @@ final class SettingsManager
             $rows[] = [
                 'definition'     => $def,
                 'storedValue'    => $stored,
+                'storedFile'     => $storedValue?->getFile(),
                 'effectiveValue' => $parentLockInfo !== null
                                         ? $parentLockInfo['value']
                                         : ($stored ?? $def->getDefaultValue()),

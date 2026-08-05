@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\SettingDefinition;
+use App\Entity\SettingFile;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -42,5 +43,10 @@ class CentreSettingValueRepository extends ServiceEntityRepository
     public function findByDefinitionAndCentre(SettingDefinition $definition, EducationalCentre $centre): ?CentreSettingValue
     {
         return $this->findOneBy(['definition' => $definition, 'centre' => $centre]);
+    }
+
+    public function countByFile(SettingFile $file): int
+    {
+        return (int) $this->count(['file' => $file]);
     }
 }
