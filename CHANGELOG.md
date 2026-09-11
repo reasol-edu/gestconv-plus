@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-09-11
+
+### Fixed
+
+- Un docente dado de alta en el curso académico activo pero que todavía no tenía ningún grupo asignado (ni como profesorado ni como tutor/a) no veía ningún centro en la pantalla de selección de centro y no podía acceder a la aplicación. Ahora basta con estar incorporado al curso académico activo del centro para poder acceder, independientemente de si ya se tiene grupo asignado.
+
 ## [1.0.0] - 2026-08-05
 
 ### Fixed
