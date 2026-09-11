@@ -102,7 +102,6 @@ TMP_FILE="$(mktemp)"
 trap 'rm -f "$TMP_FILE"' EXIT
 
 curl -fsSL "$TARBALL_URL" -o "$TMP_FILE" || die "No se pudo descargar ${TARBALL_URL}."
-chmod 644 "$TMP_FILE"
 ok "Descargado"
 
 # ── parar, extraer y arrancar ─────────────────────────────────────────────────
@@ -111,7 +110,14 @@ systemctl stop gestconv-plus-worker gestconv-plus
 ok "Servicios detenidos"
 
 step "Extrayendo sobre ${INSTALL_DIR}"
-sudo -u gestconvplus tar xzf "$TMP_FILE" -C "$INSTALL_DIR" --strip-components=1
+# El fichero temporal lo crea `mktemp` con permisos 600, propiedad de root, así
+# que "gestconvplus" no puede abrirlo por su cuenta aunque se le hiciera
+# legible (p. ej. si /tmp tiene un ACL por defecto que anula el bit "other").
+# En vez de depender de eso, root abre aquí el fichero (la redirección la
+# resuelve el propio bash, que ya se ejecuta como root) y le pasa el
+# descriptor ya abierto al `tar` que corre como "gestconvplus": no hace falta
+# reabrir el fichero con otra identidad.
+sudo -u gestconvplus tar xzf - -C "$INSTALL_DIR" --strip-components=1 < "$TMP_FILE"
 ok "GestConv+ actualizado a ${REMOTE_TAG}"
 
 step "Arrancando los servicios"
