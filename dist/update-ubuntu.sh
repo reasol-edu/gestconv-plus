@@ -24,8 +24,11 @@
 #   3. Si hay una versión más reciente (o se ha pasado --force): para los
 #      servicios, descarga y extrae el paquete nuevo sobre /opt/gestconv-plus
 #      (data/ y .env.local no forman parte del paquete, así que se conservan
-#      intactos) y vuelve a arrancar los servicios. gestconv-start.sh aplica
-#      las migraciones pendientes y regenera la caché en el arranque.
+#      intactos), borrando de app/ los ficheros que ya no formen parte del
+#      paquete nuevo (p. ej. clases eliminadas en un refactor; var/ se excluye
+#      por ser caché y logs en tiempo de ejecución), y vuelve a arrancar los
+#      servicios. gestconv-start.sh aplica las migraciones pendientes y
+#      regenera la caché en el arranque.
 #
 # Es seguro ejecutarlo repetidamente (p. ej. desde un cron o un systemd
 # timer): si ya está en la última versión, no hace nada y termina en 0. Ver
@@ -99,7 +102,8 @@ step "Descargando GestConv+ ${REMOTE_TAG} (${ASSET_ARCH})"
 
 TARBALL_URL="https://github.com/${REPO}/releases/download/${REMOTE_TAG}/gestconv-plus-${REMOTE_TAG}-${ASSET_ARCH}.tar.gz"
 TMP_FILE="$(mktemp)"
-trap 'rm -f "$TMP_FILE"' EXIT
+STAGE_DIR=""
+trap 'rm -f "$TMP_FILE"; [[ -n "$STAGE_DIR" ]] && rm -rf "$STAGE_DIR"' EXIT
 
 curl -fsSL "$TARBALL_URL" -o "$TMP_FILE" || die "No se pudo descargar ${TARBALL_URL}."
 ok "Descargado"
@@ -110,6 +114,11 @@ systemctl stop gestconv-plus-worker gestconv-plus
 ok "Servicios detenidos"
 
 step "Extrayendo sobre ${INSTALL_DIR}"
+# Se extrae primero a un directorio de preparación, propiedad de
+# "gestconvplus", en vez de directamente sobre ${INSTALL_DIR}: así se puede
+# comparar qué había antes con lo que trae el paquete nuevo y borrar lo que ya
+# no exista (ver más abajo), algo que un `tar` directo no puede hacer.
+#
 # El fichero temporal lo crea `mktemp` con permisos 600, propiedad de root, así
 # que "gestconvplus" no puede abrirlo por su cuenta aunque se le hiciera
 # legible (p. ej. si /tmp tiene un ACL por defecto que anula el bit "other").
@@ -117,7 +126,28 @@ step "Extrayendo sobre ${INSTALL_DIR}"
 # resuelve el propio bash, que ya se ejecuta como root) y le pasa el
 # descriptor ya abierto al `tar` que corre como "gestconvplus": no hace falta
 # reabrir el fichero con otra identidad.
-sudo -u gestconvplus tar xzf - -C "$INSTALL_DIR" --strip-components=1 < "$TMP_FILE"
+STAGE_DIR="$(mktemp -d)"
+chown gestconvplus:gestconvplus "$STAGE_DIR"
+sudo -u gestconvplus tar xzf - -C "$STAGE_DIR" --strip-components=1 < "$TMP_FILE"
+
+# tar (y por tanto el paso anterior) solo añade y sobrescribe: un fichero
+# eliminado del código en un release (p. ej. una clase renombrada en un
+# refactor) se queda huérfano en el servidor para siempre si no se borra
+# explícitamente — Symfony falla al arrancar si encuentra uno de estos
+# huérfanos bajo app/src/. Se compara el app/ instalado con el app/ del
+# paquete nuevo y se borra lo que ya no exista en este último; var/ (caché y
+# logs en tiempo de ejecución, no parte del código fuente) se excluye.
+if [[ -d "${INSTALL_DIR}/app" ]]; then
+    while IFS= read -r -d '' rel; do
+        [[ "$rel" == "var" || "$rel" == var/* ]] && continue
+        [[ -e "${STAGE_DIR}/app/${rel}" ]] || rm -rf -- "${INSTALL_DIR}/app/${rel}"
+    done < <(cd "${INSTALL_DIR}/app" && find . -mindepth 1 -printf '%P\0')
+fi
+
+# data/ (base de datos, secretos, caché) llega vacío dentro del paquete —
+# copiar sobre un directorio existente no borra su contenido, igual que hacía
+# el `tar` directo de antes.
+sudo -u gestconvplus cp -a "${STAGE_DIR}/." "$INSTALL_DIR"
 ok "GestConv+ actualizado a ${REMOTE_TAG}"
 
 step "Arrancando los servicios"
