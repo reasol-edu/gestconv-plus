@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-09-11
+
+### Fixed
+
+- Al añadir un docente a un grupo desde **Centro educativo › Oferta formativa**, el botón "+" no hacía nada: el mini-formulario de alta rápida (docente + materia) estaba anidado dentro del formulario del panel de detalle del grupo, y un `<form>` anidado es HTML inválido, así que el navegador lo ignoraba y el botón acababa enviando el formulario exterior en vez de dar de alta al docente. Se aprovecha además para sustituir el desplegable de docente por uno con búsqueda, igual que en el resto de la aplicación.
+- `dist/update-ubuntu.sh` no borraba, al actualizar, los ficheros que ya no formaban parte de una versión más reciente (p. ej. una clase eliminada en un refactor): al extraer con `tar` solo se añaden o sobrescriben ficheros, nunca se borran los sobrantes, así que se iban acumulando en el servidor y podían hacer fallar el arranque de la aplicación («Expected to find class ... but it was not found»). Ahora la actualización compara lo instalado con el paquete nuevo y borra lo que ya no exista en este último.
+
 ## [1.0.2] - 2026-09-11
 
 ### Fixed
