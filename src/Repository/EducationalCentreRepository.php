@@ -136,6 +136,17 @@ class EducationalCentreRepository extends ServiceEntityRepository
             $merged[$centre->getId()->toRfc4122()] = $centre;
         }
 
+        // Centres where teacher is enrolled in the active academic year, regardless of group/tutor status
+        foreach ($this->createQueryBuilder('ec')
+            ->join('ec.activeAcademicYear', 'ay')
+            ->join('ay.teachers', 't')
+            ->where('t.id = :tid')
+            ->setParameter('tid', $tid, 'uuid')
+            ->getQuery()
+            ->getResult() as $centre) {
+            $merged[$centre->getId()->toRfc4122()] = $centre;
+        }
+
         // Centres via group membership — navigate from Group since ManyToOne associations are unidirectional
         foreach ($this->getEntityManager()->createQueryBuilder()
             ->select('g')

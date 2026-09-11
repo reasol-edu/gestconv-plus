@@ -251,6 +251,38 @@ class EducationalCentreRepositoryTest extends RepositoryTestCase
         self::assertSame($centre->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
+    public function testFindAccessibleByTeacherReturnsCentreWhenTeacherIsEnrolledInActiveYearWithoutGroup(): void
+    {
+        $centre  = $this->makeCentre('41000026');
+        $year    = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
+        $teacher = $this->makeTeacher('no.group.enrolled');
+        $this->persist($centre, $year, $teacher);
+        $centre->setActiveAcademicYear($year);
+        $year->addTeacher($teacher);
+        $this->flush();
+
+        $results = $this->repo->findAccessibleByTeacher($teacher);
+
+        self::assertCount(1, $results);
+        self::assertSame($centre->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
+    }
+
+    public function testFindAccessibleByTeacherIgnoresEnrollmentInNonActiveYear(): void
+    {
+        $centre     = $this->makeCentre('41000027');
+        $activeYear = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
+        $oldYear    = (new AcademicYear())->setName('2023-2024')->setEducationalCentre($centre);
+        $teacher    = $this->makeTeacher('old.year.enrolled');
+        $this->persist($centre, $activeYear, $oldYear, $teacher);
+        $centre->setActiveAcademicYear($activeYear);
+        $oldYear->addTeacher($teacher);
+        $this->flush();
+
+        $results = $this->repo->findAccessibleByTeacher($teacher);
+
+        self::assertCount(0, $results);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private function makeCentre(string $code): EducationalCentre
