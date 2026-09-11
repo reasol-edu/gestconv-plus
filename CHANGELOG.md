@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-09-11
+
+### Fixed
+
+- `dist/update-ubuntu.sh` fallaba con «Cannot open: Permission denied» al extraer el paquete descargado: el fichero temporal lo crea `mktemp` con permisos 600 propiedad de `root`, y hacerlo legible con `chmod 644` no bastaba en todos los servidores (p. ej. si `/tmp` tiene un ACL por defecto que anula el bit «other») para que el usuario `gestconvplus` pudiera abrirlo por su cuenta al extraerlo. Ahora es `root` quien abre el fichero descargado y le pasa el descriptor ya abierto al `tar` que corre como `gestconvplus`, sin que este necesite permiso propio sobre el fichero.
+
 ## [1.0.1] - 2026-09-11
 
 ### Fixed
