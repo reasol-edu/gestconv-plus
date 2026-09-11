@@ -249,29 +249,42 @@
                                         {% endif %}
 
                                         {% if can_write %}
-                                            <form data-action="submit->live#action:prevent" data-live-action-param="addGroupTeacher"
-                                                  class="mt-2 flex flex-wrap items-center gap-2">
+                                            {# No es un <form>: ya estamos dentro del <form> "saveDetail" de más arriba,
+                                               y un <form> anidado es HTML inválido (el navegador lo ignora y el botón
+                                               "+" acababa enviando el formulario exterior en vez de disparar
+                                               addGroupTeacher). #}
+                                            <div class="mt-2 flex flex-wrap items-center gap-2">
                                                 <select data-model="norender|newTeacherId"
+                                                        data-controller="symfony--ux-autocomplete--autocomplete"
+                                                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
+                                                        data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
+                                                        data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
+                                                        data-symfony--ux-autocomplete--autocomplete-placeholder-value="{{ 'group.field.teacher_select_placeholder'|trans({}, 'admin') }}"
+                                                        data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
                                                         class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm
                                                                focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
-                                                    <option value="">{{ 'group.field.teacher_select_placeholder'|trans({}, 'admin') }}</option>
+                                                    <option value=""></option>
                                                     {% for t in teacher_options %}
-                                                        <option value="{{ t.id.toRfc4122 }}" {{ t.id.toRfc4122 == newTeacherId ? 'selected' : '' }}>{{ t.name.lastName }}, {{ t.name.firstName }}</option>
+                                                        {% if t.id.toRfc4122 == newTeacherId %}
+                                                            <option value="{{ t.id.toRfc4122 }}" selected>{{ t.name.lastName }}, {{ t.name.firstName }}</option>
+                                                        {% endif %}
                                                     {% endfor %}
                                                 </select>
                                                 <input type="text"
                                                        data-model="norender|newTeacherSubject"
                                                        value="{{ newTeacherSubject }}"
+                                                       data-action="keydown.enter->live#action:prevent"
+                                                       data-live-action-param="addGroupTeacher"
                                                        placeholder="{{ 'group.field.teacher_subject_placeholder'|trans({}, 'admin') }}"
                                                        class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm
                                                               placeholder-gray-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
-                                                <button type="submit"
+                                                <button type="button" data-action="live#action" data-live-action-param="addGroupTeacher"
                                                         class="inline-flex shrink-0 items-center justify-center rounded-lg bg-forest-600 p-1.5 text-white
                                                                hover:bg-forest-700 transition-colors"
                                                         title="{{ 'group.action.add_teacher'|trans({}, 'admin') }}">
                                                     {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
                                                 </button>
-                                            </form>
+                                            </div>
                                             {% if errors.teachers is defined %}<p class="mt-1 text-xs text-red-600">{{ errors.teachers }}</p>{% endif %}
                                         {% endif %}
                                     </div>
