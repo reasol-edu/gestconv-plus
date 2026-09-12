@@ -85,6 +85,7 @@
                                 data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: report.academicYear.id}) }}"
                                 data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
                                 data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
+                                data-symfony--ux-autocomplete--autocomplete-preload-value="false"
                                 data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
                                 class="w-full">
                             <option value="{{ report.registeredBy.id }}" selected>
