@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-09-12
+
+### Fixed
+
+- El desplegable de docente con búsqueda, recién añadido en Oferta formativa, no filtraba correctamente: al hacer clic se precargaba una lista de docentes sin filtrar que nunca desaparecía, y cada búsqueda solo añadía resultados encima en vez de sustituirla. Se corrige en ese desplegable y en los otros 9 sitios de la aplicación que usan el mismo componente de búsqueda de docente (ausencias, notas diarias, partes, perfiles de centro, administradores de centro, listado de ausencias y registro de actividad).
+
 ## [1.0.3] - 2026-09-11
 
 ### Fixed
