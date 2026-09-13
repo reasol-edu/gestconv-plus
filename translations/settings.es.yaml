@@ -158,6 +158,9 @@ settings.key.notifications_email_daily_note_threshold.choice.group_tutor: 'Al tu
 settings.key.notifications_email_daily_note_threshold.choice.admin: 'Al equipo directivo'
 settings.key.notifications_email_daily_note_threshold.choice.both: 'A ambos'
 
+settings.key.notifications_email_subject_prefix.label: 'Prefijo del asunto de los correos'
+settings.key.notifications_email_subject_prefix.description: 'Texto que se antepone al asunto de todos los avisos por correo sobre partes, sanciones, tareas de sanción y notas diarias. Vacío por defecto (sin prefijo).'
+
 settings.key.reports_incident_header_left.label: 'Encabezado de informe de partes (izquierda)'
 settings.key.reports_incident_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de un parte. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 

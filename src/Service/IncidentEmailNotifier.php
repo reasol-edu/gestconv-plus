@@ -459,9 +459,11 @@ final class IncidentEmailNotifier
             return;
         }
 
+        $subject = $this->withSubjectPrefix($centre, $this->translator->trans("emails.$eventKey.subject", $params, 'emails'));
+
         $message = (new TemplatedEmail())
             ->to(new Address($email, $this->fullName($teacher)))
-            ->subject($this->translator->trans("emails.$eventKey.subject", $params, 'emails'))
+            ->subject($subject)
             ->htmlTemplate($template)
             ->context($context + [
                 'teacher'     => $teacher,
@@ -474,6 +476,14 @@ final class IncidentEmailNotifier
         }
 
         $this->send($centre, $teacher, $eventKey, $message);
+    }
+
+    private function withSubjectPrefix(EducationalCentre $centre, string $subject): string
+    {
+        $raw    = $this->settings->getForCentre('notifications.email_subject_prefix', $centre);
+        $prefix = is_string($raw) ? trim($raw) : '';
+
+        return $prefix === '' ? $subject : $prefix . ' ' . $subject;
     }
 
     /** Builds the report's PDF as an email attachment, or null if the setting is disabled. */

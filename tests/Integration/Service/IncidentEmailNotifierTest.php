@@ -30,6 +30,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\RawMessage;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -129,6 +130,29 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         self::assertEmailCount(1);
         self::assertEmailSubjectContains($this->sentMessage(0), 'Ana García');
         self::assertEmailHtmlBodyContains($this->sentMessage(0), (string) $report->getNumber());
+    }
+
+    public function testSubjectHasConfiguredPrefixWhenSet(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('created.prefix');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+        $this->setStringSetting('notifications.email_subject_prefix', $centre, '[TEST]');
+
+        $this->notifier->reportCreated($report, $creator);
+
+        self::assertEmailCount(1);
+        self::assertSame('[TEST] Nuevo parte de convivencia: Ana García', $this->subjectOf($this->sentMessage(0)));
+    }
+
+    public function testSubjectHasNoPrefixWhenNotConfigured(): void
+    {
+        [$report, $centre, , $creator] = $this->makeScenario('created.noprefix');
+        $this->setSetting('notifications.email_report_created', $centre, 'report_teacher');
+
+        $this->notifier->reportCreated($report, $creator);
+
+        self::assertEmailCount(1);
+        self::assertSame('Nuevo parte de convivencia: Ana García', $this->subjectOf($this->sentMessage(0)));
     }
 
     // ── report_notified + comisión de convivencia ───────────────────────────
@@ -708,6 +732,13 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         return $sent[$index]->getMessage();
     }
 
+    private function subjectOf(RawMessage $message): string
+    {
+        self::assertInstanceOf(Email::class, $message);
+
+        return (string) $message->getSubject();
+    }
+
     private function setSetting(string $key, EducationalCentre $centre, string $value): void
     {
         $definition = (new SettingDefinition())
@@ -717,6 +748,23 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
             ->setGlobalScope(true)
             ->setCentreScope(true)
             ->setChoices('none,report_teacher,group_tutor,both,committee');
+        $this->persist($definition);
+
+        $centreValue = (new CentreSettingValue())
+            ->setDefinition($definition)
+            ->setCentre($centre)
+            ->setValue($value);
+        $this->persist($centreValue);
+    }
+
+    private function setStringSetting(string $key, EducationalCentre $centre, string $value): void
+    {
+        $definition = (new SettingDefinition())
+            ->setKey($key)
+            ->setType(SettingType::String)
+            ->setDefaultValue('')
+            ->setGlobalScope(true)
+            ->setCentreScope(true);
         $this->persist($definition);
 
         $centreValue = (new CentreSettingValue())

@@ -234,6 +234,7 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Enviar parte adjunto al correo | Sí / No | No |
 | Enviar sanción adjunta al correo | Sí / No | No |
 | Tareas de sanción asignadas | Sí / No | Sí |
+| Prefijo del asunto de los correos | Texto libre (máx. 50 caracteres) | *(vacío)* |
 
 Uno por cada evento de un parte o una sanción; determinan si se envía un correo y a quién. El
 aviso de parte modificado no se dispara al marcar un parte como prescrito, que tiene su propio
@@ -243,9 +244,16 @@ parte** se envía la primera vez que un estudiante alcanza o supera el umbral de
 [nota diaria](03-el-trabajo-diario.md#notas) activa; si se sigue por encima del umbral con notas
 nuevas no se repite, y el correo incluye el detalle completo de las notas activas de ese tipo. Los
 dos ajustes de adjuntar PDF al correo adjuntan el PDF del parte o de la sanción a los correos
-anteriores. Ninguno tiene ámbito de docente: se fijan a nivel global o de centro. Salvo el último,
-todos están desactivados por defecto. El detalle de cada aviso está en
-[Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones).
+anteriores. Ninguno tiene ámbito de docente: se fijan a nivel global o de centro. Salvo **Tareas de
+sanción asignadas**, todos están desactivados o vacíos por defecto. El detalle de cada aviso está
+en [Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones).
+
+El **prefijo del asunto** se antepone, seguido de un espacio, al asunto de todos los correos de
+esta tabla (partes, sanciones, tareas de sanción y notas diarias) — por ejemplo, con el prefijo
+`[GestConv+]`, un aviso de parte registrado llegaría con el asunto `[GestConv+] Nuevo parte de
+convivencia: Ana García` en vez de `Nuevo parte de convivencia: Ana García`. Si se deja vacío, el
+asunto no cambia. Un centro con un valor propio anula el prefijo global para sus correos; si
+ninguno de los dos está definido, no se añade ningún prefijo.
 
 **Tareas de sanción asignadas**, a diferencia de los anteriores, está **activado por defecto**: en
 cuanto se generan las tareas de una sanción (ver
