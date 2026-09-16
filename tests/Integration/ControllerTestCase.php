@@ -53,9 +53,6 @@ abstract class ControllerTestCase extends WebTestCase
         $defs = [
             ['page.size',                             SettingType::Integer, '20',   false, false, true,  5,    100,  'settings.category.display', 10, 10, null],
             ['email.notifications',                   SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 10, null],
-            ['email.notification.tutor_assigned',     SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 20, null],
-            ['email.notification.positions_created',  SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 30, null],
-            ['email.notification.signature_reminder', SettingType::Boolean, 'true', true,  true,  true,  null, null, 'settings.category.email',   20, 40, null],
             ['board.today_seconds',                    SettingType::Integer, '60',   true,  true,  false, 0,    3600, 'settings.category.board',   30, 5,  null],
             ['board.current_week_seconds',             SettingType::Integer, '10',   true,  true,  false, 0,    3600, 'settings.category.board',   30, 10, null],
             ['board.next_week_seconds',                SettingType::Integer, '0',    true,  true,  false, 0,    3600, 'settings.category.board',   30, 20, null],

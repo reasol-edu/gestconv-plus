@@ -368,16 +368,15 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 
 ---
 
-## Seguimiento de firmas y tareas pendientes
+## Seguimiento de tareas pendientes
 
 - El tutor/a recibe avisos de tareas propias de su grupo, por ejemplo:
-  - Estudiantes **sin puesto asignado** en el calendario de convivencia.
   - **Firmas pendientes** próximas a vencer.
   - Partes o sanciones **todavía sin notificar** a la familia.
   - Sanciones de su grupo con alguna **tarea de sanción sin cumplimentar**
     (ver siguiente diapositiva).
   - Estudiantes de su grupo que han **alcanzado el umbral** de un tipo de
-    nota diaria activa, y a los que por tanto hay que registrarles un parte.
+    nota diaria activa, y a los que, por tanto, hay que registrarles un parte.
 - Estos avisos aparecen tanto en el **panel de inicio** como en la campana de
   notificaciones, para no perder de vista lo urgente.
 

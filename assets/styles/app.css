@@ -376,7 +376,7 @@ summary:focus-visible {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Variante de control ajustada para selects locales (formulario de estancia) */
+/* Variante de control ajustada para selects locales (sin autocompletado remoto) */
 :root .ts-wrapper.ts-local .ts-control {
     padding: 0.5rem 0.875rem;
     min-height: unset;

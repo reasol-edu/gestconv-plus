@@ -315,73 +315,73 @@ class AppSettingsTest extends TestCase
 
     public function testGetForCentreUsesCentreValueFirst(): void
     {
-        $def    = $this->makeDef('email.notification.signature_reminder.days', SettingType::Integer, '7');
+        $def    = $this->makeDef('page.size', SettingType::Integer, '7');
         $centre = $this->createStub(EducationalCentre::class);
 
         $centreRepo = $this->createStub(CentreSettingValueRepository::class);
         $centreRepo->method('findByCentreIndexedByKey')
-            ->willReturn(['email.notification.signature_reminder.days' => $this->makeCentreValue('14')]);
+            ->willReturn(['page.size' => $this->makeCentreValue('14')]);
 
         $service = $this->makeServiceWithCentreRepo(
-            defs:       ['email.notification.signature_reminder.days' => $def],
-            globals:    ['email.notification.signature_reminder.days' => $this->makeGlobalValue('10')],
+            defs:       ['page.size' => $def],
+            globals:    ['page.size' => $this->makeGlobalValue('10')],
             centreRepo: $centreRepo,
         );
 
-        self::assertSame(14, $service->getForCentre('email.notification.signature_reminder.days', $centre));
+        self::assertSame(14, $service->getForCentre('page.size', $centre));
     }
 
     public function testGetForCentreFallsBackToGlobalValue(): void
     {
-        $def    = $this->makeDef('email.notification.signature_reminder.days', SettingType::Integer, '7');
+        $def    = $this->makeDef('page.size', SettingType::Integer, '7');
         $centre = $this->createStub(EducationalCentre::class);
 
         $centreRepo = $this->createStub(CentreSettingValueRepository::class);
         $centreRepo->method('findByCentreIndexedByKey')->willReturn([]);
 
         $service = $this->makeServiceWithCentreRepo(
-            defs:       ['email.notification.signature_reminder.days' => $def],
-            globals:    ['email.notification.signature_reminder.days' => $this->makeGlobalValue('10')],
+            defs:       ['page.size' => $def],
+            globals:    ['page.size' => $this->makeGlobalValue('10')],
             centreRepo: $centreRepo,
         );
 
-        self::assertSame(10, $service->getForCentre('email.notification.signature_reminder.days', $centre));
+        self::assertSame(10, $service->getForCentre('page.size', $centre));
     }
 
     public function testGetForCentreFallsBackToDefault(): void
     {
-        $def    = $this->makeDef('email.notification.signature_reminder.days', SettingType::Integer, '7');
+        $def    = $this->makeDef('page.size', SettingType::Integer, '7');
         $centre = $this->createStub(EducationalCentre::class);
 
         $centreRepo = $this->createStub(CentreSettingValueRepository::class);
         $centreRepo->method('findByCentreIndexedByKey')->willReturn([]);
 
         $service = $this->makeServiceWithCentreRepo(
-            defs:       ['email.notification.signature_reminder.days' => $def],
+            defs:       ['page.size' => $def],
             globals:    [],
             centreRepo: $centreRepo,
         );
 
-        self::assertSame(7, $service->getForCentre('email.notification.signature_reminder.days', $centre));
+        self::assertSame(7, $service->getForCentre('page.size', $centre));
     }
 
     public function testGetForCentreRespectsGlobalLock(): void
     {
-        $def    = $this->makeDef('email.notification.signature_reminder.days', SettingType::Integer, '7');
+        $def    = $this->makeDef('page.size', SettingType::Integer, '7');
         $centre = $this->createStub(EducationalCentre::class);
 
         $centreRepo = $this->createStub(CentreSettingValueRepository::class);
         $centreRepo->method('findByCentreIndexedByKey')
-            ->willReturn(['email.notification.signature_reminder.days' => $this->makeCentreValue('14')]);
+            ->willReturn(['page.size' => $this->makeCentreValue('14')]);
 
         $service = $this->makeServiceWithCentreRepo(
-            defs:       ['email.notification.signature_reminder.days' => $def],
-            globals:    ['email.notification.signature_reminder.days' => $this->makeGlobalValue('3', locked: true)],
+            defs:       ['page.size' => $def],
+            globals:    ['page.size' => $this->makeGlobalValue('3', locked: true)],
             centreRepo: $centreRepo,
         );
 
         // Global lock must override the centre value
-        self::assertSame(3, $service->getForCentre('email.notification.signature_reminder.days', $centre));
+        self::assertSame(3, $service->getForCentre('page.size', $centre));
     }
 
     public function testGetForCentreReturnsNullForUnknownKey(): void

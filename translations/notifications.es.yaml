@@ -9,13 +9,6 @@ bell:
         task: 'Tarea de sanción de %student% pendiente de cumplimentar'
         note_threshold: '%student% ha alcanzado %count% notas de «%type%»'
 
-item:
-    signature_due: '{1} 1 firma pendiente (la estancia termina pronto)|]1,Inf[ %count% firmas pendientes (la estancia termina pronto)'
-    free_positions: '{1} 1 puesto sin estudiante asignado|]1,Inf[ %count% puestos sin estudiante asignado'
-    missing_tutor: '{1} 1 puesto sin tutor dual docente|]1,Inf[ %count% puestos sin tutor dual docente'
-    missing_mentor: '{1} 1 puesto sin tutor dual de empresa|]1,Inf[ %count% puestos sin tutor dual de empresa'
-    students_without_position: '{1} 1 estudiante sin puesto|]1,Inf[ %count% estudiantes sin puesto'
-
 # ── Sección "Notificaciones" (comunicaciones a familias de partes y sanciones) ──
 notification.title: 'Notificaciones'
 notification.index.help: 'Gestión de las comunicaciones a las familias sobre partes y sanciones.'
