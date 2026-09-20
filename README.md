@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>v1.1.1</strong> &nbsp;·&nbsp;
+  <strong>v1.2.0</strong> &nbsp;·&nbsp;
   <a href="https://reasol-edu.github.io/gestconv-plus/">Documentación</a> &nbsp;·&nbsp;
   <a href="CHANGELOG.md">Cambios</a> &nbsp;·&nbsp;
   <a href="CONTRIBUTING.md">Contribuir</a> &nbsp;·&nbsp;

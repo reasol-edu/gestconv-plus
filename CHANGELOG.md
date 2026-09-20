@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-09-20
+
+### Added
+
+- Las búsquedas y filtros por texto (partes, sanciones, estudiantes, docentes, centros, notas diarias, eventos de centro, ubicaciones, comunicaciones y registro de avisos por correo) ya no distinguen tildes en PostgreSQL: buscar «Jose» encuentra también a «José». No requiere ninguna acción manual — se activa solo al actualizar, y si por algún motivo no puede activarse (permisos insuficientes en el servidor de base de datos), la aplicación sigue funcionando con normalidad, simplemente sin esta mejora. No aplica a instalaciones que usen SQLite.
+
 ## [1.1.0] - 2026-09-13
 
 ### Added
