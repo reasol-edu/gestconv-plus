@@ -151,13 +151,13 @@ class IncidentReportRepository extends ServiceEntityRepository
         if (is_string($search) && $search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    'LOWER(s.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(s.name.lastName) LIKE LOWER(:search)',
-                    'LOWER(t.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(t.name.lastName) LIKE LOWER(:search)',
-                    'LOWER(g.name) LIKE LOWER(:search)',
-                    'LOWER(beh.name) LIKE LOWER(:search)',
-                    'LOWER(r.description) LIKE LOWER(:search)',
+                    'UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(t.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(t.name.lastName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(g.name)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(beh.name)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(r.description)) LIKE UNACCENT(LOWER(:search))',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
@@ -320,10 +320,10 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->join('c.academicYear', 'ay')
             ->where('ay = :year')
             ->andWhere(
-                'LOWER(s.name.firstName) LIKE LOWER(:search)
-                 OR LOWER(s.name.lastName) LIKE LOWER(:search)
-                 OR LOWER(s.studentId) LIKE LOWER(:search)
-                 OR LOWER(g.name) LIKE LOWER(:search)'
+                'UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))
+                 OR UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))
+                 OR UNACCENT(LOWER(s.studentId)) LIKE UNACCENT(LOWER(:search))
+                 OR UNACCENT(LOWER(g.name)) LIKE UNACCENT(LOWER(:search))'
             )
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('search', '%' . $q . '%')

@@ -159,6 +159,14 @@ ALTER DATABASE gestconv OWNER TO gestconv;
 SQL
 ok "Base de datos 'gestconv' y usuario 'gestconv' listos"
 
+# Activa la extensión unaccent como superusuario (el rol "gestconv" normal no
+# tiene privilegio para crear extensiones): permite que las búsquedas por
+# texto ignoren tildes ("Jose" encuentra "José"). Si por lo que sea fallara,
+# la aplicación sigue funcionando con normalidad, solo que sin esta mejora.
+sudo -u postgres psql -d gestconv -c "CREATE EXTENSION IF NOT EXISTS unaccent" \
+    && ok "Extensión 'unaccent' activada (búsquedas insensibles a tildes)" \
+    || warn "No se pudo activar la extensión 'unaccent'; las búsquedas seguirán siendo sensibles a tildes."
+
 # ── 2. Cortafuegos ────────────────────────────────────────────────────────────
 step "2/8 · Configurar cortafuegos (UFW)"
 ufw allow OpenSSH  > /dev/null

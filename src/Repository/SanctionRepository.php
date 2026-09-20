@@ -97,9 +97,9 @@ class SanctionRepository extends ServiceEntityRepository
         if (is_string($search) && $search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    'LOWER(st.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(st.name.lastName) LIKE LOWER(:search)',
-                    'LOWER(g.name) LIKE LOWER(:search)',
+                    'UNACCENT(LOWER(st.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(st.name.lastName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(g.name)) LIKE UNACCENT(LOWER(:search))',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
@@ -222,9 +222,9 @@ class SanctionRepository extends ServiceEntityRepository
             )
         ';
         if ($search !== '') {
-            $whereClause .= ' AND (LOWER(s.name.firstName) LIKE LOWER(:search)
-                           OR LOWER(s.name.lastName) LIKE LOWER(:search)
-                           OR LOWER(g.name) LIKE LOWER(:search))';
+            $whereClause .= ' AND (UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))
+                           OR UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))
+                           OR UNACCENT(LOWER(g.name)) LIKE UNACCENT(LOWER(:search)))';
         }
 
         // Two-query approach (count + page) so the SQL server sorts/paginates instead of loading

@@ -123,7 +123,7 @@ class LocationOptionRepository extends ServiceEntityRepository
             ->join('o.category', 'c')
             ->where('o.educationalCentre = :centre')
             ->andWhere('o.active = true')
-            ->andWhere('LOWER(o.name) LIKE LOWER(:search)')
+            ->andWhere('UNACCENT(LOWER(o.name)) LIKE UNACCENT(LOWER(:search))')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('search', '%' . $q . '%')
             ->orderBy('c.position', 'ASC')

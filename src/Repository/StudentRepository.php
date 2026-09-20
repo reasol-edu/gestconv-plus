@@ -74,9 +74,9 @@ class StudentRepository extends ServiceEntityRepository
         if ($search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    'LOWER(s.studentId) LIKE LOWER(:search)',
-                    'LOWER(s.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(s.name.lastName) LIKE LOWER(:search)',
+                    'UNACCENT(LOWER(s.studentId)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
@@ -120,9 +120,9 @@ class StudentRepository extends ServiceEntityRepository
         if ($search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    'LOWER(s.studentId) LIKE LOWER(:search)',
-                    'LOWER(s.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(s.name.lastName) LIKE LOWER(:search)',
+                    'UNACCENT(LOWER(s.studentId)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
@@ -256,9 +256,9 @@ class StudentRepository extends ServiceEntityRepository
 
         $qb->andWhere(
             $qb->expr()->orX(
-                'LOWER(s.studentId) LIKE LOWER(:search)',
-                'LOWER(s.name.firstName) LIKE LOWER(:search)',
-                'LOWER(s.name.lastName) LIKE LOWER(:search)',
+                'UNACCENT(LOWER(s.studentId)) LIKE UNACCENT(LOWER(:search))',
+                'UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                'UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))',
             )
         )->setParameter('search', '%' . $q . '%');
 
@@ -322,9 +322,9 @@ class StudentRepository extends ServiceEntityRepository
 
         $search = $filters['search'] ?? '';
         if (is_string($search) && $search !== '') {
-            $dql .= ' AND (LOWER(s.name.firstName) LIKE LOWER(:search)
-                           OR LOWER(s.name.lastName) LIKE LOWER(:search)
-                           OR LOWER(g.name) LIKE LOWER(:search))';
+            $dql .= ' AND (UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))
+                           OR UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))
+                           OR UNACCENT(LOWER(g.name)) LIKE UNACCENT(LOWER(:search)))';
         }
 
         $query = $this->getEntityManager()

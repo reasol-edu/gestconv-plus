@@ -96,12 +96,12 @@ class DailyNoteRepository extends ServiceEntityRepository
         if (is_string($search) && $search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    'LOWER(s.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(s.name.lastName) LIKE LOWER(:search)',
-                    'LOWER(t.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(t.name.lastName) LIKE LOWER(:search)',
-                    'LOWER(g.name) LIKE LOWER(:search)',
-                    'LOWER(n.observations) LIKE LOWER(:search)',
+                    'UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(t.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(t.name.lastName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(g.name)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(n.observations)) LIKE UNACCENT(LOWER(:search))',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
@@ -311,9 +311,9 @@ class DailyNoteRepository extends ServiceEntityRepository
 
         $search = $filters['search'] ?? '';
         if (is_string($search) && $search !== '') {
-            $dql .= ' AND (LOWER(s.name.firstName) LIKE LOWER(:search)
-                           OR LOWER(s.name.lastName) LIKE LOWER(:search)
-                           OR LOWER(g.name) LIKE LOWER(:search))';
+            $dql .= ' AND (UNACCENT(LOWER(s.name.firstName)) LIKE UNACCENT(LOWER(:search))
+                           OR UNACCENT(LOWER(s.name.lastName)) LIKE UNACCENT(LOWER(:search))
+                           OR UNACCENT(LOWER(g.name)) LIKE UNACCENT(LOWER(:search)))';
         }
 
         $query = $this->getEntityManager()

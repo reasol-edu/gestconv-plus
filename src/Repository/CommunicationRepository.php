@@ -176,14 +176,14 @@ class CommunicationRepository extends ServiceEntityRepository
         if (is_string($search) && $search !== '') {
             $qb->andWhere(
                 $qb->expr()->orX(
-                    'LOWER(rs.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(rs.name.lastName) LIKE LOWER(:search)',
-                    'LOWER(rg.name) LIKE LOWER(:search)',
-                    'LOWER(ss.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(ss.name.lastName) LIKE LOWER(:search)',
-                    'LOWER(sg.name) LIKE LOWER(:search)',
-                    'LOWER(pb.name.firstName) LIKE LOWER(:search)',
-                    'LOWER(pb.name.lastName) LIKE LOWER(:search)',
+                    'UNACCENT(LOWER(rs.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(rs.name.lastName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(rg.name)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(ss.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(ss.name.lastName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(sg.name)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(pb.name.firstName)) LIKE UNACCENT(LOWER(:search))',
+                    'UNACCENT(LOWER(pb.name.lastName)) LIKE UNACCENT(LOWER(:search))',
                 )
             )->setParameter('search', '%' . $search . '%');
         }
