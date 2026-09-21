@@ -37,54 +37,88 @@ that convention even though this document is in English.
 
 Keep a Changelog format. Section headers (`Added`, `Changed`, `Fixed`…) are in
 **English**; the content of each entry is in **Spanish**, aimed at the end user,
-without jargon. New entries go **at the top** of their section within
-`[Unreleased]`. Breaking (`!`) commits need an entry under `Fixed` or `Changed`
-stating whether a manual step is needed when upgrading. Purely internal changes
-(`ci`, `test`, `docs`, `refactor` with no visible impact) **don't** get an entry.
+without jargon. This repo does **not** keep a running `[Unreleased]` section:
+a user-visible commit lands with no CHANGELOG entry of its own, and the entry is
+added only as part of the release commit (see "Release process" below), inside a
+new `## [X.Y.Z] - <date>` section added at the **top** of the file. Breaking (`!`)
+commits need an entry under `Fixed` or `Changed` stating whether a manual step is
+needed when upgrading. Purely internal changes (`ci`, `test`, `docs`, `refactor`
+with no visible impact) **don't** get an entry.
 
 ## Documentation generation
 
-Always use the `Makefile` targets, don't invoke pandoc/mkdocs/marp by hand:
+Always use the `Makefile` targets, don't invoke pandoc/mkdocs/marp by hand — direct
+invocation fails or silently skips substitutions the targets otherwise handle (e.g. a bare
+`mkdocs build` errors with "docs_dir should not be the parent directory of the config file";
+a bare `marp` leaves `{{VERSION}}`/`{{PUB_DATE}}` markers unsubstituted):
 
 ```bash
-make docs-pdf     # manual → docs/manual/gestconv-plus-manual.pdf (pandoc + pagedjs-cli)
-make docs-web     # manual → docs/manual-site/ (MkDocs Material)
-make docs-serve   # local preview
+make docs-web     # manual → docs/manual-site/ (MkDocs Material; requires docs/manual/requirements.txt)
+make docs-pdf     # manual → docs/manual/gestconv-plus-manual.pdf (pandoc + pagedjs-cli, reuses system Chrome via PUPPETEER_EXECUTABLE_PATH)
+make docs-serve   # local preview of docs-web at http://127.0.0.1:8000
+make docs         # both docs-web and docs-pdf
 make slides       # docs/slides/gestconv-plus.pdf (Marp)
 make cheatsheets  # quick reference sheets
-make bump-readme  # updates the version number in README.md
+make bump-readme  # updates the vX.Y.Z badge in README.md
 ```
 
-Version and publication date come from `config/services.yaml`
-(`app.version`, `app.pub_date`) — don't duplicate them by hand elsewhere; if they
-change, also run `make bump-readme`.
+`app.version`/`app.pub_date` in `config/services.yaml` is the **single source** for almost
+everything derived from the version: the in-app UI (sidebar/login), the manual's PDF/web cover
+(`MANUAL_COPYRIGHT`), and the slide deck (`{{VERSION}}`/`{{PUB_DATE}}`, substituted by `make
+slides` into a temporary `_build.md`, never edited directly) — updating just `services.yaml` keeps
+all of those coherent. The **one exception** is the `<strong>vX.Y.Z</strong>` badge in
+`README.md`: it's a hand-maintained file, not a generated artifact, so it needs its own step
+(`make bump-readme`) after editing `services.yaml`. `package.json`'s `"version"` field is a
+deliberately-unsynced vestige of Playwright being a devDependency (not published to npm, not read
+anywhere) — don't "fix" it to match `app.version`.
 
-When adding any change that affects the slide deck's content (new screens, flows,
-screenshots), also update `docs/slides/gestconv-plus.md`, not just the
-manual/CHANGELOG.
+After editing the manual, verify with `make docs-web 2>&1 | grep -i warning` — broken links/anchors
+surface as `WARNING`; the red "MkDocs 2.0" banner from Material is just a deprecation notice, not
+an error.
+
+When a code change affects content already covered by the slide deck (new screens, flows,
+settings), also update the relevant bullet(s) in `docs/slides/gestconv-plus.md` — don't treat
+`docs/manual/` and `CHANGELOG.md` as the only docs that need updating. The deck is a terse,
+role/block-organized practical guide, not an exhaustive feature list — use judgement on whether a
+brand-new feature area is slide-worthy at all. Rebuild with `make slides` and spot-check the
+rendered PDF before considering the docs update complete.
+
+For manual/cheatsheet screenshots specifically (disposable DB, Playwright gotchas, image sizing),
+see `skills/screenshots.md`.
 
 ## Release process
 
-The project uses a **single "live" version** (currently `1.0.0`, tag `v1.0.0` in
-git): instead of bumping semver on every batch of changes, the tag is **moved
-forward** (`git tag -f v1.0.0 <commit>` + `git push origin v1.0.0 --force`) to
-republish with the accumulated work, with a commit
-`chore(release): re-publica la versión 1.0.0 con el trabajo acumulado`
-("chore(release): republishes version 1.0.0 with the accumulated work") that
-updates `app.pub_date` in `config/services.yaml` and adds the corresponding
-CHANGELOG entries. Don't assume strict semantic versioning in this repo; confirm
-with the user before proposing a bump to `1.1.0`/`2.0.0`.
+**Never publish a release on your own initiative.** Committing a fix or feature does not imply
+cutting a version — after committing, stop. Don't touch the CHANGELOG version section,
+`app.version`/`app.pub_date`, run `make bump-readme`, or create/push a `vX.Y.Z` tag unless the user
+explicitly asks to publish (e.g. "publica", "saca una versión", "haz el release"). A pushed tag is
+a public, hard-to-reverse action — it triggers `.github/workflows/build.yml` (tests, standalone
+binaries, Docker image publish) and real deployment scripts pull from it. If it's unclear whether a
+request implies a release, ask rather than assume.
 
-Moving and force-pushing a tag is an action visible to others and triggers
-`.github/workflows/build.yml` (binary build + GitHub release) — treat it like any
-other high-impact action: confirm it explicitly with the user before running it,
-don't do it proactively.
+As of 2026-09-11 the project cuts **real semver patch/minor tags** (`v1.0.1`, `v1.1.0`, `v1.2.1`…)
+instead of the earlier "single live version" convention that force-moved a `v1.0.0` tag forward —
+`v1.0.0` itself is left untouched as a historical tag, don't revive the move/force-push pattern.
+Whether a given release bumps patch, minor, or major is the user's call; confirm if it's not
+obvious from the change (a bug fix is a patch; a new user-facing capability is usually a minor).
+
+Once a release is actually requested, the mechanics are:
+
+1. The fix/feature itself lands in its own `fix(...)`/`feat(...)` commit(s), separate from the
+   release commit.
+2. A release commit `chore(release): publica la versión X.Y.Z` that: adds a new `## [X.Y.Z] -
+   <date>` section at the **top** of `CHANGELOG.md` (existing sections stay below, untouched),
+   bumps `app.version`/`app.pub_date` in `config/services.yaml`, and runs `make bump-readme`.
+3. `git push origin main`, then `git tag -a vX.Y.Z -m vX.Y.Z` + `git push origin vX.Y.Z` — this tag
+   push is what triggers `.github/workflows/build.yml`.
 
 ### Gotcha: `softprops/action-gh-release` accumulates the body on every re-release
 
 `.github/workflows/build.yml` publishes the release with
 `softprops/action-gh-release@v2` and `generate_release_notes: true`. If the tag
-already has a release (as happens every time `v1.0.0` is moved), the action
+already has a release (as happened on every re-publish under the old
+move/force-push `v1.0.0` convention, and would still happen if a `vX.Y.Z` release
+step is ever re-run against the same tag), the action
 internally computes `body = workflowBody || existingReleaseBody` — and in
 JavaScript `""` is *falsy*, so an explicit `body: ""` does **not** prevent it from
 falling back to the previous release's body (which already includes the "Full

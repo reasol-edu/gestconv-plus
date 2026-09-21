@@ -14,6 +14,21 @@ Run both before considering any task done. The project requires PHPStan level
 `max` and the PHPUnit suite green **regardless of the day the tests happen to run
 on** (see next section).
 
+CI's `Tests` workflow runs `php bin/console tailwind:build` and `php bin/console
+ux:icons:warm-cache` before `php bin/phpunit`. A missing/incorrectly-imported
+icon (see `frontend.md`'s icon import workflow) or an invalid Tailwind class
+typically fails **at this build/warm-cache step**, not inside the test suite
+itself — if a PR's `Tests` workflow fails with no obvious PHPUnit assertion
+failure, check the earlier CI steps before assuming it's a test flake.
+
+`composer require`/`composer update`'s auto-scripts (`cache:clear`) can also
+crash under the default 128M memory limit, the same way PHPStan does. If that
+happens, re-run with `--no-scripts` and then clear the cache by hand with
+`php -d memory_limit=1G bin/console cache:clear`. Watch out: a `composer
+require` that failed mid-script can leave the new package's version constraint
+as `"*"` in `composer.json` — re-run it with an explicit constraint (e.g.
+`composer require vendor/pkg:^2.0 --no-scripts`) rather than leaving `"*"`.
+
 ## Use Clock, never `new \DateTimeImmutable()` for "now"/"today"
 
 Explicit project preference: inject `Symfony\Component\Clock\ClockInterface` (the
@@ -60,6 +75,26 @@ Common base for integration tests:
 - Seeds default settings (`seedDefaultSettings()`) so that pages reading
   `AppSettingsInterface` don't fail for lack of a definition.
 
+### Conventions for `*RepositoryTest`
+
+Each file defines its own private helpers `makeWorld(string $suffix = '')`
+(persists a centre + active academic year + programme + level + group + student
++ behavior category/behavior, returns an associative array of those) and
+`makeTeacher(string $username, bool $admin = false)`. Role-visibility tests
+(centre admin, committee member, counselor) follow the same shape every time:
+`makeWorld()` → create and persist the teacher → add them to the role's
+collection (`addAdmin`/`addCommitteeMember`/`addCounselor`) → `flush()` → assert
+on the repository method's result.
+
+### Conventions for `*ControllerTest extends ControllerTestCase` (Admin area)
+
+`makeScenario()` typically creates a teacher with `setAdmin(true)` **and** adds
+them as `$centre->addAdmin($cadmin)` — combining global admin and centre admin in
+one test actor, so a single helper covers assertions that require either role.
+Log in with `$this->loginAs($teacher)`. Always extract the CSRF token from the
+already-rendered HTML (`$crawler->filter('[name="_token"]')->first()->attr('value')`),
+never hardcode it.
+
 ## Known gotchas
 
 - **`EXTRA_LAZY` + `contains()` after `$em->clear()`**: on a Doctrine `EXTRA_LAZY`
@@ -67,10 +102,18 @@ Common base for integration tests:
   expected state, because the collection doesn't reinitialize the same way a
   regular collection does — if a test fails unintuitively after a `clear()`
   followed by a `contains()`, suspect this before assuming a business-logic bug.
-- **Double `MessageEvent` (queued + sent) when testing the async mailer**: Symfony
-  Messenger dispatches email asynchronously; tests that capture mailer events may
-  see the event both in "queued" and "sent" state for the same send. If your
-  assertion counts events, account for both, don't assume just one.
+- **Double `MessageEvent` (queued + sent) when testing the async mailer**: for
+  any email routed through `async` (see `backend.md`'s Messenger routing note —
+  password reset is the one exception, sent synchronously), `Mailer::send()`
+  dispatches a "queued" `MessageEvent` before handing off to the bus, and a
+  second real one fires when the message is actually processed —
+  `getMailerMessages()`/`getMailerMessage($i)` return **both** per send, so
+  literal indices land on `[queued1, sent1, queued2, sent2, ...]`, not
+  `[sent1, sent2, ...]`. `assertEmailCount()` already filters correctly (it uses
+  an `isQueued: false` constraint internally); for anything else, filter
+  `getMailerEvents()` by `!$event->isQueued()` yourself before reading
+  `->getMessage()` (see `IncidentEmailNotifierTest`'s private `sentMessage()`
+  helper for the pattern).
 - **Unit tests that instantiate services with `new`**: if you add a new parameter
   to a service's constructor (e.g. `ClockInterface $clock`), grep for every
   `new ServiceName(` under `tests/Unit/` — there's no DI to catch the mismatch for

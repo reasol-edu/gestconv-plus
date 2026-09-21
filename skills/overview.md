@@ -13,6 +13,7 @@ centres with completely separate data.
 Depending on the area you're touching, also consult:
 
 - Migrations, repositories, data model → [`database.md`](database.md)
+- Security voters, Messenger, `AppSettings`, PDF generation → [`backend.md`](backend.md)
 - Tests, PHPStan, PHPUnit → [`testing.md`](testing.md)
 - Stimulus, Live Components, Tom Select, icons, Tailwind → [`frontend.md`](frontend.md)
 - Translations → [`i18n.md`](i18n.md)
@@ -67,9 +68,9 @@ Depending on the area you're touching, also consult:
 | `Repository/` | Repositories with named methods (see `database.md`, PHPStan rule) |
 | `Service/` | Business logic not tied to HTTP (builders, exporters, checkers…) |
 | `Twig/Components/` | Live Components (calendar, live-filtered listings) |
-| `Security/Voter/` | Per-entity authorization voters (Sanction, Absence, IncidentReport…) |
-| `MessageHandler/` / `Message/` | Symfony Messenger handlers (purges, reminders, warnings) |
-| `EventSubscriber/` | Subscribers (tenant, activity logging) |
+| `Security/Voter/` | Per-entity authorization voters (Sanction, Absence, IncidentReport…), see `backend.md` |
+| `MessageHandler/` / `Message/` | Symfony Messenger handlers (purges, reminders, warnings), see `backend.md` |
+| `EventSubscriber/` | Subscribers (tenant, activity logging), see `backend.md` |
 | `Command/` | Console commands (`app:setup`, `app:create-admin`, `app:create-educational-centre`) |
 | `Autocomplete/` | `symfony/ux-autocomplete` autocompleters |
 | `Dto/` | Complex form objects (incident report, sanction) |

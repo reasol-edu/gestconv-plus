@@ -54,7 +54,15 @@ a migration from the wrong folder from running by mistake if `MIGRATIONS_PATH`
 were misconfigured.
 
 Verify manually against a disposable database before considering a migration done
-(there's no automated suite that runs them against all three platforms).
+(there's no automated suite that runs them against all three platforms):
+
+- SQLite: `DATABASE_URL="sqlite:////tmp/algo.sqlite" php bin/console doctrine:migrations:migrate`
+  — note the **four** slashes for an absolute path (three fails with "unable to
+  open database file"); `rm -f` the file afterward.
+- PostgreSQL: no local `psql` is assumed — use `php bin/console doctrine:database:create`
+  / `doctrine:database:drop --force` with a `DATABASE_URL` pointing at a disposable
+  database name (same credentials as `.env.local`). Migrate **and** check `down()`
+  before dropping it.
 
 ## Repositories: named methods only, never generic access
 
@@ -95,4 +103,12 @@ requires it.
 - Primary key: `Uuid` (v7) via `symfony/uid`, not integers.
 - For file-typed values attached to a setting/entity, use the generic,
   hash-deduplicated storage (a generic table + FK from the value row, keyed by
-  SHA-256 hash) instead of creating a table specific to a single use case.
+  SHA-256 hash) instead of creating a table specific to a single use case. This
+  applies when a file could plausibly be referenced from more than one place
+  (settings at multiple hierarchy levels, or a reused asset) — an attachment
+  owned 1:1 by a single parent entity (e.g. `ActivityAttachment`,
+  `SanctionTaskAttachment`) doesn't need it. On replace/delete, run the
+  orphan-cleanup step so a file no longer referenced by any value row gets
+  deleted rather than accumulating unbounded. See `backend.md` for how
+  `AppSettings` resolves the effective value (including file-valued settings)
+  across the global/centre/teacher hierarchy.
