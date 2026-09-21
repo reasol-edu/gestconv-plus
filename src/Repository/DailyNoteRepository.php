@@ -124,7 +124,9 @@ class DailyNoteRepository extends ServiceEntityRepository
 
     /**
      * Notas de un estudiante en el curso, de más reciente a más antigua (para la ficha del
-     * alumno, sin restricción de visibilidad — la propia ficha ya está protegida aparte).
+     * alumno, sin restricción de visibilidad — la propia ficha ya está protegida aparte). Se
+     * excluyen las notas de tipos actualmente desactivados: dejan de contar y de mostrarse en la
+     * ficha, aunque la nota en sí siga existiendo.
      *
      * @return Query<null, DailyNote>
      */
@@ -136,6 +138,7 @@ class DailyNoteRepository extends ServiceEntityRepository
             ->join('n.type', 'ty')
             ->where('n.student = :student')
             ->andWhere('n.academicYear = :year')
+            ->andWhere('ty.active = true')
             ->setParameter('student', $student->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('n.occurredAt', 'DESC')
