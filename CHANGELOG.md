@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2026-09-21
+
+### Fixed
+
+- En **Oferta formativa**, los mensajes de confirmación (guardado, eliminado…) ya no se quedaban ocultos hasta cambiar de sección: aparecían todos de golpe al abrir otra pantalla en vez de mostrarse al momento. Ahora se muestran de inmediato, igual que en el resto de la aplicación.
+
 ## [1.2.1] - 2026-09-21
 
 ### Fixed
