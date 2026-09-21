@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-09-21
+
+### Fixed
+
+- En la ficha del alumno, las notas diarias de un tipo de nota ya desactivado en la configuración del centro dejan de mostrarse en el historial y en los contadores por tipo.
+
 ## [1.2.0] - 2026-09-20
 
 ### Added
