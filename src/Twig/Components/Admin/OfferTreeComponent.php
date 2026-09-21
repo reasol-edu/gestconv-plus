@@ -24,6 +24,7 @@ use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Symfony\UX\LiveComponent\ComponentToolsTrait;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
@@ -34,6 +35,7 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 class OfferTreeComponent extends AbstractController
 {
     use DefaultActionTrait;
+    use ComponentToolsTrait;
 
     #[LiveProp]
     public EducationalCentre $centre;
@@ -286,7 +288,7 @@ class OfferTreeComponent extends AbstractController
 
         $this->em->flush();
         $this->errors = [];
-        $this->addFlash('success', $this->t($selected['type'] . '.flash.saved'));
+        $this->flashSuccess($this->t($selected['type'] . '.flash.saved'));
     }
 
     #[LiveAction]
@@ -315,9 +317,9 @@ class OfferTreeComponent extends AbstractController
         try {
             $this->em->remove($selected['entity']);
             $this->em->flush();
-            $this->addFlash('success', $this->t($type . '.flash.deleted'));
+            $this->flashSuccess($this->t($type . '.flash.deleted'));
         } catch (\Exception) {
-            $this->addFlash('error', $this->t($type . '.flash.delete_error'));
+            $this->flashError($this->t($type . '.flash.delete_error'));
 
             return;
         }
@@ -348,7 +350,7 @@ class OfferTreeComponent extends AbstractController
             fn (Teacher $t) => $group->removeTutor($t),
         );
         $this->em->flush();
-        $this->addFlash('success', $this->t('group.flash.saved'));
+        $this->flashSuccess($this->t('group.flash.saved'));
     }
 
     #[LiveAction]
@@ -379,7 +381,7 @@ class OfferTreeComponent extends AbstractController
 
         $this->newTeacherId = $this->newTeacherSubject = '';
         $this->errors = [];
-        $this->addFlash('success', $this->t('group.flash.saved'));
+        $this->flashSuccess($this->t('group.flash.saved'));
     }
 
     #[LiveAction]
@@ -406,7 +408,7 @@ class OfferTreeComponent extends AbstractController
 
         $group->removeTeacherAssignment($assignment);
         $this->em->flush();
-        $this->addFlash('success', $this->t('group.flash.saved'));
+        $this->flashSuccess($this->t('group.flash.saved'));
     }
 
     private function resolveTeacher(string $id): ?Teacher
@@ -457,5 +459,21 @@ class OfferTreeComponent extends AbstractController
     private function t(string $key): string
     {
         return $this->translator->trans($key, [], 'admin');
+    }
+
+    /**
+     * LiveAction responses only re-render this component's fragment, not the
+     * layout, so a plain addFlash() never reaches the page until the next
+     * full navigation. Dispatch a browser event instead so the layout's JS
+     * can render the flash immediately.
+     */
+    private function flashSuccess(string $message): void
+    {
+        $this->dispatchBrowserEvent('flash:show', ['type' => 'success', 'message' => $message]);
+    }
+
+    private function flashError(string $message): void
+    {
+        $this->dispatchBrowserEvent('flash:show', ['type' => 'error', 'message' => $message]);
     }
 }
