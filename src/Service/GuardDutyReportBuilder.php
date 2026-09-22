@@ -54,8 +54,9 @@ class GuardDutyReportBuilder
         uasort($byTime, static fn (array $a, array $b): int => $a['startTime'] <=> $b['startTime']);
 
         $rows = [];
-        foreach ($byTime as $entry) {
+        foreach ($byTime as $timeKey => $entry) {
             $rows[] = new GuardDutyRow(
+                $timeKey,
                 implode(' / ', array_keys($entry['names'])),
                 $entry['startTime'],
                 $entry['endTime'],

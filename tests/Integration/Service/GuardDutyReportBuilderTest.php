@@ -48,6 +48,7 @@ class GuardDutyReportBuilderTest extends RepositoryTestCase
 
         self::assertCount(1, $report->rows);
         $row = $report->rows[0];
+        self::assertSame('08:00:00-08:55:00', $row->key);
         self::assertSame('1ª hora', $row->label);
         self::assertCount(1, $row->guardsByDay[0]);
         self::assertSame('Ana', $row->guardsByDay[0][0]->getName()->getFirstName());

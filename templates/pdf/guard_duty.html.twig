@@ -5,7 +5,7 @@
         {{ 'pdf.guard_duty.title'|trans({}, 'admin') }} · {{ year.name }}
     </p>
 
-    <table class="data-table" style="table-layout:fixed;">
+    <table class="data-table guard-duty-table" style="table-layout:fixed;">
         <colgroup>
             <col style="width:15%;">
             {% for day in 0..4 %}
@@ -30,7 +30,7 @@
                     {% for day in 0..4 %}
                         <td>
                             {% for guard in row.guardsByDay[day] %}
-                                {{ guard.name.lastName }}, {{ guard.name.firstName }}{% if not loop.last %}<br>{% endif %}
+                                <span style="font-size:{{ textSizePercent }}%;">{{ guard.name.firstName }} {{ guard.name.lastName }}</span>{% if not loop.last %}<br>{% endif %}
                             {% else %}
                                 <span class="cell-sub">—</span>
                             {% endfor %}

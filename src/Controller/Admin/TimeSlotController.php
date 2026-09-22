@@ -8,7 +8,9 @@ use App\Controller\TranslatorTrait;
 use App\Entity\EducationalCentre;
 use App\Repository\EducationalCentreRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\GuardDutyReport;
 use App\Service\GuardDutyReportBuilder;
+use App\Service\GuardDutyRow;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\TenantContext;
@@ -26,6 +28,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class TimeSlotController extends AbstractController
 {
     use TranslatorTrait;
+
+    /** Allowed values for the guard-duty PDF's teacher name text size, as a percentage. */
+    public const TEXT_SIZES = [80, 90, 100, 110, 120];
 
     public function __construct(
         private readonly EducationalCentreRepository $centres,
@@ -64,8 +69,8 @@ class TimeSlotController extends AbstractController
         ], true);
     }
 
-    #[Route('/pdf', name: 'app_centre_time_slots_pdf', methods: ['GET'])]
-    public function pdf(string $centreId): Response
+    #[Route('/pdf/opciones', name: 'app_centre_time_slots_pdf_options', methods: ['GET'])]
+    public function pdfOptions(string $centreId): Response
     {
         $centre = $this->requireCentre($centreId);
         $year   = $this->tenantContext->getViewYear($centre);
@@ -74,7 +79,38 @@ class TimeSlotController extends AbstractController
         }
 
         $report = $this->guardDutyReport->build($year);
-        $title  = $this->t('pdf.guard_duty.title');
+
+        return $this->render('admin/time_slot/pdf_options.html.twig', [
+            'centre'    => $centre,
+            'report'    => $report,
+            'textSizes' => self::TEXT_SIZES,
+        ]);
+    }
+
+    #[Route('/pdf', name: 'app_centre_time_slots_pdf', methods: ['GET'])]
+    public function pdf(string $centreId, Request $request): Response
+    {
+        $centre = $this->requireCentre($centreId);
+        $year   = $this->tenantContext->getViewYear($centre);
+        if ($year === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $report = $this->guardDutyReport->build($year);
+        if ($request->query->has('time_slots')) {
+            $selectedKeys = array_values(array_filter($request->query->all('time_slots'), 'is_string'));
+            $report       = new GuardDutyReport(array_values(array_filter(
+                $report->rows,
+                static fn (GuardDutyRow $row): bool => in_array($row->key, $selectedKeys, true),
+            )));
+        }
+
+        $textSize = $request->query->getInt('text_size', 100);
+        if (!in_array($textSize, self::TEXT_SIZES, true)) {
+            $textSize = 100;
+        }
+
+        $title = $this->t('pdf.guard_duty.title');
 
         $header = $this->pdfHeaderBuilder->build('guard_duty', $centre, [
             'title'         => $title,
@@ -85,9 +121,10 @@ class TimeSlotController extends AbstractController
         return $this->pdfRenderer->render(
             'pdf/guard_duty.html.twig',
             [
-                'centre' => $centre,
-                'year'   => $year,
-                'report' => $report,
+                'centre'          => $centre,
+                'year'            => $year,
+                'report'          => $report,
+                'textSizePercent' => $textSize,
             ],
             $title,
             sprintf('profesorado-de-guardia-%s.pdf', $centre->getCode()),

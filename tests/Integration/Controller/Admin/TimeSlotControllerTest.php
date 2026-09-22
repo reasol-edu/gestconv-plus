@@ -91,6 +91,35 @@ class TimeSlotControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    // ── pdf options ──────────────────────────────────────────────────────────
+
+    public function testPdfOptionsRendersFormWithAllTimeSlotsPrechecked(): void
+    {
+        [$cadmin, $centre, , $slot] = $this->makeScenarioWithSlot();
+        $this->loginAs($cadmin);
+
+        $crawler = $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf/opciones');
+
+        self::assertResponseIsSuccessful();
+        $checkbox = $crawler->filter('input[name="time_slots[]"]');
+        self::assertCount(1, $checkbox);
+        self::assertSame($slot->getStartTime()->format('H:i:s') . '-' . $slot->getEndTime()->format('H:i:s'), $checkbox->attr('value'));
+        self::assertNotNull($checkbox->attr('checked'));
+        self::assertSelectorExists('option[value="100"][selected]');
+    }
+
+    public function testPdfOptionsIsDeniedToNonAdmin(): void
+    {
+        [, $centre] = $this->makeScenario();
+        $teacher = $this->makeTeacher('teacher.no.priv.ts.pdfopt');
+        $this->persist($teacher);
+        $this->loginAs($teacher);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf/opciones');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
     // ── pdf ───────────────────────────────────────────────────────────────────
 
     public function testPdfReturnsAPdfDocument(): void
@@ -127,6 +156,57 @@ class TimeSlotControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
         self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPdfWithTimeSlotsFilterStillGenerates(): void
+    {
+        [$cadmin, $centre, $year] = $this->makeScenarioWithSlot();
+        $recreo = (new TimeSlot())
+            ->setAcademicYear($year)
+            ->setName('Recreo')
+            ->setDayOfWeek(0)
+            ->setStartTime(\DateTimeImmutable::createFromFormat('H:i', '11:00'))
+            ->setEndTime(\DateTimeImmutable::createFromFormat('H:i', '11:30'));
+        $this->persist($recreo);
+        $this->loginAs($cadmin);
+
+        $this->client->request(
+            'GET',
+            '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf?' . http_build_query([
+                'time_slots' => ['08:00:00-08:55:00'],
+                'text_size'  => '110',
+            ]),
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+    }
+
+    public function testPdfWithUnknownTimeSlotKeyRendersEmptyTable(): void
+    {
+        [$cadmin, $centre] = $this->makeScenarioWithSlot();
+        $this->loginAs($cadmin);
+
+        $this->client->request(
+            'GET',
+            '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf?' . http_build_query([
+                'time_slots' => ['no-such-key'],
+            ]),
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+    }
+
+    public function testPdfWithInvalidTextSizeFallsBackToDefault(): void
+    {
+        [$cadmin, $centre] = $this->makeScenarioWithSlot();
+        $this->loginAs($cadmin);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tramos-horarios/pdf?text_size=999');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
     }
 
     public function testPdfReturns404WithoutActiveYear(): void
