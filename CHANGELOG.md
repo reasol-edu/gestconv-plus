@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-09-22
+
+### Added
+
+- El PDF de **profesorado de guardia** (en "Centro educativo › Tramos horarios") muestra ahora una pantalla previa de opciones antes de generarse: permite elegir qué tramos horarios incluir (todos seleccionados por defecto) y el tamaño del texto de los nombres del profesorado (80%, 90%, 100%, 110% o 120%, siendo 100% el valor por defecto).
+
+### Changed
+
+- En el PDF de profesorado de guardia, la tabla incorpora líneas verticales entre columnas para separar mejor los días de la semana, y los nombres del profesorado pasan a mostrarse como «Nombre Apellidos» en vez de «Apellidos, Nombre».
+
 ## [1.2.2] - 2026-09-21
 
 ### Fixed

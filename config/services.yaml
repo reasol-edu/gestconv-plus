@@ -9,8 +9,8 @@
 parameters:
     # Versión de la aplicación
     app.name:                   "GestConv+"
-    app.version:                "1.2.2"
-    app.pub_date:               "2026-09-21"
+    app.version:                "1.3.0"
+    app.pub_date:               "2026-09-22"
     # Tiempo mínimo (en microsegundos) que tarda la rama POST de la solicitud
     # de restablecimiento de contraseña. Iguala las dos ramas (usuario existe /
     # no existe) para que el envío síncrono del correo no permita enumerar
