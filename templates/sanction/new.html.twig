@@ -69,6 +69,12 @@
                                class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
                         <div class="flex-1 min-w-0">
                             <span class="text-sm text-gray-800 font-mono">#{{ report.number }}</span>
+                            {% if report.behaviors|filter(b => b.serious)|length > 0 %}
+                                <span class="inline-flex items-center rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-xs font-medium ml-2">
+                                    {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3 w-3 mr-0.5'}) }}
+                                    {{ 'incident.badge.serious'|trans({}, 'admin') }}
+                                </span>
+                            {% endif %}
                             <span class="text-xs text-gray-500 ml-2">{{ report.occurredAt|date('format.datetime'|trans) }}</span>
                             {% if report.location %}
                                 <span class="text-xs text-gray-500 ml-2">{{ report.location.name }}</span>
