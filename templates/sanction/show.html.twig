@@ -256,35 +256,41 @@
         </div>
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs divide-y divide-gray-100">
             {% for task in sanction.tasks %}
-                <div class="px-6 py-3 flex items-center justify-between gap-3 text-sm">
-                    <div class="min-w-0">
+                <div class="px-6 py-3 flex items-center gap-3 text-sm">
+                    <div class="min-w-0 flex-1">
                         <span class="font-medium text-gray-800">{{ task.groupTeacher.subject }}</span>
                         <span class="ml-2 text-xs text-gray-500">{{ task.groupTeacher.teacher.name.lastName }}, {{ task.groupTeacher.teacher.name.firstName }}</span>
                     </div>
-                    {% if task.notApplicable %}
-                        <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-600 px-2.5 py-0.5 text-xs font-medium shrink-0">
-                            {{ ux_icon('heroicons:no-symbol', {class: 'h-3 w-3'}) }}
-                            {{ 'sanction_task.status.not_applicable'|trans({}, 'admin') }}
-                        </span>
-                    {% elseif task.completed %}
-                        <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-0.5 text-xs font-medium shrink-0">
-                            {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
-                            {{ 'sanction_task.status.completed'|trans({}, 'admin') }}
-                        </span>
-                    {% else %}
-                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-medium shrink-0">
-                            {{ ux_icon('heroicons:clock', {class: 'h-3 w-3'}) }}
-                            {{ 'sanction_task.status.pending'|trans({}, 'admin') }}
-                        </span>
-                    {% endif %}
-                    {% if is_granted('sanction_task.edit', task) and not is_viewing_past_year() %}
-                        <a href="{{ path('app_sanction_tasks_edit', {id: sanction.id, taskId: task.id}) }}"
-                           class="inline-flex items-center justify-center rounded-lg border border-gray-200 p-1.5 text-gray-500
-                                  hover:bg-gray-50 hover:text-forest-700 hover:border-gray-300 transition-colors shrink-0"
-                           title="{{ 'sanction_task.action.edit'|trans({}, 'admin') }}">
-                            {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
-                        </a>
-                    {% endif %}
+                    <div class="flex items-center gap-2 shrink-0">
+                        {% if task.notApplicable %}
+                            <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-600 px-2.5 py-0.5 text-xs font-medium">
+                                {{ ux_icon('heroicons:no-symbol', {class: 'h-3 w-3'}) }}
+                                {{ 'sanction_task.status.not_applicable'|trans({}, 'admin') }}
+                            </span>
+                        {% elseif task.completed %}
+                            <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-0.5 text-xs font-medium">
+                                {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
+                                {{ 'sanction_task.status.completed'|trans({}, 'admin') }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-medium">
+                                {{ ux_icon('heroicons:clock', {class: 'h-3 w-3'}) }}
+                                {{ 'sanction_task.status.pending'|trans({}, 'admin') }}
+                            </span>
+                        {% endif %}
+                        {% if is_granted('sanction_task.edit', task) and not is_viewing_past_year() %}
+                            <a href="{{ path('app_sanction_tasks_edit', {id: sanction.id, taskId: task.id}) }}"
+                               class="inline-flex items-center justify-center rounded-lg border border-gray-200 p-1.5 text-gray-500
+                                      hover:bg-gray-50 hover:text-forest-700 hover:border-gray-300 transition-colors"
+                               title="{{ 'sanction_task.action.edit'|trans({}, 'admin') }}">
+                                {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
+                            </a>
+                        {% else %}
+                            <span class="invisible inline-flex items-center justify-center rounded-lg border border-gray-200 p-1.5" aria-hidden="true">
+                                {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
             {% endfor %}
         </div>
