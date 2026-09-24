@@ -239,24 +239,22 @@
                         </td>
 
                         <td data-label="Datos" class="px-6 py-3">
-                            {% if entry.data is not null and entry.data.changes is defined %}
+                            {% set rows = entry.data|activity_log_rows %}
+                            {% if rows is empty %}
+                                <span class="text-gray-300 text-xs">—</span>
+                            {% else %}
                                 <ul class="space-y-0.5 text-xs text-gray-600">
-                                    {% for field, change in entry.data.changes %}
-                                        {% set before = change.before is same as(true) ? 'Sí' : (change.before is same as(false) ? 'No' : (change.before is null ? '—' : change.before)) %}
-                                        {% set after = change.after is same as(true) ? 'Sí' : (change.after is same as(false) ? 'No' : (change.after is null ? '—' : change.after)) %}
+                                    {% for row in rows %}
                                         <li>
-                                            <span class="font-mono text-gray-500">{{ field }}:</span>
-                                            {{ before }} → {{ after }}
+                                            <span class="font-mono text-gray-500">{{ row.label }}:</span>
+                                            {% if row.type == 'change' %}
+                                                {{ row.before }} → {{ row.after }}
+                                            {% else %}
+                                                {{ row.value }}
+                                            {% endif %}
                                         </li>
                                     {% endfor %}
                                 </ul>
-                            {% elseif entry.data is not null %}
-                                <code class="block max-w-xs truncate text-xs text-gray-500 font-mono"
-                                      title="{{ entry.data|json_encode }}">
-                                    {{ entry.data|json_encode }}
-                                </code>
-                            {% else %}
-                                <span class="text-gray-300 text-xs">—</span>
                             {% endif %}
                         </td>
 
