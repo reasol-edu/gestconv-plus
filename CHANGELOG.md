@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-09-24
+
+### Changed
+
+- El registro de actividad (administración) muestra ahora el detalle de cada entrada como una lista legible de campo y valor, con las claves traducidas y los valores formateados (booleanos, listas, ausencia de dato), en vez del JSON crudo truncado de antes.
+
 ## [1.3.3] - 2026-09-24
 
 ### Added
