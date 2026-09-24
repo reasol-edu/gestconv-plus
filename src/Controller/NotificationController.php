@@ -259,9 +259,121 @@ class NotificationController extends AbstractController
         ]);
     }
 
+    #[Route('/sanciones/estudiante/{studentId}/registrar', name: 'app_notifications_register_student_sanctions', methods: ['GET', 'POST'])]
+    public function registerForStudentSanctions(string $studentId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
+    {
+        $this->denyIfViewingPastYear($centre);
+
+        $student = $this->students->findById($studentId);
+        if ($student === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $user = $this->getUser();
+        if (!$user instanceof Teacher) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $notifierSetting = $this->sanctionNotifierSetting($centre);
+        $year            = $this->tenantContext->getViewYear($centre);
+        $sanctions       = $year === null
+            ? []
+            : $this->sanctions->createNotifiableQuery($centre, $user, $notifierSetting, $year, $student)->getResult();
+
+        if ($sanctions === []) {
+            $this->addFlash('error', $this->t('notification.flash.no_notifiable_sanctions'));
+
+            return $this->redirectToRoute('app_notifications_index');
+        }
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('register_student_sanctions_' . $studentId, $request->request->getString('_token'))) {
+                throw $this->createAccessDeniedException();
+            }
+
+            /** @var array<string, Sanction> $permittedById */
+            $permittedById = [];
+            foreach ($sanctions as $sanction) {
+                $permittedById[$sanction->getId()->toRfc4122()] = $sanction;
+            }
+
+            $selected = [];
+            foreach ($request->request->all('sanction_ids') as $id) {
+                if (is_string($id) && isset($permittedById[$id])) {
+                    $selected[] = $permittedById[$id];
+                }
+            }
+
+            $input = $selected !== [] ? $this->parseCommunicationInput($centre, $request) : null;
+
+            if ($selected === [] || $input === null) {
+                $this->addFlash('error', $this->t('notification.flash.invalid'));
+
+                return $this->redirectToRoute('app_notifications_register_student_sanctions', ['studentId' => $studentId]);
+            }
+
+            /** @var list<Sanction> $newlyNotified */
+            $newlyNotified = [];
+
+            /** @var list<array{Communication, Sanction}> $createdCommunications */
+            $createdCommunications = [];
+
+            foreach ($selected as $sanction) {
+                $communication = Communication::forSanction(
+                    $sanction,
+                    $input['method'],
+                    $user,
+                    $input['performedAt'],
+                    $input['result'],
+                    $input['description'],
+                );
+                $this->em->persist($communication);
+                $createdCommunications[] = [$communication, $sanction];
+
+                if ($input['result'] === CommunicationResult::Notified && !$sanction->isNotified()) {
+                    $sanction->setNotifiedCommunication($communication);
+                    $newlyNotified[] = $sanction;
+                }
+            }
+
+            $this->em->flush();
+
+            foreach ($newlyNotified as $sanction) {
+                $this->notifier->sanctionNotified($sanction, $user);
+            }
+
+            foreach ($createdCommunications as [$communication, $sanction]) {
+                $this->activityLog->log('communication.registered', [
+                    'entityId'   => $communication->getId()->toRfc4122(),
+                    'sanctionId' => $sanction->getId()->toRfc4122(),
+                    'method'     => $input['method']->getName(),
+                    'result'     => $input['result']->value,
+                ]);
+            }
+
+            $this->addFlash('success', $this->t('notification.flash.registered'));
+
+            return $this->redirectToRoute('app_notifications_index');
+        }
+
+        return $this->render('notification/register_student_sanctions.html.twig', [
+            'centre'    => $centre,
+            'student'   => $student,
+            'sanctions' => $sanctions,
+            'methods'   => $this->methods->findActiveByCentreOrdered($centre),
+        ]);
+    }
+
     private function reportNotifierSetting(EducationalCentre $centre): string
     {
         $setting = $this->settings->getForCentre('notifications.report_notifier', $centre);
+
+        return is_string($setting) ? $setting : 'both';
+    }
+
+    private function sanctionNotifierSetting(EducationalCentre $centre): string
+    {
+        $setting = $this->settings->getForCentre('notifications.sanction_notifier', $centre);
 
         return is_string($setting) ? $setting : 'both';
     }

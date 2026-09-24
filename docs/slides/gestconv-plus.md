@@ -209,18 +209,18 @@ El parte pasa a **"Notificado"** y queda en el historial.
 
 <!-- _class: tight -->
 
-## Notificar varios partes a la vez de un mismo estudiante
+## Notificar varios partes o sanciones a la vez de un mismo estudiante
 
 ![bg right:35% fit](../manual/img/notificaciones/parte-badge-notificado.png)
 
-- Si un estudiante acumula **varios partes pendientes de notificar**,
-  cualquier docente que pueda notificarlos puede hacerlo **en un solo paso**,
-  en lugar de repetir el proceso parte a parte.
-- Se seleccionan los partes que se quieren incluir en la comunicación y se
+- Si un estudiante acumula **varios partes o sanciones pendientes de
+  notificar**, cualquier docente que pueda notificarlos puede hacerlo **en un
+  solo paso**, en lugar de repetir el proceso uno a uno.
+- Se seleccionan los elementos que se quieren incluir en la comunicación y se
   registra **un único método, fecha y resultado** para todos ellos.
 - Esta opción **no es exclusiva de los tutores/as**: está disponible para
-  cualquier docente con permiso de notificación sobre esos partes, según el
-  ajuste "quién notifica" configurado por el centro.
+  cualquier docente con permiso de notificación sobre esos partes o
+  sanciones, según el ajuste "quién notifica" configurado por el centro.
 
 ---
 

@@ -264,10 +264,11 @@ también ve ahí, y en la tarjeta **Notas que implican parte** del [panel de ini
 los estudiantes que han alcanzado el umbral de un tipo de nota (ver
 [Listado de estudiantes](#listado-de-estudiantes)).
 
-Antes de las colas de partes y sanciones, la pestaña muestra los **estudiantes con partes
-pendientes de notificar** (solo los que el docente puede notificar), ordenados de más a menos
-partes. El botón **Notificar partes** de cada fila abre la pantalla de notificación en bloque
-(ver más abajo).
+Antes de las colas de partes y sanciones, la pestaña muestra los **estudiantes con notificaciones
+pendientes** (solo lo que el docente puede notificar), con una columna de partes pendientes y otra
+de sanciones pendientes, ordenados de más a menos elementos en total. Cada fila muestra el botón
+**Notificar partes** y/o **Notificar sanciones** según de qué tenga pendiente ese estudiante; cada
+uno abre su propia pantalla de notificación en bloque (ver más abajo).
 
 Cada elemento de la cola muestra su **antigüedad** (los días transcurridos desde que se
 registró), destacada en ámbar a partir de tres días y en rojo a partir de siete, para localizar
@@ -312,14 +313,15 @@ El detalle de un parte o de una sanción muestra un indicador de estado (**Notif
 
 ![Indicador de notificado en el detalle de un parte](img/notificaciones/parte-badge-notificado.png)
 
-### Notificar varios partes a la vez
+### Notificar varios partes o sanciones a la vez
 
-Desde el listado de **estudiantes con partes pendientes de notificar**, la pantalla **Notificar
+Desde el listado de **estudiantes con notificaciones pendientes**, la pantalla **Notificar
 partes** reúne todos los partes de ese estudiante que el docente puede notificar, cada uno con
-una casilla (marcadas todas por defecto) y sus detalles desplegables. Los datos de la
-comunicación (método, fecha y hora, resultado y observaciones) se rellenan una única vez y se
-aplican a todos los partes marcados: se crea una comunicación independiente por cada uno, igual
-que si se notificaran de uno en uno.
+una casilla (marcadas todas por defecto) y sus detalles desplegables; **Notificar sanciones** hace
+lo mismo con sus sanciones, mostrando las medidas aplicadas y el detalle de cada una. En ambas
+pantallas, los datos de la comunicación (método, fecha y hora, resultado y observaciones) se
+rellenan una única vez y se aplican a todos los elementos marcados: se crea una comunicación
+independiente por cada uno, igual que si se notificaran de uno en uno.
 
 ### Historial de notificaciones
 

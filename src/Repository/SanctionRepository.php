@@ -377,6 +377,132 @@ class SanctionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Builds a pageable query for non-notified sanctions the viewer is actually authorised to
+     * notify, mirroring SanctionVoter::NOTIFY (stricter than the plain view-based visibility of
+     * {@see findPendingNotification()}): counselors are NOT granted notify rights just by their
+     * role, only admins, committee members, the sanction's registrant or the group's tutor(s),
+     * depending on the centre's "notifications.sanction_notifier" setting.
+     *
+     * @param 'report_teacher'|'group_tutor'|'both'|string $notifierSetting
+     * @return Query<null, Sanction>
+     */
+    public function createNotifiableQuery(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        string $notifierSetting,
+        AcademicYear $year,
+        ?Student $student = null,
+    ): Query {
+        $qb = $this->buildNotifiableQueryBuilder($centre, $viewer, $notifierSetting, $year)
+            ->orderBy('s.createdAt', 'ASC');
+
+        if ($student !== null) {
+            $qb->andWhere('s.student = :student')
+               ->setParameter('student', $student->getId(), 'uuid');
+        }
+
+        return $qb->getQuery();
+    }
+
+    /**
+     * Students with at least one pending sanction the viewer is authorised to notify, with their
+     * pending count, ordered by count descending then student name ascending.
+     *
+     * Rooted at Student (rather than reusing {@see buildNotifiableQueryBuilder()} directly)
+     * because Doctrine DQL forbids selecting a joined entity as a full object without also
+     * selecting the root entity alias.
+     *
+     * @param 'report_teacher'|'group_tutor'|'both'|string $notifierSetting
+     * @return list<array{student: Student, count: int}>
+     */
+    public function findNotifiableSummaryByStudent(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        string $notifierSetting,
+        AcademicYear $year,
+    ): array {
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->select('st', 'COUNT(s.id) AS sanctionCount')
+            ->from(Student::class, 'st')
+            ->join(Sanction::class, 's', 'WITH', 's.student = st')
+            ->join('s.group', 'g')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('ay = :year')
+            ->andWhere('s.notifiedCommunication IS NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->groupBy('st.id')
+            ->orderBy('COUNT(s.id)', 'DESC')
+            ->addOrderBy('st.name.lastName', 'ASC')
+            ->addOrderBy('st.name.firstName', 'ASC');
+
+        $this->applyNotifiableRestriction($qb, $centre, $viewer, $notifierSetting);
+
+        /** @var list<array{0: Student, sanctionCount: int|string}> $rows */
+        $rows = $qb->getQuery()->getResult();
+
+        return array_map(
+            static fn (array $row): array => ['student' => $row[0], 'count' => (int) $row['sanctionCount']],
+            $rows,
+        );
+    }
+
+    /**
+     * @param 'report_teacher'|'group_tutor'|'both'|string $notifierSetting
+     */
+    private function buildNotifiableQueryBuilder(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        string $notifierSetting,
+        AcademicYear $year,
+    ): QueryBuilder {
+        $qb = $this->createQueryBuilder('s')
+            ->join('s.group', 'g')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('ay = :year')
+            ->andWhere('s.notifiedCommunication IS NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid');
+
+        $this->applyNotifiableRestriction($qb, $centre, $viewer, $notifierSetting);
+
+        return $qb;
+    }
+
+    /**
+     * Applies the SanctionVoter::NOTIFY restriction to a query builder that already has 's'
+     * (Sanction) and 'g' (Group) aliases joined, regardless of which entity is the DQL root.
+     * Mirrors the voter's full-access bypass (admins and committee members — unlike the report
+     * voter, counselors are NOT included here).
+     *
+     * @param 'report_teacher'|'group_tutor'|'both'|string $notifierSetting
+     */
+    private function applyNotifiableRestriction(
+        QueryBuilder $qb,
+        EducationalCentre $centre,
+        Teacher $viewer,
+        string $notifierSetting,
+    ): void {
+        if ($viewer->isAdmin() || $centre->getAdmins()->contains($viewer) || $centre->getCommitteeMembers()->contains($viewer)) {
+            return;
+        }
+
+        match ($notifierSetting) {
+            'report_teacher' => $qb->andWhere('s.registeredBy = :viewer')
+                ->setParameter('viewer', $viewer->getId(), 'uuid'),
+            'group_tutor' => $qb->andWhere(':viewer MEMBER OF g.tutors')
+                ->setParameter('viewer', $viewer->getId(), 'uuid'),
+            default => $qb->andWhere(
+                $qb->expr()->orX('s.registeredBy = :viewer', ':viewer MEMBER OF g.tutors')
+            )->setParameter('viewer', $viewer->getId(), 'uuid'),
+        };
+    }
+
+    /**
      * Returns all sanctions with a start date set for the given academic year, ordered by start date.
      * Not filtered by viewer: the calendar shows every dated sanction of the year to any teacher.
      *

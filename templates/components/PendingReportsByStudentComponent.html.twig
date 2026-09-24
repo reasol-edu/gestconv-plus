@@ -23,7 +23,8 @@
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.index.col.student'|trans({}, 'notifications') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.index.col.pending_count'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.index.col.pending_reports_count'|trans({}, 'notifications') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'notification.index.col.pending_sanctions_count'|trans({}, 'notifications') }}</th>
                         <th scope="col" class="px-6 py-3"></th>
                     </tr>
                 </thead>
@@ -34,21 +35,45 @@
                                 class="px-6 py-3 text-gray-800 font-medium">
                                 {{ row.student.name.lastName }}, {{ row.student.name.firstName }}
                             </td>
-                            <td data-label="{{ 'notification.index.col.pending_count'|trans({}, 'notifications')|e('html_attr') }}"
+                            <td data-label="{{ 'notification.index.col.pending_reports_count'|trans({}, 'notifications')|e('html_attr') }}"
                                 class="px-6 py-3">
-                                <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-semibold">
-                                    {{ row.count }}
-                                </span>
+                                {% if row.reportCount > 0 %}
+                                    <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-semibold">
+                                        {{ row.reportCount }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-gray-300">—</span>
+                                {% endif %}
                             </td>
-                            <td class="px-6 py-3 w-56">
-                                <div class="flex items-center justify-end">
+                            <td data-label="{{ 'notification.index.col.pending_sanctions_count'|trans({}, 'notifications')|e('html_attr') }}"
+                                class="px-6 py-3">
+                                {% if row.sanctionCount > 0 %}
+                                    <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-semibold">
+                                        {{ row.sanctionCount }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-gray-300">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-3 w-72">
+                                <div class="flex items-center justify-end gap-2">
                                     {% if not is_viewing_past_year() %}
-                                        <a href="{{ path('app_notifications_register_student_reports', {studentId: row.student.id}) }}"
-                                           class="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-1.5 text-xs font-semibold text-white
-                                                  hover:bg-forest-700 transition-colors shadow-xs">
-                                            {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}
-                                            {{ 'notification.index.notify_student'|trans({}, 'notifications') }}
-                                        </a>
+                                        {% if row.reportCount > 0 %}
+                                            <a href="{{ path('app_notifications_register_student_reports', {studentId: row.student.id}) }}"
+                                               class="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-1.5 text-xs font-semibold text-white
+                                                      hover:bg-forest-700 transition-colors shadow-xs">
+                                                {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}
+                                                {{ 'notification.index.notify_student'|trans({}, 'notifications') }}
+                                            </a>
+                                        {% endif %}
+                                        {% if row.sanctionCount > 0 %}
+                                            <a href="{{ path('app_notifications_register_student_sanctions', {studentId: row.student.id}) }}"
+                                               class="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-1.5 text-xs font-semibold text-white
+                                                      hover:bg-forest-700 transition-colors shadow-xs">
+                                                {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}
+                                                {{ 'notification.index.notify_student_sanctions'|trans({}, 'notifications') }}
+                                            </a>
+                                        {% endif %}
                                     {% endif %}
                                 </div>
                             </td>

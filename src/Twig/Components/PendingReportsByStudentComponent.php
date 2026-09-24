@@ -9,6 +9,7 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\IncidentReportRepository;
+use App\Repository\SanctionRepository;
 use App\Service\AppSettings;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,9 +18,10 @@ use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
- * Students with pending-to-notify reports the viewer is authorised to notify, sorted by
- * count descending. Paginated in-memory since the underlying query is a GROUP BY over a
- * dataset expected to stay small (distinct students per centre with pending reports).
+ * Students with pending-to-notify reports and/or sanctions the viewer is authorised to notify,
+ * sorted by total pending count descending. Paginated in-memory since the underlying queries are
+ * GROUP BY over a dataset expected to stay small (distinct students per centre with something
+ * pending).
  */
 #[AsLiveComponent]
 class PendingReportsByStudentComponent extends AbstractController
@@ -32,6 +34,7 @@ class PendingReportsByStudentComponent extends AbstractController
 
     public function __construct(
         private readonly IncidentReportRepository $reports,
+        private readonly SanctionRepository $sanctions,
         private readonly AppSettings $appSettings,
         private readonly TenantContext $tenantContext,
     ) {}
@@ -44,7 +47,7 @@ class PendingReportsByStudentComponent extends AbstractController
         $this->centre = $centre;
     }
 
-    /** @return Paginator<array{student: Student, count: int}> */
+    /** @return Paginator<array{student: Student, reportCount: int, sanctionCount: int}> */
     public function getPagination(): Paginator
     {
         $user = $this->getUser();
@@ -61,13 +64,23 @@ class PendingReportsByStudentComponent extends AbstractController
             return Paginator::fromArray([], 0, $page, $pageSize);
         }
 
-        $notifierSetting = $this->appSettings->getForCentre('notifications.report_notifier', $this->centre);
-        $summary         = $this->reports->findNotifiableSummaryByStudent(
+        $reportNotifierSetting = $this->appSettings->getForCentre('notifications.report_notifier', $this->centre);
+        $reportSummary         = $this->reports->findNotifiableSummaryByStudent(
             $this->centre,
             $user,
-            is_string($notifierSetting) ? $notifierSetting : 'both',
+            is_string($reportNotifierSetting) ? $reportNotifierSetting : 'both',
             $year,
         );
+
+        $sanctionNotifierSetting = $this->appSettings->getForCentre('notifications.sanction_notifier', $this->centre);
+        $sanctionSummary         = $this->sanctions->findNotifiableSummaryByStudent(
+            $this->centre,
+            $user,
+            is_string($sanctionNotifierSetting) ? $sanctionNotifierSetting : 'both',
+            $year,
+        );
+
+        $summary = $this->mergeSummaries($reportSummary, $sanctionSummary);
 
         return Paginator::fromArray(
             array_slice($summary, $offset, $pageSize),
@@ -75,5 +88,58 @@ class PendingReportsByStudentComponent extends AbstractController
             $page,
             $pageSize,
         );
+    }
+
+    /**
+     * Merges the per-entity-type student summaries into a single list, keeping every student
+     * that has at least one pending report or sanction, ordered by combined pending count
+     * descending then student name ascending.
+     *
+     * @param list<array{student: Student, count: int}> $reportSummary
+     * @param list<array{student: Student, count: int}> $sanctionSummary
+     * @return list<array{student: Student, reportCount: int, sanctionCount: int}>
+     */
+    private function mergeSummaries(array $reportSummary, array $sanctionSummary): array
+    {
+        /** @var array<string, array{student: Student, reportCount: int, sanctionCount: int}> $byStudentId */
+        $byStudentId = [];
+
+        foreach ($reportSummary as $row) {
+            $byStudentId[$row['student']->getId()->toRfc4122()] = [
+                'student'       => $row['student'],
+                'reportCount'   => $row['count'],
+                'sanctionCount' => 0,
+            ];
+        }
+
+        foreach ($sanctionSummary as $row) {
+            $id = $row['student']->getId()->toRfc4122();
+            if (isset($byStudentId[$id])) {
+                $byStudentId[$id]['sanctionCount'] = $row['count'];
+            } else {
+                $byStudentId[$id] = [
+                    'student'       => $row['student'],
+                    'reportCount'   => 0,
+                    'sanctionCount' => $row['count'],
+                ];
+            }
+        }
+
+        $summary = array_values($byStudentId);
+
+        usort($summary, static function (array $a, array $b): int {
+            $totalCompare = ($b['reportCount'] + $b['sanctionCount']) <=> ($a['reportCount'] + $a['sanctionCount']);
+            if ($totalCompare !== 0) {
+                return $totalCompare;
+            }
+
+            $lastNameCompare = $a['student']->getName()->getLastName() <=> $b['student']->getName()->getLastName();
+
+            return $lastNameCompare !== 0
+                ? $lastNameCompare
+                : $a['student']->getName()->getFirstName() <=> $b['student']->getName()->getFirstName();
+        });
+
+        return $summary;
     }
 }
