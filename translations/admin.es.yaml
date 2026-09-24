@@ -741,9 +741,9 @@ location.import.error.no_file: 'No se ha seleccionado ningún fichero.'
 location.import.error.invalid_json: 'El fichero no es un JSON válido. Usa un fichero exportado desde esta misma sección con el botón «Exportar configuración».'
 
 # Tramos horarios
-time_slot.title: 'Tramos horarios'
+time_slot.title: 'Tramos horarios y guardias'
 time_slot.hub_help: 'Define los tramos horarios del curso académico y asigna el profesorado de guardia.'
-time_slot.manage: 'Gestionar tramos horarios'
+time_slot.manage: 'Gestionar tramos horarios y guardias'
 time_slot.no_active_year: 'Este centro no tiene un curso académico activo. Establece uno activo para gestionar los tramos horarios.'
 time_slot.col.add: 'Añadir tramo'
 time_slot.col.add_all_days: 'Añadir todos los días'
