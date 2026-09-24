@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-09-24
+
+### Added
+
+- El listado "Estudiantes con partes pendientes de notificar" de la sección Notificaciones pasa a llamarse "Estudiantes con notificaciones pendientes" e incluye una columna de sanciones pendientes junto a la de partes, mostrando también a los estudiantes que solo tienen sanciones sin notificar. Cada fila ofrece un botón "Notificar sanciones" (además del ya existente "Notificar partes") para notificar en bloque todas las sanciones pendientes de ese estudiante.
+
 ## [1.3.2] - 2026-09-24
 
 ### Fixed
