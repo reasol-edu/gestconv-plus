@@ -83,7 +83,7 @@
                 {% set is_active = current_route starts with prefix %}
                 <a href="{{ route }}"
                    {{ is_active ? 'aria-current="page"' : '' }}
-                   class="{{ is_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ is_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon(icon, {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ label }}</span>
@@ -106,7 +106,7 @@
                 {% set tutorship_active = current_route starts with 'app_tutorship' %}
                 <a href="{{ path('app_tutorship_index') }}"
                     {{ tutorship_active ? 'aria-current="page"' : '' }}
-                   class="{{ tutorship_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ tutorship_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:academic-cap', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'tutorship'|trans({}, 'navigation') }}</span>
@@ -118,7 +118,7 @@
                 {% set guards_active = current_route starts with 'app_guards' %}
                 <a href="{{ path('app_guards_index') }}"
                     {{ guards_active ? 'aria-current="page"' : '' }}
-                   class="{{ guards_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ guards_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:shield-check', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ (is_centre_admin() ? 'guards' : 'my_guards')|trans({}, 'navigation') }}</span>
@@ -130,7 +130,7 @@
                 {% set incidents_active = current_route starts with 'app_incidents' %}
                 <a href="{{ path('app_incidents_index') }}"
                     {{ incidents_active ? 'aria-current="page"' : '' }}
-                   class="{{ incidents_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ incidents_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'incident_reports'|trans({}, 'navigation') }}</span>
@@ -142,7 +142,7 @@
                 {% set daily_notes_active = current_route starts with 'app_daily_notes' %}
                 <a href="{{ path('app_daily_notes_index') }}"
                     {{ daily_notes_active ? 'aria-current="page"' : '' }}
-                   class="{{ daily_notes_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ daily_notes_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:pencil-square', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'daily_notes'|trans({}, 'navigation') }}</span>
@@ -154,7 +154,7 @@
                 {% set sanctions_active = current_route starts with 'app_sanctions' %}
                 <a href="{{ path('app_sanctions_index') }}"
                     {{ sanctions_active ? 'aria-current="page"' : '' }}
-                   class="{{ sanctions_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ sanctions_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:scale', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'sanctions'|trans({}, 'navigation') }}</span>
@@ -166,7 +166,7 @@
                 {% set notifications_active = current_route starts with 'app_notifications' %}
                 <a href="{{ path('app_notifications_index') }}"
                     {{ notifications_active ? 'aria-current="page"' : '' }}
-                   class="{{ notifications_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ notifications_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:bell-alert', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'notifications'|trans({}, 'navigation') }}</span>
@@ -178,7 +178,7 @@
                 {% set absences_active = current_route starts with 'app_absences' %}
                 <a href="{{ path('app_absences_index') }}"
                     {{ absences_active ? 'aria-current="page"' : '' }}
-                   class="{{ absences_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ absences_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:user-minus', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'absences'|trans({}, 'navigation') }}</span>
@@ -190,7 +190,7 @@
                 {% set sanction_tasks_active = current_route starts with 'app_sanction_tasks' %}
                 <a href="{{ path('app_sanction_tasks_index') }}"
                     {{ sanction_tasks_active ? 'aria-current="page"' : '' }}
-                   class="{{ sanction_tasks_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ sanction_tasks_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:clipboard-document-list', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'sanction_tasks'|trans({}, 'navigation') }}</span>
@@ -211,7 +211,7 @@
                 {% set reports_active = current_route starts with 'app_reports_' %}
                 <a href="{{ path('app_reports_index', {centreId: active_centre.id}) }}"
                     {{ reports_active ? 'aria-current="page"' : '' }}
-                   class="{{ reports_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ reports_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:chart-bar', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'reports'|trans({}, 'navigation') }}</span>
@@ -223,7 +223,7 @@
                 {% set centre_active = current_route starts with 'app_centre_' %}
                 <a href="{{ path('app_centre_index', {centreId: active_centre.id}) }}"
                     {{ centre_active ? 'aria-current="page"' : '' }}
-                   class="{{ centre_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ centre_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:building-library', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'educational_centre'|trans({}, 'navigation') }}</span>
@@ -236,7 +236,7 @@
                 {% set admin_active = current_route starts with 'app_admin' %}
                 <a href="{{ path('app_admin') }}"
                     {{ admin_active ? 'aria-current="page"' : '' }}
-                   class="{{ admin_active ? 'bg-forest-800 text-white' : 'text-forest-300 hover:bg-forest-900 hover:text-white' }}
+                   class="{{ admin_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:cog-6-tooth', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'administration'|trans({}, 'navigation') }}</span>
