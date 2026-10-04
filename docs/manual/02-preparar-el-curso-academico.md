@@ -39,6 +39,8 @@ La vía recomendada es la importación desde Séneca, disponible en
 
 La vista previa ofrece:
 
+![Vista previa de la importación de docentes, con el resumen, las opciones y la acción de cada fila](img/centro/centro-docentes-importar-vista-previa.png)
+
 - Una **lista de los docentes del fichero** con una casilla por docente (todos marcados por
   defecto) y los botones **Seleccionar todo** y **Seleccionar nada**. Cada fila indica qué
   ocurrirá: *Registrar y añadir* (docente nuevo), *Añadir al curso* (ya existía pero no estaba en
@@ -56,6 +58,8 @@ La vista previa ofrece:
   quieran conservar. Solo se retiran **de este curso**: los docentes siguen existiendo en el
   sistema y en otros cursos. Quien realiza la importación no se ofrece nunca para retirarse.
 - Solo se aplica lo que está marcado al pulsar **Importar la selección**.
+
+![Panel de docentes que se retirarían del curso al activar la opción de retirada](img/centro/centro-docentes-importar-retirar.png)
 
 También se puede añadir un docente de forma manual, uno a uno, desde el mismo apartado — útil
 para altas puntuales durante el curso.

@@ -323,6 +323,10 @@ pantallas, los datos de la comunicación (método, fecha y hora, resultado y obs
 rellenan una única vez y se aplican a todos los elementos marcados: se crea una comunicación
 independiente por cada uno, igual que si se notificaran de uno en uno.
 
+![Pantalla Notificar partes, con los partes pendientes de un estudiante y el formulario de comunicación](img/notificaciones/notificaciones-notificar-partes.png)
+
+![Pantalla Notificar sanciones, con las sanciones pendientes de un estudiante y el formulario de comunicación](img/notificaciones/notificaciones-notificar-sanciones.png)
+
 ### Historial de notificaciones
 
 La pestaña **Historial de notificaciones** reúne, en una única tabla paginada, todas las

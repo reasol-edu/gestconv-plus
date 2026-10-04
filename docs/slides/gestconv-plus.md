@@ -211,7 +211,7 @@ El parte pasa a **"Notificado"** y queda en el historial.
 
 ## Notificar varios partes o sanciones a la vez de un mismo estudiante
 
-![bg right:35% fit](../manual/img/notificaciones/parte-badge-notificado.png)
+![bg right:35% fit](../manual/img/notificaciones/notificaciones-notificar-partes.png)
 
 - Si un estudiante acumula **varios partes o sanciones pendientes de
   notificar**, cualquier docente que pueda notificarlos puede hacerlo **en un

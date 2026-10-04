@@ -104,7 +104,7 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
     retirar del curso a quienes ya no figuran) y confírmala: la aplicación crea los docentes que
     no existan y añade al curso activo tanto los recién creados como los que ya existieran, sin
     modificar sus datos. Se aceptan ficheros en UTF-8 y en Windows-1252.</p>
-    <img class="captura-escritorio" src="img/curso-nuevo-5-docentes-listado.png" alt="Listado de docentes del centro tras la importación">
+    <img class="captura-escritorio" src="img/curso-nuevo-4-docentes-vista-previa.png" alt="Vista previa de la importación de docentes, con las opciones de correo y de retirada del curso y la acción de cada fila">
   </div>
 </div>
 

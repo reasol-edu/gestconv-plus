@@ -62,6 +62,11 @@ visible para los administradores globales.
 
 - **Qué se registra** — inicios y cierres de sesión (incluidos los intentos fallidos), cualquier
   operación de escritura y las importaciones y exportaciones de datos.
+- **Datos** — la última columna detalla cada acción como una lista de **campo y valor** con las
+  etiquetas traducidas (el elemento afectado, el estudiante o el grupo, el método y el resultado
+  de una comunicación, cuántos registros se han importado…). En las modificaciones muestra cada
+  cambio con su valor anterior y el nuevo (*Descripción: texto anterior → texto nuevo*). Las
+  acciones sin datos asociados, como un inicio de sesión, muestran un guion.
 - **Filtros** — por usuario, centro educativo, curso académico, tipo de acción y rango de fechas,
   con ordenación por fecha ascendente o descendente.
 - **Retención** — las entradas anteriores al número de días del ajuste **Retención de los

@@ -72,6 +72,8 @@ las fechas de vigencia, el estado del seguimiento y el estado de la notificació
 detalle muestra pastillas de estado que resumen la situación de un vistazo: **En Séneca**,
 **No efectiva**, **Reclamación** o **Sin corrección** (si no se aplicó ninguna medida).
 
+![Detalle de una sanción notificada, con el bloque de tareas de sanción y el estado de cada una](img/sanciones/sanciones-detalle.png)
+
 Igual que en los partes, se pueden añadir **observaciones** a una sanción: anotaciones con fecha,
 autor y texto con formato. Quien registra una observación puede editarla o eliminarla durante la
 hora siguiente; pasado ese plazo, solo un administrador. Al final de la página aparece el
