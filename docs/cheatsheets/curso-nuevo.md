@@ -100,9 +100,10 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
     <p>Desde <strong>Centro educativo › Docentes › Importar desde Séneca</strong>, sube el CSV
     que exporta Séneca (perfil de Dirección: <strong>Personal › Personal del centro › Exportar
     datos</strong>).</p>
-    <p>La aplicación crea los docentes que no existan y añade al curso activo tanto los recién
-    creados como los que ya existieran, sin modificar sus datos. Se aceptan ficheros en UTF-8 y
-    en Windows-1252.</p>
+    <p>Revisa la <strong>vista previa</strong> (puedes desmarcar docentes, importar su correo y
+    retirar del curso a quienes ya no figuran) y confírmala: la aplicación crea los docentes que
+    no existan y añade al curso activo tanto los recién creados como los que ya existieran, sin
+    modificar sus datos. Se aceptan ficheros en UTF-8 y en Windows-1252.</p>
     <img class="captura-escritorio" src="img/curso-nuevo-5-docentes-listado.png" alt="Listado de docentes del centro tras la importación">
   </div>
 </div>

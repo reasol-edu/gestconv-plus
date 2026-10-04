@@ -28,13 +28,34 @@ La vía recomendada es la importación desde Séneca, disponible en
 **Centro educativo › Docentes › Importar desde Séneca**:
 
 - Se sube el fichero CSV (texto con valores separados por comas, el formato en el que Séneca
-  exporta sus listados) y la aplicación crea los docentes que no existan (con autenticación
-  externa vía IdEA) y añade al curso activo tanto los recién creados como los que ya existieran
-  en el sistema, sin modificar los datos de estos últimos.
+  exporta sus listados) y la aplicación muestra una **vista previa** antes de importar nada. Al
+  confirmarla, crea los docentes que no existan (con autenticación externa vía IdEA) y añade al
+  curso activo tanto los recién creados como los que ya existieran en el sistema, sin modificar
+  los datos de estos últimos (salvo el correo, si no tenían ninguno; ver más abajo).
 - Se aceptan ficheros en UTF-8 y en Windows-1252 (la codificación habitual de las exportaciones
   de Séneca).
 - Se omiten las filas sin usuario IdEA o sin nombre en la columna «Empleado/a». Los docentes con
   fecha de cese también se importan.
+
+La vista previa ofrece:
+
+- Una **lista de los docentes del fichero** con una casilla por docente (todos marcados por
+  defecto) y los botones **Seleccionar todo** y **Seleccionar nada**. Cada fila indica qué
+  ocurrirá: *Registrar y añadir* (docente nuevo), *Añadir al curso* (ya existía pero no estaba en
+  este curso), *Rellenar correo* o *Sin cambios* (estos últimos no se pueden marcar).
+- **Importar el correo electrónico** (marcada por defecto): si el fichero trae una dirección
+  válida en la columna «Cuenta Google/Microsoft», se guarda como correo del docente **solo si
+  todavía no tenía ninguno**; un correo ya existente nunca se sobrescribe. No se asigna una
+  dirección que ya use otro docente, ni a un docente que tenga un cambio de correo pendiente de
+  verificar: en esos casos la fila lo indica y el docente se importa igualmente, sin correo.
+- **Retirar del curso a los docentes que no figuran en el listado** (desmarcada por defecto): al
+  activarla se muestra la lista de docentes del curso que no están en el fichero y **no tienen
+  ninguna vinculación este curso** (no tutorizan ni imparten en ningún grupo, no tienen guardias
+  ni ausencias previstas, no han registrado partes, sanciones ni notas y no tienen un rol en el
+  centro: administración, comisión de convivencia u orientación). Se pueden desmarcar los que se
+  quieran conservar. Solo se retiran **de este curso**: los docentes siguen existiendo en el
+  sistema y en otros cursos. Quien realiza la importación no se ofrece nunca para retirarse.
+- Solo se aplica lo que está marcado al pulsar **Importar la selección**.
 
 También se puede añadir un docente de forma manual, uno a uno, desde el mismo apartado — útil
 para altas puntuales durante el curso.
@@ -43,7 +64,8 @@ para altas puntuales durante el curso.
 
 !!! info "Cómo exportar el fichero desde Séneca"
     Con el perfil de Dirección: **Personal › Personal del centro › Exportar datos** (formato
-    CSV). El importador usa las columnas «Empleado/a» y «Usuario IdEA»; el resto se ignora.
+    CSV). El importador usa las columnas «Empleado/a» y «Usuario IdEA» y, si existe, «Cuenta
+    Google/Microsoft»; el resto se ignora.
 
 ## 3. Importar el alumnado (y la oferta formativa, de paso)
 

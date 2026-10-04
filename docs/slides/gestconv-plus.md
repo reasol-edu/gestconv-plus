@@ -567,6 +567,9 @@ el centro**, no solo de sus propios grupos:
 
 - Los **docentes** se dan de alta importando el listado exportado de Séneca
   en formato CSV, evitando la introducción manual uno a uno.
+- Antes de importar hay una **vista previa** donde se elige qué docentes
+  entran, si se rellena su correo (columna «Cuenta Google/Microsoft») y si se
+  retira del curso a quienes ya no figuran y no tienen ninguna vinculación.
 - A partir de la oferta formativa se crean los **grupos** del curso (por
   ejemplo, 2º ESO A, 1º Bachillerato B…).
 - Los tutores y docentes se asignan directamente desde el panel de edición
