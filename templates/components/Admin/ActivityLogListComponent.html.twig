@@ -131,7 +131,9 @@
                                focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                     <option value="">Todos</option>
                     {% for type in this.distinctActionTypes %}
-                        <option value="{{ type }}" {{ actionType == type ? 'selected' }}>{{ type }}</option>
+                        {% set typeKey = 'activity_log.action.' ~ type %}
+                        {% set typeLabel = typeKey|trans({}, 'admin') %}
+                        <option value="{{ type }}" {{ actionType == type ? 'selected' }}>{{ type }}{{ typeLabel != typeKey ? ' — ' ~ typeLabel : '' }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -229,6 +231,11 @@
 
                         {% set actionLabelKey = 'activity_log.action.' ~ entry.actionType %}
                         {% set actionLabel = actionLabelKey|trans({}, 'admin') %}
+                        {# Las operaciones registradas automáticamente usan el nombre de la ruta como tipo de acción #}
+                        {% if actionLabel == actionLabelKey and entry.actionType starts with 'app_' %}
+                            {% set actionLabel = 'activity_log.action_http'|trans({}, 'admin') %}
+                            {% set actionLabelKey = '' %}
+                        {% endif %}
                         <td data-label="Tipo de acción" class="px-6 py-3 whitespace-nowrap">
                             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-mono font-medium ring-1 ring-inset {{ badgeClass }}">
                                 {{ entry.actionType }}
