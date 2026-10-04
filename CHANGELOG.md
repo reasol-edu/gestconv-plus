@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-10-04
+
+### Changed
+
+- El manual, las fichas rápidas y la presentación tienen todas las capturas de pantalla actualizadas (menú lateral con la sección activa destacada, listado de notificaciones con sanciones, registro de actividad legible…) y nuevas pantallas: la vista previa de la importación de docentes, la notificación de partes y sanciones en bloque y el detalle de una sanción con sus tareas. El manual describe además la columna «Datos» del registro de actividad.
+
 ## [1.4.2] - 2026-10-04
 
 ### Added
