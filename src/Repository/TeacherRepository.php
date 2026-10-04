@@ -12,6 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<Teacher>
@@ -124,6 +125,54 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         }
 
         return $qb->getQuery();
+    }
+
+    /**
+     * Docentes con alguna vinculación en el curso: tutorizan o imparten en un grupo, tienen una
+     * guardia asignada, tienen ausencias previstas, han registrado partes, sanciones o notas, o
+     * tienen un rol en el centro (administración, comisión de convivencia u orientación; estos son
+     * del centro, no del curso, pero impiden retirar al docente igualmente).
+     *
+     * Los ids se seleccionan como escalares (no se hidratan docentes) porque solo importa saber quién está vinculado.
+     *
+     * @return array<string, true> ids (RFC 4122) de los docentes vinculados
+     */
+    public function findConnectedIdsForYear(AcademicYear $year): array
+    {
+        $em     = $this->getEntityManager();
+        $centre = $year->getEducationalCentre();
+
+        $queries = [
+            // Grupos del curso (tutoría y profesorado)
+            ['SELECT t.id AS id FROM App\Entity\Group g JOIN g.course c JOIN g.tutors t WHERE c.academicYear = :year', 'year'],
+            ['SELECT t.id AS id FROM App\Entity\GroupTeacher gt JOIN gt.group g JOIN g.course c JOIN gt.teacher t WHERE c.academicYear = :year', 'year'],
+            // Guardias y ausencias del curso
+            ['SELECT t.id AS id FROM App\Entity\TimeSlot ts JOIN ts.guards t WHERE ts.academicYear = :year', 'year'],
+            ['SELECT t.id AS id FROM App\Entity\Absence a JOIN a.teacher t WHERE a.academicYear = :year', 'year'],
+            // Lo que han registrado este curso
+            ['SELECT t.id AS id FROM App\Entity\IncidentReport r JOIN r.registeredBy t WHERE r.academicYear = :year', 'year'],
+            ['SELECT t.id AS id FROM App\Entity\Sanction s JOIN s.registeredBy t WHERE s.academicYear = :year', 'year'],
+            ['SELECT t.id AS id FROM App\Entity\DailyNote n JOIN n.registeredBy t WHERE n.academicYear = :year', 'year'],
+            // Roles del centro
+            ['SELECT t.id AS id FROM App\Entity\EducationalCentre c JOIN c.admins t WHERE c = :centre', 'centre'],
+            ['SELECT t.id AS id FROM App\Entity\EducationalCentre c JOIN c.committeeMembers t WHERE c = :centre', 'centre'],
+            ['SELECT t.id AS id FROM App\Entity\EducationalCentre c JOIN c.counselors t WHERE c = :centre', 'centre'],
+        ];
+
+        $ids = [];
+        foreach ($queries as [$dql, $param]) {
+            $query = $em->createQuery($dql);
+            $query->setParameter($param, $param === 'year' ? $year->getId() : $centre->getId(), 'uuid');
+            /** @var list<array{id: mixed}> $rows */
+            $rows = $query->getResult();
+            foreach ($rows as $row) {
+                if ($row['id'] instanceof Uuid) {
+                    $ids[$row['id']->toRfc4122()] = true;
+                }
+            }
+        }
+
+        return $ids;
     }
 
     /** @return Query<null, Teacher> */

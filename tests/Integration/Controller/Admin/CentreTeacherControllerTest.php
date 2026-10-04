@@ -132,7 +132,7 @@ class CentreTeacherControllerTest extends ControllerTestCase
         self::assertSelectorExists('form');
     }
 
-    public function testImportPostWithValidCsvCreatesTeachersAndRedirects(): void
+    public function testImportPostWithValidCsvShowsPreviewWithoutCreatingAnything(): void
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();
         $this->persist($admin, $centre, $year);
@@ -152,8 +152,11 @@ class CentreTeacherControllerTest extends ControllerTestCase
             '_token' => $token,
         ], ['csv' => $file]);
 
-        self::assertResponseRedirects();
-        self::assertStringContainsString('/docentes-curso', (string) $this->client->getResponse()->headers->get('Location'));
+        // Ahora hay una vista previa: hasta confirmarla no se crea nada.
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Garcia, Juan');
+        $this->em->clear();
+        self::assertNull($this->em->getRepository(Teacher::class)->findOneBy(['username' => 'juan.garcia']));
 
         @unlink($tmpFile);
     }
