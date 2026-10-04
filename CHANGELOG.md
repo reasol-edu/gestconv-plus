@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-10-04
+
+### Added
+
+- La importación de docentes desde Séneca muestra ahora una **vista previa** antes de importar: se elige qué docentes se crean o añaden al curso (todos marcados por defecto, con «Seleccionar todo» y «Seleccionar nada») y se ve qué ocurrirá con cada uno.
+- Si el fichero incluye la columna «Cuenta Google/Microsoft», se puede importar como correo electrónico del docente. Solo se rellena el de quien no tiene ninguno: nunca se sobrescribe un correo existente ni se asigna uno que ya use otro docente.
+- Opción de retirar del curso a los docentes que no figuran en el listado de Séneca y no tienen ninguna vinculación este curso (no tutorizan ni imparten en ningún grupo, no tienen guardias ni ausencias previstas, no han registrado partes, sanciones ni notas y no tienen un rol en el centro). Siguen existiendo en el sistema y en otros cursos.
+
 ## [1.4.1] - 2026-10-03
 
 ### Changed
