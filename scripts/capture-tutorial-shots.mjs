@@ -42,6 +42,7 @@ async function fillQuill(page, mountSelector, text) {
     // Registrar un parte para el alumno objetivo (María Rodríguez Navarro, 1ºBachillerato).
     await page.goto(`${baseUrl}/partes/nuevo`);
     await page.waitForLoadState('networkidle');
+    await page.fill('#occurred_at', `${process.env.SHOTS_TODAY ?? new Date().toISOString().slice(0, 10)}T10:20`);  // el formulario usa el reloj real: se fija al día lectivo de la demo
     await hideToolbar(page);
 
     const studentControl = page.locator('#students-select').locator('..').locator('.ts-control');
@@ -122,7 +123,7 @@ async function fillQuill(page, mountSelector, text) {
     await page.waitForTimeout(200);
 
     if (await page.locator('#effective_from').isVisible().catch(() => false)) {
-        await page.fill('#effective_from', new Date().toISOString().slice(0, 10));
+        await page.fill('#effective_from', process.env.SHOTS_TODAY ?? new Date().toISOString().slice(0, 10));
     }
 
     await fillQuill(page, '#details', 'Se impone la medida tras valorar los partes de convivencia asociados y la reincidencia del alumno.');
@@ -230,10 +231,19 @@ async function fillQuill(page, mountSelector, text) {
     await page.waitForTimeout(200);
     await page.screenshot({ path: `${root}/ajustes/ajustes-informes.png` });
 
+    // La tabla necesita ~1230 px de ancho útil para que se vea la columna «Datos» (lista legible de
+    // campo → valor): a 1280 px queda fuera de pantalla. Se amplía el viewport solo para esta captura
+    // y se quitan del DOM las filas de inicio de sesión (sin datos), que solo ocupan sitio.
+    await page.setViewportSize({ width: 1680, height: 1000 });
     await page.goto(`${baseUrl}/admin/registro-actividad`);
     await page.waitForLoadState('networkidle');
+    await page.evaluate(() => {
+        document.querySelectorAll('table tbody tr').forEach((tr) => {
+            if (tr.textContent.includes('session.login')) tr.remove();
+        });
+    });
     await hideToolbar(page);
-    await page.screenshot({ path: `${root}/admin/admin-registro-actividad.png`, fullPage: true });
+    await page.screenshot({ path: `${root}/admin/admin-registro-actividad.png` });
 
     await page.close();
 }

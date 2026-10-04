@@ -29,10 +29,6 @@ if (page.url().includes('/seleccion/centro')) {
     await hideToolbar();
 }
 
-// Hub: check new "Cursos académicos" card is present
-await goto(`${baseUrl}/centro/${centreId}`);
-await page.screenshot({ path: `${imgRoot}/centro/centro-hub-check.png` });
-console.log('OK centro-hub-check.png');
 
 // Cursos académicos page
 await goto(`${baseUrl}/centro/${centreId}/cursos`);

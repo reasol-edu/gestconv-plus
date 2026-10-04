@@ -137,3 +137,34 @@ capture already came out too tall, crop it anchored at the top with PIL
 anchor top reliably on this project's images. Before finalizing a batch, check
 heights (`sips -g pixelHeight docs/manual/img/**/*.png`) and treat anything over
 ~1000px on a listing as suspect.
+
+## Regenerating the whole set (recipe used in the October 2026 refresh)
+
+Every desktop screenshot shows the sidebar, so any change to the layout or to the theme makes the
+**entire** set stale, not just the page that changed. The scripts under `scripts/capture-*.mjs` are the
+source of truth; to rerun all of them:
+
+1. **Disposable DB + snapshot templates.** Create a throwaway database, `doctrine:migrations:migrate`,
+   `doctrine:fixtures:load --append`, then copy it as a template (`CREATE DATABASE x_base TEMPLATE x`). Seed
+   (`tmp:seed-shots`, see `scripts/seed/README.md`) and copy again as `x_tpl`. The scripts **mutate** data (they
+   create partes, notifications, a new academic year…), so restore the DB from `x_tpl`
+   (`DROP DATABASE … WITH (FORCE)` + `CREATE DATABASE … TEMPLATE x_tpl`) before **each** script, and run
+   `capture-curso-nuevo-shots.mjs` last. Before loading fixtures, confirm which database the app really
+   uses: `dbal:run-sql "select current_database()"` with the same env prefix (`.env.local` points at the real one).
+2. **Mail off.** `.env.local` may contain a live `MAILER_DSN`: export `MAILER_DSN=null://null` on the server and on
+   every console command so no email can leave while the scripts submit partes/notifications.
+3. **Served CSS.** In dev the Tailwind bundle serves `var/tailwind/app.built.css`; rebuild it
+   (`tailwindcss -i assets/styles/app.css -o var/tailwind/app.built.css`) and `rm -rf public/assets`, otherwise
+   new utility classes (e.g. the sidebar accent) won't render. On macOS the bundled Tailwind binary may be
+   killed by Gatekeeper (exit 137): copy it to a temp folder and re-sign the copy
+   (`codesign --force --sign - copy`), then run that copy.
+4. **Fixed "today".** Capturing on a weekend breaks everything that depends on today (guards, absences, the
+   dashboard): the app rejects non-working days. Don't touch the system clock; serve with
+   `scripts/seed/router-clock.php` (it fixes Symfony's `Clock` to a Monday) and pass the same day to the
+   scripts through `SHOTS_TODAY` (form defaults rendered by Twig's `'now'|date` use the real clock, so the
+   scripts fill those date fields explicitly). `TimeSlot.dayOfWeek` is **0-based** (Monday = 0). The
+   board-mode clock is the browser's: `page.clock.setFixedTime(...)`.
+5. **Don't trust the exit code of `node script | tail`** — it's `tail`'s. Look for stack traces in the output and
+   then open a sample of the PNGs (toolbar hidden, seeded names present, new UI visible); compare heights with
+   the previous version (`git show HEAD:path > old.png; sips -g pixelHeight`).
+6. Teardown: stop the server, drop the databases and templates, delete the copied seed command.

@@ -55,7 +55,8 @@ await login(page, 'roberto.guerrero', 'ejemplo');
     await page.waitForLoadState('networkidle');
     await hideToolbar(page);
 
-    const today = new Date().toISOString().slice(0, 10);
+    // SHOTS_TODAY: día lectivo en el que la app cree estar (el servidor de capturas puede tener el reloj fijado).
+    const today = process.env.SHOTS_TODAY ?? new Date().toISOString().slice(0, 10);
     await page.fill('#start_date', today);
     await page.fill('#end_date', today);
     await hideToolbar(page);

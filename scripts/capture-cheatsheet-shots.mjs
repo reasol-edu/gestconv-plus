@@ -60,6 +60,7 @@ async function fillQuill(page, mountSelector, text) {
 
     await page.goto(`${baseUrl}/partes/nuevo`);
     await page.waitForLoadState('networkidle');
+    await page.fill('#occurred_at', `${process.env.SHOTS_TODAY ?? new Date().toISOString().slice(0, 10)}T10:20`);  // el formulario usa el reloj real: se fija al día lectivo de la demo
     await hideToolbar(page);
     await page.screenshot({ path: `${root}/registrar-parte-1.png` });
 
@@ -193,7 +194,7 @@ async function fillQuill(page, mountSelector, text) {
     await page.waitForLoadState('networkidle');
     await hideToolbar(page);
     await page.selectOption('#method_id', { index: 1 });
-    await page.fill('input[name="occurred_at"], input[type="datetime-local"]', new Date().toISOString().slice(0, 16));
+    await page.fill('input[name="occurred_at"], input[type="datetime-local"]', (process.env.SHOTS_TODAY ?? new Date().toISOString().slice(0, 10)) + 'T10:00');
     await hideToolbar(page);
     await page.screenshot({ path: `${root}/notificar-parte-3.png` });
 
@@ -219,7 +220,7 @@ async function fillQuill(page, mountSelector, text) {
     await page.goto(`${baseUrl}/ausencias/nuevo`);
     await page.waitForLoadState('networkidle');
     await hideToolbar(page);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = process.env.SHOTS_TODAY ?? new Date().toISOString().slice(0, 10);
     await page.fill('#start_date', today);
     await page.fill('#end_date', today);
     await hideToolbar(page);

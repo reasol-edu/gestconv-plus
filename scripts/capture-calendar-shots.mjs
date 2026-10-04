@@ -6,6 +6,10 @@ const outDir  = process.env.SHOTS_OUT_DIR ?? 'docs/manual/img/calendario';
 const browser = await chromium.launch({ args: ['--lang=es-ES'] });
 const page    = await browser.newPage({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
 
+// El modo tablón muestra la hora con el reloj del navegador: se fija al día y hora de la demo
+// (solo el reloj de esta página; el reloj del sistema no se toca).
+await page.clock.setFixedTime(new Date(`${process.env.SHOTS_TODAY ?? new Date().toISOString().slice(0, 10)}T09:30:00`));
+
 async function hideToolbar() {
     await page.addStyleTag({ content: 'div[id^="sfwdt"] { display: none !important; }' });
 }

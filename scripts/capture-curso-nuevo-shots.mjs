@@ -22,7 +22,9 @@
  * habitual de BD desechable + servidor PHP integrado.
  */
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const baseUrl  = process.env.SHOTS_BASE_URL ?? 'http://127.0.0.1:8744';
 const root     = process.env.SHOTS_OUT_DIR ?? 'docs/cheatsheets/img';
@@ -78,8 +80,26 @@ await page.goto(`${baseUrl}/centro/${centreId}/docentes-curso/importar`);
 await page.waitForLoadState('networkidle');
 await hideToolbar(page);
 
-await page.setInputFiles('#csv', 'src/DataFixtures/data/docentes-ada-lovelace.csv');
+// El CSV de Séneca incluye la columna «Cuenta Google/Microsoft»: se parte del fichero de fixtures,
+// se le añade esa columna y dos docentes que todavía no existen en el sistema, para que la vista
+// previa muestre los tres tipos de fila (añadir al curso, registrar y añadir, correo a rellenar).
+const teachersCsv = join(mkdtempSync(join(tmpdir(), 'docentes-')), 'docentes.csv');
+const baseRows = readFileSync('src/DataFixtures/data/docentes-ada-lovelace.csv', 'utf8').trim().split('\n').slice(1);
+writeFileSync(teachersCsv, [
+    '"Empleado/a","Usuario IdEA","Cuenta Google/Microsoft"',
+    ...baseRows.map((row) => `${row},"${row.split(',')[1].replaceAll('"', '')}@iesadalovelace.es"`),
+    '"Vega Ortiz, Lucía","lucia.vega","lucia.vega@iesadalovelace.es"',
+    '"Martín Pozo, Andrés","andres.martin","andres.martin@iesadalovelace.es"',
+].join('\n') + '\n');
+
+await page.setInputFiles('#csv', teachersCsv);
 await page.click('button[type="submit"]');
+await page.waitForLoadState('networkidle');
+await hideToolbar(page);
+// Vista previa: nada se importa hasta confirmarla (la altura se limita al viewport: la lista es larga).
+await page.screenshot({ path: `${root}/curso-nuevo-4-docentes-vista-previa.png` });
+
+await page.click('button:has-text("Importar la selección")');
 await page.waitForLoadState('networkidle');
 await hideToolbar(page);
 await page.screenshot({ path: `${root}/curso-nuevo-5-docentes-listado.png` });

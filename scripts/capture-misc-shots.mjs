@@ -48,6 +48,7 @@ async function login(page, username, password) {
 
     await page.goto(`${baseUrl}/partes/nuevo`);
     await page.waitForLoadState('networkidle');
+    await page.fill('#occurred_at', `${process.env.SHOTS_TODAY ?? new Date().toISOString().slice(0, 10)}T10:20`);  // el formulario usa el reloj real: se fija al día lectivo de la demo
     await hideToolbar(page);
     await page.screenshot({ path: `${root}/partes/nuevo-parte-vacio.png`, fullPage: true });
 
@@ -94,7 +95,7 @@ async function login(page, username, password) {
     await hideToolbar(page);
     await page.screenshot({ path: `${root}/partes/admin-ubicaciones.png`, fullPage: true });
 
-    await page.goto(`${baseUrl}/centro/${centreId}/informes/estadisticas-grupo?from=2025-09-15&to=2026-07-15`);
+    await page.goto(`${baseUrl}/centro/${centreId}/informes/estadisticas-grupo?from=${process.env.SHOTS_STATS_FROM ?? '2026-09-14'}&to=${process.env.SHOTS_STATS_TO ?? '2026-10-04'}`);
     await page.waitForLoadState('networkidle');
     await hideToolbar(page);
     await page.screenshot({ path: `${root}/informes/informes-estadisticas-grupo.png`, fullPage: true });
