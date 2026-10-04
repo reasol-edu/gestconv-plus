@@ -28,6 +28,28 @@ class CentreTeacherControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testIndexShowsEmailAndPendingEmailOfTeachers(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $with    = $this->makeTeacher('con.correo')->setEmail('con.correo@iesejemplo.es');
+        $pending = $this->makeTeacher('cambiando')->setPendingEmail('nuevo@iesejemplo.es');
+        $this->persist($admin, $centre, $year, $with, $pending);
+        $centre->setActiveAcademicYear($year);
+        $year->addTeacher($with);
+        $year->addTeacher($pending);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/docentes-curso');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('table', 'con.correo@iesejemplo.es');
+        self::assertSelectorTextContains('table', 'Pendiente de verificar: nuevo@iesejemplo.es');
+        // La columna es visible siempre (la tabla se adapta a tarjetas en móvil con la etiqueta de cada celda).
+        self::assertSelectorExists('table.table-cards td[data-label="Correo"]');
+        self::assertSelectorNotExists('td.hidden');
+    }
+
     public function testIndexIsAccessibleToEquipoDirectivo(): void
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();

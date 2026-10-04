@@ -96,6 +96,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
                     'UNACCENT(LOWER(t.name.firstName)) LIKE UNACCENT(LOWER(:q))',
                     'UNACCENT(LOWER(t.name.lastName)) LIKE UNACCENT(LOWER(:q))',
                     'UNACCENT(LOWER(t.username)) LIKE UNACCENT(LOWER(:q))',
+                    'LOWER(t.email) LIKE LOWER(:q)',
+                    'LOWER(t.pendingEmail) LIKE LOWER(:q)',
                 )
             )->setParameter('q', $q);
         }
@@ -120,6 +122,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
                     'UNACCENT(LOWER(t.name.firstName)) LIKE UNACCENT(LOWER(:q))',
                     'UNACCENT(LOWER(t.name.lastName)) LIKE UNACCENT(LOWER(:q))',
                     'UNACCENT(LOWER(t.username)) LIKE UNACCENT(LOWER(:q))',
+                    'LOWER(t.email) LIKE LOWER(:q)',
+                    'LOWER(t.pendingEmail) LIKE LOWER(:q)',
                 )
             )->setParameter('q', $q);
         }

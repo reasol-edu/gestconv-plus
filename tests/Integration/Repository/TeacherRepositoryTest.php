@@ -88,6 +88,19 @@ class TeacherRepositoryTest extends RepositoryTestCase
         self::assertSame('t1', $results[0]->getUsername());
     }
 
+    public function testCreateFilteredOrderedByNameQueryFindsByEmailAndPendingEmail(): void
+    {
+        $this->persist(
+            $this->makeTeacher('t1', 'Ana', 'Garcia')->setEmail('ana@iesejemplo.es'),
+            $this->makeTeacher('t2', 'Pedro', 'Lopez')->setPendingEmail('pedro.nuevo@iesejemplo.es'),
+            $this->makeTeacher('t3', 'Luis', 'Ruiz'),
+        );
+
+        self::assertSame(['t1'], array_map(static fn (Teacher $t): string => $t->getUsername(), $this->repo->createFilteredOrderedByNameQuery('ana@ies')->getResult()));
+        self::assertSame(['t2'], array_map(static fn (Teacher $t): string => $t->getUsername(), $this->repo->createFilteredOrderedByNameQuery('PEDRO.NUEVO')->getResult()), 'También por el correo pendiente de verificar, sin distinguir mayúsculas');
+        self::assertCount(2, $this->repo->createFilteredOrderedByNameQuery('@iesejemplo.es')->getResult());
+    }
+
     // ── findNoneQuery ─────────────────────────────────────────────────────────
 
     public function testFindNoneQueryReturnsEmptyResult(): void
@@ -307,6 +320,21 @@ class TeacherRepositoryTest extends RepositoryTestCase
 
         self::assertCount(1, $results);
         self::assertSame('ana.garcia', $results[0]->getUsername());
+    }
+
+    public function testCreateByAcademicYearFilteredQueryFindsByEmail(): void
+    {
+        $centre   = $this->makeCentre('41000003');
+        $year     = $this->makeYear($centre, '2024-2025');
+        $teacherA = $this->makeTeacher('ana.garcia', 'Ana', 'García')->setEmail('ana.garcia@iesejemplo.es');
+        $teacherB = $this->makeTeacher('pedro.ruiz', 'Pedro', 'Ruiz')->setPendingEmail('pedro@iesejemplo.es');
+        $this->persist($centre, $year, $teacherA, $teacherB);
+        $year->addTeacher($teacherA);
+        $year->addTeacher($teacherB);
+        $this->flush();
+
+        self::assertSame(['ana.garcia'], array_map(static fn (Teacher $t): string => $t->getUsername(), $this->repo->createByAcademicYearFilteredQuery($year, 'garcia@ies')->getResult()));
+        self::assertSame(['pedro.ruiz'], array_map(static fn (Teacher $t): string => $t->getUsername(), $this->repo->createByAcademicYearFilteredQuery($year, 'pedro@ies')->getResult()));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

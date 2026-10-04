@@ -66,6 +66,10 @@ para altas puntuales durante el curso.
 
 ![Listado de docentes del centro tras la importación](img/centro/centro-docentes.png)
 
+El listado muestra el usuario y el **correo electrónico** de cada docente (con un aviso *Pendiente de
+verificar* si ha pedido cambiarlo y aún no lo ha confirmado) y se adapta a tarjetas en pantallas
+estrechas. El buscador admite nombre, apellidos, usuario o correo.
+
 !!! info "Cómo exportar el fichero desde Séneca"
     Con el perfil de Dirección: **Personal › Personal del centro › Exportar datos** (formato
     CSV). El importador usa las columnas «Empleado/a» y «Usuario IdEA» y, si existe, «Cuenta

@@ -54,7 +54,10 @@
                                class="font-medium text-gray-900 hover:text-forest-700 transition-colors">{{ teacher.name.lastName }}, {{ teacher.name.firstName }}</a>
                         </td>
                         <td data-label="{{ 'teachers.username'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 font-mono text-xs text-gray-600">{{ teacher.username }}</td>
-                        <td data-label="{{ 'teachers.email'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 text-gray-500 text-xs">{{ teacher.email ?? '—' }}</td>
+                        <td data-label="{{ 'teachers.email'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 text-gray-500 text-xs">
+                            {{ teacher.email ?? '—' }}
+                            {% if teacher.pendingEmail %}<span class="block text-amber-700">{{ 'teachers.email_pending'|trans({'%email%': teacher.pendingEmail}, 'admin') }}</span>{% endif %}
+                        </td>
                         <td data-label="{{ 'teachers.roles'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
                             <div class="flex items-center gap-1.5 flex-wrap sm:justify-start justify-end">
                                 {% if teacher.admin %}

@@ -29,7 +29,10 @@ editarlos y eliminarlos.
 ### Docentes
 
 La tarjeta **Docentes** permite crear y editar cualquier cuenta de docente del servidor, con
-independencia del centro al que pertenezca.
+independencia del centro al que pertenezca. El listado muestra el nombre, el usuario, el **correo
+electrónico** y los roles de cada docente; si un docente ha pedido cambiar su correo y aún no lo ha
+verificado, se indica debajo como *Pendiente de verificar*. El buscador encuentra por nombre,
+apellidos, usuario o correo (también el pendiente).
 
 ![Formulario de alta de un docente](img/admin/admin-docente-formulario.png)
 

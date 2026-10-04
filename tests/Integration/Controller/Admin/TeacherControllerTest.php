@@ -23,6 +23,21 @@ class TeacherControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testIndexShowsEmailAndPendingEmailOfTeachers(): void
+    {
+        $admin   = $this->makeAdmin('admin.1');
+        $with    = $this->makeTeacher('con.correo')->setEmail('con.correo@iesejemplo.es');
+        $pending = $this->makeTeacher('cambiando')->setPendingEmail('nuevo@iesejemplo.es');
+        $this->persist($admin, $with, $pending);
+        $this->loginAs($admin);
+
+        $this->client->request('GET', '/admin/docentes');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('table', 'con.correo@iesejemplo.es');
+        self::assertSelectorTextContains('table', 'Pendiente de verificar: nuevo@iesejemplo.es');
+    }
+
     public function testIndexDeniesNonAdmin(): void
     {
         $teacher = $this->makeTeacher('teacher.1');
