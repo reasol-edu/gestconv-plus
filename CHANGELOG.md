@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4] - 2026-10-04
+
+### Added
+
+- Los listados «Docentes del centro» y «Administración > Docentes» indican, bajo el correo, si el docente tiene un cambio de correo pendiente de verificar, y su buscador encuentra también por correo electrónico.
+
+### Changed
+
+- En «Docentes del centro» el correo (y el resto de columnas) se ve también en pantallas estrechas: la tabla se adapta a tarjetas, como la de Administración.
+
+### Fixed
+
+- El registro de actividad ya no muestra textos sin traducir: faltaban las etiquetas de varios tipos de acción (inicio y cierre de sesión, notas, ubicaciones, días no lectivos, eventos…), los nombres de los campos modificados y valores como el resultado de una comunicación (`notified`), el origen de una importación o las fechas en formato técnico. El filtro de tipo de acción muestra además la etiqueta junto al código.
+
 ## [1.4.3] - 2026-10-04
 
 ### Changed
