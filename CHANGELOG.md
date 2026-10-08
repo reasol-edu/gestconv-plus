@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.7] - 2026-10-09
+
+### Added
+
+- Al abandonar un formulario con cambios sin guardar (partes, sanciones, ausencias, notas, eventos, alumnado…) el navegador pide confirmación.
+- Enlace «Saltar al contenido principal» para quien navega con teclado o lector de pantalla.
+
+### Changed
+
+- Las pantallas de edición de los catálogos (métodos de comunicación, conductas, ubicaciones, tipos de nota) tienen ahora un título de pestaña propio, distinto del de su listado.
+
+### Fixed
+
+- El panel de un docente, el listado de sanciones, el de partes, el de notificaciones y el de alumnado cargan mucho más rápido: se han eliminado cientos de consultas repetidas a la base de datos.
+- Mejoras de accesibilidad: las etiquetas de los filtros y los ajustes quedan asociadas a sus campos, las cabeceras de las tablas se anuncian como columnas, el buscador rápido y las pantallas de acceso tienen su zona principal y su nombre accesible, y el campo «ir a página» ya no duplica identificadores.
+- Los textos del registro de actividad y de la portada de Administración pasan por las traducciones.
+
 ## [1.4.6] - 2026-10-08
 
 ### Added
