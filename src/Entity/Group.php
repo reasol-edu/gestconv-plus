@@ -36,7 +36,7 @@ class Group
     private Collection $groupTeachers;
 
     /** @var Collection<int, Teacher> */
-    #[ORM\ManyToMany(targetEntity: Teacher::class, fetch: 'EXTRA_LAZY')]
+    #[ORM\ManyToMany(targetEntity: Teacher::class)]
     #[ORM\JoinTable(name: 'group_tutor')]
     private Collection $tutors;
 

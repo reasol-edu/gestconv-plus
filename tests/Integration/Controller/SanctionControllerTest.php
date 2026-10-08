@@ -47,6 +47,47 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testIndexQueryCountDoesNotGrowWithTheNumberOfSanctions(): void
+    {
+        [$admin, $centre, $group, $student, $behavior, $measure] = $this->makeScenario();
+        $ids = [$admin->getId(), $student->getId(), $group->getId(), $behavior->getId(), $measure->getId()];
+        // Tras clear() las entidades capturadas quedan desacopladas: se vuelven a obtener por id.
+        $addSanction = function () use ($ids): void {
+            $admin    = $this->em->find(Teacher::class, $ids[0]);
+            $student  = $this->em->find(Student::class, $ids[1]);
+            $group    = $this->em->find(Group::class, $ids[2]);
+            $behavior = $this->em->find(IncidentBehavior::class, $ids[3]);
+            $measure  = $this->em->find(SanctionMeasure::class, $ids[4]);
+            \assert($admin instanceof Teacher && $student instanceof Student && $group instanceof Group && $behavior instanceof IncidentBehavior && $measure instanceof SanctionMeasure);
+            $sanction = $this->makeSanction($admin, $student, $group, [$this->makeReport($student, $group, $behavior, $admin)]);
+            $sanction->addMeasure($measure);
+            $this->flush();
+        };
+        $addSanction();
+        $this->loginAs($admin, $centre);
+
+        $countQueries = function (): int {
+            $this->em->clear();
+            $this->client->enableProfiler();
+            $this->client->request('GET', '/sanciones');
+            self::assertResponseIsSuccessful();
+            $profile = $this->client->getProfile();
+            self::assertNotFalse($profile);
+            /** @var \Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector $db */
+            $db = $profile->getCollector('db');
+
+            return $db->getQueryCount();
+        };
+
+        $withOne = $countQueries();
+        for ($i = 0; $i < 6; $i++) {
+            $addSanction();
+        }
+        $withSeven = $countQueries();
+
+        self::assertLessThanOrEqual($withOne, $withSeven, 'El listado ejecuta consultas por cada sanción (N+1).');
+    }
+
     public function testIndexPendingTasksOnlyQueryParamPreChecksFilterAndFiltersList(): void
     {
         [$admin, $centre, $group, $student] = $this->makeScenario();

@@ -52,6 +52,7 @@ class StudentRepository extends ServiceEntityRepository
             ->join('s.groups', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
+            ->leftJoin('s.groups', 'sg')->addSelect('sg')
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid');
 

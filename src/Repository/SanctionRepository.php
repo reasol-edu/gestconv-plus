@@ -67,11 +67,13 @@ class SanctionRepository extends ServiceEntityRepository
         array $filters = [],
     ): Query {
         $qb = $this->createQueryBuilder('s')
-            ->addSelect('st', 'g')
+            ->addSelect('st', 'g', 'c', 'm', 'allReports')
             ->join('s.student', 'st')
             ->join('s.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
+            ->leftJoin('s.measures', 'm')
+            ->leftJoin('s.reports', 'allReports')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->setParameter('centre', $centre->getId(), 'uuid')
@@ -344,7 +346,7 @@ class SanctionRepository extends ServiceEntityRepository
     private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer, AcademicYear $year): QueryBuilder
     {
         $qb = $this->createQueryBuilder('s')
-            ->addSelect('st', 'g', 't', 'rep', 'rrb')
+            ->addSelect('st', 'g', 'c', 't', 'rep', 'rrb')
             ->join('s.student', 'st')
             ->join('s.group', 'g')
             ->join('g.course', 'c')
@@ -522,11 +524,12 @@ class SanctionRepository extends ServiceEntityRepository
         \DateTimeImmutable $rangeEnd,
     ): array {
         $qb = $this->createQueryBuilder('s')
-            ->addSelect('st', 'g')
+            ->addSelect('st', 'g', 'c', 'm')
             ->join('s.student', 'st')
             ->join('s.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
+            ->leftJoin('s.measures', 'm')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('s.notifiedCommunication IS NOT NULL')

@@ -12,8 +12,9 @@ use App\Repository\GlobalSettingValueRepository;
 use App\Repository\SettingDefinitionRepository;
 use App\Repository\TeacherSettingValueRepository;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Contracts\Service\ResetInterface;
 
-final class AppSettings implements AppSettingsInterface
+final class AppSettings implements AppSettingsInterface, ResetInterface
 {
     /** @var array<string, \App\Entity\SettingDefinition>|null shared base cache */
     private ?array $allDefinitions = null;
@@ -23,6 +24,12 @@ final class AppSettings implements AppSettingsInterface
 
     /** @var array<string, mixed>|null full resolved map for the current user / centre */
     private ?array $resolved = null;
+
+    /** @var array<string, array<string, \App\Entity\CentreSettingValue>> per-centre values, memoised by centre id */
+    private array $centreMaps = [];
+
+    /** @var array<string, array<string, \App\Entity\TeacherSettingValue>> per-teacher values, memoised by teacher id */
+    private array $teacherMaps = [];
 
     public function __construct(
         private readonly SettingDefinitionRepository   $definitions,
@@ -56,7 +63,7 @@ final class AppSettings implements AppSettingsInterface
             return null;
         }
 
-        $teacherMap = $this->teacherValues->findByTeacherIndexedByKey($teacher);
+        $teacherMap = $this->teacherMapFor($teacher);
 
         $raw = match (true) {
             isset($this->globalMap[$key]) && $this->globalMap[$key]->isLocked()
@@ -85,7 +92,7 @@ final class AppSettings implements AppSettingsInterface
             return null;
         }
 
-        $centreMap = $this->centreValues->findByCentreIndexedByKey($centre);
+        $centreMap = $this->centreMapFor($centre);
 
         $raw = match (true) {
             isset($this->globalMap[$key]) && $this->globalMap[$key]->isLocked()
@@ -135,8 +142,8 @@ final class AppSettings implements AppSettingsInterface
             return null;
         }
 
-        $centreMap  = $this->centreValues->findByCentreIndexedByKey($centre);
-        $teacherMap = $this->teacherValues->findByTeacherIndexedByKey($teacher);
+        $centreMap  = $this->centreMapFor($centre);
+        $teacherMap = $this->teacherMapFor($teacher);
 
         $raw = match (true) {
             isset($this->globalMap[$key]) && $this->globalMap[$key]->isLocked()
@@ -168,7 +175,7 @@ final class AppSettings implements AppSettingsInterface
             return null;
         }
 
-        $centreMap = $this->centreValues->findByCentreIndexedByKey($centre);
+        $centreMap = $this->centreMapFor($centre);
 
         $winner = match (true) {
             isset($this->globalMap[$key]) && $this->globalMap[$key]->isLocked() => $this->globalMap[$key],
@@ -190,6 +197,26 @@ final class AppSettings implements AppSettingsInterface
         $this->resolved       = null;
         $this->allDefinitions = null;
         $this->globalMap      = null;
+        $this->centreMaps     = [];
+        $this->teacherMaps    = [];
+    }
+
+    /** Clears the memoised values between messages in long-running processes (Messenger worker). */
+    public function reset(): void
+    {
+        $this->invalidate();
+    }
+
+    /** @return array<string, \App\Entity\CentreSettingValue> */
+    private function centreMapFor(EducationalCentre $centre): array
+    {
+        return $this->centreMaps[$centre->getId()->toRfc4122()] ??= $this->centreValues->findByCentreIndexedByKey($centre);
+    }
+
+    /** @return array<string, \App\Entity\TeacherSettingValue> */
+    private function teacherMapFor(Teacher $teacher): array
+    {
+        return $this->teacherMaps[$teacher->getId()->toRfc4122()] ??= $this->teacherValues->findByTeacherIndexedByKey($teacher);
     }
 
     private function load(): void
@@ -244,7 +271,7 @@ final class AppSettings implements AppSettingsInterface
         $centre = $this->tenant->getSelectedCentre();
 
         return $centre !== null
-            ? $this->centreValues->findByCentreIndexedByKey($centre)
+            ? $this->centreMapFor($centre)
             : [];
     }
 
@@ -254,7 +281,7 @@ final class AppSettings implements AppSettingsInterface
         $user = $this->security->getUser();
 
         return $user instanceof Teacher
-            ? $this->teacherValues->findByTeacherIndexedByKey($user)
+            ? $this->teacherMapFor($user)
             : [];
     }
 }

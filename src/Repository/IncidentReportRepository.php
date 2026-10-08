@@ -61,7 +61,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         array $filters = [],
     ): Query {
         $qb = $this->createQueryBuilder('r')
-            ->addSelect('g', 's', 't', 'beh', 'bc')
+            ->addSelect('g', 'c', 's', 't', 'beh', 'bc')
             ->join('r.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
@@ -391,7 +391,7 @@ class IncidentReportRepository extends ServiceEntityRepository
     private function buildPendingQueryBuilder(EducationalCentre $centre, Teacher $viewer, AcademicYear $year): QueryBuilder
     {
         $qb = $this->createQueryBuilder('r')
-            ->addSelect('s', 'g', 't')
+            ->addSelect('s', 'g', 'c', 't')
             ->join('r.student', 's')
             ->join('r.group', 'g')
             ->join('g.course', 'c')
@@ -603,7 +603,7 @@ class IncidentReportRepository extends ServiceEntityRepository
     {
         /** @var list<IncidentReport> $result */
         $result = $this->createQueryBuilder('r')
-            ->addSelect('s', 'g', 't', 'rb')
+            ->addSelect('s', 'g', 'c', 't', 'rb')
             ->join('r.student', 's')
             ->join('r.registeredBy', 'rb')
             ->join('r.group', 'g')
@@ -670,7 +670,7 @@ class IncidentReportRepository extends ServiceEntityRepository
     {
         /** @var list<IncidentReport> $result */
         $result = $this->createQueryBuilder('r')
-            ->addSelect('s', 'g', 't', 'rb')
+            ->addSelect('s', 'g', 'c', 't', 'rb')
             ->join('r.student', 's')
             ->join('r.registeredBy', 'rb')
             ->join('r.group', 'g')
