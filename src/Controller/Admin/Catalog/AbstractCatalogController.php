@@ -10,6 +10,7 @@ use App\Entity\EducationalCentre;
 use App\Repository\EducationalCentreRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
+use App\Service\UploadLimits;
 use App\Service\Catalog\AbstractCatalogExporter;
 use App\Service\Catalog\AbstractCatalogImporter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -39,6 +41,14 @@ abstract class AbstractCatalogController extends AbstractController
         private readonly TranslatorInterface $translator,
         protected readonly ActivityLogService $activityLog,
     ) {}
+
+    protected UploadLimits $uploadLimits;
+
+    #[Required]
+    public function setUploadLimits(UploadLimits $uploadLimits): void
+    {
+        $this->uploadLimits = $uploadLimits;
+    }
 
     /** Clave de traducción/CSRF: 'behavior', 'location', 'sanction_measure', 'communication_method'. */
     abstract protected function catalogKey(): string;
@@ -129,7 +139,14 @@ abstract class AbstractCatalogController extends AbstractController
 
         $this->checkCsrf($request, 'import_' . $this->catalogKey() . 's');
 
-        $file = $request->files->get('json');
+        $file    = $request->files->get('json');
+        $problem = $this->uploadLimits->fileProblem($file);
+        if ($problem !== null) {
+            $this->addFlash('error', $problem);
+
+            return $this->render($this->importTemplate(), ['centre' => $centre]);
+        }
+
         if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t($this->catalogKey() . '.import.error.no_file'));
 

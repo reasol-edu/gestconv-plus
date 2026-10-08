@@ -81,6 +81,8 @@ abstract class ControllerTestCase extends WebTestCase
             ['reports.sanction_pdf_template',    SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 40, null],
             ['reports.group_stats_pdf_template', SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 50, null],
             ['reports.guard_duty_pdf_template',  SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 60, null],
+            ['uploads.max_file_size_mb',         SettingType::Integer, '10', true, false, false, 1, 1024, 'settings.category.uploads', 90, 10, null],
+            ['uploads.max_total_size_mb',        SettingType::Integer, '50', true, false, false, 1, 2048, 'settings.category.uploads', 90, 20, null],
         ];
 
         foreach ($defs as [$key, $type, $default, $global, $centre, $teacher, $min, $max, $category, $categoryOrder, $position, $choices]) {

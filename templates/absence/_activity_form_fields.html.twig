@@ -104,7 +104,7 @@
         name="attachments[]"
         label="{{ 'activity.field.attachments'|trans({}, 'admin') }}"
         accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.txt,.zip"
-        help="{{ 'activity.field.attachments_help'|trans({}, 'admin') }}"
+        help="{{ 'activity.field.attachments_help'|trans({'%max%': upload_limits().formatSize(upload_limits().maxFileBytes), '%total%': upload_limits().formatSize(upload_limits().maxTotalBytes)}, 'admin') }}"
         :error="errors.attachments ?? null"
     />
 </div>

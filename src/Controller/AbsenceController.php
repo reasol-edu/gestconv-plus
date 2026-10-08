@@ -22,6 +22,7 @@ use App\Service\ActivityLogService;
 use App\Service\AttachmentDownloadResponder;
 use App\Service\NonWorkingDayChecker;
 use App\Service\TenantContext;
+use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
@@ -36,9 +37,6 @@ class AbsenceController extends AbstractController
 {
     use PastYearGuardTrait;
     use TranslatorTrait;
-    use UploadSizeGuardTrait;
-
-    private const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
     /** @var list<string> */
     private const ALLOWED_ATTACHMENT_MIME_TYPES = [
@@ -73,6 +71,7 @@ class AbsenceController extends AbstractController
         private readonly AttachmentDownloadResponder $downloadResponder,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
         private readonly ClockInterface $clock,
+        private readonly UploadLimits $uploadLimits,
     ) {}
 
     #[Route('', name: 'app_absences_index')]
@@ -344,9 +343,7 @@ class AbsenceController extends AbstractController
         $formData = ['date' => $absence->getStartDate()->format('Y-m-d'), 'time_slot_id' => '', 'description' => '', 'subject_ids' => []];
 
         if ($request->isMethod('POST')) {
-            if ($this->isUploadTooLarge($request)) {
-                $errors['attachments'] = $this->t('activity.error.attachments_total_too_large');
-            } elseif (!$this->isCsrfTokenValid('new_activity_' . $id, $request->request->getString('_token'))) {
+            if (!$this->isCsrfTokenValid('new_activity_' . $id, $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
             } else {
                 $result   = $this->parseActivityFields($request, $absence, $owner, $year);
@@ -429,9 +426,7 @@ class AbsenceController extends AbstractController
         ];
 
         if ($request->isMethod('POST')) {
-            if ($this->isUploadTooLarge($request)) {
-                $errors['attachments'] = $this->t('activity.error.attachments_total_too_large');
-            } elseif (!$this->isCsrfTokenValid('edit_activity_' . $activityId, $request->request->getString('_token'))) {
+            if (!$this->isCsrfTokenValid('edit_activity_' . $activityId, $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
             } else {
                 $result   = $this->parseActivityFields($request, $absence, $owner, $year);
@@ -620,13 +615,15 @@ class AbsenceController extends AbstractController
     {
         $attachments = [];
 
+        $problems = $this->uploadLimits->validate($request->files->all('attachments'));
+        if ($problems !== []) {
+            $errors['attachments'] = implode(' ', $problems);
+
+            return [];
+        }
+
         foreach ($request->files->all('attachments') as $file) {
             if (!$file instanceof UploadedFile || !$file->isValid()) {
-                continue;
-            }
-
-            if ($file->getSize() > self::MAX_ATTACHMENT_SIZE) {
-                $errors['attachments'] = $this->t('activity.error.attachment_too_large');
                 continue;
             }
 

@@ -8,6 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
+use App\Entity\GlobalSettingValue;
 use App\Entity\GroupTeacher;
 use App\Entity\PersonName;
 use App\Entity\Sanction;
@@ -15,6 +16,7 @@ use App\Entity\SanctionMeasure;
 use App\Entity\SanctionMeasureCategory;
 use App\Entity\SanctionTask;
 use App\Entity\SanctionTaskAttachment;
+use App\Entity\SettingDefinition;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Service\SanctionTaskGenerator;
@@ -343,6 +345,94 @@ class SanctionTaskControllerTest extends ControllerTestCase
         @unlink($tmpFile);
     }
 
+    public function testAttachmentRejectedByPhpIsReportedInsteadOfSilentlyDropped(): void
+    {
+        $world  = $this->makeWorld('phpini');
+        $task   = $this->makeTask($world, requiresDates: true);
+        $taskId = $task->getId()->toRfc4122();
+        $this->loginAs($world['teacher'], $world['centre']);
+
+        // PHP marca con UPLOAD_ERR_INI_SIZE los ficheros que superan upload_max_filesize.
+        $this->postTask($task, [$this->makeUpload('grande.pdf', 10, \UPLOAD_ERR_INI_SIZE)]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'grande.pdf');
+        self::assertSelectorTextContains('body', 'supera el tamaño máximo que admite el servidor');
+
+        $this->em->clear();
+        /** @var SanctionTask $reloaded */
+        $reloaded = $this->em->getRepository(SanctionTask::class)->find($taskId);
+        self::assertCount(0, $reloaded->getAttachments());
+        self::assertNull($reloaded->getCompletedAt(), 'La tarea no se da por cumplimentada si falla la subida');
+    }
+
+    public function testFileOverTheConfiguredLimitIsRejectedShowingTheLimit(): void
+    {
+        $world = $this->makeWorld('cfglimit');
+        $task  = $this->makeTask($world, requiresDates: true);
+        $this->setGlobalSetting('uploads.max_file_size_mb', '1');
+        $this->loginAs($world['teacher'], $world['centre']);
+
+        $this->postTask($task, [$this->makeUpload('doc.txt', 1024 * 1024 + 1, \UPLOAD_ERR_OK, 'text/plain')]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', '«doc.txt» supera el tamaño máximo permitido (1 MB)');
+    }
+
+    public function testRaisingTheConfiguredLimitAllowsBiggerFiles(): void
+    {
+        $world  = $this->makeWorld('raised');
+        $task   = $this->makeTask($world, requiresDates: true);
+        $taskId = $task->getId()->toRfc4122();
+        $this->setGlobalSetting('uploads.max_file_size_mb', '2');
+        $this->loginAs($world['teacher'], $world['centre']);
+
+        // 1,5 MB: por encima de 1 MB pero dentro de los 2 MB de upload_max_filesize de PHP.
+        $this->postTask($task, [$this->makeUpload('mediano.txt', 1536 * 1024, \UPLOAD_ERR_OK, 'text/plain')]);
+
+        self::assertResponseRedirects('/tareas-de-sancion');
+        $this->em->clear();
+        /** @var SanctionTask $reloaded */
+        $reloaded = $this->em->getRepository(SanctionTask::class)->find($taskId);
+        self::assertCount(1, $reloaded->getAttachments());
+    }
+
+    public function testTotalOverTheConfiguredLimitIsRejectedEvenIfEachFileIsFine(): void
+    {
+        $world = $this->makeWorld('total');
+        $task  = $this->makeTask($world, requiresDates: true);
+        $this->setGlobalSetting('uploads.max_file_size_mb', '1');
+        $this->setGlobalSetting('uploads.max_total_size_mb', '1');
+        $this->loginAs($world['teacher'], $world['centre']);
+
+        $this->postTask($task, [
+            $this->makeUpload('a.txt', 700 * 1024, \UPLOAD_ERR_OK, 'text/plain'),
+            $this->makeUpload('b.txt', 700 * 1024, \UPLOAD_ERR_OK, 'text/plain'),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'el máximo por envío es 1 MB');
+    }
+
+    public function testOversizedRequestIsRedirectedBackWithAMessageInsteadOfAForbiddenError(): void
+    {
+        $world = $this->makeWorld('bigbody');
+        $task  = $this->makeTask($world, requiresDates: true);
+        $url   = $this->editUrl($task->getSanction(), $task);
+        $this->loginAs($world['teacher'], $world['centre']);
+
+        // PHP vacía POST y ficheros cuando el cuerpo supera post_max_size: solo queda la cabecera Content-Length.
+        $this->client->request('POST', $url, [], [], [
+            'CONTENT_TYPE'   => 'multipart/form-data; boundary=----x',
+            'CONTENT_LENGTH' => (string) (5 * 1024 * 1024 * 1024),
+            'HTTP_REFERER'   => 'http://localhost' . $url,
+        ]);
+
+        self::assertResponseRedirects($url);
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('body', 'El envío es demasiado grande');
+    }
+
     public function testUploadingADisallowedMimeTypeShowsError(): void
     {
         $world  = $this->makeWorld('badmime');
@@ -494,6 +584,34 @@ class SanctionTaskControllerTest extends ControllerTestCase
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /** @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, teacher: Teacher, groupTeacher: GroupTeacher} */
+    /** @param list<UploadedFile> $uploads */
+    private function postTask(SanctionTask $task, array $uploads): void
+    {
+        $url     = $this->editUrl($task->getSanction(), $task);
+        $crawler = $this->client->request('GET', $url);
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', $url, [
+            '_token'      => $token,
+            'description' => '<p>Trabajo con adjuntos.</p>',
+        ], ['attachments' => $uploads]);
+    }
+
+    private function makeUpload(string $name, int $size, int $error = \UPLOAD_ERR_OK, string $mime = 'application/pdf'): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'stu');
+        file_put_contents($path, str_repeat('a', $size));
+
+        return new UploadedFile($path, $name, $mime, $error, true);
+    }
+
+    private function setGlobalSetting(string $key, string $value): void
+    {
+        $definition = $this->em->getRepository(SettingDefinition::class)->findOneBy(['key' => $key]);
+        self::assertNotNull($definition, $key);
+        $this->persist((new GlobalSettingValue())->setDefinition($definition)->setValue($value));
+    }
+
     private function makeWorld(string $suffix): array
     {
         $centre  = (new EducationalCentre())->setCode('41000' . substr(md5($suffix . 'c'), 0, 3))->setName('IES ' . $suffix)->setCity('Sevilla');

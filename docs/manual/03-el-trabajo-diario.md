@@ -454,7 +454,7 @@ clases afectadas:
 4. **Descripción** — instrucciones para quien cubra la clase, con formato de texto enriquecido.
    Es obligatoria.
 5. **Adjuntar ficheros** (opcional) — fichas de trabajo, presentaciones u otro material de apoyo.
-   Se pueden seleccionar varios ficheros a la vez, de hasta 10 MB cada uno; los formatos admitidos
+   Se pueden seleccionar varios ficheros a la vez, de hasta 10 MB cada uno (límite configurable) y 50 MB en total por envío; los formatos admitidos
    son PDF, imágenes (PNG, JPG, GIF), documentos de Word, Excel, PowerPoint y OpenDocument, texto
    plano y ZIP.
    Un fichero que supere el tamaño máximo o no esté en un formato admitido se rechaza, indicando el
@@ -565,7 +565,7 @@ enlace a su contenido). Desde ahí se puede:
 ![Formulario de una tarea de sanción con el trabajo asignado y un adjunto](img/tareas-sancion/tareas-formulario.png)
 
 - Redactar el **trabajo asignado** en el editor de texto enriquecido y, opcionalmente, **adjuntar
-  ficheros** — mismo límite de tamaño (10 MB por fichero) y formatos admitidos que en las
+  ficheros** — mismo límite de tamaño (10 MB por fichero, configurable) y formatos admitidos que en las
   actividades de ausencia.
 - Responder **No procede** a la pregunta «¿Vas a dejar trabajo para esta materia?», si por el
   motivo que sea no corresponde asignar nada; en ese caso se vacía cualquier descripción o

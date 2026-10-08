@@ -16,6 +16,7 @@ use App\Security\Voter\SanctionTaskVoter;
 use App\Service\ActivityLogService;
 use App\Service\AttachmentDownloadResponder;
 use App\Service\TenantContext;
+use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
@@ -29,9 +30,6 @@ class SanctionTaskController extends AbstractController
 {
     use PastYearGuardTrait;
     use TranslatorTrait;
-    use UploadSizeGuardTrait;
-
-    private const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
     /** @var list<string> */
     private const ALLOWED_ATTACHMENT_MIME_TYPES = [
@@ -62,6 +60,7 @@ class SanctionTaskController extends AbstractController
         private readonly ActivityLogService $activityLog,
         private readonly AttachmentDownloadResponder $downloadResponder,
         private readonly ClockInterface $clock,
+        private readonly UploadLimits $uploadLimits,
     ) {}
 
     #[Route('/tareas-de-sancion', name: 'app_sanction_tasks_index')]
@@ -107,9 +106,7 @@ class SanctionTaskController extends AbstractController
         ];
 
         if ($request->isMethod('POST')) {
-            if ($this->isUploadTooLarge($request)) {
-                $errors['attachments'] = $this->t('sanction_task.error.attachments_total_too_large');
-            } elseif (!$this->isCsrfTokenValid('edit_sanction_task_' . $taskId, $request->request->getString('_token'))) {
+            if (!$this->isCsrfTokenValid('edit_sanction_task_' . $taskId, $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
             } else {
                 $notApplicable = $request->request->getBoolean('not_applicable');
@@ -200,13 +197,15 @@ class SanctionTaskController extends AbstractController
     {
         $attachments = [];
 
+        $problems = $this->uploadLimits->validate($request->files->all('attachments'));
+        if ($problems !== []) {
+            $errors['attachments'] = implode(' ', $problems);
+
+            return [];
+        }
+
         foreach ($request->files->all('attachments') as $file) {
             if (!$file instanceof UploadedFile || !$file->isValid()) {
-                continue;
-            }
-
-            if ($file->getSize() > self::MAX_ATTACHMENT_SIZE) {
-                $errors['attachments'] = $this->t('sanction_task.error.attachment_too_large');
                 continue;
             }
 

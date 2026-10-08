@@ -1,6 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 
-const SIZE_UNITS = ['B', 'KiB', 'MiB', 'GiB'];
+const SIZE_UNITS = ['B', 'KB', 'MB', 'GB'];
 
 function formatFileSize(bytes) {
     if (bytes <= 0) {
@@ -11,7 +11,7 @@ function formatFileSize(bytes) {
     const value    = bytes / (1024 ** exponent);
     const decimals = exponent === 0 ? 0 : 1;
 
-    return `${value.toFixed(decimals).replace('.', ',')} ${SIZE_UNITS[exponent]}`;
+    return `${value.toFixed(decimals).replace('.', ',').replace(/,0$/, '')} ${SIZE_UNITS[exponent]}`;
 }
 
 // Zona de arrastrar y soltar para adjuntar ficheros. Sincroniza los ficheros
@@ -19,14 +19,50 @@ function formatFileSize(bytes) {
 // DataTransfer (el input se conserva como alternativa accesible: clic o
 // teclado abren el selector nativo del sistema) y muestra una vista previa
 // donde se puede quitar cada fichero antes de enviar el formulario.
+//
+// Los límites (por fichero, total por envío y número de ficheros) llegan del servidor ya acotados
+// por los de PHP. Si la selección no los cumple se avisa y se impide el envío: el servidor lo
+// rechazaría igualmente y, si el cuerpo supera post_max_size, PHP lo descarta entero.
 export default class extends Controller {
     static targets = ['dropzone', 'input', 'list', 'itemTemplate', 'clientError'];
-    static values  = { maxSize: Number, tooLargeMessage: String, single: Boolean };
+    static values  = {
+        maxSize: Number,
+        maxTotal: Number,
+        maxFiles: Number,
+        tooLargeMessage: String,
+        totalTooLargeMessage: String,
+        tooManyMessage: String,
+        single: Boolean,
+    };
 
     connect() {
         this.dragDepth = 0;
+        this.invalid   = false;
+        this.form      = this.element.closest('form');
+        if (this.form) {
+            this.form.addEventListener('submit', this.onSubmit);
+        }
         this.render();
     }
+
+    disconnect() {
+        if (this.form) {
+            this.form.removeEventListener('submit', this.onSubmit);
+        }
+    }
+
+    // Se cancela el envío si hay una selección inválida. El controlador form-submit comprueba
+    // event.defaultPrevented (con setTimeout) antes de deshabilitar el botón, así que el
+    // formulario queda utilizable para corregir la selección.
+    onSubmit = (event) => {
+        if (!this.invalid) {
+            return;
+        }
+
+        event.preventDefault();
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.clientErrorTarget.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    };
 
     dragEnter(event) {
         event.preventDefault();
@@ -107,9 +143,29 @@ export default class extends Controller {
         this.listTarget.innerHTML = '';
         files.forEach((file, index) => this.listTarget.appendChild(this.buildItem(file, index)));
 
-        const oversized = files.find((file) => file.size > this.maxSizeValue);
-        this.clientErrorTarget.textContent = oversized ? this.tooLargeMessageValue.replace('%filename%', oversized.name) : '';
-        this.clientErrorTarget.classList.toggle('hidden', !oversized);
+        this.validate(files);
+    }
+
+    // Muestra el primer problema de la selección (fichero demasiado grande, demasiados ficheros o
+    // total excesivo) y recuerda si el formulario puede enviarse.
+    validate(files) {
+        let message = '';
+
+        const oversized = this.maxSizeValue > 0 ? files.find((file) => file.size > this.maxSizeValue) : null;
+        if (oversized) {
+            message = this.tooLargeMessageValue.replace('%filename%', oversized.name);
+        } else if (this.maxFilesValue > 0 && files.length > this.maxFilesValue) {
+            message = this.tooManyMessageValue;
+        } else if (this.maxTotalValue > 0) {
+            const total = files.reduce((sum, file) => sum + file.size, 0);
+            if (total > this.maxTotalValue) {
+                message = this.totalTooLargeMessageValue.replace('%total%', formatFileSize(total));
+            }
+        }
+
+        this.invalid = message !== '';
+        this.clientErrorTarget.textContent = message;
+        this.clientErrorTarget.classList.toggle('hidden', !this.invalid);
     }
 
     buildItem(file, index) {

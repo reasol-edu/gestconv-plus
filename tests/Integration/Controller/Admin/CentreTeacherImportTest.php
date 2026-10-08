@@ -347,6 +347,23 @@ class CentreTeacherImportTest extends ControllerTestCase
         self::assertSame('José', $this->teacher('jose.munoz')->getName()->getFirstName());
     }
 
+    public function testFileRejectedByPhpIsReportedInsteadOfAsNoFile(): void
+    {
+        $crawler = $this->client->request('GET', $this->url());
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $tmp = tempnam(sys_get_temp_dir(), 'gestconv_imp_');
+        file_put_contents($tmp, 'x');
+        // PHP marca con UPLOAD_ERR_INI_SIZE los ficheros que superan upload_max_filesize (en el binario, 2M por defecto).
+        $file = new UploadedFile($tmp, 'docentes.csv', 'text/csv', \UPLOAD_ERR_INI_SIZE, true);
+        $this->client->request('POST', $this->url(), ['_token' => $token], ['csv' => $file]);
+        @unlink($tmp);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', '«docentes.csv» supera el tamaño máximo que admite el servidor');
+        self::assertSelectorTextNotContains('body', 'No se ha seleccionado ningún fichero');
+    }
+
     public function testConfirmWithUnknownImportIdIsRejected(): void
     {
         $crawler = $this->upload(self::HEADER . "\"Garcia, Juan\",\"juan.garcia\",\"\"\n");

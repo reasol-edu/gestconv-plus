@@ -17,6 +17,7 @@ use App\Service\CentreTeacherImporter;
 use App\Service\CsvReader;
 use App\Service\TeacherImportRow;
 use App\Service\TenantContext;
+use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,6 +47,7 @@ class CentreTeacherController extends AbstractController
         private readonly CsvReader $csvReader,
         private readonly CentreTeacherImporter $importer,
         private readonly ClockInterface $clock,
+        private readonly UploadLimits $uploadLimits,
     ) {}
 
     #[Route('', name: 'app_centre_teachers_index')]
@@ -159,7 +161,14 @@ class CentreTeacherController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $file = $request->files->get('csv');
+        $file    = $request->files->get('csv');
+        $problem = $this->uploadLimits->fileProblem($file);
+        if ($problem !== null) {
+            $this->addFlash('error', $problem);
+
+            return $this->render('admin/centre_teacher/import.html.twig', ['centre' => $centre]);
+        }
+
         if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('centre_teachers.import.error.no_file'));
 
@@ -250,7 +259,14 @@ class CentreTeacherController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $file = $request->files->get('csv');
+        $file    = $request->files->get('csv');
+        $problem = $this->uploadLimits->fileProblem($file);
+        if ($problem !== null) {
+            $this->addFlash('error', $problem);
+
+            return $this->render('admin/centre_teacher/import_assignments.html.twig', ['centre' => $centre]);
+        }
+
         if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('centre_teachers.import_assignments.error.no_file'));
 

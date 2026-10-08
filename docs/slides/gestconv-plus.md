@@ -257,7 +257,7 @@ El parte pasa a **"Notificado"** y queda en el historial.
 - Cada actividad indica **fecha**, **tramo horario** (filtrado según el día de
   la semana), **grupo** opcional (de entre los que impartes) y una
   **descripción** con las instrucciones para quien cubra la clase.
-- Se pueden adjuntar **ficheros** de hasta 10 MB cada uno (PDF, imágenes,
+- Se pueden adjuntar **ficheros** de hasta 10 MB cada uno (configurable) (PDF, imágenes,
   Word, Excel, PowerPoint, OpenDocument, texto o ZIP) con el material necesario.
 - Los adjuntos se conservan solo un tiempo limitado tras la fecha de la
   actividad; pasado ese plazo se eliminan automáticamente y queda una nota en

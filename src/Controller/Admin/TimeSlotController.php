@@ -16,6 +16,7 @@ use App\Service\PdfRenderer;
 use App\Service\TenantContext;
 use App\Service\TimeSlotExporter;
 use App\Service\TimeSlotImporter;
+use App\Service\UploadLimits;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -41,6 +42,7 @@ class TimeSlotController extends AbstractController
         private readonly PdfRenderer $pdfRenderer,
         private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly TranslatorInterface $translator,
+        private readonly UploadLimits $uploadLimits,
     ) {}
 
     #[Route('', name: 'app_centre_time_slots_index')]
@@ -152,7 +154,14 @@ class TimeSlotController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $file = $request->files->get('json');
+        $file    = $request->files->get('json');
+        $problem = $this->uploadLimits->fileProblem($file);
+        if ($problem !== null) {
+            $this->addFlash('error', $problem);
+
+            return $this->render('admin/time_slot/import.html.twig', ['centre' => $centre]);
+        }
+
         if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('time_slot.import.error.no_file'));
 

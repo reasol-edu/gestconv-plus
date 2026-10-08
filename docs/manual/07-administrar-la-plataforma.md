@@ -366,7 +366,7 @@ elegirlo con el selector del sistema, y se confirma con el botón **Subir**. El 
 de guardarlo:
 
 - Debe ser un PDF legible, de **una sola página** (si tuviera varias, se repetiría de forma
-  confusa como fondo de todas las páginas del informe) y de **10 MB** como máximo.
+  confusa como fondo de todas las páginas del informe) y del tamaño máximo por fichero ([Subida de ficheros](#subida-de-ficheros), 10 MB por defecto).
 - Su orientación debe coincidir con la del ajuste: un PDF apaisado no se admite en una plantilla
   vertical, y viceversa.
 
@@ -389,6 +389,27 @@ afectadas. Un valor de 0 desactiva esta eliminación automática para ese ámbit
 Al eliminar un adjunto, la tarea añade al final de la descripción de la actividad una nota con la
 fecha y hora de la eliminación y el nombre y tamaño del fichero eliminado, para dejar constancia
 de que existió.
+
+### Subida de ficheros
+
+| Ajuste | Ámbito | Tipo | Rango | Por defecto |
+|---|---|---|---|---|
+| Tamaño máximo por fichero (MB) | Global | Entero | 1-1024 | 10 |
+| Tamaño máximo total por envío (MB) | Global | Entero | 1-2048 | 50 |
+
+Limitan los ficheros que se suben en adjuntos de actividades y de tareas de sanción, plantillas PDF
+e importaciones. El **total por envío** cubre el caso de seleccionar varios ficheros de una vez.
+Si se supera cualquiera de los límites, la aplicación lo avisa antes de enviar el formulario y, si
+aun así llegara al servidor, vuelve al formulario con un mensaje que indica el fichero afectado y
+el máximo permitido, sin perder la sesión.
+
+Estos ajustes no pueden superar los límites de PHP del servidor (`upload_max_filesize`,
+`post_max_size`, `max_file_uploads`); si éstos son menores, prevalecen y el aviso muestra el máximo
+real. Los despliegues los traen configurados (16 MB por fichero y 64 MB por envío): en el binario
+nativo, en la directiva `php_ini` del `Caddyfile`; en Docker y Windows, en `php.ini`. Si se suben
+los ajustes por encima de esos valores, hay que subir también los del servidor. Un envío muy
+superior a `post_max_size` puede cortarse en el navegador sin mensaje, por eso conviene respetar el
+aviso previo.
 
 ### Tareas de sanción
 

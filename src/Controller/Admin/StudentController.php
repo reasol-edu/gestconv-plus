@@ -19,6 +19,7 @@ use App\Service\ActivityLogService;
 use App\Service\CsvReader;
 use App\Service\EntityChangeTracker;
 use App\Service\TenantContext;
+use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -55,6 +56,7 @@ class StudentController extends AbstractController
         private readonly CsvReader $csvReader,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
+        private readonly UploadLimits $uploadLimits,
     ) {}
 
     #[Route('', name: 'app_centre_students_index')]
@@ -360,7 +362,14 @@ class StudentController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $file = $request->files->get('csv');
+        $file    = $request->files->get('csv');
+        $problem = $this->uploadLimits->fileProblem($file);
+        if ($problem !== null) {
+            $this->addFlash('error', $problem);
+
+            return $this->render('admin/student/import.html.twig', ['centre' => $centre]);
+        }
+
         if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('students.import.error.no_file'));
             return $this->render('admin/student/import.html.twig', ['centre' => $centre]);

@@ -14,6 +14,7 @@ use App\Service\ActivityLogService;
 use App\Service\NonWorkingDayCsvImporter;
 use App\Service\NonWorkingDayIcsImporter;
 use App\Service\TenantContext;
+use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -36,6 +37,7 @@ class NonWorkingDayController extends AbstractController
         private readonly NonWorkingDayCsvImporter $csvImporter,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
+        private readonly UploadLimits $uploadLimits,
     ) {}
 
     #[Route('', name: 'app_centre_non_working_days_index')]
@@ -195,7 +197,14 @@ class NonWorkingDayController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $file = $request->files->get('ics');
+        $file    = $request->files->get('ics');
+        $problem = $this->uploadLimits->fileProblem($file);
+        if ($problem !== null) {
+            $this->addFlash('error', $problem);
+
+            return $this->render('admin/non_working_day/import.html.twig', ['centre' => $centre]);
+        }
+
         if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('non_working_day.import.error.no_file'));
 
@@ -237,7 +246,14 @@ class NonWorkingDayController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $file = $request->files->get('csv');
+        $file    = $request->files->get('csv');
+        $problem = $this->uploadLimits->fileProblem($file);
+        if ($problem !== null) {
+            $this->addFlash('error', $problem);
+
+            return $this->redirectToRoute('app_centre_non_working_days_import', ['centreId' => $centreId]);
+        }
+
         if (!$file instanceof UploadedFile || !$file->isValid()) {
             $this->addFlash('error', $this->t('non_working_day.import.error.no_file'));
 
