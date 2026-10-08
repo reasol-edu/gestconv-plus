@@ -19,8 +19,8 @@
                           data-live-action-param="saveAddAllDays"
                           class="overflow-hidden rounded-xl border border-forest-200 bg-forest-50/40 p-3 sm:flex sm:items-end sm:gap-2">
                         <div class="flex-1">
-                            <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.name'|trans({}, 'admin') }}</label>
-                            <input type="text"
+                            <label class="mb-1 block text-xs font-medium text-gray-600" for="timeslotcomponent-f1">{{ 'time_slot.field.name'|trans({}, 'admin') }}</label>
+                            <input id="timeslotcomponent-f1" type="text"
                                    data-model="norender|addName"
                                    value="{{ addName }}"
                                    placeholder="{{ 'time_slot.field.name_placeholder'|trans({}, 'admin') }}"
@@ -175,8 +175,8 @@
                                   class="grid grid-cols-1 gap-3 sm:grid-cols-4">
 
                                 <div class="sm:col-span-2">
-                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.name'|trans({}, 'admin') }}</label>
-                                    <input type="text"
+                                    <label class="mb-1 block text-xs font-medium text-gray-600" for="timeslotcomponent-f2">{{ 'time_slot.field.name'|trans({}, 'admin') }}</label>
+                                    <input id="timeslotcomponent-f2" type="text"
                                            data-model="norender|editName"
                                            value="{{ editName }}"
                                            class="block w-full rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2
@@ -184,8 +184,8 @@
                                 </div>
 
                                 <div class="sm:col-span-1">
-                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.day'|trans({}, 'admin') }}</label>
-                                    <select data-model="norender|editDayOfWeek"
+                                    <label class="mb-1 block text-xs font-medium text-gray-600" for="timeslotcomponent-f3">{{ 'time_slot.field.day'|trans({}, 'admin') }}</label>
+                                    <select id="timeslotcomponent-f3" data-model="norender|editDayOfWeek"
                                             class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm
                                                    focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">
                                         {% for day in 0..4 %}
@@ -195,8 +195,8 @@
                                 </div>
 
                                 <div class="sm:col-span-1">
-                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.start'|trans({}, 'admin') }}</label>
-                                    <input type="time"
+                                    <label class="mb-1 block text-xs font-medium text-gray-600" for="timeslotcomponent-f4">{{ 'time_slot.field.start'|trans({}, 'admin') }}</label>
+                                    <input id="timeslotcomponent-f4" type="time"
                                            data-model="norender|editStart"
                                            value="{{ editStart }}"
                                            class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm
@@ -204,8 +204,8 @@
                                 </div>
 
                                 <div class="sm:col-span-1">
-                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.end'|trans({}, 'admin') }}</label>
-                                    <input type="time"
+                                    <label class="mb-1 block text-xs font-medium text-gray-600" for="timeslotcomponent-f5">{{ 'time_slot.field.end'|trans({}, 'admin') }}</label>
+                                    <input id="timeslotcomponent-f5" type="time"
                                            data-model="norender|editEnd"
                                            value="{{ editEnd }}"
                                            class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm
@@ -217,7 +217,7 @@
                                 {% endif %}
 
                                 <div class="border-t border-gray-100 pt-4 sm:col-span-4">
-                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'time_slot.field.guards'|trans({}, 'admin') }}</label>
+                                    <label class="mb-1 block text-xs font-medium text-gray-600" for="staff-guards">{{ 'time_slot.field.guards'|trans({}, 'admin') }}</label>
                                     {% set guard_ids = [] %}
                                     {% for g in sel.guards %}{% set guard_ids = guard_ids|merge([g.id.toRfc4122]) %}{% endfor %}
                                     <select id="staff-guards" multiple class="js-staff-select w-full"

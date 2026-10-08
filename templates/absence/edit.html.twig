@@ -28,7 +28,7 @@
     {% endif %}
 
     <form method="post" action="{{ path('app_absences_edit', {id: absence.id}) }}" class="space-y-6"
-          data-controller="non-working-day"
+          data-controller="non-working-day unsaved-changes"
           data-non-working-day-dates-value="{{ nonWorkingDayDates|default([])|json_encode }}"
           data-non-working-day-blocked-message-value="{{ 'non_working_date.selection_reverted'|trans({}, 'admin') }}">
         <input type="hidden" name="_token" value="{{ csrf_token('edit_absence_' ~ absence.id) }}">

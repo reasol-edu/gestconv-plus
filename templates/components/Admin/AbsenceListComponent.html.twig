@@ -10,16 +10,16 @@
     <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 space-y-3">
         <div class="flex flex-wrap items-end gap-3">
             <div class="flex flex-col gap-1 min-w-40">
-                <label class="text-xs font-medium text-gray-500">{{ 'absence.list.date_from'|trans({}, 'admin') }}</label>
-                <input type="date"
+                <label class="text-xs font-medium text-gray-500" for="absencelistcomponent-f1">{{ 'absence.list.date_from'|trans({}, 'admin') }}</label>
+                <input id="absencelistcomponent-f1" type="date"
                        data-model="dateFrom"
                        value="{{ dateFrom }}"
                        class="rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm text-gray-900
                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
             </div>
             <div class="flex flex-col gap-1 min-w-40">
-                <label class="text-xs font-medium text-gray-500">{{ 'absence.list.date_to'|trans({}, 'admin') }}</label>
-                <input type="date"
+                <label class="text-xs font-medium text-gray-500" for="absencelistcomponent-f2">{{ 'absence.list.date_to'|trans({}, 'admin') }}</label>
+                <input id="absencelistcomponent-f2" type="date"
                        data-model="dateTo"
                        value="{{ dateTo }}"
                        class="rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm text-gray-900

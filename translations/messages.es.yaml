@@ -4,6 +4,7 @@ app:
 # Acciones globales
 ui.cancel: 'Cancelar'
 ui.close: 'Cerrar'
+ui.skip_to_content: 'Saltar al contenido principal'
 ui.confirm_delete: 'Sí, eliminar'
 ui.yes: 'Sí'
 ui.export_started: 'Generando el archivo Excel…'

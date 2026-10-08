@@ -11,16 +11,16 @@
         {# Fila 1: rango temporal + accesos rápidos #}
         <div class="flex flex-wrap items-end gap-3">
             <div class="flex flex-col gap-1 min-w-44">
-                <label class="text-xs font-medium text-gray-500">{{ 'email_notification_log.list.date_from'|trans({}, 'admin') }}</label>
-                <input type="datetime-local"
+                <label class="text-xs font-medium text-gray-500" for="emailnotificationloglistcomponent-f1">{{ 'email_notification_log.list.date_from'|trans({}, 'admin') }}</label>
+                <input id="emailnotificationloglistcomponent-f1" type="datetime-local"
                        data-model="dateFrom"
                        value="{{ dateFrom }}"
                        class="rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm text-gray-900
                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
             </div>
             <div class="flex flex-col gap-1 min-w-44">
-                <label class="text-xs font-medium text-gray-500">{{ 'email_notification_log.list.date_to'|trans({}, 'admin') }}</label>
-                <input type="datetime-local"
+                <label class="text-xs font-medium text-gray-500" for="emailnotificationloglistcomponent-f2">{{ 'email_notification_log.list.date_to'|trans({}, 'admin') }}</label>
+                <input id="emailnotificationloglistcomponent-f2" type="datetime-local"
                        data-model="dateTo"
                        value="{{ dateTo }}"
                        class="rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm text-gray-900
@@ -49,12 +49,12 @@
         <div class="flex flex-wrap items-end gap-3">
 
             <div class="relative flex-1 min-w-48">
-                <label class="text-xs font-medium text-gray-500 block mb-1">{{ 'email_notification_log.list.search_label'|trans({}, 'admin') }}</label>
+                <label class="text-xs font-medium text-gray-500 block mb-1" for="emailnotificationloglistcomponent-f3">{{ 'email_notification_log.list.search_label'|trans({}, 'admin') }}</label>
                 <div class="relative">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         {{ ux_icon('heroicons:magnifying-glass', {class: 'h-4 w-4 text-gray-400'}) }}
                     </div>
-                    <input type="search"
+                    <input id="emailnotificationloglistcomponent-f3" type="search"
                            data-model="norender|search"
                            data-action="input->live#action"
                            data-live-action-param="resetPage"
@@ -67,8 +67,8 @@
             </div>
 
             <div class="flex flex-col gap-1 min-w-52">
-                <label class="text-xs font-medium text-gray-500">{{ 'email_notification_log.list.col.event'|trans({}, 'admin') }}</label>
-                <select data-model="eventKey"
+                <label class="text-xs font-medium text-gray-500" for="emailnotificationloglistcomponent-f4">{{ 'email_notification_log.list.col.event'|trans({}, 'admin') }}</label>
+                <select id="emailnotificationloglistcomponent-f4" data-model="eventKey"
                         class="rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm text-gray-900
                                focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                     <option value="">{{ 'email_notification_log.list.event_all'|trans({}, 'admin') }}</option>
@@ -81,8 +81,8 @@
             </div>
 
             <div class="flex flex-col gap-1 min-w-40">
-                <label class="text-xs font-medium text-gray-500">{{ 'email_notification_log.list.col.status'|trans({}, 'admin') }}</label>
-                <select data-model="status"
+                <label class="text-xs font-medium text-gray-500" for="emailnotificationloglistcomponent-f5">{{ 'email_notification_log.list.col.status'|trans({}, 'admin') }}</label>
+                <select id="emailnotificationloglistcomponent-f5" data-model="status"
                         class="rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm text-gray-900
                                focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                     <option value="">{{ 'email_notification_log.list.status_all'|trans({}, 'admin') }}</option>

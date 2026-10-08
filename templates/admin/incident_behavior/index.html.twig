@@ -39,7 +39,7 @@
     {% if categories is empty %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-16 text-center">
             {{ ux_icon('heroicons:no-symbol', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
-            <p class="text-sm text-gray-500 mb-4">No hay categorías configuradas.</p>
+            <p class="text-sm text-gray-500 mb-4">{{ 'category.empty'|trans({}, 'admin') }}</p>
             <a href="{{ path('app_centre_incident_behavior_categories_create', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors">
                 {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}

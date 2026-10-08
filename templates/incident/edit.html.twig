@@ -52,7 +52,7 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{{ path('app_incidents_edit', {id: report.id}) }}" class="space-y-8" data-controller="form-submit">
+    <form method="post" action="{{ path('app_incidents_edit', {id: report.id}) }}" class="space-y-8" data-controller="form-submit unsaved-changes">
         <input type="hidden" name="_token" value="{{ csrf_token('edit_incident_' ~ report.id) }}">
 
         {# ── Estudiante y docente ───────────────────────────────────────── #}
@@ -64,7 +64,7 @@
             {% if is_granted('incident_report.reassign', report) %}
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5" for="student-select">
                             {{ 'incident.field.student'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
                         </label>
                         <select id="student-select" name="student_group" required

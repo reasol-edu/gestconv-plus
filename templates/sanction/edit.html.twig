@@ -28,7 +28,7 @@
     {% endif %}
 
     <form method="post" action="{{ path('app_sanctions_edit', {id: sanction.id}) }}" class="space-y-8"
-          data-controller="form-submit sanction-measures sanction-date-range"
+          data-controller="form-submit sanction-measures sanction-date-range unsaved-changes"
           data-sanction-date-range-non-working-dates-value="{{ nonWorkingDayDates|default([])|json_encode }}"
           data-sanction-date-range-blocked-message-value="{{ 'non_working_date.selection_blocked'|trans({}, 'admin') }}"
           data-action="submit->sanction-date-range#preventIfInvalid">

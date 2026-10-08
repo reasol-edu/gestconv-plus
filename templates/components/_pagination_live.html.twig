@@ -12,8 +12,8 @@
                 <form data-controller="goto-page" data-goto-page-max-value="{{ pagination.totalPages }}"
                       data-action="goto-page#go"
                       class="flex items-center gap-1.5">
-                    <label for="goto-page-{{ pagination.currentPage }}" class="text-xs text-gray-500">{{ 'pagination.goto_label'|trans }}</label>
-                    <input id="goto-page-{{ pagination.currentPage }}" type="number" inputmode="numeric"
+                    <span class="text-xs text-gray-500" aria-hidden="true">{{ 'pagination.goto_label'|trans }}</span>
+                    <input type="number" inputmode="numeric"
                            data-goto-page-target="input"
                            min="1" max="{{ pagination.totalPages }}" value="{{ pagination.currentPage }}"
                            aria-label="{{ 'pagination.goto_label'|trans }}"

@@ -28,7 +28,7 @@
         </div>
     </div>
 
-    <form method="post" class="space-y-6">
+    <form data-controller="unsaved-changes" method="post" class="space-y-6">
         <input type="hidden" name="_token" value="{{ csrf_token('edit_student_' ~ student.id) }}">
 
         {# ── Datos del estudiante ─────────────────────────────────────────── #}

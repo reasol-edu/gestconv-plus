@@ -187,8 +187,8 @@
 
                                 {# Nombre #}
                                 <div class="sm:col-span-1">
-                                    <label class="mb-1 block text-xs font-medium text-gray-600">{{ name_keys[type]|trans({}, 'admin') }}</label>
-                                    <input type="text"
+                                    <label class="mb-1 block text-xs font-medium text-gray-600" for="offertreecomponent-f1">{{ name_keys[type]|trans({}, 'admin') }}</label>
+                                    <input id="offertreecomponent-f1" type="text"
                                            data-model="norender|editName"
                                            value="{{ editName }}"
                                            class="block w-full rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2
@@ -199,8 +199,8 @@
                                 {# Observaciones del curso #}
                                 {% if type == 'course' %}
                                     <div class="sm:col-span-2">
-                                        <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'course.field.details'|trans({}, 'admin') }}</label>
-                                        <textarea data-model="norender|editDetails" rows="2"
+                                        <label class="mb-1 block text-xs font-medium text-gray-600" for="offertreecomponent-f2">{{ 'course.field.details'|trans({}, 'admin') }}</label>
+                                        <textarea id="offertreecomponent-f2" data-model="norender|editDetails" rows="2"
                                                   class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">{{ editDetails }}</textarea>
                                     </div>
                                 {% endif %}
@@ -210,7 +210,7 @@
                                     {% set tutor_ids = [] %}
                                     {% for tu in sel_group.tutors %}{% set tutor_ids = tutor_ids|merge([tu.id.toRfc4122]) %}{% endfor %}
                                     <div class="sm:col-span-2">
-                                        <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'group.field.tutor'|trans({}, 'admin') }}</label>
+                                        <label class="mb-1 block text-xs font-medium text-gray-600" for="staff-tutors">{{ 'group.field.tutor'|trans({}, 'admin') }}</label>
                                         <select id="staff-tutors" multiple class="js-staff-select w-full"
                                                 data-staff-action="setGroupTutors" data-staff-arg="ids"
                                                 data-placeholder="{{ 'group.field.tutor_help'|trans({}, 'admin') }}">
@@ -291,8 +291,8 @@
                                     </div>
 
                                     <div class="border-t border-gray-100 pt-4 sm:col-span-3">
-                                        <label class="mb-1 block text-xs font-medium text-gray-600">{{ 'group.field.details'|trans({}, 'admin') }}</label>
-                                        <textarea data-model="norender|editDetails" rows="2"
+                                        <label class="mb-1 block text-xs font-medium text-gray-600" for="offertreecomponent-f4">{{ 'group.field.details'|trans({}, 'admin') }}</label>
+                                        <textarea id="offertreecomponent-f4" data-model="norender|editDetails" rows="2"
                                                   class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20">{{ editDetails }}</textarea>
                                     </div>
                                 {% endif %}

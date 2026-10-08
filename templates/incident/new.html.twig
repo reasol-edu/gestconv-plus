@@ -80,7 +80,7 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{{ path('app_incidents_new') }}" class="space-y-8" data-controller="form-submit">
+    <form method="post" action="{{ path('app_incidents_new') }}" class="space-y-8" data-controller="form-submit unsaved-changes">
         <input type="hidden" name="_token" value="{{ csrf_token('new_incident') }}">
         {% if fromDailyNotes %}
             <input type="hidden" name="from_daily_notes" value="1">

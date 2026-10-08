@@ -18,6 +18,13 @@
      data-confirm-close-value="{{ 'ui.close'|trans }}"
      class="h-full">
 
+    {# Enlace de salto: permite a quien navega con teclado o lector de pantalla evitar la barra lateral. #}
+    <a href="#main-content"
+       class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white
+              focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-forest-700 focus:shadow-lg focus:ring-2 focus:ring-forest-500">
+        {{ 'ui.skip_to_content'|trans }}
+    </a>
+
     {# ── Backdrop móvil ──────────────────────────────────────────────────────── #}
     <div data-sidebar-target="backdrop"
          data-action="click->sidebar#close"
@@ -329,7 +336,7 @@
             </div>
         </header>
 
-        <main class="flex-1">
+        <main id="main-content" tabindex="-1" class="flex-1 focus:outline-none">
             {# Flash messages — región live para lectores de pantalla. Los success
                se anuncian con polite (no interrumpen); los error con assertive. #}
             {% set flashes = app.flashes(['success', 'error']) %}
