@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.6] - 2026-10-08
+
+### Added
+
+- Dos ajustes nuevos en «Subida de ficheros»: tamaño máximo por fichero (10 MB por defecto) y tamaño máximo total por envío (50 MB), para controlar las subidas de varios ficheros a la vez.
+
+### Fixed
+
+- Subir ficheros grandes (por ejemplo, adjuntos de tareas de sanción) ya no deja la pantalla en blanco: la aplicación avisa antes de enviar si se superan los límites y, si aun así llegan al servidor, vuelve al formulario indicando el fichero afectado y el máximo permitido. En el binario nativo, el servidor admite ahora hasta 16 MB por fichero y 64 MB por envío. Al actualizar, sustituye también el `Caddyfile` (o `php.ini`) de la instalación.
+
 ## [1.4.5] - 2026-10-04
 
 ### Fixed
