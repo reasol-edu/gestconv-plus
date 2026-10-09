@@ -87,19 +87,19 @@
                                       (not sanction.noMeasureApplied and (sanction.measuresEffective is same as false or sanction.familyClaimed is same as true)) %}
                                     <div class="flex flex-wrap gap-1 mt-1">
                                         {% if sanction.registeredInSeneca is same as true %}
-                                            <span class="inline-flex items-center gap-0.5 rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 text-xs font-medium">
+                                            <span class="inline-flex items-center gap-0.5 rounded-xl bg-sky-100 text-sky-700 px-2 py-0.5 text-xs font-medium leading-snug">
                                                 {{ ux_icon('heroicons:check-badge', {class: 'h-3 w-3'}) }}
                                                 {{ 'sanction.badge.in_seneca'|trans({}, 'admin') }}
                                             </span>
                                         {% endif %}
                                         {% if not sanction.noMeasureApplied and sanction.measuresEffective is same as false %}
-                                            <span class="inline-flex items-center gap-0.5 rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-xs font-medium">
+                                            <span class="inline-flex items-center gap-0.5 rounded-xl bg-red-100 text-red-700 px-2 py-0.5 text-xs font-medium leading-snug">
                                                 {{ ux_icon('heroicons:x-circle', {class: 'h-3 w-3'}) }}
                                                 {{ 'sanction.badge.not_effective'|trans({}, 'admin') }}
                                             </span>
                                         {% endif %}
                                         {% if not sanction.noMeasureApplied and sanction.familyClaimed is same as true %}
-                                            <span class="inline-flex items-center gap-0.5 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs font-medium">
+                                            <span class="inline-flex items-center gap-0.5 rounded-xl bg-amber-100 text-amber-700 px-2 py-0.5 text-xs font-medium leading-snug">
                                                 {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-3 w-3'}) }}
                                                 {{ 'sanction.badge.family_claimed'|trans({}, 'admin') }}
                                             </span>
@@ -146,18 +146,18 @@
                             <td data-label="{{ 'sanction.col.notified'|trans({}, 'admin')|e('html_attr') }}"
                                 class="px-6 py-4">
                                 {% if sanction.notified %}
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs font-medium">
+                                    <span class="inline-flex items-center gap-1 rounded-xl bg-green-100 text-green-700 px-2 py-0.5 text-xs font-medium leading-snug">
                                         {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
                                         {{ 'notification.badge.notified'|trans({}, 'notifications') }}
                                     </span>
                                 {% elseif is_granted('sanction.notify', sanction) and not is_viewing_past_year() %}
                                     <a href="{{ path('app_notifications_register_sanction', {id: sanction.id}) }}"
-                                       class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium hover:bg-amber-200 transition-colors">
+                                       class="inline-flex items-center gap-1 rounded-xl bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium leading-snug hover:bg-amber-200 transition-colors">
                                         {{ ux_icon('heroicons:bell-alert', {class: 'h-3 w-3'}) }}
                                         {{ 'notification.badge.pending'|trans({}, 'notifications') }}
                                     </a>
                                 {% else %}
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium">
+                                    <span class="inline-flex items-center gap-1 rounded-xl bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium leading-snug">
                                         {{ ux_icon('heroicons:bell-alert', {class: 'h-3 w-3'}) }}
                                         {{ 'notification.badge.pending'|trans({}, 'notifications') }}
                                     </span>
