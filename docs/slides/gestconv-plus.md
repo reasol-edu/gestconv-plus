@@ -345,7 +345,8 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 - Nueva sección del menú lateral con el alumnado de todos los grupos
   tutorizados, ordenado por apellidos y nombre.
 - Cada fila resume su grupo y sus estadísticas: partes totales (con el
-  desglose entre normales y graves), sin notificar y prescritos, y
+  desglose entre normales y graves), sin notificar (sin contar los
+  prescritos) y prescritos, y
   sanciones totales y sin notificar.
 - Buscador por nombre, filtro por grupo y ordenación por cualquier columna,
   creciente o decreciente.

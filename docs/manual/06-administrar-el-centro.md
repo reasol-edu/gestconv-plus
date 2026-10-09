@@ -296,6 +296,10 @@ se cuenta desde la fecha en la que ocurrió el incidente. Si el aviso de «Parte
 activado, se envía igual que si lo hubiera marcado un administrador manualmente, pero sin nombrar
 a ningún docente como autor de la acción.
 
+Un parte prescrito sale de las notificaciones pendientes (cola, campana, resumen por estudiante y
+notificación en bloque) y deja de contarse como «sin notificar» en **Mi tutoría**; en el listado
+de partes se sigue viendo, atenuado.
+
 ## Aviso de prescripción próxima
 
 Otra tarea programada diaria, independiente de la anterior, avisa con antelación de los partes a

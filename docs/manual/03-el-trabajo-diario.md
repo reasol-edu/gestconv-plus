@@ -274,6 +274,11 @@ Cada elemento de la cola muestra su **antigüedad** (los días transcurridos des
 registró), destacada en ámbar a partir de tres días y en rojo a partir de siete, para localizar
 de un vistazo los más atrasados.
 
+Los **partes prescritos** (por el paso del plazo o marcados por un administrador) ya no se pueden
+comunicar a la familia, así que no aparecen en la cola, en la campana, en el listado de
+estudiantes con notificaciones pendientes ni en las pantallas de notificación en bloque. Siguen
+visibles en el [listado de partes](#listado-y-filtros), atenuados.
+
 El botón **Notificar** solo aparece en los elementos que ese docente tiene permiso para comunicar
 (ver [Quién puede notificar](#quien-puede-notificar)); el resto aparece igualmente en la lista,
 sin acción disponible.
@@ -387,7 +392,8 @@ sus grupos tutorizados, ordenado por apellidos y nombre:
 - **Apellidos, nombre** y **grupo** de cada estudiante.
 - **Partes** — total de partes registrados, con el desglose entre normales (N) y graves (G) entre
   paréntesis.
-- **Sin notificar** — partes todavía sin comunicar a la familia.
+- **Sin notificar** — partes todavía sin comunicar a la familia, sin contar los prescritos (que
+  tienen su propia columna).
 - **Prescritos** — partes que han prescrito por el paso del plazo.
 - **Sanciones** y **Sanciones sin notificar**, con el mismo criterio que los partes.
 

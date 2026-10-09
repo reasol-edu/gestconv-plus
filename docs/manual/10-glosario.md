@@ -30,7 +30,7 @@ Cada una de las actuaciones que un centro puede aplicar en una sanción (por eje
 Registro de cada intento de informar a la familia de un parte o una sanción: método utilizado, docente, fecha y hora, observaciones y resultado. Un parte sin comunicación exitosa no puede incorporarse a una sanción, y una sanción sin notificar no aparece en el calendario.
 
 **Parte prescrito**
-Parte marcado con una fecha de prescripción por un administrador. Un parte prescrito se considera *no sancionable*: deja de poder incorporarse a nuevas sanciones.
+Parte marcado con una fecha de prescripción por un administrador. Un parte prescrito se considera *no sancionable*: deja de poder incorporarse a nuevas sanciones. Tampoco se puede ya notificar a la familia, por lo que no aparece en las notificaciones pendientes ni cuenta como parte sin notificar.
 
 **Ficha del estudiante**
 Pantalla que reúne los datos básicos de un estudiante, sus contadores de partes y sanciones, los datos de contacto de la familia (visibles solo para determinados perfiles) y su historial de convivencia. Se abre desde el buscador global y desde los listados y detalles de partes y sanciones.
