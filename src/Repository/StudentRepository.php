@@ -301,7 +301,7 @@ class StudentRepository extends ServiceEntityRepository
                  JOIN r2.behaviors b2 JOIN b2.category bc2
                  WHERE r2.student = s AND r2.group = g AND bc2.serious = :serious) AS reportsSerious,
                 (SELECT COUNT(r3.id) FROM App\Entity\IncidentReport r3
-                 WHERE r3.student = s AND r3.group = g AND r3.notifiedCommunication IS NULL) AS reportsUnnotified,
+                 WHERE r3.student = s AND r3.group = g AND r3.notifiedCommunication IS NULL AND r3.prescribedAt IS NULL) AS reportsUnnotified,
                 (SELECT COUNT(r4.id) FROM App\Entity\IncidentReport r4
                  WHERE r4.student = s AND r4.group = g AND r4.prescribedAt IS NOT NULL) AS reportsPrescribed,
                 (SELECT COUNT(sa1.id) FROM App\Entity\Sanction sa1

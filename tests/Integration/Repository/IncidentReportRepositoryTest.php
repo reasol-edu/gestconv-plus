@@ -399,6 +399,28 @@ class IncidentReportRepositoryTest extends RepositoryTestCase
         self::assertSame($pending->getId(), $results[0]->getId());
     }
 
+    public function testPrescribedReportsAreNotPendingNorNotifiable(): void
+    {
+        $world      = $this->makeWorld('pn-presc');
+        $admin      = $this->makeTeacher('admin.pending.prescribed', admin: true);
+        $pending    = $this->makeReport($world, creator: $admin);
+        $prescribed = $this->makeReport($world, creator: $admin);
+        $prescribed->setPrescribedAt(new \DateTimeImmutable());
+        $this->persist($admin, $pending, $prescribed);
+
+        $pendingIds = array_map(
+            static fn ($r) => $r->getId()->toRfc4122(),
+            $this->repo->findPendingNotification($world['centre'], $admin, $world['year']),
+        );
+        $notifiable = $this->repo->createNotifiableQuery($world['centre'], $admin, 'both', $world['year'])->getResult();
+        $summary    = $this->repo->findNotifiableSummaryByStudent($world['centre'], $admin, 'both', $world['year']);
+
+        self::assertSame([$pending->getId()->toRfc4122()], $pendingIds);
+        self::assertCount(1, $notifiable);
+        self::assertSame($pending->getId(), $notifiable[0]->getId());
+        self::assertSame(1, $summary[0]['count'] ?? null);
+    }
+
     public function testFindPendingNotificationRestrictsVisibilityForRegularTeacher(): void
     {
         $world = $this->makeWorld('pn2');

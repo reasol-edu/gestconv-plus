@@ -400,6 +400,7 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('r.notifiedCommunication IS NULL')
+            ->andWhere('r.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('r.occurredAt', 'ASC');
@@ -474,6 +475,7 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('r.notifiedCommunication IS NULL')
+            ->andWhere('r.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
             ->groupBy('st.id')
@@ -508,6 +510,7 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('r.notifiedCommunication IS NULL')
+            ->andWhere('r.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid');
 
