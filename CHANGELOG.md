@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-10-09
+
+### Added
+
+- Resumen diario de los avisos por correo: en lugar de un correo por cada aviso, el profesorado recibe un único correo al día por centro, con las novedades agrupadas por secciones (próximos a prescribir, partes, sanciones, tareas de sanción y notas) y un enlace a cada una. Se controla con los nuevos ajustes «Forma de recibir los avisos por correo» (resumen diario o inmediata) y «Hora del resumen diario» (7 por defecto), que siguen el esquema global › centro › docente con sus bloqueos.
+
+### Changed
+
+- **El resumen diario es ahora la forma por defecto**: tras actualizar, quien no tenga fijado un valor propio dejará de recibir un correo por aviso y recibirá uno al día. Quien prefiera los correos inmediatos puede elegirlo en sus ajustes (o el administrador fijarlo para todo el centro).
+- Los avisos de prescripción próxima de partes y de sanciones y el recordatorio de tareas de sanción pendientes se envían siempre dentro del resumen, también a quien reciba el resto de forma inmediata: un correo diario en lugar de tres.
+- En el resumen no se incluyen los PDF adjuntos, solo los enlaces. Los correos de verificación de correo y de recuperación de contraseña siguen enviándose al momento.
+
 ## [1.5.0] - 2026-10-09
 
 ### Added
