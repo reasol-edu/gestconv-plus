@@ -24,7 +24,7 @@ function formatFileSize(bytes) {
 // por los de PHP. Si la selección no los cumple se avisa y se impide el envío: el servidor lo
 // rechazaría igualmente y, si el cuerpo supera post_max_size, PHP lo descarta entero.
 export default class extends Controller {
-    static targets = ['dropzone', 'input', 'list', 'itemTemplate', 'clientError'];
+    static targets = ['dropzone', 'input', 'list', 'itemTemplate', 'clientError', 'submit'];
     static values  = {
         maxSize: Number,
         maxTotal: Number,
@@ -164,6 +164,10 @@ export default class extends Controller {
         }
 
         this.invalid = message !== '';
+        if (this.hasSubmitTarget) {
+            // Botón de envío opcional: solo se muestra cuando hay algún fichero seleccionado.
+            this.submitTarget.classList.toggle('hidden', files.length === 0);
+        }
         this.clientErrorTarget.textContent = message;
         this.clientErrorTarget.classList.toggle('hidden', !this.invalid);
     }
