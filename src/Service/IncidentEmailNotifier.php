@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Entity\DailyNote;
 use App\Entity\DailyNoteType;
 use App\Entity\EducationalCentre;
+use App\Entity\EmailDigestItem;
 use App\Entity\EmailNotificationLog;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
@@ -134,27 +135,15 @@ final class IncidentEmailNotifier
 
         $centre = $this->centreForGroup($items[0]['report']->getGroup());
 
-        $rows = array_map(
-            fn (array $item): array => [
-                'report'        => $item['report'],
-                'daysRemaining' => $item['daysRemaining'],
-                'url'           => $this->urlGenerator->generate(
-                    'app_incidents_show',
-                    ['id' => $item['report']->getId()->toRfc4122()],
-                    UrlGeneratorInterface::ABSOLUTE_URL,
-                ),
-            ],
-            $items,
-        );
-
-        $this->dispatch(
-            $centre,
-            $teacher,
-            'report_prescription_warning',
-            ['%count%' => count($items)],
-            'email/report_prescription_warning.html.twig',
-            ['rows' => $rows],
-        );
+        foreach ($items as $item) {
+            $report = $item['report'];
+            $this->queueDigestItem($centre, $teacher, 'report_prescription_warning', [
+                '%number%'  => $report->getNumber(),
+                '%student%' => $this->fullName($report->getStudent()),
+                '%group%'   => $report->getGroup()->getName(),
+                '%count%'   => max(0, $item['daysRemaining']),
+            ], $this->urlGenerator->generate('app_incidents_show', ['id' => $report->getId()->toRfc4122()], UrlGeneratorInterface::ABSOLUTE_URL));
+        }
     }
 
     /**
@@ -222,27 +211,14 @@ final class IncidentEmailNotifier
 
         $centre = $this->centreForGroup($items[0]['sanction']->getGroup());
 
-        $rows = array_map(
-            fn (array $item): array => [
-                'sanction'      => $item['sanction'],
-                'daysRemaining' => $item['daysRemaining'],
-                'url'           => $this->urlGenerator->generate(
-                    'app_sanctions_show',
-                    ['id' => $item['sanction']->getId()->toRfc4122()],
-                    UrlGeneratorInterface::ABSOLUTE_URL,
-                ),
-            ],
-            $items,
-        );
-
-        $this->dispatch(
-            $centre,
-            $teacher,
-            'sanction_prescription_warning',
-            ['%count%' => count($items)],
-            'email/sanction_prescription_warning.html.twig',
-            ['rows' => $rows],
-        );
+        foreach ($items as $item) {
+            $sanction = $item['sanction'];
+            $this->queueDigestItem($centre, $teacher, 'sanction_prescription_warning', [
+                '%student%' => $this->fullName($sanction->getStudent()),
+                '%group%'   => $sanction->getGroup()->getName(),
+                '%count%'   => max(0, $item['daysRemaining']),
+            ], $this->urlGenerator->generate('app_sanctions_show', ['id' => $sanction->getId()->toRfc4122()], UrlGeneratorInterface::ABSOLUTE_URL));
+        }
     }
 
     public function reportSanctioned(IncidentReport $report, Teacher $actor): void
@@ -329,6 +305,20 @@ final class IncidentEmailNotifier
         ];
 
         foreach ($tasksByTeacher as $teacherId => $teacherTasks) {
+            if ($this->usesDigest($centre, $teachersById[$teacherId])) {
+                foreach ($teacherTasks as $task) {
+                    $this->queueDigestItem($centre, $teachersById[$teacherId], 'sanction_task_assigned', $params + [
+                        '%subject%' => $task->getGroupTeacher()->getSubject(),
+                    ], $this->urlGenerator->generate(
+                        'app_sanction_tasks_edit',
+                        ['id' => $sanction->getId()->toRfc4122(), 'taskId' => $task->getId()->toRfc4122()],
+                        UrlGeneratorInterface::ABSOLUTE_URL,
+                    ));
+                }
+
+                continue;
+            }
+
             $rows = array_map(
                 fn (SanctionTask $task): array => [
                     'subject' => $task->getGroupTeacher()->getSubject(),
@@ -369,32 +359,20 @@ final class IncidentEmailNotifier
         $centre = $this->centreForGroup($items[0]->getSanction()->getGroup());
         $now    = $this->clock->now();
 
-        $rows = array_map(
-            function (SanctionTask $task) use ($now): array {
-                $effectiveFrom = $task->getSanction()->getEffectiveFrom();
-                \assert($effectiveFrom !== null);
+        foreach ($items as $task) {
+            $effectiveFrom = $task->getSanction()->getEffectiveFrom();
+            \assert($effectiveFrom !== null);
 
-                return [
-                    'task'          => $task,
-                    'daysRemaining' => $now->diff($effectiveFrom)->days,
-                    'url'           => $this->urlGenerator->generate(
-                        'app_sanction_tasks_edit',
-                        ['id' => $task->getSanction()->getId()->toRfc4122(), 'taskId' => $task->getId()->toRfc4122()],
-                        UrlGeneratorInterface::ABSOLUTE_URL,
-                    ),
-                ];
-            },
-            $items,
-        );
-
-        $this->dispatch(
-            $centre,
-            $teacher,
-            'sanction_task_reminder',
-            ['%count%' => count($items)],
-            'email/sanction_task_reminder.html.twig',
-            ['rows' => $rows],
-        );
+            $this->queueDigestItem($centre, $teacher, 'sanction_task_reminder', [
+                '%subject%' => $task->getGroupTeacher()->getSubject(),
+                '%student%' => $this->fullName($task->getSanction()->getStudent()),
+                '%count%'   => (int) $now->diff($effectiveFrom)->days,
+            ], $this->urlGenerator->generate(
+                'app_sanction_tasks_edit',
+                ['id' => $task->getSanction()->getId()->toRfc4122(), 'taskId' => $task->getId()->toRfc4122()],
+                UrlGeneratorInterface::ABSOLUTE_URL,
+            ));
+        }
     }
 
     private function notifyReportEvent(IncidentReport $report, string $event, Teacher $actor, bool $withLink = true): void
@@ -547,6 +525,14 @@ final class IncidentEmailNotifier
             return;
         }
 
+        // Recipients who chose the daily digest get this event as a line of their next digest instead.
+        if ($this->usesDigest($centre, $teacher)) {
+            $url = $context['reportUrl'] ?? $context['sanctionUrl'] ?? $context['studentUrl'] ?? null;
+            $this->queueDigestItem($centre, $teacher, $eventKey, $params, is_string($url) ? $url : null);
+
+            return;
+        }
+
         $subject = $this->withSubjectPrefix($centre, $this->translator->trans("emails.$eventKey.subject", $params, 'emails'));
 
         $message = (new TemplatedEmail())
@@ -564,6 +550,82 @@ final class IncidentEmailNotifier
         }
 
         $this->send($centre, $teacher, $eventKey, $message);
+    }
+
+    /** Whether the teacher receives the centre's notifications as one daily digest (setting "notifications.email_delivery"). */
+    private function usesDigest(EducationalCentre $centre, Teacher $teacher): bool
+    {
+        return $this->settings->getForTeacherInCentre('notifications.email_delivery', $teacher, $centre) === 'daily_digest';
+    }
+
+    /**
+     * Queues one line for the teacher's daily digest ({@see EmailDigestSender}). The translation key of the
+     * line is "emails.digest.line.<eventKey>" and uses these parameters.
+     *
+     * @param array<string, scalar|null> $params
+     */
+    private function queueDigestItem(EducationalCentre $centre, Teacher $teacher, string $eventKey, array $params, ?string $url): void
+    {
+        if ($teacher->getEmail() === null) {
+            return;
+        }
+
+        $this->em->persist(new EmailDigestItem($centre, $teacher, $eventKey, $params, $url, $this->clock->now()));
+        $this->em->flush();
+    }
+
+    /**
+     * Sends one digest email with the given lines (all of the same teacher and centre), grouped by
+     * section, and records it in the email log. Returns false if the transport failed.
+     *
+     * @param list<EmailDigestItem> $items
+     */
+    public function sendDigest(Teacher $teacher, EducationalCentre $centre, array $items): bool
+    {
+        $address = $teacher->getEmail();
+        if ($address === null || $items === []) {
+            return true;
+        }
+
+        /** @var array<string, array<string, array{text: string, url: ?string, times: int}>> $sections */
+        $sections = [];
+        foreach ($items as $item) {
+            $section = EmailDigestSections::forEvent($item->getEventKey());
+            $text    = $this->translator->trans('emails.digest.line.' . $item->getEventKey(), $item->getParams(), 'emails');
+            $key     = $text . '|' . ($item->getUrl() ?? '');
+            if (isset($sections[$section][$key])) {
+                ++$sections[$section][$key]['times'];
+            } else {
+                $sections[$section][$key] = ['text' => $text, 'url' => $item->getUrl(), 'times' => 1];
+            }
+        }
+
+        $ordered = [];
+        foreach (EmailDigestSections::ORDER as $section) {
+            if (isset($sections[$section])) {
+                $ordered[] = [
+                    'title' => $this->translator->trans('emails.digest.section.' . $section, [], 'emails'),
+                    'lines' => array_values($sections[$section]),
+                ];
+            }
+        }
+
+        $count   = array_sum(array_map(static fn (array $s): int => count($s['lines']), $ordered));
+        $params  = ['%count%' => $count, '%centre%' => $centre->getName()];
+        $subject = $this->withSubjectPrefix($centre, $this->translator->trans('emails.daily_digest.subject', $params, 'emails'));
+
+        $message = (new TemplatedEmail())
+            ->to(new Address($address, $this->fullName($teacher)))
+            ->subject($subject)
+            ->htmlTemplate('email/daily_digest.html.twig')
+            ->context([
+                'teacher'     => $teacher,
+                'params'      => $params,
+                'transPrefix' => 'emails.daily_digest',
+                'sections'    => $ordered,
+            ]);
+
+        return $this->send($centre, $teacher, 'daily_digest', $message);
     }
 
     private function withSubjectPrefix(EducationalCentre $centre, string $subject): string
@@ -666,7 +728,7 @@ final class IncidentEmailNotifier
         return new DataPart($content, $filename, 'application/pdf');
     }
 
-    private function send(EducationalCentre $centre, Teacher $recipient, string $eventKey, TemplatedEmail $email): void
+    private function send(EducationalCentre $centre, Teacher $recipient, string $eventKey, TemplatedEmail $email): bool
     {
         $email->from(new Address($this->fromAddress, $this->appName));
 
@@ -685,6 +747,8 @@ final class IncidentEmailNotifier
         }
 
         $this->logNotification($centre, $recipient, $eventKey, (string) $email->getSubject(), $success, $errorMessage);
+
+        return $success;
     }
 
     private function logNotification(

@@ -12,6 +12,7 @@ use App\Message\PurgeActivityLogMessage;
 use App\Message\PurgeEmailNotificationLogMessage;
 use App\Message\PurgeSanctionTaskAttachmentsMessage;
 use App\Message\SanctionTaskReminderMessage;
+use App\Message\SendDailyEmailDigestsMessage;
 use App\Message\WarnUpcomingReportPrescriptionsMessage;
 use App\Message\WarnUpcomingSanctionPrescriptionsMessage;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
@@ -42,6 +43,7 @@ class Schedule implements ScheduleProviderInterface
                 RecurringMessage::cron('0 5 * * 0', new PurgeActivityAttachmentsMessage()),
                 RecurringMessage::cron('30 5 * * 0', new PurgeSanctionTaskAttachmentsMessage()),
                 RecurringMessage::cron('0 6 * * *', new SanctionTaskReminderMessage()),
+                RecurringMessage::cron('0 * * * *', new SendDailyEmailDigestsMessage()),
             )
             ->stateful($this->cache)
             ->processOnlyLastMissedRun(true)

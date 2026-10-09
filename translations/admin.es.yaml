@@ -1103,6 +1103,7 @@ email_notification_log.event.report_prescription_warning: 'Aviso de prescripció
 email_notification_log.event.report_sanctioned: 'Parte incorporado a una sanción'
 email_notification_log.event.report_sanctionable_committee: 'Parte sancionable (comisión de convivencia)'
 email_notification_log.event.sanction_notified: 'Sanción notificada a la familia'
+email_notification_log.event.daily_digest: 'Resumen diario'
 email_notification_log.event.sanction_prescribed: 'Sanción marcada como prescrita'
 email_notification_log.event.sanction_auto_prescribed: 'Sanción prescrita automáticamente'
 email_notification_log.event.sanction_prescription_warning: 'Aviso de prescripción próxima de sanciones'

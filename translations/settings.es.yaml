@@ -115,6 +115,14 @@ settings.key.notifications_email_report_prescribed.choice.report_teacher: 'Al do
 settings.key.notifications_email_report_prescribed.choice.group_tutor: 'Al tutor/a de grupo'
 settings.key.notifications_email_report_prescribed.choice.both: 'A ambos'
 
+settings.key.notifications_email_delivery.label: 'Forma de recibir los avisos por correo'
+settings.key.notifications_email_delivery.description: 'Con «Resumen diario» no se envía un correo por cada aviso: todos los avisos del día llegan juntos en un único correo diario por centro, con enlaces a cada elemento. Los avisos de prescripción próxima y de tareas de sanción pendientes se envían siempre agrupados en ese resumen. Los PDF adjuntos no se incluyen en el resumen.'
+settings.key.notifications_email_delivery.choice.immediate: 'Inmediata (un correo por aviso)'
+settings.key.notifications_email_delivery.choice.daily_digest: 'Resumen diario'
+
+settings.key.notifications_email_digest_hour.label: 'Hora del resumen diario'
+settings.key.notifications_email_digest_hour.description: 'Hora del día (0-23, hora del servidor) a la que se envía el correo diario con los avisos acumulados. Se aplica tanto a quien recibe todos los avisos en resumen como a quien recibe los avisos inmediatos y solo el resumen de prescripciones próximas y tareas pendientes.'
+
 settings.key.notifications_email_sanction_prescribed.label: 'Sanción prescrita'
 settings.key.notifications_email_sanction_prescribed.description: 'Determina quién recibe un correo cuando una sanción prescribe, ya sea automáticamente por haber superado el plazo o porque un administrador la marca como prescrita. Se avisa al docente que registró la sanción y/o al tutor/a del grupo.'
 settings.key.notifications_email_sanction_prescribed.choice.none: 'A nadie'

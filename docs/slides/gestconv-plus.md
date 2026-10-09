@@ -787,6 +787,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   enviado, a quién y si la entrega ha tenido éxito.
 - Ambos registros son la referencia para resolver dudas de tipo "¿esto se
   llegó a notificar de verdad?".
+- Los avisos por correo llegan por defecto en un **resumen diario** (un
+  único correo al día por centro, a la hora que cada docente elija), no uno
+  a uno; quien lo prefiera puede recibirlos de forma inmediata.
 
 ---
 

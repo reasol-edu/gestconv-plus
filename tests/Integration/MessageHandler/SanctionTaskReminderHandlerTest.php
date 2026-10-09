@@ -44,6 +44,7 @@ class SanctionTaskReminderHandlerTest extends RepositoryTestCase
         $this->setReminderDays($world['centre'], 3);
 
         ($this->handler)(new SanctionTaskReminderMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(1);
     }
@@ -55,6 +56,7 @@ class SanctionTaskReminderHandlerTest extends RepositoryTestCase
         $this->setReminderDays($world['centre'], 3);
 
         ($this->handler)(new SanctionTaskReminderMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(0);
     }
@@ -66,6 +68,7 @@ class SanctionTaskReminderHandlerTest extends RepositoryTestCase
         $this->setReminderDays($world['centre'], 0);
 
         ($this->handler)(new SanctionTaskReminderMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(0);
     }
@@ -79,6 +82,7 @@ class SanctionTaskReminderHandlerTest extends RepositoryTestCase
         $this->setReminderDays($world['centre'], 3);
 
         ($this->handler)(new SanctionTaskReminderMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(0);
     }
@@ -91,6 +95,7 @@ class SanctionTaskReminderHandlerTest extends RepositoryTestCase
         $this->setReminderDays($world['centre'], 3);
 
         ($this->handler)(new SanctionTaskReminderMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(1);
         self::assertEmailSubjectContains($this->sentMessage(0), '2');
@@ -106,6 +111,7 @@ class SanctionTaskReminderHandlerTest extends RepositoryTestCase
         $this->setReminderDays($worldB['centre'], 10);
 
         ($this->handler)(new SanctionTaskReminderMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(1);
         self::assertEmailAddressContains($this->sentMessage(0), 'To', $worldB['teacher']->getEmail());
@@ -176,6 +182,14 @@ class SanctionTaskReminderHandlerTest extends RepositoryTestCase
             ->setCentre($centre)
             ->setValue((string) $days);
         $this->persist($value);
+    }
+
+    /** Los recordatorios se acumulan en el resumen diario: se envía ahora, sin esperar a la hora de cada docente. */
+    private function sendDigests(): void
+    {
+        /** @var \App\Service\EmailDigestSender $sender */
+        $sender = self::getContainer()->get(\App\Service\EmailDigestSender::class);
+        $sender->sendDue(ignoreHour: true);
     }
 
     /**

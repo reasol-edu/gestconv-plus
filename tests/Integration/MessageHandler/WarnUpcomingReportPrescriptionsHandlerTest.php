@@ -48,6 +48,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setWarningDays($world['centre'], 7);
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(1);
     }
@@ -60,6 +61,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setWarningDays($world['centre'], 7);
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(0);
     }
@@ -72,6 +74,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setWarningDays($world['centre'], 0);
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(0);
     }
@@ -85,6 +88,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setTeacherWarningDays($world['creator'], 7);
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(1);
     }
@@ -99,6 +103,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setWarningDays($world['centre'], 7);
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(0);
     }
@@ -112,6 +117,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setWarningDays($world['centre'], 7);
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(0);
     }
@@ -125,6 +131,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setWarningDays($world['centre'], 7);
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(1);
         self::assertEmailSubjectContains($this->sentMessage(0), '2');
@@ -146,6 +153,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setNotifierSetting($world['centre'], 'group_tutor');
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(1);
         self::assertEmailAddressContains($this->sentMessage(0), 'To', 'tutor.tutorOnly@ejemplo.local');
@@ -167,6 +175,7 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setNotifierSetting($world['centre'], 'both');
 
         ($this->handler)(new WarnUpcomingReportPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(2);
     }
@@ -296,6 +305,14 @@ class WarnUpcomingReportPrescriptionsHandlerTest extends RepositoryTestCase
             ->setTeacher($teacher)
             ->setValue((string) $days);
         $this->persist($teacherValue);
+    }
+
+    /** Los avisos de prescripción próxima se acumulan en el resumen diario: se envía ahora, sin esperar a la hora de cada docente. */
+    private function sendDigests(): void
+    {
+        /** @var \App\Service\EmailDigestSender $sender */
+        $sender = self::getContainer()->get(\App\Service\EmailDigestSender::class);
+        $sender->sendDue(ignoreHour: true);
     }
 
     /**

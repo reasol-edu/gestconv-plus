@@ -235,6 +235,8 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 
 | Ajuste | Opciones | Por defecto |
 |---|---|---|
+| Forma de recibir los avisos por correo (global, centro y docente) | Resumen diario / Inmediata | Resumen diario |
+| Hora del resumen diario (global, centro y docente) | Entero 0-23 (hora del servidor) | 7 |
 | Parte registrado | A nadie / Al docente que lo registra / Al tutor/a de grupo / A ambos | A nadie |
 | Parte notificado a la familia | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
 | Parte modificado | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
@@ -249,6 +251,11 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Enviar sanción adjunta al correo | Sí / No | No |
 | Tareas de sanción asignadas | Sí / No | Sí |
 | Prefijo del asunto de los correos | Texto libre (máx. 50 caracteres) | *(vacío)* |
+
+Los dos primeros controlan **cuándo** llegan los avisos: por defecto, todos juntos en un único
+[resumen diario](06-administrar-el-centro.md#resumen-diario) por docente y centro, a la hora
+indicada; cada docente puede preferir la forma inmediata (un correo por aviso), salvo que un
+administrador bloquee el ajuste. El resto de la tabla indica **qué** avisos se envían.
 
 Uno por cada evento de un parte o una sanción; determinan si se envía un correo y a quién. El
 aviso de parte modificado no se dispara al marcar un parte como prescrito, que tiene su propio

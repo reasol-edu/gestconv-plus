@@ -305,6 +305,7 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
             ['report' => $report1, 'daysRemaining' => 2],
             ['report' => $report2, 'daysRemaining' => 0],
         ]);
+        $this->sendDigests();
 
         self::assertEmailCount(1);
         self::assertEmailAddressContains($this->sentMessage(0), 'To', 'creator@ejemplo.local');
@@ -513,6 +514,7 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         $this->flush();
 
         $this->notifier->sanctionTasksReminder($teacher, [$task1, $task2]);
+        $this->sendDigests();
 
         self::assertEmailCount(1);
         self::assertEmailAddressContains($this->sentMessage(0), 'To', 'teacher.tr@ejemplo.local');
@@ -714,6 +716,14 @@ class IncidentEmailNotifierTest extends RepositoryTestCase
         return (new Teacher(new PersonName('Test', 'Teacher')))
             ->setUsername($username)
             ->setEmail($email);
+    }
+
+    /** Los avisos diarios se acumulan en el resumen: se envía ahora, sin esperar a la hora de cada docente. */
+    private function sendDigests(): void
+    {
+        /** @var \App\Service\EmailDigestSender $sender */
+        $sender = self::getContainer()->get(\App\Service\EmailDigestSender::class);
+        $sender->sendDue(ignoreHour: true);
     }
 
     /**

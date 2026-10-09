@@ -59,6 +59,7 @@ class WarnUpcomingSanctionPrescriptionsHandlerTest extends RepositoryTestCase
         $this->setDays($world['centre'], 14);
 
         ($this->handler)(new WarnUpcomingSanctionPrescriptionsMessage());
+        $this->sendDigests();
 
         self::assertEmailCount(1);
     }
@@ -85,6 +86,14 @@ class WarnUpcomingSanctionPrescriptionsHandlerTest extends RepositoryTestCase
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
+
+    /** Los avisos se acumulan en el resumen diario: se envía ahora, sin esperar a la hora de cada docente. */
+    private function sendDigests(): void
+    {
+        /** @var \App\Service\EmailDigestSender $sender */
+        $sender = self::getContainer()->get(\App\Service\EmailDigestSender::class);
+        $sender->sendDue(ignoreHour: true);
+    }
 
     /**
      * @return array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student, creator: Teacher}

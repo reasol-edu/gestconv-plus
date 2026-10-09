@@ -262,7 +262,8 @@ una hoja Excel con una fila por grupo, los subtotales y el total general.
 
 Además de las comunicaciones con las familias, la aplicación puede avisar **al profesorado, por
 correo electrónico**, de los eventos relevantes de partes y sanciones. Estos avisos están
-**desactivados por defecto** y se activan uno a uno desde
+**desactivados por defecto** y se activan uno a uno (llegan en un [resumen diario](#resumen-diario)
+salvo que se elija recibirlos de forma inmediata) desde
 [Ajustes](07-administrar-la-plataforma.md#avisos-por-correo), a nivel global o de centro,
 eligiendo en cada caso si se notifica a nadie, al docente que registró el elemento, al tutor/a
 del grupo o a ambos:
@@ -293,6 +294,43 @@ al correo enviado, no al [registro de avisos](#registro-de-avisos-por-correo).
 !!! note "El correo del servidor debe estar activo"
     Para que estos avisos lleguen, el servidor debe tener configurado el envío de correo (ver
     [Correo electrónico del servidor](07-administrar-la-plataforma.md#correo-electronico-del-servidor)).
+
+### Resumen diario
+
+Para que el profesorado no reciba decenas de correos al día, **por defecto los avisos no se envían
+uno a uno**: se acumulan y llegan juntos en **un único correo diario por centro**, el *resumen
+diario*, a las 7:00 (hora del servidor). El correo agrupa las novedades por secciones —próximos a
+prescribir, partes, sanciones, tareas de sanción y notas diarias—, con un enlace a cada parte o
+sanción. Si una misma novedad se repite (por ejemplo, un parte modificado varias veces), aparece
+una sola vez con el número de veces. Si ese día no hay nada que comunicar, no se envía ningún
+correo.
+
+Dos ajustes, con el esquema habitual **global › centro › docente** y sus bloqueos, lo controlan:
+
+- **Forma de recibir los avisos por correo** — *Resumen diario* (por defecto) o *Inmediata* (un
+  correo por aviso, como antes). Cada docente puede elegir la suya en sus ajustes personales,
+  salvo que un administrador la haya bloqueado a nivel global o de centro.
+- **Hora del resumen diario** — de 0 a 23 (7 por defecto). También la puede fijar cada docente.
+
+Qué avisos se reciben y por qué evento no cambia: siguen gobernados por los ajustes de
+[Avisos por correo](07-administrar-la-plataforma.md#avisos-por-correo). El resumen solo cambia
+*cuándo* llegan. Tienes que saber además que:
+
+- **Los avisos de prescripción próxima** (de partes y de sanciones) **y el recordatorio de tareas
+  de sanción pendientes** se envían siempre dentro del resumen, incluso a quien haya elegido la
+  forma *inmediata*. Así, quien recibe los avisos de forma inmediata recibe un solo correo diario
+  con esos tres recordatorios, en lugar de tres.
+- **Los PDF adjuntos** (ajustes *Enviar parte adjunto* y *Enviar sanción adjunta*) no se incluyen
+  en el resumen, solo los enlaces. Siguen adjuntándose a los correos de quien recibe los avisos de
+  forma inmediata.
+- Los correos de verificación de correo y de recuperación de contraseña **nunca** van en el
+  resumen: se envían al momento.
+- El envío del resumen queda registrado, como cualquier otro correo, en el
+  [registro de avisos](#registro-de-avisos-por-correo) con el evento «Resumen diario». Si el
+  servidor de correo falla, el resumen se reintenta en la hora siguiente; los avisos pendientes de
+  más de 14 días se descartan.
+- Quien cambia su ajuste a *inmediata* recibe los avisos nuevos al momento; los que ya estaban
+  acumulados salen en el siguiente resumen.
 
 ## Prescripción automática de partes sin notificar
 
