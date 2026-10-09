@@ -78,7 +78,7 @@
                     {% for sanction in pagination.items %}
                         {% set taskSummary = taskCounts[sanction.id.toRfc4122] ?? null %}
                         {% set tasksIncomplete = taskSummary is not null and taskSummary.completed < taskSummary.total %}
-                        <tr class="hover:bg-gray-50 transition-colors {{ tasksIncomplete ? 'bg-amber-50/60' : '' }}">
+                        <tr class="hover:bg-gray-50 transition-colors {{ sanction.prescribed ? 'opacity-60' : (tasksIncomplete ? 'bg-amber-50/60' : '') }}">
                             <td data-label="{{ 'sanction.col.student'|trans({}, 'admin')|e('html_attr') }}"
                                 class="px-6 py-4 font-medium text-gray-900">
                                 {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
@@ -149,6 +149,11 @@
                                     <span class="inline-flex items-center gap-1 rounded-xl bg-green-100 text-green-700 px-2 py-0.5 text-xs font-medium leading-snug">
                                         {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}
                                         {{ 'notification.badge.notified'|trans({}, 'notifications') }}
+                                    </span>
+                                {% elseif sanction.prescribed %}
+                                    <span class="inline-flex items-center gap-1 rounded-xl bg-gray-100 text-gray-500 px-2 py-0.5 text-xs font-medium leading-snug">
+                                        {{ ux_icon('heroicons:shield-check', {class: 'h-3 w-3'}) }}
+                                        {{ 'sanction.badge.prescribed'|trans({}, 'admin') }}
                                     </span>
                                 {% elseif is_granted('sanction.notify', sanction) and not is_viewing_past_year() %}
                                     <a href="{{ path('app_notifications_register_sanction', {id: sanction.id}) }}"

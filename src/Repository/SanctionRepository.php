@@ -120,7 +120,8 @@ class SanctionRepository extends ServiceEntityRepository
         }
 
         if (($filters['pendingOnly'] ?? false) === true) {
-            $qb->andWhere('s.notifiedCommunication IS NULL');
+            $qb->andWhere('s.notifiedCommunication IS NULL')
+               ->andWhere('s.prescribedAt IS NULL');
         }
 
         if (($filters['pendingTasksOnly'] ?? false) === true) {
@@ -357,6 +358,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('s.notifiedCommunication IS NULL')
+            ->andWhere('s.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('s.createdAt', 'ASC');
@@ -433,6 +435,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('s.notifiedCommunication IS NULL')
+            ->andWhere('s.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
             ->groupBy('st.id')
@@ -467,6 +470,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->andWhere('s.notifiedCommunication IS NULL')
+            ->andWhere('s.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid');
 
@@ -624,5 +628,92 @@ class SanctionRepository extends ServiceEntityRepository
             ->getResult();
 
         return $result;
+    }
+
+    /**
+     * Sanctions of the centre still un-notified and not prescribed that were registered at or
+     * before the cutoff — candidates for automatic prescription.
+     *
+     * @return list<Sanction>
+     */
+    public function findEligibleForAutoPrescription(EducationalCentre $centre, \DateTimeImmutable $cutoff): array
+    {
+        /** @var list<Sanction> $result */
+        $result = $this->createQueryBuilder('s')
+            ->join('s.group', 'g')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('s.notifiedCommunication IS NULL')
+            ->andWhere('s.prescribedAt IS NULL')
+            ->andWhere('s.createdAt <= :cutoff')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('cutoff', $cutoff)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * All sanctions of the centre still un-notified and not prescribed, however far they are from
+     * the cutoff — used to compute upcoming-prescription warnings, where the remaining days depend
+     * on each recipient's personal warning threshold.
+     *
+     * @return list<Sanction>
+     */
+    public function findPendingPrescription(EducationalCentre $centre): array
+    {
+        /** @var list<Sanction> $result */
+        $result = $this->createQueryBuilder('s')
+            ->join('s.group', 'g')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('s.notifiedCommunication IS NULL')
+            ->andWhere('s.prescribedAt IS NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->orderBy('s.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * The sanctions the viewer can see that are un-notified, not prescribed and registered at or
+     * before the cutoff, i.e. close to the centre's auto-prescription deadline. Oldest first.
+     *
+     * @return list<Sanction>
+     */
+    public function findPendingPrescriptionForViewer(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        AcademicYear $year,
+        \DateTimeImmutable $cutoff,
+    ): array {
+        /** @var list<Sanction> $result */
+        $result = $this->buildPendingQueryBuilder($centre, $viewer, $year)
+            ->andWhere('s.createdAt <= :cutoff')
+            ->setParameter('cutoff', $cutoff)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    public function countPendingPrescriptionForViewer(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        AcademicYear $year,
+        \DateTimeImmutable $cutoff,
+    ): int {
+        return (int) $this->buildPendingQueryBuilder($centre, $viewer, $year)
+            ->select('COUNT(DISTINCT s.id)')
+            ->resetDQLPart('orderBy')
+            ->andWhere('s.createdAt <= :cutoff')
+            ->setParameter('cutoff', $cutoff)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Message\AutoPrescribeIncidentReportsMessage;
+use App\Message\AutoPrescribeSanctionsMessage;
 use App\Message\DeactivateExpiredDailyNotesMessage;
 use App\Message\PurgeActivityAttachmentsMessage;
 use App\Message\PurgeActivityLogMessage;
@@ -12,6 +13,7 @@ use App\Message\PurgeEmailNotificationLogMessage;
 use App\Message\PurgeSanctionTaskAttachmentsMessage;
 use App\Message\SanctionTaskReminderMessage;
 use App\Message\WarnUpcomingReportPrescriptionsMessage;
+use App\Message\WarnUpcomingSanctionPrescriptionsMessage;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule as SymfonySchedule;
@@ -35,6 +37,8 @@ class Schedule implements ScheduleProviderInterface
                 RecurringMessage::cron('30 3 * * 0', new PurgeEmailNotificationLogMessage()),
                 RecurringMessage::cron('0 4 * * *', new AutoPrescribeIncidentReportsMessage()),
                 RecurringMessage::cron('30 4 * * *', new WarnUpcomingReportPrescriptionsMessage()),
+                RecurringMessage::cron('15 4 * * *', new AutoPrescribeSanctionsMessage()),
+                RecurringMessage::cron('45 4 * * *', new WarnUpcomingSanctionPrescriptionsMessage()),
                 RecurringMessage::cron('0 5 * * 0', new PurgeActivityAttachmentsMessage()),
                 RecurringMessage::cron('30 5 * * 0', new PurgeSanctionTaskAttachmentsMessage()),
                 RecurringMessage::cron('0 6 * * *', new SanctionTaskReminderMessage()),

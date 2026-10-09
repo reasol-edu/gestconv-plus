@@ -28,7 +28,7 @@
                         <td>{{ row.notifiedTotal }} <span class="cell-sub">({{ row.notifiedNormal }}N / {{ row.notifiedSerious }}G)</span></td>
                         <td>{{ row.sanctionedTotal }} <span class="cell-sub">({{ row.sanctionedNormal }}N / {{ row.sanctionedSerious }}G)</span></td>
                         <td>{{ row.prescribedTotal }} <span class="cell-sub">({{ row.prescribedNormal }}N / {{ row.prescribedSerious }}G)</span></td>
-                        <td>{{ row.sanctionsCount }}</td>
+                        <td>{{ row.sanctionsCount }}{% if row.sanctionsPrescribed > 0 %} <span class="cell-sub">({{ 'group_stats.sanctions_prescribed'|trans({'%count%': row.sanctionsPrescribed}, 'admin') }})</span>{% endif %}</td>
                     </tr>
                 {% endfor %}
                 <tr style="font-weight:bold;background-color:#eef0fa;">
@@ -38,7 +38,7 @@
                     <td>{{ course.total.notifiedTotal }} <span class="cell-sub">({{ course.total.notifiedNormal }}N / {{ course.total.notifiedSerious }}G)</span></td>
                     <td>{{ course.total.sanctionedTotal }} <span class="cell-sub">({{ course.total.sanctionedNormal }}N / {{ course.total.sanctionedSerious }}G)</span></td>
                     <td>{{ course.total.prescribedTotal }} <span class="cell-sub">({{ course.total.prescribedNormal }}N / {{ course.total.prescribedSerious }}G)</span></td>
-                    <td>{{ course.total.sanctionsCount }}</td>
+                    <td>{{ course.total.sanctionsCount }}{% if course.total.sanctionsPrescribed > 0 %} <span class="cell-sub">({{ 'group_stats.sanctions_prescribed'|trans({'%count%': course.total.sanctionsPrescribed}, 'admin') }})</span>{% endif %}</td>
                 </tr>
             </tbody>
         </table>
@@ -58,7 +58,7 @@
                 <tr style="font-weight:bold;background-color:#dcdef2;">
                     <td>{{ 'group_stats.column.sanctioned'|trans({}, 'admin') }}: {{ report.grandTotal.sanctionedTotal }} <span class="cell-sub">({{ report.grandTotal.sanctionedNormal }}N / {{ report.grandTotal.sanctionedSerious }}G)</span></td>
                     <td>{{ 'group_stats.column.prescribed'|trans({}, 'admin') }}: {{ report.grandTotal.prescribedTotal }} <span class="cell-sub">({{ report.grandTotal.prescribedNormal }}N / {{ report.grandTotal.prescribedSerious }}G)</span></td>
-                    <td>{{ 'group_stats.column.sanctions'|trans({}, 'admin') }}: {{ report.grandTotal.sanctionsCount }}</td>
+                    <td>{{ 'group_stats.column.sanctions'|trans({}, 'admin') }}: {{ report.grandTotal.sanctionsCount }}{% if report.grandTotal.sanctionsPrescribed > 0 %} <span class="cell-sub">({{ 'group_stats.sanctions_prescribed'|trans({'%count%': report.grandTotal.sanctionsPrescribed}, 'admin') }})</span>{% endif %}</td>
                 </tr>
             </tbody>
         </table>

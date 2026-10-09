@@ -29,34 +29,41 @@
     </nav>
 
     {% if tab == 'pending' %}
-    {# ── Partes próximos a prescribir (solo si los hay) ───────────────── #}
+    {# ── Partes y sanciones próximos a prescribir (solo si los hay) ───── #}
     {% if upcoming is not empty %}
+    {% set upcomingReports = upcoming|filter(i => i.type == 'report')|length %}
+    {% set upcomingSanctions = upcoming|length - upcomingReports %}
+    {% set upcomingTitleKey = upcomingSanctions == 0 ? 'notification.upcoming.title_reports' : (upcomingReports == 0 ? 'notification.upcoming.title_sanctions' : 'notification.upcoming.title_both') %}
     <section aria-labelledby="upcoming-title" class="rounded-2xl border border-red-200 bg-red-50 shadow-xs overflow-hidden">
         <div class="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-red-200/70">
             {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-5 w-5 text-red-600'}) }}
-            <h2 id="upcoming-title" class="text-base font-semibold text-red-900">{{ 'notification.upcoming.title'|trans({}, 'notifications') }}</h2>
+            <h2 id="upcoming-title" class="text-base font-semibold text-red-900">{{ upcomingTitleKey|trans({}, 'notifications') }}</h2>
             <span class="inline-flex items-center rounded-full bg-red-600 text-white px-2.5 py-0.5 text-xs font-semibold">{{ upcoming|length }}</span>
-            <p class="basis-full text-sm text-red-800">{{ 'notification.upcoming.help'|trans({}, 'notifications') }}</p>
+            <p class="basis-full text-sm text-red-800">{{ (upcomingTitleKey|replace({'title_': 'help_'}))|trans({}, 'notifications') }}</p>
         </div>
         <ul class="divide-y divide-red-200/70">
             {% for item in upcoming %}
-                {% set report = item.report %}
+                {% set isReport = item.type == 'report' %}
+                {% set entity = isReport ? item.report : item.sanction %}
                 <li class="flex flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3 text-sm">
-                    <span class="min-w-48 flex-1 font-medium text-red-950">{{ report.student.name.lastName }}, {{ report.student.name.firstName }}</span>
-                    <span class="text-red-800 whitespace-nowrap">{{ report.group.name }}</span>
-                    <span class="text-red-800 whitespace-nowrap">{{ report.occurredAt|date('format.datetime'|trans) }}</span>
+                    <span class="min-w-48 flex-1 font-medium text-red-950">{{ entity.student.name.lastName }}, {{ entity.student.name.firstName }}</span>
+                    <span class="inline-flex items-center rounded-lg bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 whitespace-nowrap">
+                        {{ (isReport ? 'notification.upcoming.type_report' : 'notification.upcoming.type_sanction')|trans({}, 'notifications') }}
+                    </span>
+                    <span class="text-red-800 whitespace-nowrap">{{ entity.group.name }}</span>
+                    <span class="text-red-800 whitespace-nowrap">{{ (isReport ? entity.occurredAt : entity.createdAt)|date((isReport ? 'format.datetime' : 'format.date')|trans) }}</span>
                     <span class="inline-flex items-center rounded-lg bg-white/80 px-2.5 py-1 text-xs font-semibold text-red-700 ring-1 ring-red-200 whitespace-nowrap">
                         {{ 'notification.upcoming.in_days'|trans({'%count%': item.daysLeft}, 'notifications') }}
                     </span>
                     <div class="flex items-center gap-2">
-                        <a href="{{ path('app_incidents_show', {id: report.id}) }}"
+                        <a href="{{ isReport ? path('app_incidents_show', {id: entity.id}) : path('app_sanctions_show', {id: entity.id}) }}"
                            class="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium
                                   text-gray-700 hover:bg-gray-50 transition-colors">
                             {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
                             {{ 'notification.index.view'|trans({}, 'notifications') }}
                         </a>
-                        {% if is_granted('incident_report.notify', report) and not is_viewing_past_year() %}
-                            <a href="{{ path('app_notifications_register_report', {id: report.id}) }}"
+                        {% if is_granted(isReport ? 'incident_report.notify' : 'sanction.notify', entity) and not is_viewing_past_year() %}
+                            <a href="{{ isReport ? path('app_notifications_register_report', {id: entity.id}) : path('app_notifications_register_sanction', {id: entity.id}) }}"
                                class="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-1.5 text-xs font-semibold text-white
                                       hover:bg-forest-700 transition-colors shadow-xs">
                                 {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}

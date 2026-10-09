@@ -126,7 +126,7 @@
                                     <td class="text-right">{{ row.notifiedTotal }} <span class="text-xs text-gray-400">({{ row.notifiedNormal }}N / {{ row.notifiedSerious }}G)</span></td>
                                     <td class="text-right">{{ row.sanctionedTotal }} <span class="text-xs text-gray-400">({{ row.sanctionedNormal }}N / {{ row.sanctionedSerious }}G)</span></td>
                                     <td class="text-right">{{ row.prescribedTotal }} <span class="text-xs text-gray-400">({{ row.prescribedNormal }}N / {{ row.prescribedSerious }}G)</span></td>
-                                    <td class="text-right">{{ row.sanctionsCount }}</td>
+                                    <td class="text-right">{{ row.sanctionsCount }}{% if row.sanctionsPrescribed > 0 %} <span class="text-xs text-gray-400">({{ 'group_stats.sanctions_prescribed'|trans({'%count%': row.sanctionsPrescribed}, 'admin') }})</span>{% endif %}</td>
                                 </tr>
                             {% endfor %}
                             <tr class="[&>td]:px-4 [&>td]:py-2.5 font-semibold bg-gray-50 border-t border-gray-200">
@@ -136,7 +136,7 @@
                                 <td class="text-right">{{ course.total.notifiedTotal }} <span class="text-xs text-gray-400 font-normal">({{ course.total.notifiedNormal }}N / {{ course.total.notifiedSerious }}G)</span></td>
                                 <td class="text-right">{{ course.total.sanctionedTotal }} <span class="text-xs text-gray-400 font-normal">({{ course.total.sanctionedNormal }}N / {{ course.total.sanctionedSerious }}G)</span></td>
                                 <td class="text-right">{{ course.total.prescribedTotal }} <span class="text-xs text-gray-400 font-normal">({{ course.total.prescribedNormal }}N / {{ course.total.prescribedSerious }}G)</span></td>
-                                <td class="text-right">{{ course.total.sanctionsCount }}</td>
+                                <td class="text-right">{{ course.total.sanctionsCount }}{% if course.total.sanctionsPrescribed > 0 %} <span class="text-xs text-gray-400 font-normal">({{ 'group_stats.sanctions_prescribed'|trans({'%count%': course.total.sanctionsPrescribed}, 'admin') }})</span>{% endif %}</td>
                             </tr>
                         {% else %}
                             <tr>
@@ -153,7 +153,7 @@
                                 <td class="text-right">{{ report.grandTotal.notifiedTotal }} <span class="text-xs text-gray-500 font-normal">({{ report.grandTotal.notifiedNormal }}N / {{ report.grandTotal.notifiedSerious }}G)</span></td>
                                 <td class="text-right">{{ report.grandTotal.sanctionedTotal }} <span class="text-xs text-gray-500 font-normal">({{ report.grandTotal.sanctionedNormal }}N / {{ report.grandTotal.sanctionedSerious }}G)</span></td>
                                 <td class="text-right">{{ report.grandTotal.prescribedTotal }} <span class="text-xs text-gray-500 font-normal">({{ report.grandTotal.prescribedNormal }}N / {{ report.grandTotal.prescribedSerious }}G)</span></td>
-                                <td class="text-right">{{ report.grandTotal.sanctionsCount }}</td>
+                                <td class="text-right">{{ report.grandTotal.sanctionsCount }}{% if report.grandTotal.sanctionsPrescribed > 0 %} <span class="text-xs text-gray-500 font-normal">({{ 'group_stats.sanctions_prescribed'|trans({'%count%': report.grandTotal.sanctionsPrescribed}, 'admin') }})</span>{% endif %}</td>
                             </tr>
                         </tfoot>
                     {% endif %}

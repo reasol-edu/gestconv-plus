@@ -71,6 +71,8 @@ class DashboardController extends AbstractController
                 'sanctionsWithIncompleteTasksCount' => 0,
                 'pendingPrescriptionCount'          => 0,
                 'showPrescriptionWarning'           => false,
+                'pendingSanctionPrescriptionCount'  => 0,
+                'showSanctionPrescriptionWarning'   => false,
                 'canSeeNoteThresholds'              => false,
                 'noteThresholdCount'                => 0,
                 'todayEvents'                       => [],
@@ -134,6 +136,19 @@ class DashboardController extends AbstractController
             )
             : 0;
 
+        $sanctionAutoPrescribeDays = $this->settings->getForCentre('notifications.sanction_auto_prescribe_days', $centre);
+        $sanctionWarningDays       = $this->settings->getForTeacherInCentre('notifications.sanction_prescription_warning_days', $viewer, $centre);
+        $showSanctionPrescriptionWarning = is_int($sanctionAutoPrescribeDays) && $sanctionAutoPrescribeDays > 0
+            && is_int($sanctionWarningDays) && $sanctionWarningDays > 0;
+        $pendingSanctionPrescriptionCount = $showSanctionPrescriptionWarning
+            ? $this->sanctionRepository->countPendingPrescriptionForViewer(
+                $centre,
+                $viewer,
+                $year,
+                $today->modify('-' . max(0, $sanctionAutoPrescribeDays - $sanctionWarningDays) . ' days'),
+            )
+            : 0;
+
         $canSeeNoteThresholds = $viewer->isAdmin()
             || $centre->getAdmins()->contains($viewer)
             || $this->groupRepository->hasTutoredGroupsInYear($centre, $viewer, $year);
@@ -163,6 +178,8 @@ class DashboardController extends AbstractController
             'sanctionsWithIncompleteTasksCount' => $this->sanctionTaskRepository->countSanctionsWithIncompleteTasks($centre, $viewer, $year),
             'pendingPrescriptionCount'          => $pendingPrescriptionCount,
             'showPrescriptionWarning'           => $showPrescriptionWarning,
+            'pendingSanctionPrescriptionCount'  => $pendingSanctionPrescriptionCount,
+            'showSanctionPrescriptionWarning'   => $showSanctionPrescriptionWarning,
             'canSeeNoteThresholds'              => $canSeeNoteThresholds,
             'noteThresholdCount'                => $noteThresholdCount,
             'todayEvents'                       => $todayEvents,

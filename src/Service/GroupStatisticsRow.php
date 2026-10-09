@@ -24,6 +24,7 @@ final readonly class GroupStatisticsRow
         public int $prescribedNormal,
         public int $prescribedSerious,
         public int $sanctionsCount,
+        public int $sanctionsPrescribed = 0,
     ) {}
 
     public function reportsTotal(): int

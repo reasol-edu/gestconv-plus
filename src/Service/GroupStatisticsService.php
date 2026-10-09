@@ -84,6 +84,7 @@ class GroupStatisticsService
     {
         $studentIds  = [];
         $sanctionIds = [];
+        $prescribedSanctionIds = [];
 
         $reportsNormal = $reportsSerious = 0;
         $notifiedNormal = $notifiedSerious = 0;
@@ -116,6 +117,9 @@ class GroupStatisticsService
                     ++$sanctionedNormal;
                 }
                 $sanctionIds[$sanction->getId()->toRfc4122()] = true;
+                if ($sanction->isPrescribed()) {
+                    $prescribedSanctionIds[$sanction->getId()->toRfc4122()] = true;
+                }
             }
 
             if ($report->isPrescribed()) {
@@ -139,6 +143,7 @@ class GroupStatisticsService
             $prescribedNormal,
             $prescribedSerious,
             count($sanctionIds),
+            count($prescribedSanctionIds),
         );
     }
 

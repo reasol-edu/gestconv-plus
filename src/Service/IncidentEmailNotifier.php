@@ -157,6 +157,80 @@ final class IncidentEmailNotifier
         );
     }
 
+    /**
+     * Tells the sanction's registrant and/or the group's tutors (per "notifications.email_sanction_prescribed")
+     * that an un-notified sanction has prescribed automatically. There is no human actor: the daily
+     * cron job triggers it ({@see \App\MessageHandler\AutoPrescribeSanctionsHandler}).
+     */
+    public function sanctionAutoPrescribed(Sanction $sanction): void
+    {
+        $centre = $this->centreForGroup($sanction->getGroup());
+        $choice = $this->choiceFor('notifications.email_sanction_prescribed', $centre);
+        if ($choice === 'none') {
+            return;
+        }
+
+        $recipients = $this->recipientsFor($choice, [$sanction->getRegisteredBy()], $sanction->getGroup()->getTutors());
+        if ($recipients === []) {
+            return;
+        }
+
+        $url = $this->urlGenerator->generate(
+            'app_sanctions_show',
+            ['id' => $sanction->getId()->toRfc4122()],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
+
+        $params = [
+            '%student%' => $this->fullName($sanction->getStudent()),
+            '%group%'   => $sanction->getGroup()->getName(),
+        ];
+
+        foreach ($recipients as $teacher) {
+            $this->dispatch($centre, $teacher, 'sanction_auto_prescribed', $params, 'email/sanction_notice.html.twig', [
+                'sanction'    => $sanction,
+                'sanctionUrl' => $url,
+            ]);
+        }
+    }
+
+    /**
+     * Daily digest for a teacher listing the sanctions nearing automatic prescription. Eligibility and
+     * recipients are resolved by {@see \App\MessageHandler\WarnUpcomingSanctionPrescriptionsHandler}.
+     *
+     * @param list<array{sanction: Sanction, daysRemaining: int}> $items
+     */
+    public function sanctionsNearingPrescription(Teacher $teacher, array $items): void
+    {
+        if ($items === []) {
+            return;
+        }
+
+        $centre = $this->centreForGroup($items[0]['sanction']->getGroup());
+
+        $rows = array_map(
+            fn (array $item): array => [
+                'sanction'      => $item['sanction'],
+                'daysRemaining' => $item['daysRemaining'],
+                'url'           => $this->urlGenerator->generate(
+                    'app_sanctions_show',
+                    ['id' => $item['sanction']->getId()->toRfc4122()],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                ),
+            ],
+            $items,
+        );
+
+        $this->dispatch(
+            $centre,
+            $teacher,
+            'sanction_prescription_warning',
+            ['%count%' => count($items)],
+            'email/sanction_prescription_warning.html.twig',
+            ['rows' => $rows],
+        );
+    }
+
     public function reportSanctioned(IncidentReport $report, Teacher $actor): void
     {
         $this->notifyReportEvent($report, 'sanctioned', $actor);

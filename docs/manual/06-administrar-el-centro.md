@@ -211,8 +211,12 @@ el día a día:
   el tutor/a del grupo o ambos (valor por defecto). Determinan quién puede registrar las
   comunicaciones con las familias (ver
   [Quién puede notificar](03-el-trabajo-diario.md#quien-puede-notificar)).
-- **Días para la prescripción automática** y **aviso de prescripción próxima** — controlan las
-  dos tareas diarias descritas [más abajo](#prescripcion-automatica-de-partes-sin-notificar).
+- **Días para la prescripción automática de partes** y **aviso de prescripción próxima de
+  partes** — controlan las dos tareas diarias descritas [más
+  abajo](#prescripcion-automatica-de-partes-sin-notificar).
+- **Días para la prescripción automática de sanciones** y **aviso de prescripción próxima de
+  sanciones** — lo mismo para las sanciones, que por defecto **no prescriben** (ver [Prescripción
+  de sanciones sin notificar](#prescripcion-de-sanciones-sin-notificar)).
 - **Avisos por correo** — qué eventos de partes y sanciones generan un correo y a quién (ver
   [Avisos de partes y sanciones](#avisos-de-partes-y-sanciones)).
 - **Modo tablón** — duraciones de la alternancia de semanas y tema de colores (ver
@@ -270,6 +274,9 @@ del grupo o a ambos:
   automática (ver más abajo).
 - **Sanción notificada a la familia** — se avisa al docente que registró cada uno de los partes
   incorporados a la sanción y/o al tutor/a del grupo.
+- **Sanción prescrita** — solo si la prescripción de sanciones está activada: se avisa al docente
+  que registró la sanción y/o al tutor/a del grupo cuando una sanción sin notificar prescribe
+  automáticamente.
 - **Parte sancionable** — cuando un parte queda notificado a la familia y todavía no está
   prescrito ni incorporado a una sanción, puede avisarse a todos los docentes con el perfil de
   comisión de convivencia del centro.
@@ -311,6 +318,31 @@ valor) o menos, le envía un único correo con el listado completo de esos parte
 
 Este aviso nunca incluye partes ya prescritos: solo avisa mientras todavía se puede evitar la
 prescripción comunicando el parte a la familia.
+
+## Prescripción de sanciones sin notificar
+
+Igual que los partes, las sanciones pueden prescribir si no se comunican a la familia a tiempo,
+pero **por defecto no lo hacen**: el ajuste **Días para la prescripción automática de sanciones**
+vale 0, y con ese valor todo funciona exactamente como si esta función no existiera. Al
+asignarle un número de días (a nivel global o por centro) se activan:
+
+- **La prescripción automática.** Una tarea programada diaria marca como prescritas las sanciones
+  sin notificar que llevan más días desde su registro que el valor del ajuste. Si el aviso de
+  «Sanción prescrita» está activado, se envía un correo (sin docente como autor de la acción).
+- **El aviso de prescripción próxima.** Otra tarea diaria envía a cada docente que puede notificar
+  sanciones (según **Quién notifica las sanciones**) un único correo con las que prescribirán en
+  el número de días del ajuste **Aviso de prescripción próxima de sanciones** (7 por defecto; 0
+  para desactivarlo; cada docente puede fijar el suyo).
+- **Los indicadores en pantalla**: la sección roja de [Notificaciones](03-el-trabajo-diario.md#notificaciones)
+  incluye las sanciones próximas a prescribir, el inicio muestra una tarjeta **Sanciones próximas
+  a prescribir**, **Mi tutoría** añade la columna **Sanciones prescritas** y las
+  [estadísticas por grupo](#estadisticas-por-grupo) (y su PDF y Excel) indican entre paréntesis cuántas sanciones
+  han prescrito.
+
+Una sanción prescrita ya no aparece entre las notificaciones pendientes (cola, campana, resumen por
+estudiante y notificación en bloque), no cuenta como «sin notificar» y se muestra atenuada, con
+la etiqueta **Prescrita**, en el listado de sanciones y en su ficha. Las sanciones ya notificadas
+nunca prescriben.
 
 ## Registro de avisos por correo
 

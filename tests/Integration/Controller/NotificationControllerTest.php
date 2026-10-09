@@ -74,6 +74,54 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertSelectorTextContains('section[aria-labelledby="upcoming-title"]', 'Prescribe en 4 días');
     }
 
+    public function testIndexHidesSanctionsNearPrescriptionByDefault(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $sanction = $this->makeSanction($student, $group, $teacher);
+        (new \ReflectionProperty($sanction, 'createdAt'))->setValue($sanction, \Symfony\Component\Clock\now()->modify('-10 days'));
+        $this->persist($sanction);
+        $this->loginAs($teacher, $centre);
+
+        // Por defecto las sanciones no prescriben: la sección no aparece.
+        $this->client->request('GET', '/notificaciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('#upcoming-title');
+    }
+
+    public function testIndexListsSanctionsNearPrescriptionWhenSanctionPrescriptionIsEnabled(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $sanction = $this->makeSanction($student, $group, $teacher);
+        (new \ReflectionProperty($sanction, 'createdAt'))->setValue($sanction, \Symfony\Component\Clock\now()->modify('-10 days'));
+        // Un docente que no es de dirección solo ve las sanciones con algún parte suyo.
+        $report = $this->makeReport($student, $group, $teacher, $behavior)->setSanction($sanction);
+        $this->persist($sanction, $report);
+        $definition = $this->em->getRepository(SettingDefinition::class)->findOneBy(['key' => 'notifications.sanction_auto_prescribe_days']);
+        self::assertNotNull($definition);
+        $this->persist((new CentreSettingValue())->setDefinition($definition)->setCentre($centre)->setValue('14'));
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/notificaciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('#upcoming-title', 'Sanciones próximas a prescribir');
+        self::assertSelectorTextContains('section[aria-labelledby="upcoming-title"]', 'Prescribe en 4 días');
+    }
+
+    public function testIndexPrescribedSanctionIsNotPending(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $sanction = $this->makeSanction($student, $group, $teacher)->setPrescribedAt(\Symfony\Component\Clock\now());
+        $this->persist($sanction);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/notificaciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'No hay sanciones pendientes de notificar.');
+    }
+
     public function testIndexUpcomingPrescriptionSectionExcludesPrescribedReports(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();

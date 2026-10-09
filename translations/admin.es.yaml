@@ -315,6 +315,7 @@ tutorship.col.reports_unnotified: 'Sin notificar'
 tutorship.col.reports_prescribed: 'Prescritos'
 tutorship.col.sanctions_total: 'Sanciones'
 tutorship.col.sanctions_unnotified: 'Sanciones sin notificar'
+tutorship.col.sanctions_prescribed: 'Sanciones prescritas'
 tutorship.col.actions: 'Acciones'
 
 tutorship.action.view_profile: 'Ver ficha'
@@ -1102,6 +1103,8 @@ email_notification_log.event.report_prescription_warning: 'Aviso de prescripció
 email_notification_log.event.report_sanctioned: 'Parte incorporado a una sanción'
 email_notification_log.event.report_sanctionable_committee: 'Parte sancionable (comisión de convivencia)'
 email_notification_log.event.sanction_notified: 'Sanción notificada a la familia'
+email_notification_log.event.sanction_auto_prescribed: 'Sanción prescrita automáticamente'
+email_notification_log.event.sanction_prescription_warning: 'Aviso de prescripción próxima de sanciones'
 email_notification_log.event.sanction_task_assigned: 'Tarea de sanción asignada'
 email_notification_log.event.sanction_task_reminder: 'Recordatorio de tarea de sanción pendiente'
 email_notification_log.event.daily_note_threshold: 'Nota que implica registro de parte'
@@ -1198,6 +1201,7 @@ sanction.empty_students: 'No hay estudiantes registrados en el curso activo.'
 sanction.empty_search: 'Sin resultados para este filtro.'
 
 sanction.badge.no_measure: 'Sin corrección'
+sanction.badge.prescribed: 'Prescrita'
 sanction.badge.has_date_range: 'implica fechas'
 
 sanction.no_eligible_reports: 'No hay partes disponibles para este estudiante y grupo: están prescritos, ya sancionados o pendientes de notificar a la familia.'
@@ -1597,6 +1601,8 @@ group_stats.column.prescribed: 'Partes prescritos'
 group_stats.column.prescribed_normal: 'Partes prescritos (normales)'
 group_stats.column.prescribed_serious: 'Partes prescritos (graves)'
 group_stats.column.sanctions: 'Sanciones'
+group_stats.column.sanctions_prescribed: 'Sanciones prescritas'
+group_stats.sanctions_prescribed: '{1} 1 prescrita|]1,Inf[ %count% prescritas'
 
 # ── Registro de actividad: interfaz ───────────────────────────────────────────
 activity_log.ui.page_title: 'Registro de actividad'

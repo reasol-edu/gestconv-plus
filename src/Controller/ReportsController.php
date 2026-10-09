@@ -128,6 +128,7 @@ class ReportsController extends AbstractController
             $this->translator->trans('group_stats.column.prescribed_normal', [], 'admin'),
             $this->translator->trans('group_stats.column.prescribed_serious', [], 'admin'),
             $this->translator->trans('group_stats.column.sanctions', [], 'admin'),
+            $this->translator->trans('group_stats.column.sanctions_prescribed', [], 'admin'),
         ];
 
         $rows = [];
@@ -203,6 +204,7 @@ class ReportsController extends AbstractController
             $row->prescribedNormal,
             $row->prescribedSerious,
             $row->sanctionsCount,
+            $row->sanctionsPrescribed,
         ];
     }
 

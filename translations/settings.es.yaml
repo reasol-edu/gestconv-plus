@@ -62,11 +62,17 @@ settings.key.notifications_sanction_notifier.choice.report_teacher: 'El docente 
 settings.key.notifications_sanction_notifier.choice.group_tutor: 'El tutor/a de grupo'
 settings.key.notifications_sanction_notifier.choice.both: 'Ambos'
 
-settings.key.notifications_report_auto_prescribe_days.label: 'Días para la prescripción automática'
+settings.key.notifications_report_auto_prescribe_days.label: 'Días para la prescripción automática de partes'
 settings.key.notifications_report_auto_prescribe_days.description: 'Días transcurridos desde que ocurrió el incidente a partir de los cuales un parte sin notificar a la familia prescribe automáticamente. Un valor de 0 desactiva la prescripción automática.'
 
-settings.key.notifications_report_prescription_warning_days.label: 'Aviso de prescripción próxima'
+settings.key.notifications_report_prescription_warning_days.label: 'Aviso de prescripción próxima de partes'
 settings.key.notifications_report_prescription_warning_days.description: 'Días de antelación con los que se avisa por correo de que un parte sin notificar prescribirá automáticamente. Un valor de 0 desactiva este aviso.'
+
+settings.key.notifications_sanction_auto_prescribe_days.label: 'Días para la prescripción automática de sanciones'
+settings.key.notifications_sanction_auto_prescribe_days.description: 'Días transcurridos desde que se registró la sanción a partir de los cuales una sanción sin notificar a la familia prescribe automáticamente. Un valor de 0 (por defecto) desactiva la prescripción de sanciones: no prescriben nunca.'
+
+settings.key.notifications_sanction_prescription_warning_days.label: 'Aviso de prescripción próxima de sanciones'
+settings.key.notifications_sanction_prescription_warning_days.description: 'Días de antelación con los que se avisa por correo de que una sanción sin notificar prescribirá automáticamente. Solo tiene efecto si la prescripción de sanciones está activada. Un valor de 0 desactiva este aviso.'
 
 settings.key.notifications_email_log_enabled.label: 'Registrar los avisos por correo'
 settings.key.notifications_email_log_enabled.description: 'Guarda un registro de cada aviso por correo enviado sobre partes y sanciones (destinatario, tipo de evento, asunto y resultado), visible en el hub de centro educativo.'
@@ -108,6 +114,13 @@ settings.key.notifications_email_report_prescribed.choice.none: 'A nadie'
 settings.key.notifications_email_report_prescribed.choice.report_teacher: 'Al docente que lo registró'
 settings.key.notifications_email_report_prescribed.choice.group_tutor: 'Al tutor/a de grupo'
 settings.key.notifications_email_report_prescribed.choice.both: 'A ambos'
+
+settings.key.notifications_email_sanction_prescribed.label: 'Sanción prescrita'
+settings.key.notifications_email_sanction_prescribed.description: 'Determina quién recibe un correo cuando una sanción sin notificar prescribe automáticamente. Se avisa al docente que registró la sanción y/o al tutor/a del grupo.'
+settings.key.notifications_email_sanction_prescribed.choice.none: 'A nadie'
+settings.key.notifications_email_sanction_prescribed.choice.report_teacher: 'Al docente que la registró'
+settings.key.notifications_email_sanction_prescribed.choice.group_tutor: 'Al tutor/a de grupo'
+settings.key.notifications_email_sanction_prescribed.choice.both: 'A ambos'
 
 settings.key.notifications_email_report_sanctioned.label: 'Parte incorporado a una sanción'
 settings.key.notifications_email_report_sanctioned.description: 'Determina quién recibe un correo cuando un parte se incorpora a una sanción.'

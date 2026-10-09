@@ -197,8 +197,10 @@ colores del modo tablón. Se describen en
 |---|---|---|---|---|
 | Quién notifica los partes de convivencia | Global, centro | Opciones (El docente del parte / El tutor/a de grupo / Ambos) | — | Ambos |
 | Quién notifica las sanciones | Global, centro | Opciones (El docente de la sanción / El tutor/a de grupo / Ambos) | — | Ambos |
-| Días para la prescripción automática | Global, centro | Entero (días) | 0-365 | 14 |
-| Aviso de prescripción próxima | Global, centro, docente | Entero (días) | 0-365 | 7 |
+| Días para la prescripción automática de partes | Global, centro | Entero (días) | 0-365 | 14 |
+| Aviso de prescripción próxima de partes | Global, centro, docente | Entero (días) | 0-365 | 7 |
+| Días para la prescripción automática de sanciones | Global, centro | Entero (días) | 0-365 | 0 (no prescriben) |
+| Aviso de prescripción próxima de sanciones | Global, centro, docente | Entero (días) | 0-365 | 7 |
 | Registrar los avisos por correo | Global, centro | Booleano | — | Activado |
 | Retención de los registros | Global | Entero (días) | 0-3650 | 90 |
 
@@ -209,20 +211,23 @@ comunicación con la familia (ver
 El tercero y el cuarto controlan la
 [prescripción automática](06-administrar-el-centro.md#prescripcion-automatica-de-partes-sin-notificar)
 y el
-[aviso de prescripción próxima](06-administrar-el-centro.md#aviso-de-prescripcion-proxima); en
-ambos, un valor de 0 desactiva la tarea para ese nivel. El aviso de prescripción próxima es el
-único de los cuatro que admite también un valor personal de docente, que prevalece sobre el de su
-centro.
+[aviso de prescripción próxima](06-administrar-el-centro.md#aviso-de-prescripcion-proxima) de los
+partes; el quinto y el sexto, los equivalentes para las
+[sanciones](06-administrar-el-centro.md#prescripcion-de-sanciones-sin-notificar), que **por
+defecto no prescriben** (0 días): hasta que se les asigne un plazo, la aplicación se comporta
+como si esa función no existiera. En todos ellos, un valor de 0 desactiva la tarea para ese
+nivel. Los avisos de prescripción próxima son los únicos que admiten también un valor personal de
+docente, que prevalece sobre el de su centro.
 
-El quinto activa o desactiva el
+El séptimo activa o desactiva el
 [registro de avisos por correo](06-administrar-el-centro.md#registro-de-avisos-por-correo): si
 está desactivado, los avisos se siguen enviando con normalidad, pero no queda constancia de
 ellos.
 
-El sexto controla cuántos días se conservan las entradas del
+El octavo controla cuántos días se conservan las entradas del
 [registro de actividad](#registro-de-actividad) y del
 [registro de avisos por correo](06-administrar-el-centro.md#registro-de-avisos-por-correo) antes
-de que una tarea programada semanal (domingos a las 3:00) las elimine. Es el único de los seis
+de que una tarea programada semanal (domingos a las 3:00) las elimine. Es el único de los ocho
 con ámbito exclusivamente global, ya que también gobierna la retención del registro de actividad,
 que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminación automática.
 
@@ -237,6 +242,7 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Parte prescrito | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
 | Parte incorporado a una sanción | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
 | Sanción notificada a la familia | A nadie / A los docentes de los partes / Al tutor/a de grupo / A ambos | A nadie |
+| Sanción prescrita | A nadie / Al docente que la registró / Al tutor/a de grupo / A ambos | A nadie |
 | Parte sancionable (comisión de convivencia) | A nadie / A la comisión de convivencia | A nadie |
 | Nota que implica registro de parte | A nadie / Al tutor/a de grupo / Al equipo directivo / A ambos | A nadie |
 | Enviar parte adjunto al correo | Sí / No | No |

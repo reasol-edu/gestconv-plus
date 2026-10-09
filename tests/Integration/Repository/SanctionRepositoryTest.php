@@ -582,6 +582,52 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame($pending->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
+    public function testPrescribedSanctionsAreNotPendingNorNotifiable(): void
+    {
+        $world      = $this->makeWorld();
+        $admin      = $this->makeTeacher('pending.prescribed.admin', admin: true);
+        $this->persist($admin);
+        $pending    = $this->makeUnnotifiedSanctionWithReport($world, $admin);
+        $prescribed = $this->makeUnnotifiedSanctionWithReport($world, $admin);
+        $prescribed->setPrescribedAt(new \DateTimeImmutable());
+        $this->persist($prescribed);
+
+        $pendingIds = array_map(
+            static fn (Sanction $s): string => $s->getId()->toRfc4122(),
+            $this->repo->findPendingNotification($world['centre'], $admin, $world['year']),
+        );
+        $notifiable = $this->repo->createNotifiableQuery($world['centre'], $admin, 'both', $world['year'])->getResult();
+        $summary    = $this->repo->findNotifiableSummaryByStudent($world['centre'], $admin, 'both', $world['year']);
+
+        self::assertSame([$pending->getId()->toRfc4122()], $pendingIds);
+        self::assertCount(1, $notifiable);
+        self::assertSame(1, $summary[0]['count'] ?? null);
+    }
+
+    public function testPendingPrescriptionForViewerReturnsOnlyOldUnprescribedUnnotifiedSanctions(): void
+    {
+        $world  = $this->makeWorld();
+        $admin  = $this->makeTeacher('prescription.admin', admin: true);
+        $this->persist($admin);
+        $old        = $this->makeUnnotifiedSanctionWithReport($world, $admin);
+        $recent     = $this->makeUnnotifiedSanctionWithReport($world, $admin);
+        $prescribed = $this->makeUnnotifiedSanctionWithReport($world, $admin);
+        $notified   = $this->makeSanctionWithReport($world, $admin);
+        foreach ([$old, $prescribed, $notified] as $s) {
+            (new \ReflectionProperty($s, 'createdAt'))->setValue($s, new \DateTimeImmutable('-10 days'));
+        }
+        $prescribed->setPrescribedAt(new \DateTimeImmutable());
+        $this->persist($old, $recent, $prescribed, $notified);
+        $cutoff = new \DateTimeImmutable('-7 days');
+
+        $found = $this->repo->findPendingPrescriptionForViewer($world['centre'], $admin, $world['year'], $cutoff);
+        $count = $this->repo->countPendingPrescriptionForViewer($world['centre'], $admin, $world['year'], $cutoff);
+
+        self::assertCount(1, $found);
+        self::assertSame($old->getId()->toRfc4122(), $found[0]->getId()->toRfc4122());
+        self::assertSame(1, $count);
+    }
+
     public function testFindPendingNotificationRestrictsVisibilityForRegularTeacher(): void
     {
         $world = $this->makeWorld();

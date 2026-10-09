@@ -67,6 +67,9 @@
                         {{ sort.th('tutorship.col.reports_prescribed'|trans({}, 'admin'), 'reportsPrescribed', this.sort, this.sortDir, 'right') }}
                         {{ sort.th('tutorship.col.sanctions_total'|trans({}, 'admin'), 'sanctionsTotal', this.sort, this.sortDir, 'right') }}
                         {{ sort.th('tutorship.col.sanctions_unnotified'|trans({}, 'admin'), 'sanctionsUnnotified', this.sort, this.sortDir, 'right') }}
+                        {% if this.sanctionPrescriptionEnabled %}
+                            {{ sort.th('tutorship.col.sanctions_prescribed'|trans({}, 'admin'), 'sanctionsPrescribed', this.sort, this.sortDir, 'right') }}
+                        {% endif %}
                         <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'tutorship.col.actions'|trans({}, 'admin') }}</th>
                     </tr>
                 </thead>
@@ -95,6 +98,11 @@
                             <td data-label="{{ 'tutorship.col.sanctions_unnotified'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 text-right tabular-nums {{ row.sanctionsUnnotified > 0 ? 'text-amber-600 font-medium' : 'text-gray-900' }}">
                                 {{ row.sanctionsUnnotified }}
                             </td>
+                            {% if this.sanctionPrescriptionEnabled %}
+                                <td data-label="{{ 'tutorship.col.sanctions_prescribed'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 text-right tabular-nums text-gray-900">
+                                    {{ row.sanctionsPrescribed }}
+                                </td>
+                            {% endif %}
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-end">
                                     <a href="{{ path('app_students_show', {id: row.studentId}) }}"

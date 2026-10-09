@@ -270,7 +270,7 @@ class StudentRepository extends ServiceEntityRepository
     }
 
     /** Columnas ordenables para {@see findTutoredSummary()} (allowlist contra inyección). */
-    private const TUTORED_SORTABLE = ['name', 'group', 'reportsTotal', 'reportsUnnotified', 'reportsPrescribed', 'sanctionsTotal', 'sanctionsUnnotified'];
+    private const TUTORED_SORTABLE = ['name', 'group', 'reportsTotal', 'reportsUnnotified', 'reportsPrescribed', 'sanctionsTotal', 'sanctionsUnnotified', 'sanctionsPrescribed'];
 
     /**
      * One row per (student, group) pair for every group the viewer tutors in the given
@@ -283,7 +283,7 @@ class StudentRepository extends ServiceEntityRepository
      * @return list<array{
      *     studentId: string, firstName: string, lastName: string, groupId: string, groupName: string,
      *     reportsTotal: int, reportsSerious: int, reportsUnnotified: int, reportsPrescribed: int,
-     *     sanctionsTotal: int, sanctionsUnnotified: int
+     *     sanctionsTotal: int, sanctionsUnnotified: int, sanctionsPrescribed: int
      * }>
      */
     public function findTutoredSummary(Teacher $viewer, AcademicYear $year, array $filters = []): array
@@ -307,7 +307,9 @@ class StudentRepository extends ServiceEntityRepository
                 (SELECT COUNT(sa1.id) FROM App\Entity\Sanction sa1
                  WHERE sa1.student = s AND sa1.group = g) AS sanctionsTotal,
                 (SELECT COUNT(sa2.id) FROM App\Entity\Sanction sa2
-                 WHERE sa2.student = s AND sa2.group = g AND sa2.notifiedCommunication IS NULL) AS sanctionsUnnotified
+                 WHERE sa2.student = s AND sa2.group = g AND sa2.notifiedCommunication IS NULL AND sa2.prescribedAt IS NULL) AS sanctionsUnnotified,
+                (SELECT COUNT(sa3.id) FROM App\Entity\Sanction sa3
+                 WHERE sa3.student = s AND sa3.group = g AND sa3.prescribedAt IS NOT NULL) AS sanctionsPrescribed
             FROM App\Entity\Student s
             JOIN s.groups g
             JOIN g.course c
@@ -344,7 +346,7 @@ class StudentRepository extends ServiceEntityRepository
         /** @var list<array<string, mixed>> $raw */
         $raw = $query->getArrayResult();
 
-        /** @var list<array{studentId: string, firstName: string, lastName: string, groupId: string, groupName: string, reportsTotal: int, reportsSerious: int, reportsUnnotified: int, reportsPrescribed: int, sanctionsTotal: int, sanctionsUnnotified: int}> $rows */
+        /** @var list<array{studentId: string, firstName: string, lastName: string, groupId: string, groupName: string, reportsTotal: int, reportsSerious: int, reportsUnnotified: int, reportsPrescribed: int, sanctionsTotal: int, sanctionsUnnotified: int, sanctionsPrescribed: int}> $rows */
         $rows = array_map(
             static function (array $row): array {
                 $studentId = $row['studentId'];
@@ -362,6 +364,7 @@ class StudentRepository extends ServiceEntityRepository
                     'reportsPrescribed'   => is_scalar($row['reportsPrescribed']) ? intval($row['reportsPrescribed']) : 0,
                     'sanctionsTotal'      => is_scalar($row['sanctionsTotal']) ? intval($row['sanctionsTotal']) : 0,
                     'sanctionsUnnotified' => is_scalar($row['sanctionsUnnotified']) ? intval($row['sanctionsUnnotified']) : 0,
+                    'sanctionsPrescribed' => is_scalar($row['sanctionsPrescribed']) ? intval($row['sanctionsPrescribed']) : 0,
                 ];
             },
             $raw,
@@ -380,6 +383,7 @@ class StudentRepository extends ServiceEntityRepository
                 'reportsPrescribed'    => $a['reportsPrescribed'] <=> $b['reportsPrescribed'],
                 'sanctionsTotal'       => $a['sanctionsTotal'] <=> $b['sanctionsTotal'],
                 'sanctionsUnnotified'  => $a['sanctionsUnnotified'] <=> $b['sanctionsUnnotified'],
+                'sanctionsPrescribed'  => $a['sanctionsPrescribed'] <=> $b['sanctionsPrescribed'],
                 default                => strcmp($a['lastName'], $b['lastName']) ?: strcmp($a['firstName'], $b['firstName']) ?: strcmp($a['groupName'], $b['groupName']),
             };
 

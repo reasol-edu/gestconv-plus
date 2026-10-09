@@ -36,6 +36,10 @@ Debajo, las tarjetas de estadísticas:
 - **Partes próximos a prescribir** — partes sin notificar cuya prescripción automática está
   próxima, según el plazo configurado para el centro. Solo se muestra si esa función está
   activada en los ajustes.
+- **Sanciones próximas a prescribir** — como la anterior, pero para sanciones sin notificar. Solo
+  se muestra si el centro ha activado la
+  [prescripción de sanciones](06-administrar-el-centro.md#prescripcion-de-sanciones-sin-notificar)
+  (por defecto no prescriben).
 - **Sanciones con materias pendientes** — visible para administradores, comisión de convivencia,
   orientación y tutores/as: cuántas sanciones del curso tienen alguna materia de [tareas de
   sanción](#tareas-de-sancion) sin cumplimentar. Enlaza al listado de sanciones con el filtro
@@ -260,8 +264,15 @@ Si hay partes que van a prescribir pronto, la pestaña los destaca arriba del to
 de fondo rojo, **Partes próximos a prescribir**, con los días que quedan para cada uno y los
 botones **Ver** y **Notificar**. Son los mismos que cuenta la tarjeta del inicio y el
 [aviso por correo](06-administrar-el-centro.md#aviso-de-prescripcion-proxima) (los que
-prescribirán dentro del plazo del ajuste *Aviso de prescripción próxima*) y solo se muestra si hay
-alguno y esas funciones están activadas. Las sanciones no prescriben, por lo que no aparecen aquí.
+prescribirán dentro del plazo del ajuste *Aviso de prescripción próxima de partes*) y solo se
+muestra si hay alguno y esas funciones están activadas.
+
+Las **sanciones** solo prescriben si el centro lo activa
+([Prescripción de sanciones sin notificar](06-administrar-el-centro.md#prescripcion-de-sanciones-sin-notificar);
+por defecto no prescriben). Cuando está activado, las sanciones próximas a prescribir aparecen en
+la misma sección —que pasa a titularse **Partes y sanciones próximos a prescribir**, o **Sanciones
+próximas a prescribir** si solo hay sanciones— con una etiqueta que distingue cada tipo. Una
+sanción prescrita sale de las notificaciones pendientes, igual que un parte prescrito.
 
 Los mismos partes y sanciones pendientes de notificar, junto con las [tareas de
 sanción](#tareas-de-sancion) propias todavía sin cumplimentar, aparecen también en la campana
@@ -402,7 +413,10 @@ sus grupos tutorizados, ordenado por apellidos y nombre:
 - **Sin notificar** — partes todavía sin comunicar a la familia, sin contar los prescritos (que
   tienen su propia columna).
 - **Prescritos** — partes que han prescrito por el paso del plazo.
-- **Sanciones** y **Sanciones sin notificar**, con el mismo criterio que los partes.
+- **Sanciones** y **Sanciones sin notificar**, con el mismo criterio que los partes (las sanciones
+  prescritas no cuentan como pendientes).
+- **Sanciones prescritas** — solo si el centro [permite que las sanciones
+  prescriban](06-administrar-el-centro.md#prescripcion-de-sanciones-sin-notificar).
 
 Un buscador por nombre o apellidos y un desplegable de grupo permiten filtrar el listado, y
 cualquier columna —incluidas las estadísticas— puede usarse para ordenar, alternando entre orden

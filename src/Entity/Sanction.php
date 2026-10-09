@@ -84,6 +84,10 @@ class Sanction
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Communication $notifiedCommunication = null;
 
+    /** Set when the sanction was not notified to the family in time (see "notifications.sanction_auto_prescribe_days"). */
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $prescribedAt = null;
+
     /** @var Collection<int, Communication> */
     #[ORM\OneToMany(targetEntity: Communication::class, mappedBy: 'sanction', orphanRemoval: true)]
     private Collection $communications;
@@ -278,6 +282,23 @@ class Sanction
     public function isNotified(): bool
     {
         return $this->notifiedCommunication !== null;
+    }
+
+    public function getPrescribedAt(): ?\DateTimeImmutable
+    {
+        return $this->prescribedAt;
+    }
+
+    public function setPrescribedAt(?\DateTimeImmutable $prescribedAt): static
+    {
+        $this->prescribedAt = $prescribedAt;
+
+        return $this;
+    }
+
+    public function isPrescribed(): bool
+    {
+        return $this->prescribedAt !== null;
     }
 
     /** @return Collection<int, Communication> */

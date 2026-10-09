@@ -26,6 +26,9 @@
                 {% set notifyUrl = is_granted('sanction.notify', sanction) and not is_viewing_past_year() ? path('app_notifications_register_sanction', {id: sanction.id}) : null %}
                 {% if sanction.isNotified %}
                     {% set badgeClasses, badgeIcon, badgeLabel = 'bg-green-100 text-green-700', 'heroicons:check-circle', 'notification.badge.notified'|trans({}, 'notifications') %}
+                {% elseif sanction.prescribed %}
+                    {% set notifyUrl = null %}
+                    {% set badgeClasses, badgeIcon, badgeLabel = 'bg-gray-100 text-gray-600', 'heroicons:shield-check', 'sanction.badge.prescribed'|trans({}, 'admin') %}
                 {% else %}
                     {% set badgeClasses, badgeIcon, badgeLabel = 'bg-amber-100 text-amber-800', 'heroicons:bell-alert', 'notification.badge.pending'|trans({}, 'notifications') %}
                 {% endif %}

@@ -346,7 +346,8 @@ completa de su grupo**, no solo de los partes que él mismo registra:
   tutorizados, ordenado por apellidos y nombre.
 - Cada fila resume su grupo y sus estadísticas: partes totales (con el
   desglose entre normales y graves), sin notificar (sin contar los
-  prescritos) y prescritos, y
+  prescritos) y prescritos (y, si el centro deja que las sanciones
+  prescriban, sanciones prescritas), y
   sanciones totales y sin notificar.
 - Buscador por nombre, filtro por grupo y ordenación por cualquier columna,
   creciente o decreciente.

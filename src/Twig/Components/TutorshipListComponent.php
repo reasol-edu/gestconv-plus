@@ -68,7 +68,7 @@ class TutorshipListComponent extends AbstractController
         return $this->groups->findTutoredByActiveYear($this->centre, $this->viewer, $year);
     }
 
-    /** @return Paginator<array{studentId: string, firstName: string, lastName: string, groupId: string, groupName: string, reportsTotal: int, reportsSerious: int, reportsUnnotified: int, reportsPrescribed: int, sanctionsTotal: int, sanctionsUnnotified: int}> */
+    /** @return Paginator<array{studentId: string, firstName: string, lastName: string, groupId: string, groupName: string, reportsTotal: int, reportsSerious: int, reportsUnnotified: int, reportsPrescribed: int, sanctionsTotal: int, sanctionsUnnotified: int, sanctionsPrescribed: int}> */
     public function getPagination(): Paginator
     {
         $year = $this->tenantContext->getViewYear($this->centre);
@@ -89,6 +89,14 @@ class TutorshipListComponent extends AbstractController
         $offset   = ($page - 1) * $pageSize;
 
         return Paginator::fromArray(array_slice($rows, $offset, $pageSize), $total, $page, $pageSize);
+    }
+
+    /** Whether the centre lets un-notified sanctions prescribe (shows the "Sanciones prescritas" column). */
+    public function getSanctionPrescriptionEnabled(): bool
+    {
+        $days = $this->appSettings->getForCentre('notifications.sanction_auto_prescribe_days', $this->centre);
+
+        return is_int($days) && $days > 0;
     }
 
     public function hasActiveFilters(): bool

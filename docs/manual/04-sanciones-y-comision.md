@@ -22,7 +22,10 @@ El listado muestra las sanciones accesibles para el docente, con paginación y e
 - **Búsqueda por estudiante o grupo**, que filtra en vivo mientras se escribe.
 - Filtros de **Vigentes hoy** y **Pendientes de notificar**.
 - Una columna con el **estado de la notificación** a la familia, con enlace directo para
-  registrar la comunicación si está pendiente.
+  registrar la comunicación si está pendiente. Si el centro permite que las sanciones sin
+  notificar [prescriban](06-administrar-el-centro.md#prescripcion-de-sanciones-sin-notificar)
+  (por defecto no lo hacen), las que han prescrito se muestran atenuadas con la etiqueta
+  **Prescrita** y ya no se pueden notificar.
 - Una columna de **tareas** con el ratio de tareas cumplimentadas sobre el total (por ejemplo,
   «3/6») para las sanciones que las tienen; vacía si la sanción no tiene ninguna. La fila se
   resalta sutilmente mientras queden tareas pendientes.

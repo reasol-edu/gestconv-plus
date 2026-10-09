@@ -74,10 +74,11 @@ class NotificationController extends AbstractController
     }
 
     /**
-     * Reports the viewer can see that will prescribe within the warning window (same criterion
-     * as the dashboard card and the warning email), oldest first, with the days left.
+     * Reports and sanctions the viewer can see that will prescribe within the warning window (same
+     * criterion as the dashboard cards and the warning emails), the closest to prescribing first.
+     * Sanctions only prescribe when "notifications.sanction_auto_prescribe_days" is greater than 0.
      *
-     * @return list<array{report: IncidentReport, daysLeft: int}>
+     * @return list<array{type: 'report'|'sanction', report: ?IncidentReport, sanction: ?Sanction, daysLeft: int}>
      */
     private function upcomingPrescriptions(EducationalCentre $centre, Teacher $viewer): array
     {
@@ -86,19 +87,30 @@ class NotificationController extends AbstractController
             return [];
         }
 
+        $today = $this->clock->now()->setTime(0, 0);
+        $rows  = [];
+
         $autoPrescribeDays = $this->settings->getForCentre('notifications.report_auto_prescribe_days', $centre);
         $warningDays       = $this->settings->getForTeacherInCentre('notifications.report_prescription_warning_days', $viewer, $centre);
-        if (!is_int($autoPrescribeDays) || $autoPrescribeDays <= 0 || !is_int($warningDays) || $warningDays <= 0) {
-            return [];
+        if (is_int($autoPrescribeDays) && $autoPrescribeDays > 0 && is_int($warningDays) && $warningDays > 0) {
+            $cutoff = $today->modify('-' . max(0, $autoPrescribeDays - $warningDays) . ' days');
+            foreach ($this->reports->findPendingPrescriptionForViewer($centre, $viewer, $year, $cutoff) as $report) {
+                $age    = (int) $report->getOccurredAt()->setTime(0, 0)->diff($today)->format('%r%a');
+                $rows[] = ['type' => 'report', 'report' => $report, 'sanction' => null, 'daysLeft' => max(0, $autoPrescribeDays - $age)];
+            }
         }
 
-        $today  = $this->clock->now()->setTime(0, 0);
-        $cutoff = $today->modify('-' . max(0, $autoPrescribeDays - $warningDays) . ' days');
-        $rows   = [];
-        foreach ($this->reports->findPendingPrescriptionForViewer($centre, $viewer, $year, $cutoff) as $report) {
-            $age    = (int) $report->getOccurredAt()->setTime(0, 0)->diff($today)->format('%r%a');
-            $rows[] = ['report' => $report, 'daysLeft' => max(0, $autoPrescribeDays - $age)];
+        $sanctionDays        = $this->settings->getForCentre('notifications.sanction_auto_prescribe_days', $centre);
+        $sanctionWarningDays = $this->settings->getForTeacherInCentre('notifications.sanction_prescription_warning_days', $viewer, $centre);
+        if (is_int($sanctionDays) && $sanctionDays > 0 && is_int($sanctionWarningDays) && $sanctionWarningDays > 0) {
+            $cutoff = $today->modify('-' . max(0, $sanctionDays - $sanctionWarningDays) . ' days');
+            foreach ($this->sanctions->findPendingPrescriptionForViewer($centre, $viewer, $year, $cutoff) as $sanction) {
+                $age    = (int) $sanction->getCreatedAt()->setTime(0, 0)->diff($today)->format('%r%a');
+                $rows[] = ['type' => 'sanction', 'report' => null, 'sanction' => $sanction, 'daysLeft' => max(0, $sanctionDays - $age)];
+            }
         }
+
+        usort($rows, static fn (array $a, array $b): int => $a['daysLeft'] <=> $b['daysLeft']);
 
         return $rows;
     }
