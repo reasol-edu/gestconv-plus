@@ -26,6 +26,9 @@ emails.report_prescription_warning.intro: '{1} Este parte de convivencia todaví
 emails.report_prescription_warning.row: '%student% (grupo %group%), parte nº %number%'
 emails.report_prescription_warning.row_days: '{0} Prescribe hoy|{1} Prescribe mañana|]1,Inf[ Prescribe en %count% días'
 
+emails.sanction_prescribed.subject: 'Sanción marcada como prescrita: %student%'
+emails.sanction_prescribed.intro: '%actor% ha marcado como prescrita la sanción registrada a %student% (grupo %group%).'
+
 emails.sanction_auto_prescribed.subject: 'Sanción prescrita automáticamente: %student%'
 emails.sanction_auto_prescribed.intro: 'La sanción registrada a %student% (grupo %group%) ha prescrito automáticamente al no haberse notificado a la familia en el plazo establecido.'
 

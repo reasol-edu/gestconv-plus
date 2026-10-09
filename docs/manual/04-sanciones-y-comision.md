@@ -87,6 +87,21 @@ puede editarlas o eliminarlas, estén o no comunicadas a la familia. Mientras la
 pendiente de comunicar, quien tenga permiso para notificarla ve también un botón **Notificar**
 junto a los de editar y eliminar.
 
+### Marcar una sanción como prescrita
+
+Igual que con un parte, un **administrador** (global o del centro) puede marcar a mano una sanción
+como prescrita desde su pantalla de edición, en el apartado **Prescripción**: basta indicar la
+**fecha de prescripción**. Dejando el campo en blanco se elimina la prescripción, por ejemplo si
+se marcó por error o si la prescripción automática se aplicó y la familia ha sido informada
+después.
+
+Una sanción prescrita ya no puede notificarse a la familia, desaparece de las notificaciones
+pendientes y se muestra atenuada con la etiqueta **Prescrita**. Al marcarla, se envía el aviso por
+correo «Sanción prescrita» (si el centro lo tiene activado, nombrando a quien la marcó) y queda
+constancia en el registro de actividad. Esta opción está disponible aunque el centro no haya
+activado la prescripción automática de sanciones. Al quitar la prescripción, la sanción vuelve a
+aparecer como pendiente de notificar.
+
 ## Tareas de sanción
 
 Cuando una sanción incluye una **medida con rango de fechas** (el estudiante pasa un periodo fuera

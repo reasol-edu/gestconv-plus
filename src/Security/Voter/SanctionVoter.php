@@ -25,6 +25,8 @@ final class SanctionVoter extends Voter
     public const EDIT_FOLLOWUP = 'sanction.edit_followup';
     public const DELETE       = 'sanction.delete';
     public const NOTIFY       = 'sanction.notify';
+    /** Set or clear the prescription date by hand. Administrators only. */
+    public const PRESCRIBE    = 'sanction.prescribe';
 
     public function __construct(
         private readonly AppSettingsInterface $settings,
@@ -36,7 +38,7 @@ final class SanctionVoter extends Voter
             return $subject instanceof EducationalCentre;
         }
 
-        return in_array($attribute, [self::VIEW, self::EDIT, self::EDIT_FOLLOWUP, self::DELETE, self::NOTIFY], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::EDIT_FOLLOWUP, self::DELETE, self::NOTIFY, self::PRESCRIBE], true)
             && $subject instanceof Sanction;
     }
 
@@ -59,6 +61,11 @@ final class SanctionVoter extends Voter
         }
 
         $centre = $subject->getGroup()->getAcademicYear()->getEducationalCentre();
+
+        // Like reports, only administrators (global or of the centre) can set or clear the prescription date.
+        if ($attribute === self::PRESCRIBE) {
+            return $centre->getAdmins()->contains($user);
+        }
 
         if ($centre->getAdmins()->contains($user) || $centre->getCommitteeMembers()->contains($user)) {
             return true;

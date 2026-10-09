@@ -164,6 +164,17 @@ final class IncidentEmailNotifier
      */
     public function sanctionAutoPrescribed(Sanction $sanction): void
     {
+        $this->notifySanctionPrescribed($sanction, 'sanction_auto_prescribed', null);
+    }
+
+    /** Like {@see sanctionAutoPrescribed()} but when an administrator marks the sanction as prescribed by hand. */
+    public function sanctionPrescribed(Sanction $sanction, Teacher $actor): void
+    {
+        $this->notifySanctionPrescribed($sanction, 'sanction_prescribed', $actor);
+    }
+
+    private function notifySanctionPrescribed(Sanction $sanction, string $eventKey, ?Teacher $actor): void
+    {
         $centre = $this->centreForGroup($sanction->getGroup());
         $choice = $this->choiceFor('notifications.email_sanction_prescribed', $centre);
         if ($choice === 'none') {
@@ -185,9 +196,12 @@ final class IncidentEmailNotifier
             '%student%' => $this->fullName($sanction->getStudent()),
             '%group%'   => $sanction->getGroup()->getName(),
         ];
+        if ($actor !== null) {
+            $params['%actor%'] = $this->fullName($actor);
+        }
 
         foreach ($recipients as $teacher) {
-            $this->dispatch($centre, $teacher, 'sanction_auto_prescribed', $params, 'email/sanction_notice.html.twig', [
+            $this->dispatch($centre, $teacher, $eventKey, $params, 'email/sanction_notice.html.twig', [
                 'sanction'    => $sanction,
                 'sanctionUrl' => $url,
             ]);

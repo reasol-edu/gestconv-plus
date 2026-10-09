@@ -33,7 +33,7 @@ Registro de cada intento de informar a la familia de un parte o una sanción: m�
 Parte marcado con una fecha de prescripción por un administrador. Un parte prescrito se considera *no sancionable*: deja de poder incorporarse a nuevas sanciones. Tampoco se puede ya notificar a la familia, por lo que no aparece en las notificaciones pendientes ni cuenta como parte sin notificar.
 
 **Sanción prescrita**
-Sanción sin notificar a la familia que ha superado el plazo de prescripción configurado para el centro. Las sanciones **no prescriben por defecto** (el plazo vale 0 días); solo ocurre si el centro lo activa. Una sanción prescrita ya no se puede notificar, no aparece en las notificaciones pendientes y se muestra atenuada con la etiqueta *Prescrita*.
+Sanción sin notificar a la familia que ha superado el plazo de prescripción configurado para el centro. Las sanciones **no prescriben solas por defecto** (el plazo vale 0 días); solo ocurre si el centro lo activa, aunque un administrador puede marcar una sanción como prescrita (o quitar la prescripción) a mano, igual que con un parte. Una sanción prescrita ya no se puede notificar, no aparece en las notificaciones pendientes y se muestra atenuada con la etiqueta *Prescrita*.
 
 **Ficha del estudiante**
 Pantalla que reúne los datos básicos de un estudiante, sus contadores de partes y sanciones, los datos de contacto de la familia (visibles solo para determinados perfiles) y su historial de convivencia. Se abre desde el buscador global y desde los listados y detalles de partes y sanciones.

@@ -116,7 +116,7 @@ settings.key.notifications_email_report_prescribed.choice.group_tutor: 'Al tutor
 settings.key.notifications_email_report_prescribed.choice.both: 'A ambos'
 
 settings.key.notifications_email_sanction_prescribed.label: 'Sanción prescrita'
-settings.key.notifications_email_sanction_prescribed.description: 'Determina quién recibe un correo cuando una sanción sin notificar prescribe automáticamente. Se avisa al docente que registró la sanción y/o al tutor/a del grupo.'
+settings.key.notifications_email_sanction_prescribed.description: 'Determina quién recibe un correo cuando una sanción prescribe, ya sea automáticamente por haber superado el plazo o porque un administrador la marca como prescrita. Se avisa al docente que registró la sanción y/o al tutor/a del grupo.'
 settings.key.notifications_email_sanction_prescribed.choice.none: 'A nadie'
 settings.key.notifications_email_sanction_prescribed.choice.report_teacher: 'Al docente que la registró'
 settings.key.notifications_email_sanction_prescribed.choice.group_tutor: 'Al tutor/a de grupo'

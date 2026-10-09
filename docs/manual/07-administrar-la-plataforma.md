@@ -242,7 +242,7 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Parte prescrito | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
 | Parte incorporado a una sanción | A nadie / Al docente que lo registró / Al tutor/a de grupo / A ambos | A nadie |
 | Sanción notificada a la familia | A nadie / A los docentes de los partes / Al tutor/a de grupo / A ambos | A nadie |
-| Sanción prescrita | A nadie / Al docente que la registró / Al tutor/a de grupo / A ambos | A nadie |
+| Sanción prescrita (automática o marcada por un administrador) | A nadie / Al docente que la registró / Al tutor/a de grupo / A ambos | A nadie |
 | Parte sancionable (comisión de convivencia) | A nadie / A la comisión de convivencia | A nadie |
 | Nota que implica registro de parte | A nadie / Al tutor/a de grupo / Al equipo directivo / A ambos | A nadie |
 | Enviar parte adjunto al correo | Sí / No | No |

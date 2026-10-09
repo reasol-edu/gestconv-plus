@@ -274,9 +274,9 @@ del grupo o a ambos:
   automática (ver más abajo).
 - **Sanción notificada a la familia** — se avisa al docente que registró cada uno de los partes
   incorporados a la sanción y/o al tutor/a del grupo.
-- **Sanción prescrita** — solo si la prescripción de sanciones está activada: se avisa al docente
-  que registró la sanción y/o al tutor/a del grupo cuando una sanción sin notificar prescribe
-  automáticamente.
+- **Sanción prescrita** — se avisa al docente que registró la sanción y/o al tutor/a del grupo
+  cuando una sanción sin notificar prescribe, tanto automáticamente (si el centro ha activado la
+  prescripción de sanciones) como si un administrador la marca como prescrita a mano.
 - **Parte sancionable** — cuando un parte queda notificado a la familia y todavía no está
   prescrito ni incorporado a una sanción, puede avisarse a todos los docentes con el perfil de
   comisión de convivencia del centro.
@@ -342,7 +342,11 @@ asignarle un número de días (a nivel global o por centro) se activan:
 Una sanción prescrita ya no aparece entre las notificaciones pendientes (cola, campana, resumen por
 estudiante y notificación en bloque), no cuenta como «sin notificar» y se muestra atenuada, con
 la etiqueta **Prescrita**, en el listado de sanciones y en su ficha. Las sanciones ya notificadas
-nunca prescriben.
+nunca prescriben por plazo.
+
+Con independencia del plazo, un administrador puede también [marcar una sanción como prescrita (o
+quitar la prescripción) a mano](04-sanciones-y-comision.md#marcar-una-sancion-como-prescrita),
+igual que con los partes; en ese caso el aviso «Sanción prescrita» nombra a quien la marcó.
 
 ## Registro de avisos por correo
 

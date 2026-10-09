@@ -24,6 +24,7 @@ use App\Security\Voter\SanctionObservationVoter;
 use App\Security\Voter\SanctionVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
+use App\Service\IncidentEmailNotifier;
 use App\Service\AppSettingsInterface;
 use App\Service\ObservationFormHandler;
 use App\Service\NonWorkingDayChecker;
@@ -57,6 +58,7 @@ class SanctionController extends AbstractController
         'familyClaimed',
         'familyClaimAttitude',
         'registeredInSeneca',
+        'prescribedAt',
     ];
 
     public function __construct(
@@ -79,6 +81,7 @@ class SanctionController extends AbstractController
         private readonly ObservationFormHandler $observationHandler,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
         private readonly ClockInterface $clock,
+        private readonly IncidentEmailNotifier $notifier,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -266,7 +269,8 @@ class SanctionController extends AbstractController
         }
         $this->denyIfViewingPastYear($centre);
 
-        $canEditAll = $this->isGranted(SanctionVoter::EDIT, $sanction);
+        $canEditAll   = $this->isGranted(SanctionVoter::EDIT, $sanction);
+        $canPrescribe = $this->isGranted(SanctionVoter::PRESCRIBE, $sanction);
 
         $user = $this->getUser();
         \assert($user instanceof Teacher);
@@ -293,13 +297,22 @@ class SanctionController extends AbstractController
             }
 
             if (empty($errors)) {
-                $before = $this->changeTracker->snapshot($sanction, self::LOGGED_SANCTION_FIELDS);
+                $wasPrescribed = $sanction->isPrescribed();
+                $before        = $this->changeTracker->snapshot($sanction, self::LOGGED_SANCTION_FIELDS);
 
                 $linkChanges = null;
                 if ($canEditAll) {
                     $linkChanges = $this->formHandler->update($sanction, $data, $result, $user);
                 } else {
                     $this->formHandler->updateFollowup($sanction, $data);
+                }
+
+                if ($canPrescribe) {
+                    $prescribedAtRaw = trim($request->request->getString('prescribed_at'));
+                    $sanction->setPrescribedAt(
+                        $prescribedAtRaw === '' ? null : (\DateTimeImmutable::createFromFormat('Y-m-d', $prescribedAtRaw) ?: null)
+                    );
+                    $this->em->flush();
                 }
 
                 $changes = $this->changeTracker->diff($before, $sanction, self::LOGGED_SANCTION_FIELDS);
@@ -315,6 +328,13 @@ class SanctionController extends AbstractController
                     $this->activityLog->log('sanction.updated', [
                         'entityId' => $sanction->getId()->toRfc4122(),
                         'changes'  => $changes,
+                    ]);
+                }
+
+                if (!$wasPrescribed && $sanction->isPrescribed()) {
+                    $this->notifier->sanctionPrescribed($sanction, $user);
+                    $this->activityLog->log('sanction.prescribed', [
+                        'entityId' => $sanction->getId()->toRfc4122(),
                     ]);
                 }
 

@@ -799,6 +799,77 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertSame('Descripción actualizada.', $updated->getDetails());
     }
 
+    public function testEditPostLetsAdminSetAndClearThePrescriptionDate(): void
+    {
+        [$admin, $centre, $group, $student, $behavior, $measure] = $this->makeScenario();
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $this->loginAs($admin, $centre);
+
+        $sanctionId = $sanction->getId()->toRfc4122();
+        $payload    = fn (string $token, string $prescribedAt): array => [
+            '_token'        => $token,
+            'reports'       => [$report->getId()->toRfc4122()],
+            'measures'      => [$measure->getId()->toRfc4122()],
+            'details'       => 'Detalle.',
+            'prescribed_at' => $prescribedAt,
+        ];
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanctionId . '/editar');
+        self::assertSelectorExists('input[name="prescribed_at"]');
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/sanciones/' . $sanctionId . '/editar', $payload((string) $token, '2026-10-01'));
+        self::assertResponseRedirects('/sanciones/' . $sanctionId);
+        $this->em->clear();
+        $updated = $this->em->find(Sanction::class, $sanction->getId());
+        self::assertNotNull($updated);
+        self::assertSame('2026-10-01', $updated->getPrescribedAt()?->format('Y-m-d'));
+        self::assertTrue($updated->isPrescribed());
+
+        $crawler = $this->client->request('GET', '/sanciones/' . $sanctionId . '/editar');
+        self::assertSame('2026-10-01', $crawler->filter('input[name="prescribed_at"]')->attr('value'));
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/sanciones/' . $sanctionId . '/editar', $payload((string) $token, ''));
+        self::assertResponseRedirects('/sanciones/' . $sanctionId);
+        $this->em->clear();
+        $cleared = $this->em->find(Sanction::class, $sanction->getId());
+        self::assertNotNull($cleared);
+        self::assertFalse($cleared->isPrescribed());
+    }
+
+    public function testEditHidesAndIgnoresPrescriptionDateForCommitteeMembers(): void
+    {
+        [$admin, $centre, $group, $student, $behavior, $measure] = $this->makeScenario();
+        $committee = $this->makeTeacher('committee.prescribe');
+        $this->persist($committee);
+        $centre->addCommitteeMember($committee);
+        $report   = $this->makeReport($student, $group, $behavior);
+        $sanction = $this->makeSanction($admin, $student, $group, [$report]);
+        $this->flush();
+        $this->loginAs($committee, $centre);
+
+        $sanctionId = $sanction->getId()->toRfc4122();
+        $crawler    = $this->client->request('GET', '/sanciones/' . $sanctionId . '/editar');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('input[name="prescribed_at"]');
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/sanciones/' . $sanctionId . '/editar', [
+            '_token'        => $token,
+            'reports'       => [$report->getId()->toRfc4122()],
+            'measures'      => [$measure->getId()->toRfc4122()],
+            'details'       => 'Detalle.',
+            'prescribed_at' => '2026-10-01',
+        ]);
+
+        $this->em->clear();
+        $unchanged = $this->em->find(Sanction::class, $sanction->getId());
+        self::assertNotNull($unchanged);
+        self::assertFalse($unchanged->isPrescribed());
+    }
+
     public function testEditPostRejectsNonWorkingEffectiveDates(): void
     {
         [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
