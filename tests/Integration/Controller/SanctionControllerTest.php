@@ -15,6 +15,7 @@ use App\Entity\Group;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentBehaviorCategory;
 use App\Entity\IncidentReport;
+use App\Entity\IncidentReportObservation;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\GroupTeacher;
@@ -235,6 +236,34 @@ class SanctionControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
+    }
+
+    public function testNewStepTwoDoesNotNestFormsWhenReportsHaveDeletableObservations(): void
+    {
+        // Un <form> anidado cierra el formulario de la sanción al llegar a su </form>: las medidas, las fechas
+        // y el botón de guardar quedarían fuera del formulario (y de los controladores de Stimulus).
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $report = $this->makeReport($student, $group, $behavior, $admin);
+        $method = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $communication = Communication::forIncidentReport($report, $method, $admin, new \DateTimeImmutable(), CommunicationResult::Notified, 'Informada.');
+        $this->persist($method, $communication, new IncidentReportObservation($report, $admin, new \DateTimeImmutable(), '<p>Observación borrable.</p>'));
+        $report->setNotifiedCommunication($communication);
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones/nueva?studentId=' . $student->getId()->toRfc4122()
+            . '&groupId=' . $group->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Observación borrable.', $crawler->html());
+        self::assertCount(0, $crawler->filter('form form'), 'Hay formularios anidados dentro del formulario de la sanción.');
+        self::assertCount(0, $crawler->filter('form.js-confirm-form'));
+        // Las medidas y el bloque de fechas siguen dentro del formulario que arranca los controladores.
+        self::assertCount(1, $crawler->filter('form[data-controller~="sanction-measures"] [data-sanction-measures-target="dateBlock"]'));
     }
 
     public function testNewStepTwoRedirectsForUnknownStudent(): void
