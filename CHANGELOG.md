@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.10] - 2026-10-09
+
+### Fixed
+
+- Los partes prescritos ya no aparecen en las notificaciones pendientes (cola, campana y pantallas de notificación en bloque), ni en el listado de estudiantes con notificaciones pendientes, ni cuentan como «Sin notificar» en Mi tutoría.
+- En el listado de estudiantes con notificaciones pendientes, los botones «Notificar partes» y «Notificar sanciones» caben ahora en una sola línea: se estrechan las columnas de recuento y se da más sitio a las acciones.
+
 ## [1.4.9] - 2026-10-09
 
 ### Fixed
