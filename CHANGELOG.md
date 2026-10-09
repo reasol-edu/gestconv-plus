@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.11] - 2026-10-09
+
+### Added
+
+- La pestaña «Notificaciones pendientes» muestra, arriba del todo y sobre fondo rojo, la sección «Partes próximos a prescribir», con los días que quedan a cada parte y los botones «Ver» y «Notificar». Solo aparece si hay partes en esa situación (los mismos que cuenta el inicio y avisa el correo de prescripción próxima).
+
 ## [1.4.10] - 2026-10-09
 
 ### Fixed
