@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-10-09
+
+### Added
+
+- Un administrador puede marcar una sanción como prescrita (o quitar la prescripción) a mano desde su pantalla de edición, en el nuevo apartado «Prescripción», igual que con los partes. Al marcarla se envía el aviso «Sanción prescrita» (si está activado), nombrando a quien la marcó, y queda constancia en el registro de actividad. Está disponible aunque el centro no haya activado la prescripción automática de sanciones, y una sanción prescrita puede volver a notificarse quitando la fecha.
+
 ## [1.4.12] - 2026-10-09
 
 ### Added
