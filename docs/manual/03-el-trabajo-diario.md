@@ -256,6 +256,13 @@ notificaciones**, con todas las comunicaciones registradas en el curso activo.
 
 ![Cola de notificaciones pendientes](img/notificaciones/notificaciones-pendientes.png)
 
+Si hay partes que van a prescribir pronto, la pestaña los destaca arriba del todo en una sección
+de fondo rojo, **Partes próximos a prescribir**, con los días que quedan para cada uno y los
+botones **Ver** y **Notificar**. Son los mismos que cuenta la tarjeta del inicio y el
+[aviso por correo](06-administrar-el-centro.md#aviso-de-prescripcion-proxima) (los que
+prescribirán dentro del plazo del ajuste *Aviso de prescripción próxima*) y solo se muestra si hay
+alguno y esas funciones están activadas. Las sanciones no prescriben, por lo que no aparecen aquí.
+
 Los mismos partes y sanciones pendientes de notificar, junto con las [tareas de
 sanción](#tareas-de-sancion) propias todavía sin cumplimentar, aparecen también en la campana
 **Tareas pendientes** de la cabecera, ordenados por antigüedad. Cada elemento enlaza directamente

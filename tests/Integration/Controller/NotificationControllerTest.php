@@ -45,6 +45,50 @@ class NotificationControllerTest extends ControllerTestCase
         self::assertSelectorTextContains('body', $student->getName()->getLastName());
     }
 
+    public function testIndexHidesUpcomingPrescriptionSectionWhenNoReportIsClose(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $recent = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->persist($recent);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/notificaciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('#upcoming-title');
+    }
+
+    public function testIndexShowsUpcomingPrescriptionSection(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        // Plazo de 14 días y aviso de 7: un parte de hace 10 días prescribe en 4.
+        $old = $this->makeReport($student, $group, $teacher, $behavior)
+            ->setOccurredAt(\Symfony\Component\Clock\now()->modify('-10 days'));
+        $this->persist($old);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/notificaciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('#upcoming-title', 'Partes próximos a prescribir');
+        self::assertSelectorTextContains('section[aria-labelledby="upcoming-title"]', 'Prescribe en 4 días');
+    }
+
+    public function testIndexUpcomingPrescriptionSectionExcludesPrescribedReports(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $old = $this->makeReport($student, $group, $teacher, $behavior)
+            ->setOccurredAt(\Symfony\Component\Clock\now()->modify('-10 days'))
+            ->setPrescribedAt(\Symfony\Component\Clock\now());
+        $this->persist($old);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/notificaciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('#upcoming-title');
+    }
+
     public function testIndexExcludesAlreadyNotifiedItems(): void
     {
         [$teacher, $centre, $group, $student, $behavior, $method] = $this->makeScenario();

@@ -27,6 +27,7 @@ use App\Service\StudentContactVisibility;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -52,6 +53,7 @@ class NotificationController extends AbstractController
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
+        private readonly ClockInterface $clock,
     ) {}
 
     #[Route('', name: 'app_notifications_index')]
@@ -65,9 +67,40 @@ class NotificationController extends AbstractController
         $tab = $request->query->getString('tab', 'pending') === 'history' ? 'history' : 'pending';
 
         return $this->render('notification/index.html.twig', [
-            'centre' => $centre,
-            'tab'    => $tab,
+            'centre'   => $centre,
+            'tab'      => $tab,
+            'upcoming' => $tab === 'pending' ? $this->upcomingPrescriptions($centre, $user) : [],
         ]);
+    }
+
+    /**
+     * Reports the viewer can see that will prescribe within the warning window (same criterion
+     * as the dashboard card and the warning email), oldest first, with the days left.
+     *
+     * @return list<array{report: IncidentReport, daysLeft: int}>
+     */
+    private function upcomingPrescriptions(EducationalCentre $centre, Teacher $viewer): array
+    {
+        $year = $this->tenantContext->getViewYear($centre);
+        if ($year === null || $this->tenantContext->isViewingNonActiveYear($centre)) {
+            return [];
+        }
+
+        $autoPrescribeDays = $this->settings->getForCentre('notifications.report_auto_prescribe_days', $centre);
+        $warningDays       = $this->settings->getForTeacherInCentre('notifications.report_prescription_warning_days', $viewer, $centre);
+        if (!is_int($autoPrescribeDays) || $autoPrescribeDays <= 0 || !is_int($warningDays) || $warningDays <= 0) {
+            return [];
+        }
+
+        $today  = $this->clock->now()->setTime(0, 0);
+        $cutoff = $today->modify('-' . max(0, $autoPrescribeDays - $warningDays) . ' days');
+        $rows   = [];
+        foreach ($this->reports->findPendingPrescriptionForViewer($centre, $viewer, $year, $cutoff) as $report) {
+            $age    = (int) $report->getOccurredAt()->setTime(0, 0)->diff($today)->format('%r%a');
+            $rows[] = ['report' => $report, 'daysLeft' => max(0, $autoPrescribeDays - $age)];
+        }
+
+        return $rows;
     }
 
     #[Route('/partes/{id}/registrar', name: 'app_notifications_register_report', methods: ['GET', 'POST'])]

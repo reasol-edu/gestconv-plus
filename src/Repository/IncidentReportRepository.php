@@ -227,8 +227,42 @@ class IncidentReportRepository extends ServiceEntityRepository
         AcademicYear $year,
         \DateTimeImmutable $cutoff,
     ): int {
-        $qb = $this->createQueryBuilder('r')
+        return (int) $this->buildPendingPrescriptionQueryBuilder($centre, $viewer, $year, $cutoff)
             ->select('COUNT(DISTINCT r.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * The reports counted by {@see countPendingPrescriptionForViewer()}, oldest first, for the
+     * "próximos a prescribir" section of the notifications screen.
+     *
+     * @return list<IncidentReport>
+     */
+    public function findPendingPrescriptionForViewer(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        AcademicYear $year,
+        \DateTimeImmutable $cutoff,
+    ): array {
+        /** @var list<IncidentReport> $result */
+        $result = $this->buildPendingPrescriptionQueryBuilder($centre, $viewer, $year, $cutoff)
+            ->addSelect('s', 'g', 'c')
+            ->join('r.student', 's')
+            ->orderBy('r.occurredAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    private function buildPendingPrescriptionQueryBuilder(
+        EducationalCentre $centre,
+        Teacher $viewer,
+        AcademicYear $year,
+        \DateTimeImmutable $cutoff,
+    ): QueryBuilder {
+        $qb = $this->createQueryBuilder('r')
             ->join('r.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
@@ -253,7 +287,7 @@ class IncidentReportRepository extends ServiceEntityRepository
             )->setParameter('viewer', $viewer->getId(), 'uuid');
         }
 
-        return (int) $qb->getQuery()->getSingleScalarResult();
+        return $qb;
     }
 
     /**
