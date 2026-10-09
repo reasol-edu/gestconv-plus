@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.12] - 2026-10-09
+
+### Added
+
+- Las sanciones sin notificar a la familia pueden prescribir. Se controla con el nuevo ajuste «Días para la prescripción automática de sanciones» (global o por centro), que vale 0 por defecto: con ese valor las sanciones no prescriben y todo funciona como hasta ahora. Al activarlo, una tarea diaria marca como prescritas las sanciones fuera de plazo, otro aviso diario («Aviso de prescripción próxima de sanciones», con valor personal por docente) avisa de las que están a punto de prescribir y el nuevo aviso por correo «Sanción prescrita» informa de las prescritas. Las sanciones prescritas salen de las notificaciones pendientes y se muestran atenuadas con la etiqueta «Prescrita».
+- Con la prescripción de sanciones activada hay además estadísticas: la columna «Sanciones prescritas» en Mi tutoría, la tarjeta «Sanciones próximas a prescribir» en el inicio y el recuento de sanciones prescritas en las estadísticas por grupo (pantalla, PDF y Excel). La sección roja de Notificaciones muestra también las sanciones próximas a prescribir.
+
+### Changed
+
+- Los ajustes de prescripción de partes se llaman ahora «Días para la prescripción automática de partes» y «Aviso de prescripción próxima de partes», para distinguirlos de los de sanciones.
+
+### Fixed
+
+- Al sancionar a un estudiante cuyos partes tenían observaciones que el usuario podía borrar, el formulario no mostraba el rango de fechas de las medidas que lo requieren ni permitía guardar la sanción. La lista de observaciones se muestra ahora en solo lectura dentro de los formularios de sanción (alta y edición) y de notificación en bloque de partes.
+
 ## [1.4.11] - 2026-10-09
 
 ### Added
