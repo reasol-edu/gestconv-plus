@@ -397,6 +397,8 @@ de que existió.
 | Tamaño máximo por fichero (MB) | Global | Entero | 1-1024 | 10 |
 | Tamaño máximo total por envío (MB) | Global | Entero | 1-2048 | 50 |
 
+![Ajustes globales de subida de ficheros](img/ajustes/ajustes-subida-ficheros.png)
+
 Limitan los ficheros que se suben en adjuntos de actividades y de tareas de sanción, plantillas PDF
 e importaciones. El **total por envío** cubre el caso de seleccionar varios ficheros de una vez.
 Si se supera cualquiera de los límites, la aplicación lo avisa antes de enviar el formulario y, si

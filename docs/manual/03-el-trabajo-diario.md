@@ -458,7 +458,10 @@ clases afectadas:
    son PDF, imágenes (PNG, JPG, GIF), documentos de Word, Excel, PowerPoint y OpenDocument, texto
    plano y ZIP.
    Un fichero que supere el tamaño máximo o no esté en un formato admitido se rechaza, indicando el
-   motivo, sin afectar al resto de la actividad.
+   motivo, sin afectar al resto de la actividad. El aviso aparece ya al elegir el fichero, antes de
+   guardar:
+
+   ![Aviso de un adjunto que supera el tamaño máximo](img/ausencias/adjunto-demasiado-grande.png)
 
 Una misma ausencia puede tener tantas actividades como clases afectadas, incluso varias el mismo
 día si hay más de un tramo horario implicado.
@@ -596,6 +599,15 @@ agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni
 - **Docentes** — solo para administradores.
 - **Acciones** — accesos directos a **Nuevo parte**, **Ir a notificaciones** y **Cambiar de
   curso** (esta última requiere permisos de administración).
+
+## Uso con teclado y cambios sin guardar
+
+- Al pulsar **Tab** nada más cargar una pantalla aparece el enlace **Saltar al contenido
+  principal**, que lleva directamente al contenido sin recorrer antes el menú lateral.
+- Si empiezas a rellenar un formulario (parte, sanción, ausencia, actividad, nota, evento, ficha
+  de estudiante o tarea de sanción) y intentas salir de la página sin guardar —cerrar la pestaña,
+  recargar o seguir un enlace—, el navegador pide confirmación antes de descartar los cambios. Al
+  guardar el formulario, o si no has modificado nada, no se muestra ningún aviso.
 
 ## La aplicación en el móvil
 

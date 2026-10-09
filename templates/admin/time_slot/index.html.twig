@@ -18,7 +18,7 @@
                 <p class="mt-1 text-sm {{ is_viewing_past_year() ? 'text-amber-600 font-medium' : 'text-gray-500' }}">{{ vy.name }}</p>
             {% endif %}
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex flex-wrap items-center gap-2">
             <a href="{{ path('app_centre_time_slots_pdf_options', {centreId: centre.id}) }}"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
                       hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">

@@ -122,26 +122,26 @@
             <table class="table-cards w-full text-sm">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.date'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.recipient'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.event'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.subject'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.status'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.date'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.recipient'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.event'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.subject'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'email_notification_log.list.col.status'|trans({}, 'admin') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for log in pagination.items %}
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td data-label="{{ 'email_notification_log.list.col.date'|trans({}, 'admin')|e('html_attr') }}"
-                                class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ log.sentAt|date('format.datetime'|trans) }}</td>
+                                class="px-4 py-3 text-gray-500 whitespace-nowrap">{{ log.sentAt|date('format.datetime'|trans) }}</td>
                             <td data-label="{{ 'email_notification_log.list.col.recipient'|trans({}, 'admin')|e('html_attr') }}"
-                                class="px-6 py-3 text-gray-800 whitespace-nowrap">{{ log.recipientName }}</td>
+                                class="px-4 py-3 text-gray-800 whitespace-nowrap">{{ log.recipientName }}</td>
                             <td data-label="{{ 'email_notification_log.list.col.event'|trans({}, 'admin')|e('html_attr') }}"
-                                class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ ('email_notification_log.event.' ~ log.eventKey)|trans({}, 'admin') }}</td>
+                                class="px-4 py-3 text-gray-700">{{ ('email_notification_log.event.' ~ log.eventKey)|trans({}, 'admin') }}</td>
                             <td data-label="{{ 'email_notification_log.list.col.subject'|trans({}, 'admin')|e('html_attr') }}"
-                                class="px-6 py-3 text-gray-500 max-w-sm truncate" title="{{ log.subject }}">{{ log.subject }}</td>
+                                class="px-4 py-3 text-gray-500"><span class="block max-w-[13rem] truncate" title="{{ log.subject }}">{{ log.subject }}</span></td>
                             <td data-label="{{ 'email_notification_log.list.col.status'|trans({}, 'admin')|e('html_attr') }}"
-                                class="px-6 py-3 whitespace-nowrap">
+                                class="px-4 py-3 whitespace-nowrap">
                                 {% if log.success %}
                                     <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
                                         {{ ux_icon('heroicons:check-circle', {class: 'h-3 w-3'}) }}

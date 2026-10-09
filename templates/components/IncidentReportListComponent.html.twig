@@ -105,35 +105,35 @@
                 <table class="table-cards w-full text-sm">
                     <thead>
                         <tr class="border-b border-gray-100 bg-gray-50">
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">#</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.student'|trans({}, 'admin') }}</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.group'|trans({}, 'admin') }}</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.teacher'|trans({}, 'admin') }}</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.behaviors'|trans({}, 'admin') }}</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.description'|trans({}, 'admin') }}</th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.actions'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">#</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.student'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.group'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.teacher'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.behaviors'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.description'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'incident.col.actions'|trans({}, 'admin') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         {% for report in pagination.items %}
                             <tr class="hover:bg-gray-50 transition-colors {{ report.prescribed ? 'opacity-60' : '' }}">
-                                <td class="px-6 py-4 text-xs font-mono text-gray-400 whitespace-nowrap">#{{ report.number }}</td>
+                                <td class="px-4 py-4 text-xs font-mono text-gray-400 whitespace-nowrap">#{{ report.number }}</td>
                                 <td data-label="{{ 'incident.col.occurred_at'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('format.datetime'|trans) }}</td>
+                                    class="px-4 py-4 text-xs text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('format.datetime'|trans) }}</td>
                                 <td data-label="{{ 'incident.col.student'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-6 py-4 font-medium text-gray-900">
+                                    class="px-4 py-4 font-medium text-gray-900">
                                     <a href="{{ path('app_students_show', {id: report.student.id}) }}"
                                        class="hover:text-forest-700 hover:underline transition-colors">
                                         {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
                                     </a>
                                 </td>
                                 <td data-label="{{ 'incident.col.group'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-6 py-4 text-gray-600">{{ report.group.name }}</td>
+                                    class="px-4 py-4 text-gray-600">{{ report.group.name }}</td>
                                 <td data-label="{{ 'incident.col.teacher'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-6 py-4 text-gray-600">{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</td>
+                                    class="px-4 py-4 text-gray-600">{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</td>
                                 <td data-label="{{ 'incident.col.behaviors'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-6 py-4">
+                                    class="px-4 py-4">
                                     <div class="flex flex-wrap gap-1 sm:justify-start justify-end">
                                         {% set hasSerious = report.behaviors|filter(b => b.serious)|length > 0 %}
                                         {% if hasSerious %}
@@ -177,12 +177,12 @@
                                     </div>
                                 </td>
                                 <td data-label="{{ 'incident.col.description'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-6 py-4">
-                                    <div class="w-[220px] truncate text-xs text-gray-500">
+                                    class="px-4 py-4">
+                                    <div class="w-[140px] truncate text-xs text-gray-500 2xl:w-[220px]" title="{{ report.description|striptags|e('html_attr') }}">
                                         {{ report.description|striptags }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ path('app_incidents_show', {id: report.id}) }}"
                                            class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium
