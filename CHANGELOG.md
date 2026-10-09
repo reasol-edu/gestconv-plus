@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.8] - 2026-10-09
+
+### Fixed
+
+- El listado de partes muestra ya la columna de acciones en pantallas de 1280 px, sin necesidad de desplazarse hacia los lados.
+- El registro de avisos por correo muestra la columna de resultado sin desplazamiento horizontal; el asunto se acorta y el evento puede ocupar dos líneas.
+- Los campos numéricos de los ajustes ya no cortan el rango permitido.
+- En el móvil, las pantallas de docentes del centro, conductas, ubicaciones, medidas disciplinarias, métodos de comunicación, tipos de nota, días no lectivos y tramos horarios ya no desbordan la página: los botones de la cabecera pasan a otra línea.
+
 ## [1.4.7] - 2026-10-09
 
 ### Added
