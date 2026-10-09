@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.9] - 2026-10-09
+
+### Fixed
+
+- En ventanas estrechas, las medidas de una sanción con nombre largo ya no se ven como un círculo: se muestran como etiquetas rectangulares de esquinas suaves en el listado de sanciones, la ficha, el panel de inicio y la pantalla de notificar sanciones.
+- Las etiquetas de estado del listado de sanciones («Pendiente de notificar», «En Séneca», «No efectiva», «Reclamada») tampoco se ven ovaladas cuando se parten en dos líneas.
+
 ## [1.4.8] - 2026-10-09
 
 ### Fixed
