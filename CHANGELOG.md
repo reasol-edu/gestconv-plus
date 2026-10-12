@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-10-12
+
+### Changed
+
+- Menos consultas a la base de datos en el menú, las fichas de sanción y de estudiante, los catálogos de conductas, medidas y ubicaciones, la parrilla de tramos horarios y el calendario: el número de consultas ya no crece con la cantidad de datos mostrados. Los papeles del docente en el curso (tutor, docente, guardia) que usa el menú se resuelven ahora con una sola consulta.
+
+### Fixed
+
+- En los ajustes con una plantilla PDF, el botón «Subir» solo aparece cuando se ha seleccionado un fichero.
+
 ## [1.6.0] - 2026-10-09
 
 ### Added
