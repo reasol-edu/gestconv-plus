@@ -7,8 +7,7 @@ namespace App\Twig;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
-use App\Repository\GroupRepository;
-use App\Repository\TimeSlotRepository;
+use App\Service\TeacherYearRoles;
 use App\Service\TenantContext;
 use Symfony\Bundle\SecurityBundle\Security;
 use Twig\Extension\AbstractExtension;
@@ -19,8 +18,7 @@ final class TenantContextExtension extends AbstractExtension
     public function __construct(
         private readonly TenantContext $context,
         private readonly Security $security,
-        private readonly GroupRepository $groups,
-        private readonly TimeSlotRepository $timeSlots,
+        private readonly TeacherYearRoles $roles,
     ) {}
 
     public function getFunctions(): array
@@ -108,7 +106,7 @@ final class TenantContextExtension extends AbstractExtension
 
         $year = $this->context->getViewYear($centre);
 
-        return $year !== null && $year->getTeachers()->contains($user);
+        return $year !== null && $this->roles->belongsToYear($user, $year);
     }
 
     public function tutorsAnyGroup(): bool
@@ -125,7 +123,7 @@ final class TenantContextExtension extends AbstractExtension
 
         $year = $this->context->getViewYear($centre);
 
-        return $year !== null && $this->groups->hasTutoredGroupsInYear($centre, $user, $year);
+        return $year !== null && $this->roles->tutorsAnyGroup($user, $year);
     }
 
     public function teachesAnyGroup(): bool
@@ -142,7 +140,7 @@ final class TenantContextExtension extends AbstractExtension
 
         $year = $this->context->getViewYear($centre);
 
-        return $year !== null && $this->groups->hasTeachingGroupsInYear($centre, $user, $year);
+        return $year !== null && $this->roles->teachesAnyGroup($user, $year);
     }
 
     public function isGuardAnyTimeSlot(): bool
@@ -159,6 +157,6 @@ final class TenantContextExtension extends AbstractExtension
 
         $year = $this->context->getViewYear($centre);
 
-        return $year !== null && $this->timeSlots->hasGuardDutyInYear($centre, $user, $year);
+        return $year !== null && $this->roles->guardsAnyTimeSlot($user, $year);
     }
 }

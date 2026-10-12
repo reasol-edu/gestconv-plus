@@ -163,9 +163,15 @@ class StudentController extends AbstractController
             'contactPhone3Notes' => $student->getContactPhone3Notes() ?? '',
         ];
 
+        // Los grupos del alumno se cargan en una sola consulta: contains() sobre la colección
+        // EXTRA_LAZY lanzaría una consulta por cada grupo del centro.
+        $studentGroupIds = [];
+        foreach ($student->getGroups() as $studentGroup) {
+            $studentGroupIds[$studentGroup->getId()->toRfc4122()] = true;
+        }
         $selectedGroupIds = [];
         foreach ($centreGroupsById as $gId => $group) {
-            if ($student->getGroups()->contains($group)) {
+            if (isset($studentGroupIds[$group->getId()->toRfc4122()])) {
                 $selectedGroupIds[] = $gId;
             }
         }

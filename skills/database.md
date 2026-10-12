@@ -112,3 +112,35 @@ requires it.
   deleted rather than accumulating unbounded. See `backend.md` for how
   `AppSettings` resolves the effective value (including file-valued settings)
   across the global/centre/teacher hierarchy.
+
+## Query count: no N+1, and the page-wide costs are paid once
+
+A page's number of queries must not grow with the data it lists. Measured on the demo data, pages ran
+10–30 queries, most of them one lazy query per row. What keeps them flat:
+
+- **A list or record that callers walk comes with what they read.** Fetch-join the *to-one* associations
+  (and at most one collection) in the repository method itself — `SanctionRepository::findById()` brings
+  student, group+course, author, year and the tasks with their teacher; `findEligibleReports()` brings
+  behaviours, category and author. Joining several collections into one query multiplies rows: for the
+  second collection run a separate preloading query that hydrates the already-managed entities
+  (`SanctionRepository::preloadReportDetails()`, `SchoolEventRepository::preloadGroups()` — the latter
+  can't join in the list query because the "visible" variant filters on that very join and would leave
+  half-filled collections).
+- **Don't loop over a repository call per row.** The catalogue indexes (behaviours, measures, locations)
+  load all items of the centre once (`findByCentreOrdered()`) and group them in PHP; the weekly time-slot
+  grid loads the week with one query instead of one per weekday.
+- **`EXTRA_LAZY` + `contains()`/`isEmpty()` per iteration is one query each.** Initialise the collection
+  once (iterate it, or `toArray()`), build an id set, and test against that.
+- **Page-wide flags are resolved once.** `TeacherYearRoles` answers "tutors / teaches / guards / belongs to
+  the year" with one query (`TeacherRepository::findYearRoles()`) and remembers it. A memo on a service must
+  implement `ResetInterface` (the app may run in a long-lived worker) and be dropped by a Doctrine
+  `postFlush` listener, because a write can change the answer. `EducationalCentreRepository::
+  findAccessibleByTeacher()` runs on every request (menu) and is a single query with `EXISTS` subqueries.
+- **Tenant resolution:** `TenantContext::getSelectedCentre()` must not `refresh()` a centre it has just
+  loaded — decide that *before* the query (`tryGetById()`), since afterwards it is always in the identity map.
+
+To measure, use `ControllerTestCase::countQueries($url)` (profiler's query count with a cleared identity
+map) and assert the count with N items is `<=` the count with one — see
+`SanctionControllerTest::testShowQueryCountDoesNotGrowWithTheNumberOfTasksAndReports`. To audit the whole
+app, boot the test kernel against a seeded SQLite file DB, crawl the GET links as several roles and list,
+for each page, the SQL statements that repeat — those are the N+1.

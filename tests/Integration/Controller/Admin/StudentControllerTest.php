@@ -161,6 +161,36 @@ class StudentControllerTest extends ControllerTestCase
 
     // ── edit ──────────────────────────────────────────────────────────────────
 
+    public function testEditQueryCountDoesNotGrowWithTheNumberOfGroups(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $centre->setActiveAcademicYear($year);
+        $student = $this->makeStudent('2024-NP1');
+        $this->persist($admin, $centre, $year, $student);
+        $course = (new Course())->setName('1r DAW')->setAcademicYear($year);
+        $this->persist($course);
+        $this->loginAs($admin);
+
+        $url = '/centro/' . $centre->getId()->toRfc4122() . '/estudiantes/' . $student->getId()->toRfc4122() . '/editar';
+        $addGroup = function (string $name) use ($course, $student): void {
+            $course = $this->em->find(Course::class, $course->getId());
+            $group  = (new Group())->setName($name)->setCourse($course);
+            $this->persist($group);
+            $student = $this->em->find(Student::class, $student->getId());
+            $student->addGroup($group);
+            $this->flush();
+        };
+
+        $addGroup('A');
+        $withOne = $this->countQueries($url);
+        foreach (['B', 'C', 'D', 'E', 'F'] as $name) {
+            $addGroup($name);
+        }
+        $withSix = $this->countQueries($url);
+
+        self::assertLessThanOrEqual($withOne, $withSix, 'La edición ejecuta consultas por cada grupo del centro (N+1).');
+    }
+
     public function testEditGetRendersForm(): void
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();

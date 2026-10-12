@@ -35,7 +35,18 @@ class SanctionRepository extends ServiceEntityRepository
 
     public function findById(string $id): ?Sanction
     {
+        // Las asociaciones que leen la ficha, el formulario y el PDF vienen en la misma consulta
+        // (si no, cada una sería un proxy cargado aparte, y las tareas, una consulta por docente).
         $result = $this->createQueryBuilder('s')
+            ->addSelect('st', 'g', 'c', 'rb', 'ay', 'tk', 'gt', 'tt')
+            ->join('s.student', 'st')
+            ->join('s.group', 'g')
+            ->join('g.course', 'c')
+            ->join('s.registeredBy', 'rb')
+            ->join('s.academicYear', 'ay')
+            ->leftJoin('s.tasks', 'tk')
+            ->leftJoin('tk.groupTeacher', 'gt')
+            ->leftJoin('gt.teacher', 'tt')
             ->where('s.id = :id')
             ->setParameter('id', $id, 'uuid')
             ->getQuery()
@@ -613,9 +624,13 @@ class SanctionRepository extends ServiceEntityRepository
     public function findEligibleReports(Student $student, Group $group): array
     {
         /** @var list<IncidentReport> $result */
+        // Con conductas, categoría y autor: el formulario y la ficha los leen en cada parte
         $result = $this->getEntityManager()->createQueryBuilder()
-            ->select('r')
+            ->select('r', 'rb', 'b', 'bc')
             ->from(IncidentReport::class, 'r')
+            ->join('r.registeredBy', 'rb')
+            ->leftJoin('r.behaviors', 'b')
+            ->leftJoin('b.category', 'bc')
             ->where('r.student = :student')
             ->andWhere('r.group = :group')
             ->andWhere('r.prescribedAt IS NULL')
@@ -628,6 +643,24 @@ class SanctionRepository extends ServiceEntityRepository
             ->getResult();
 
         return $result;
+    }
+
+    /**
+     * Carga con una sola consulta las conductas (con su categoría) y el autor de los partes de la
+     * sanción, para que recorrer `$sanction->getReports()` no lance una consulta por parte.
+     */
+    public function preloadReportDetails(Sanction $sanction): void
+    {
+        $this->getEntityManager()->createQueryBuilder()
+            ->select('r', 'rb', 'b', 'bc')
+            ->from(IncidentReport::class, 'r')
+            ->join('r.registeredBy', 'rb')
+            ->leftJoin('r.behaviors', 'b')
+            ->leftJoin('b.category', 'bc')
+            ->where('r.sanction = :sanction')
+            ->setParameter('sanction', $sanction->getId(), 'uuid')
+            ->getQuery()
+            ->getResult();
     }
 
     /**

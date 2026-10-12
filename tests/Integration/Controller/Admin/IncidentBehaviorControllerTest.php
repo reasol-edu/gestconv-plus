@@ -27,6 +27,26 @@ class IncidentBehaviorControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testIndexQueryCountDoesNotGrowWithTheNumberOfCategories(): void
+    {
+        [$cadmin, $centre, $category] = $this->makeScenarioWithCategory();
+        $this->persist($this->makeBehavior($centre, $category, 'Primera', 0));
+        $this->loginAs($cadmin);
+        $url = '/centro/' . $centre->getId()->toRfc4122() . '/conductas';
+
+        $withOne = $this->countQueries($url);
+
+        $centre = $this->em->find(EducationalCentre::class, $centre->getId());
+        for ($i = 1; $i <= 4; ++$i) {
+            $extra = $this->makeCategory($centre, 'Categoría ' . $i, false, $i);
+            $this->persist($extra);
+            $this->persist($this->makeBehavior($centre, $extra, 'Conducta ' . $i, 0));
+        }
+        $withFive = $this->countQueries($url);
+
+        self::assertLessThanOrEqual($withOne, $withFive, 'El catálogo ejecuta una consulta por categoría (N+1).');
+    }
+
     public function testIndexIsDeniedToNonAdmin(): void
     {
         [, $centre] = $this->makeScenario();

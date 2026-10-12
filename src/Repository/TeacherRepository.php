@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\Group;
 use App\Entity\Teacher;
+use App\Entity\TimeSlot;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
@@ -302,5 +304,39 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->getResult();
 
         return $result;
+    }
+
+    /**
+     * Qué papeles tiene el docente en el curso, en una sola consulta (el menú los necesita en cada
+     * petición): tutoriza algún grupo, da clase o tutoriza algún grupo, tiene guardia en algún tramo
+     * y pertenece al curso.
+     *
+     * @return array{tutors: bool, teaches: bool, guards: bool, member: bool}
+     */
+    public function findYearRoles(Teacher $teacher, AcademicYear $year): array
+    {
+        /** @var array{tutors: int|string, teaches: int|string, guards: int|string, member: int|string}|null $row */
+        $row = $this->getEntityManager()->createQuery(
+            'SELECT
+                CASE WHEN EXISTS (SELECT 1 FROM ' . Group::class . ' g1 JOIN g1.course c1
+                    WHERE c1.academicYear = :year AND :viewer MEMBER OF g1.tutors) THEN 1 ELSE 0 END AS tutors,
+                CASE WHEN EXISTS (SELECT 1 FROM ' . Group::class . ' g2 JOIN g2.course c2 LEFT JOIN g2.groupTeachers gt2
+                    WHERE c2.academicYear = :year AND (gt2.teacher = :viewer OR :viewer MEMBER OF g2.tutors)) THEN 1 ELSE 0 END AS teaches,
+                CASE WHEN EXISTS (SELECT 1 FROM ' . TimeSlot::class . ' ts
+                    WHERE ts.academicYear = :year AND :viewer MEMBER OF ts.guards) THEN 1 ELSE 0 END AS guards,
+                CASE WHEN EXISTS (SELECT 1 FROM ' . AcademicYear::class . ' ay JOIN ay.teachers m
+                    WHERE ay.id = :year AND m.id = :viewer) THEN 1 ELSE 0 END AS member
+             FROM ' . Teacher::class . ' t WHERE t.id = :viewer',
+        )
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('viewer', $teacher->getId(), 'uuid')
+            ->getOneOrNullResult(Query::HYDRATE_ARRAY);
+
+        return [
+            'tutors'  => (int) ($row['tutors'] ?? 0) === 1,
+            'teaches' => (int) ($row['teaches'] ?? 0) === 1,
+            'guards'  => (int) ($row['guards'] ?? 0) === 1,
+            'member'  => (int) ($row['member'] ?? 0) === 1,
+        ];
     }
 }

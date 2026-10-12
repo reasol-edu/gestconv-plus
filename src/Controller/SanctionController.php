@@ -199,6 +199,8 @@ class SanctionController extends AbstractController
             throw $this->createNotFoundException();
         }
 
+        $this->sanctions->preloadReportDetails($sanction);
+
         $this->denyAccessUnlessGranted(SanctionVoter::VIEW, $sanction);
 
         return $this->render('sanction/show.html.twig', [
@@ -216,6 +218,8 @@ class SanctionController extends AbstractController
         if ($sanction === null) {
             throw $this->createNotFoundException();
         }
+
+        $this->sanctions->preloadReportDetails($sanction);
 
         $this->denyAccessUnlessGranted(SanctionVoter::VIEW, $sanction);
 
@@ -260,6 +264,8 @@ class SanctionController extends AbstractController
         if ($sanction === null) {
             throw $this->createNotFoundException();
         }
+
+        $this->sanctions->preloadReportDetails($sanction);
 
         // Full edit requires EDIT; after notification VIEW users get EDIT_FOLLOWUP (only new fields + observations)
         if (!$this->isGranted(SanctionVoter::EDIT, $sanction)

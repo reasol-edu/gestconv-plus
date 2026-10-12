@@ -7,7 +7,7 @@ namespace App\Controller;
 use App\Attribute\CurrentCentre;
 use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
-use App\Repository\GroupRepository;
+use App\Service\TeacherYearRoles;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +19,7 @@ class TutorshipController extends AbstractController
 {
     public function __construct(
         private readonly TenantContext $tenantContext,
-        private readonly GroupRepository $groups,
+        private readonly TeacherYearRoles $roles,
     ) {}
 
     #[Route('', name: 'app_tutorship_index')]
@@ -31,7 +31,7 @@ class TutorshipController extends AbstractController
         }
 
         $year = $this->tenantContext->getViewYear($centre);
-        if ($year === null || !$this->groups->hasTutoredGroupsInYear($centre, $viewer, $year)) {
+        if ($year === null || !$this->roles->tutorsAnyGroup($viewer, $year)) {
             throw $this->createAccessDeniedException();
         }
 

@@ -89,6 +89,43 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertLessThanOrEqual($withOne, $withSeven, 'El listado ejecuta consultas por cada sanción (N+1).');
     }
 
+    public function testShowQueryCountDoesNotGrowWithTheNumberOfTasksAndReports(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $ids      = [$admin->getId(), $student->getId(), $group->getId(), $behavior->getId()];
+        $sanction = $this->makeSanction($admin, $student, $group);
+        $sanctionId = $sanction->getId();
+        $this->loginAs($admin, $centre);
+
+        $addTaskAndReport = function (int $n) use ($ids, $sanctionId): void {
+            $group    = $this->em->find(Group::class, $ids[2]);
+            $teacher  = $this->makeTeacher('show.n1.' . $n);
+            $this->persist($teacher);
+            $group->addTeacher($teacher, 'Materia ' . $n);
+            $this->flush();
+            $groupTeacher = $group->getTeacherAssignments()->last();
+            $sanction     = $this->em->find(Sanction::class, $sanctionId);
+            $this->persist(new SanctionTask($sanction, $groupTeacher));
+
+            $admin    = $this->em->find(Teacher::class, $ids[0]);
+            $student  = $this->em->find(Student::class, $ids[1]);
+            $behavior = $this->em->find(IncidentBehavior::class, $ids[3]);
+            $report   = $this->makeReport($student, $group, $behavior, $admin);
+            $report->setSanction($sanction);
+            $this->flush();
+        };
+
+        $addTaskAndReport(1);
+        $url     = '/sanciones/' . $sanctionId->toRfc4122();
+        $withOne = $this->countQueries($url);
+        for ($i = 2; $i <= 5; ++$i) {
+            $addTaskAndReport($i);
+        }
+        $withFive = $this->countQueries($url);
+
+        self::assertLessThanOrEqual($withOne, $withFive, 'La ficha ejecuta consultas por cada tarea o parte (N+1).');
+    }
+
     public function testIndexPendingTasksOnlyQueryParamPreChecksFilterAndFiltersList(): void
     {
         [$admin, $centre, $group, $student] = $this->makeScenario();

@@ -187,6 +187,34 @@ class DailyNoteRepository extends ServiceEntityRepository
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * Notas activas del estudiante en el curso, agrupadas por tipo, en una sola consulta.
+     *
+     * @return array<string, int> número de notas por id (RFC 4122) de tipo; los tipos sin notas no aparecen
+     */
+    public function countActiveByStudentGroupedByType(Student $student, AcademicYear $year): array
+    {
+        /** @var list<array{typeId: Uuid, total: int|string}> $rows */
+        $rows = $this->createQueryBuilder('n')
+            ->select('t.id AS typeId', 'COUNT(n.id) AS total')
+            ->join('n.type', 't')
+            ->where('n.student = :student')
+            ->andWhere('n.academicYear = :year')
+            ->andWhere('n.active = true')
+            ->groupBy('t.id')
+            ->setParameter('student', $student->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[$row['typeId']->toRfc4122()] = (int) $row['total'];
+        }
+
+        return $counts;
+    }
+
     public function countByType(DailyNoteType $type): int
     {
         return (int) $this->createQueryBuilder('n')

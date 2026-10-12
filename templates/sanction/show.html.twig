@@ -102,11 +102,13 @@
         {# Partes asociados #}
         <div class="px-6 py-4">
             <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'sanction.section.reports'|trans({}, 'admin') }}</p>
-            {% if sanction.reports is empty %}
+            {# toArray carga la colección (EXTRA_LAZY) una sola vez: «is empty» + el bucle serían dos consultas #}
+            {% set sanctionReports = sanction.reports.toArray %}
+            {% if sanctionReports is empty %}
                 <p class="text-xs text-gray-400">—</p>
             {% else %}
                 <div class="space-y-1">
-                    {% for report in sanction.reports %}
+                    {% for report in sanctionReports %}
                         <div class="flex items-center gap-2">
                             <a href="{{ path('app_incidents_show', {id: report.id}) }}"
                                class="text-sm text-forest-700 hover:text-forest-900 font-mono font-medium transition-colors">

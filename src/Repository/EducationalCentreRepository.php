@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\Teacher;
@@ -122,50 +123,22 @@ class EducationalCentreRepository extends ServiceEntityRepository
             return $this->findAllOrderedByName();
         }
 
-        $merged = [];
-
-        $tid = $teacher->getId();
-
-        // Centres where teacher is listed as admin
-        foreach ($this->createQueryBuilder('ec')
-            ->join('ec.admins', 'a')
-            ->where('a.id = :tid')
-            ->setParameter('tid', $tid, 'uuid')
+        // Una sola consulta (se ejecuta en cada petición desde el menú): el docente accede al centro si
+        // es administrador suyo, está en el curso activo o da clase / tutoriza algún grupo de cualquier curso.
+        /** @var list<EducationalCentre> $centres */
+        $centres = $this->createQueryBuilder('ec')
+            ->where('EXISTS (SELECT 1 FROM ' . EducationalCentre::class . ' ecA JOIN ecA.admins adm
+                             WHERE ecA.id = ec.id AND adm.id = :tid)')
+            ->orWhere('EXISTS (SELECT 1 FROM ' . AcademicYear::class . ' ayT JOIN ayT.teachers tch
+                               WHERE ayT.id = IDENTITY(ec.activeAcademicYear) AND tch.id = :tid)')
+            ->orWhere('EXISTS (SELECT 1 FROM ' . Group::class . ' g
+                               JOIN g.course c JOIN c.academicYear ayG
+                               LEFT JOIN g.groupTeachers ggt LEFT JOIN g.tutors gtu
+                               WHERE ayG.educationalCentre = ec AND (ggt.teacher = :tid OR gtu.id = :tid))')
+            ->setParameter('tid', $teacher->getId(), 'uuid')
+            ->orderBy('ec.name', 'ASC')
             ->getQuery()
-            ->getResult() as $centre) {
-            $merged[$centre->getId()->toRfc4122()] = $centre;
-        }
-
-        // Centres where teacher is enrolled in the active academic year, regardless of group/tutor status
-        foreach ($this->createQueryBuilder('ec')
-            ->join('ec.activeAcademicYear', 'ay')
-            ->join('ay.teachers', 't')
-            ->where('t.id = :tid')
-            ->setParameter('tid', $tid, 'uuid')
-            ->getQuery()
-            ->getResult() as $centre) {
-            $merged[$centre->getId()->toRfc4122()] = $centre;
-        }
-
-        // Centres via group membership — navigate from Group since ManyToOne associations are unidirectional
-        foreach ($this->getEntityManager()->createQueryBuilder()
-            ->select('g')
-            ->from(Group::class, 'g')
-            ->join('g.course', 'c')
-            ->join('c.academicYear', 'ay')
-            ->leftJoin('g.groupTeachers', 'ggt')
-            ->leftJoin('g.tutors', 'gtu')
-            ->where('ggt.teacher = :tid OR gtu.id = :tid')
-            ->setParameter('tid', $tid, 'uuid')
-            ->distinct()
-            ->getQuery()
-            ->getResult() as $group) {
-            $ec = $group->getAcademicYear()->getEducationalCentre();
-            $merged[$ec->getId()->toRfc4122()] = $ec;
-        }
-
-        $centres = array_values($merged);
-        usort($centres, static fn(EducationalCentre $a, EducationalCentre $b) => strcmp($a->getName(), $b->getName()));
+            ->getResult();
 
         return $centres;
     }

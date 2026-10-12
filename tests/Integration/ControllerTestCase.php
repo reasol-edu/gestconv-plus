@@ -123,6 +123,24 @@ abstract class ControllerTestCase extends WebTestCase
     }
 
     /**
+     * Number of SQL queries a GET request to $url runs. The identity map is cleared first so every
+     * association is read from the database, as it would be on a real request.
+     */
+    protected function countQueries(string $url): int
+    {
+        $this->em->clear();
+        $this->client->enableProfiler();
+        $this->client->request('GET', $url);
+        self::assertResponseIsSuccessful();
+        $profile = $this->client->getProfile();
+        self::assertNotFalse($profile);
+        /** @var \Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector $db */
+        $db = $profile->getCollector('db');
+
+        return $db->getQueryCount();
+    }
+
+    /**
      * Returns the body of a StreamedResponse. KernelBrowser already consumes
      * the stream when filtering the response, so it must be read from the
      * BrowserKit internal response instead of sending the content again.

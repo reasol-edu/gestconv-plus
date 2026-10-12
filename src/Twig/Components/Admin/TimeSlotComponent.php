@@ -113,9 +113,12 @@ class TimeSlotComponent extends AbstractController
             return [];
         }
 
-        $columns = [];
-        foreach (self::DAYS as $day) {
-            $columns[$day] = $this->timeSlots->findByAcademicYearAndDay($year, $day);
+        // Una sola consulta para toda la semana (ya ordenada por día y hora de inicio).
+        $columns = array_fill_keys(self::DAYS, []);
+        foreach ($this->timeSlots->findByAcademicYearOrderedWithGuards($year) as $slot) {
+            if (isset($columns[$slot->getDayOfWeek()])) {
+                $columns[$slot->getDayOfWeek()][] = $slot;
+            }
         }
 
         return $columns;

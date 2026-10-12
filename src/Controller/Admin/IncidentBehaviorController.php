@@ -105,7 +105,11 @@ class IncidentBehaviorController extends AbstractCatalogController
         $categories          = $this->categories->findByCentreOrdered($centre);
         $behaviorsByCategory = [];
         foreach ($categories as $cat) {
-            $behaviorsByCategory[$cat->getId()->toRfc4122()] = $this->behaviors->findByCategoryOrdered($cat);
+            $behaviorsByCategory[$cat->getId()->toRfc4122()] = [];
+        }
+        // Una sola consulta para todas las categorías (ya ordenada por posición)
+        foreach ($this->behaviors->findByCentreOrdered($centre) as $item) {
+            $behaviorsByCategory[$item->getCategory()->getId()->toRfc4122()][] = $item;
         }
 
         return $this->render('admin/incident_behavior/index.html.twig', [

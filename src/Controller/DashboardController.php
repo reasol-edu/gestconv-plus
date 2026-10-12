@@ -15,10 +15,10 @@ use App\Repository\SanctionTaskRepository;
 use App\Repository\SchoolEventRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
-use App\Repository\TimeSlotRepository;
 use App\Security\Voter\SanctionVoter;
 use App\Service\AppSettingsInterface;
 use App\Service\PendingNotificationQueue;
+use App\Service\TeacherYearRoles;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
@@ -29,6 +29,7 @@ class DashboardController extends AbstractController
 {
     public function __construct(
         private readonly TenantContext $tenantContext,
+        private readonly TeacherYearRoles $roles,
         private readonly StudentRepository $studentRepository,
         private readonly IncidentReportRepository $incidentRepository,
         private readonly SanctionRepository $sanctionRepository,
@@ -37,7 +38,6 @@ class DashboardController extends AbstractController
         private readonly SchoolEventRepository $schoolEventRepository,
         private readonly GroupRepository $groupRepository,
         private readonly TeacherRepository $teacherRepository,
-        private readonly TimeSlotRepository $timeSlotRepository,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
         private readonly AppSettingsInterface $settings,
         private readonly ClockInterface $clock,
@@ -102,7 +102,7 @@ class DashboardController extends AbstractController
         }
 
         $canSanction     = $this->isGranted(SanctionVoter::CREATE, $centre);
-        $hasGuardsAccess = $this->timeSlotRepository->hasGuardDutyInYear($centre, $viewer, $year);
+        $hasGuardsAccess = $this->roles->guardsAnyTimeSlot($viewer, $year);
 
         $today      = $this->clock->now()->setTime(0, 0, 0);
         $dow        = (int) $today->format('N'); // 1 = lunes … 7 = domingo
@@ -111,7 +111,7 @@ class DashboardController extends AbstractController
         $nextMonday = $thisMonday->modify('+7 days');
         $nextSunday = $nextMonday->modify('+6 days')->setTime(23, 59, 59);
 
-        $hasTeachingGroups = $this->groupRepository->hasTeachingGroupsInYear($centre, $viewer, $year);
+        $hasTeachingGroups = $this->roles->teachesAnyGroup($viewer, $year);
         $thisWeekSanctions = $hasTeachingGroups
             ? $this->sanctionRepository->findActiveForTeacherInDateRange($centre, $viewer, $year, $thisMonday, $thisSunday)
             : [];
@@ -151,7 +151,7 @@ class DashboardController extends AbstractController
 
         $canSeeNoteThresholds = $viewer->isAdmin()
             || $centre->getAdmins()->contains($viewer)
-            || $this->groupRepository->hasTutoredGroupsInYear($centre, $viewer, $year);
+            || $this->roles->tutorsAnyGroup($viewer, $year);
         $noteThresholdCount = $canSeeNoteThresholds
             ? count($this->dailyNoteRepository->findStudentsAtThreshold($centre, $viewer, $year))
             : 0;

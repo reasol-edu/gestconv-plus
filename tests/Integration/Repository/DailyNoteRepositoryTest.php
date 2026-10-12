@@ -163,6 +163,35 @@ class DailyNoteRepositoryTest extends RepositoryTestCase
         self::assertCount(1, $adminRows);
     }
 
+    // ── countActiveByStudentGroupedByType ───────────────────────────────────
+
+    public function testCountActiveByStudentGroupedByTypeCountsOnlyActiveNotesOfThatStudentAndYear(): void
+    {
+        $world  = $this->makeWorld('grouped');
+        $second = (new DailyNoteType())->setEducationalCentre($world['centre'])->setName('Otro tipo')->setOccurrencesForReport(0)->setPosition(1);
+        $this->persist($second);
+        $other = $this->makeStudent('López', 'Luis', $world['group']);
+        $this->persist($other);
+
+        $this->makeNote($world, $world['student'], $world['group'], $world['type'], active: true);
+        $this->makeNote($world, $world['student'], $world['group'], $world['type'], active: true);
+        $this->makeNote($world, $world['student'], $world['group'], $world['type'], active: false);
+        $this->makeNote($world, $world['student'], $world['group'], $second, active: true);
+        $this->makeNote($world, $other, $world['group'], $world['type'], active: true);
+
+        $counts = $this->repository->countActiveByStudentGroupedByType($world['student'], $world['year']);
+
+        // El orden de un GROUP BY no está garantizado: se compara por clave
+        self::assertEquals(
+            [$world['type']->getId()->toRfc4122() => 2, $second->getId()->toRfc4122() => 1],
+            $counts,
+        );
+        self::assertSame(
+            $this->repository->countActiveByStudentAndType($world['student'], $world['type'], $world['year']),
+            $counts[$world['type']->getId()->toRfc4122()],
+        );
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /** @return array{centre: EducationalCentre, year: AcademicYear, course: Course, group: Group, student: Student, teacher: Teacher, type: DailyNoteType} */

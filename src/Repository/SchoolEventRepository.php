@@ -46,33 +46,57 @@ class SchoolEventRepository extends ServiceEntityRepository
     /** @return list<SchoolEvent> */
     public function findAllForAcademicYearAndDate(AcademicYear $year, \DateTimeImmutable $date): array
     {
-        return $this->baseQueryBuilder($year)
+        return $this->preloadGroups($year, $this->baseQueryBuilder($year)
             ->andWhere('se.date = :date')
             ->setParameter('date', $date, 'date_immutable')
             ->getQuery()
-            ->getResult();
+            ->getResult());
     }
 
     /** @return list<SchoolEvent> */
     public function findVisibleForTeacherAndDate(Teacher $viewer, AcademicYear $year, \DateTimeImmutable $date): array
     {
-        return $this->visibleForTeacherQueryBuilder($viewer, $year)
+        return $this->preloadGroups($year, $this->visibleForTeacherQueryBuilder($viewer, $year)
             ->andWhere('se.date = :date')
             ->setParameter('date', $date, 'date_immutable')
             ->getQuery()
-            ->getResult();
+            ->getResult());
     }
 
     /** @return list<SchoolEvent> */
     public function findAllForAcademicYear(AcademicYear $year): array
     {
-        return $this->baseQueryBuilder($year)->getQuery()->getResult();
+        return $this->preloadGroups($year, $this->baseQueryBuilder($year)->getQuery()->getResult());
     }
 
     /** @return list<SchoolEvent> */
     public function findVisibleForTeacherInAcademicYear(Teacher $viewer, AcademicYear $year): array
     {
-        return $this->visibleForTeacherQueryBuilder($viewer, $year)->getQuery()->getResult();
+        return $this->preloadGroups($year, $this->visibleForTeacherQueryBuilder($viewer, $year)->getQuery()->getResult());
+    }
+
+    /**
+     * Inicializa la colección de grupos de todos los eventos con una sola consulta (quien recorre la
+     * lista lee los grupos de cada evento; si no, sería una consulta por evento). No se hace con el
+     * join de la propia consulta porque en la de «visibles» filtra por grupo y dejaría colecciones
+     * incompletas.
+     *
+     * @param list<SchoolEvent> $events
+     * @return list<SchoolEvent>
+     */
+    private function preloadGroups(AcademicYear $year, array $events): array
+    {
+        if (\count($events) > 1) {
+            $this->createQueryBuilder('se')
+                ->select('se', 'pg')
+                ->leftJoin('se.groups', 'pg')
+                ->where('se.academicYear = :year')
+                ->setParameter('year', $year->getId(), 'uuid')
+                ->getQuery()
+                ->getResult();
+        }
+
+        return $events;
     }
 
     /** @return Query<null, SchoolEvent> */

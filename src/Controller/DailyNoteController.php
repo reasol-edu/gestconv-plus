@@ -20,6 +20,7 @@ use App\Service\ActivityLogService;
 use App\Service\AppSettingsInterface;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentEmailNotifier;
+use App\Service\TeacherYearRoles;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,6 +41,7 @@ class DailyNoteController extends AbstractController
 
     public function __construct(
         private readonly TenantContext $tenantContext,
+        private readonly TeacherYearRoles $roles,
         private readonly EntityManagerInterface $em,
         private readonly DailyNoteRepository $notes,
         private readonly DailyNoteTypeRepository $types,
@@ -64,7 +66,7 @@ class DailyNoteController extends AbstractController
         $year = $this->tenantContext->getViewYear($centre);
         $canSeeStudents = $user->isAdmin()
             || $centre->getAdmins()->contains($user)
-            || ($year !== null && $this->groups->hasTutoredGroupsInYear($centre, $user, $year));
+            || ($year !== null && $this->roles->tutorsAnyGroup($user, $year));
 
         $tab = $request->query->getString('tab', 'notes') === 'students' && $canSeeStudents ? 'students' : 'notes';
 

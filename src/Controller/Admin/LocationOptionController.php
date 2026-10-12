@@ -105,7 +105,11 @@ class LocationOptionController extends AbstractCatalogController
         $categories        = $this->categories->findByCentreOrdered($centre);
         $optionsByCategory = [];
         foreach ($categories as $cat) {
-            $optionsByCategory[$cat->getId()->toRfc4122()] = $this->options->findByCategoryOrdered($cat);
+            $optionsByCategory[$cat->getId()->toRfc4122()] = [];
+        }
+        // Una sola consulta para todas las categorías (ya ordenada por posición)
+        foreach ($this->options->findByCentreOrdered($centre) as $item) {
+            $optionsByCategory[$item->getCategory()->getId()->toRfc4122()][] = $item;
         }
 
         return $this->render('admin/location_option/index.html.twig', [

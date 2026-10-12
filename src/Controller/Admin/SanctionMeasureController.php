@@ -105,7 +105,11 @@ class SanctionMeasureController extends AbstractCatalogController
         $categories         = $this->categories->findByCentreOrdered($centre);
         $measuresByCategory = [];
         foreach ($categories as $cat) {
-            $measuresByCategory[$cat->getId()->toRfc4122()] = $this->measures->findByCategoryOrdered($cat);
+            $measuresByCategory[$cat->getId()->toRfc4122()] = [];
+        }
+        // Una sola consulta para todas las categorías (ya ordenada por posición)
+        foreach ($this->measures->findByCentreOrdered($centre) as $item) {
+            $measuresByCategory[$item->getCategory()->getId()->toRfc4122()][] = $item;
         }
 
         return $this->render('admin/sanction_measure/index.html.twig', [

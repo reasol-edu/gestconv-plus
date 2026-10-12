@@ -52,11 +52,15 @@ final class TenantContext implements TenantContextInterface, ResetInterface
             return null;
         }
 
+        // Se mira antes de la consulta: después de ella el centro siempre está en el identity map,
+        // y el refresh sería una consulta más en todas las peticiones.
+        $alreadyManaged = $this->em->getUnitOfWork()->tryGetById($id, EducationalCentre::class) !== false;
+
         $centre = $this->centres->findByIdWithActiveYear($id);
 
         // Ensure activeAcademicYear is not stale from a prior identity-map load
         // (e.g. the subscriber loaded the centre without the JOIN in the same request)
-        if ($centre !== null && $this->em->getUnitOfWork()->isInIdentityMap($centre)) {
+        if ($centre !== null && $alreadyManaged) {
             $this->em->refresh($centre);
         }
 

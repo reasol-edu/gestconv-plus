@@ -32,6 +32,9 @@ class CommunicationRepository extends ServiceEntityRepository
     {
         /** @var list<Communication> $result */
         $result = $this->createQueryBuilder('c')
+            ->addSelect('m', 'pb')
+            ->join('c.method', 'm')
+            ->join('c.performedBy', 'pb')
             ->where('c.incidentReport = :report')
             ->setParameter('report', $report->getId(), 'uuid')
             ->orderBy('c.performedAt', 'DESC')
@@ -66,6 +69,9 @@ class CommunicationRepository extends ServiceEntityRepository
         }
 
         $rows = $qb
+            ->addSelect('m', 'pb')
+            ->join('c.method', 'm')
+            ->join('c.performedBy', 'pb')
             ->where('IDENTITY(c.incidentReport) IN (' . implode(', ', $placeholders) . ')')
             ->orderBy('c.performedAt', 'DESC')
             ->getQuery()
@@ -94,6 +100,9 @@ class CommunicationRepository extends ServiceEntityRepository
     {
         /** @var list<Communication> $result */
         $result = $this->createQueryBuilder('c')
+            ->addSelect('m', 'pb')
+            ->join('c.method', 'm')
+            ->join('c.performedBy', 'pb')
             ->where('c.sanction = :sanction')
             ->setParameter('sanction', $sanction->getId(), 'uuid')
             ->orderBy('c.performedAt', 'DESC')

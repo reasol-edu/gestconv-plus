@@ -41,6 +41,9 @@ class DailyNoteStudentListComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $groupId = '';
 
+    /** @var list<DailyNoteType>|null */
+    private ?array $typesCache = null;
+
     public function __construct(
         private readonly DailyNoteRepository $notes,
         private readonly DailyNoteTypeRepository $types,
@@ -53,7 +56,7 @@ class DailyNoteStudentListComponent extends AbstractController
         $this->centre = $centre;
         $this->viewer = $viewer;
 
-        $types = $this->types->findByCentreOrdered($centre);
+        $types = $this->typesCache = $this->types->findByCentreOrdered($centre);
         foreach ($types as $type) {
             if ($type->getId()->toRfc4122() === $initialTypeId) {
                 $this->typeId = $initialTypeId;
@@ -67,12 +70,23 @@ class DailyNoteStudentListComponent extends AbstractController
     /** @return list<DailyNoteType> */
     public function getTypes(): array
     {
-        return $this->types->findByCentreOrdered($this->centre);
+        // Se pide varias veces por render (plantilla, grupos, paginación): una sola consulta.
+        return $this->typesCache ??= $this->types->findByCentreOrdered($this->centre);
     }
 
     public function getSelectedType(): ?DailyNoteType
     {
-        return $this->typeId !== '' ? $this->types->findById($this->typeId) : null;
+        if ($this->typeId === '') {
+            return null;
+        }
+
+        foreach ($this->getTypes() as $type) {
+            if ($type->getId()->toRfc4122() === $this->typeId) {
+                return $type;
+            }
+        }
+
+        return null;
     }
 
     /** @return Group[] */

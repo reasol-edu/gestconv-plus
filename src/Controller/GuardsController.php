@@ -19,6 +19,7 @@ use App\Security\Voter\EducationalCentreVoter;
 use App\Service\AttachmentDownloadResponder;
 use App\Service\AttachmentZipExporter;
 use App\Service\BoardTodayBuilder;
+use App\Service\TeacherYearRoles;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
@@ -32,6 +33,7 @@ class GuardsController extends AbstractController
 {
     public function __construct(
         private readonly TenantContext $tenantContext,
+        private readonly TeacherYearRoles $roles,
         private readonly TimeSlotRepository $timeSlots,
         private readonly BoardTodayBuilder $boardTodayBuilder,
         private readonly SanctionRepository $sanctions,
@@ -277,7 +279,7 @@ class GuardsController extends AbstractController
         }
 
         $user = $this->getUser();
-        if ($user instanceof Teacher && $this->timeSlots->hasGuardDutyInYear($centre, $user, $year)) {
+        if ($user instanceof Teacher && $this->roles->guardsAnyTimeSlot($user, $year)) {
             return;
         }
 
