@@ -11,11 +11,14 @@ se ejecutan desde la raíz del repositorio con `make`, no directamente desde est
   `mis-guardias.md`, `editar-contacto.md`, `registrar-sancion.md`, `instalar-app.md`,
   `busqueda-rapida.md`, `registrar-nota.md` — una ficha [Marp](https://marp.app) por función del
   profesorado, con capturas móviles.
+- `tareas-alumnado.md` — ficha para el alumnado y las familias sobre cómo consultar las tareas de una
+  sanción con el enlace o el código; sin capturas (clase `.sin-capturas`), pensada para entregarse
+  junto con el enlace.
 - `curso-nuevo.md` — ficha para el equipo directivo, con capturas de escritorio (a diferencia de
   las demás, pensadas para el móvil), usando la clase `.captura-escritorio` de `theme.css`.
-- Las 11 fichas comparten el mismo mecanismo de versión/fecha que `docs/slides/gestconv-plus.md`
+- Las 12 fichas comparten el mismo mecanismo de versión/fecha que `docs/slides/gestconv-plus.md`
   (marcadores `{{VERSION}}`/`{{PUB_DATE}}` sustituidos por `make cheatsheets`).
-- `theme.css` — tema Marp compartido por las 11 fichas (página A4 vertical, paleta de marca).
+- `theme.css` — tema Marp compartido por las 12 fichas (página A4 vertical, paleta de marca).
 - `img/` — capturas de pantalla referenciadas desde las fichas (móviles, salvo las de
   `curso-nuevo.md`).
 - `ficha-*.pdf` y `_build.md` — salidas generadas por `make cheatsheets` (ver abajo); no se editan

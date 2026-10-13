@@ -131,6 +131,39 @@ después de generarse las tareas (por ejemplo, se incorpora un nuevo docente a m
    corresponden a ninguna asignación actual del grupo; queda registrado en el
    [registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
 
+### Enlace de tareas para el alumno
+
+Para que el estudiante pueda consultar y descargar sus tareas sin tener una cuenta, el detalle de
+cualquier sanción con tareas y fecha de fin muestra un bloque **Enlace de acceso para el alumno**.
+Lo gestionan el **tutor/a del grupo**, la **comisión de convivencia** y los **administradores**
+del centro (no aparece al consultar un curso anterior):
+
+- **Generar enlace** crea una dirección corta del tipo `https://tu-centro/t/ABCDE-FGH23`. El código
+  son 10 letras y números (A–Z y 2–7), agrupados de 5 en 5 para que sea fácil de dictar y teclear.
+- **Copiar enlace** lo deja en el portapapeles, para enviarlo o imprimirlo.
+- **Regenerar** crea un código nuevo y el anterior deja de funcionar (útil si se ha difundido por
+  error). Pide confirmación.
+- **Eliminar** desactiva el enlace.
+
+Quien abre el enlace ve el nombre del estudiante, su grupo, las fechas de inicio y fin de la
+sanción y las tareas de cada materia, con el texto y los ficheros adjuntos para descargar, además
+de un botón para **descargar todo en un ZIP**. No se muestra ningún otro dato de la sanción (ni
+partes, ni observaciones, ni datos de la familia), y las tareas que aún no se han cumplimentado o
+marcadas como *No procede* no aparecen.
+
+Si alguien entra en la dirección corta **sin código** (`/t`), se le pide que lo escriba; admite
+mayúsculas o minúsculas y con o sin guiones. El acceso **se cierra al terminar la sanción**: pasado
+el último día, el enlace deja de mostrar nada. Como protección, tras 10 códigos erróneos seguidos
+desde la misma conexión se bloquean los intentos durante 15 minutos. Crear, regenerar y eliminar
+enlaces queda anotado en el [registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
+
+Si la sanción ya tiene un enlace vigente, el **PDF de la sanción** incluye la dirección completa y
+el código en un apartado propio, listos para entregárselos a la familia. Generar el PDF nunca crea
+el enlace: hay que generarlo antes desde el detalle.
+
+La ficha rápida *Consultar las tareas de una sanción* (`docs/cheatsheets/ficha-tareas-alumnado.pdf`)
+está pensada para entregar al alumnado y a las familias junto con el enlace.
+
 ## El seguimiento de la convivencia
 
 Dos herramientas ayudan a la comisión a no perder de vista el conjunto:

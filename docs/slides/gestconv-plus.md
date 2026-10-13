@@ -459,6 +459,23 @@ el centro**, no solo de sus propios grupos:
 
 <!-- _class: tight -->
 
+## Enlace de tareas para el alumno
+
+- Desde el detalle de una sanción con tareas, el **tutor/a**, la
+  **comisión de convivencia** o la directiva generan un enlace corto
+  (`/t/ABCDE-FGH23`) para que el estudiante vea y descargue sus tareas
+  **sin iniciar sesión**.
+- Si entra en `/t` sin código, se le pide que lo escriba (con o sin
+  guiones, en mayúsculas o minúsculas).
+- Solo ve su nombre, grupo, fechas de la sanción y las tareas (texto,
+  adjuntos y **descarga en ZIP**). Deja de funcionar al acabar la sanción.
+- Se puede **regenerar** (el anterior deja de valer) o **eliminar**. El PDF
+  de la sanción incluye la dirección si el enlace ya existe.
+
+---
+
+<!-- _class: tight -->
+
 ## Seguimiento de las tareas de sanción
 
 - El listado de sanciones incorpora el filtro **"Solo con tareas
@@ -837,7 +854,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   editar los datos de contacto de un estudiante como tutor/a de grupo,
   para la comisión de convivencia registrar una sanción, buscar con la
   **paleta de comandos** (⌘K/Ctrl+K), y cómo **añadir la app a la pantalla
-  de inicio** del móvil. Para el equipo directivo, otra ficha resume cómo
+  de inicio** del móvil. Para el alumnado y las familias, una ficha explica
+  cómo consultar las tareas de una sanción con el enlace. Para el equipo directivo, otra ficha resume cómo
   **configurar un curso académico nuevo**.
 - Ante cualquier duda sobre un permiso o un ajuste concreto, consulta primero
   la sección de **ajustes** o el capítulo de **roles y permisos** del manual.

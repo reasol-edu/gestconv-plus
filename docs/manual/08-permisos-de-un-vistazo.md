@@ -102,6 +102,7 @@ con una medida de rango de fechas, una por cada docente y materia del grupo.
 | Ver el bloque de seguimiento en el detalle de la sanción | — | — | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Ver el contenido de una tarea ajena desde ese bloque | — | — | — | — | — | — | — |
 | Refrescar las materias de una sanción | — | — | — | ✓ | — | ✓ | ✓ |
+| Generar, regenerar o eliminar el [enlace de tareas para el alumno](04-sanciones-y-comision.md#enlace-de-tareas-para-el-alumno) | — | — | ✓ | ✓ | — | ✓ | ✓ |
 
 \* La sección es visible para cualquier docente que imparta materia a algún grupo en el curso
 visualizado, pero cada uno ve únicamente sus propias tareas.
