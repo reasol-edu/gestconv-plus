@@ -153,7 +153,9 @@ marcadas como *No procede* no aparecen.
 
 Si alguien entra en la dirección corta **sin código** (`/t`), se le pide que lo escriba; admite
 mayúsculas o minúsculas y con o sin guiones. El acceso **se cierra al terminar la sanción**: pasado
-el último día, el enlace deja de mostrar nada. Como protección, tras 10 códigos erróneos seguidos
+el último día, el enlace deja de mostrar nada al alumno. Quien puede gestionar el enlace (tutor/a,
+comisión, administradores) sigue pudiendo abrirlo con su sesión iniciada para revisar lo que vio el
+alumno; la página lo indica con un aviso. Como protección, tras 10 códigos erróneos seguidos
 desde la misma conexión se bloquean los intentos durante 15 minutos. Crear, regenerar y eliminar
 enlaces queda anotado en el [registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
 
