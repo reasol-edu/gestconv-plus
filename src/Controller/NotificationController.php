@@ -25,9 +25,9 @@ use App\Service\AppSettingsInterface;
 use App\Service\IncidentEmailNotifier;
 use App\Service\StudentContactVisibility;
 use App\Service\TenantContext;
+use App\Service\UpcomingPrescriptions;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -53,7 +53,7 @@ class NotificationController extends AbstractController
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
-        private readonly ClockInterface $clock,
+        private readonly UpcomingPrescriptions $upcoming,
     ) {}
 
     #[Route('', name: 'app_notifications_index')]
@@ -87,32 +87,7 @@ class NotificationController extends AbstractController
             return [];
         }
 
-        $today = $this->clock->now()->setTime(0, 0);
-        $rows  = [];
-
-        $autoPrescribeDays = $this->settings->getForCentre('notifications.report_auto_prescribe_days', $centre);
-        $warningDays       = $this->settings->getForTeacherInCentre('notifications.report_prescription_warning_days', $viewer, $centre);
-        if (is_int($autoPrescribeDays) && $autoPrescribeDays > 0 && is_int($warningDays) && $warningDays > 0) {
-            $cutoff = $today->modify('-' . max(0, $autoPrescribeDays - $warningDays) . ' days');
-            foreach ($this->reports->findPendingPrescriptionForViewer($centre, $viewer, $year, $cutoff) as $report) {
-                $age    = (int) $report->getOccurredAt()->setTime(0, 0)->diff($today)->format('%r%a');
-                $rows[] = ['type' => 'report', 'report' => $report, 'sanction' => null, 'daysLeft' => max(0, $autoPrescribeDays - $age)];
-            }
-        }
-
-        $sanctionDays        = $this->settings->getForCentre('notifications.sanction_auto_prescribe_days', $centre);
-        $sanctionWarningDays = $this->settings->getForTeacherInCentre('notifications.sanction_prescription_warning_days', $viewer, $centre);
-        if (is_int($sanctionDays) && $sanctionDays > 0 && is_int($sanctionWarningDays) && $sanctionWarningDays > 0) {
-            $cutoff = $today->modify('-' . max(0, $sanctionDays - $sanctionWarningDays) . ' days');
-            foreach ($this->sanctions->findPendingPrescriptionForViewer($centre, $viewer, $year, $cutoff) as $sanction) {
-                $age    = (int) $sanction->getCreatedAt()->setTime(0, 0)->diff($today)->format('%r%a');
-                $rows[] = ['type' => 'sanction', 'report' => null, 'sanction' => $sanction, 'daysLeft' => max(0, $sanctionDays - $age)];
-            }
-        }
-
-        usort($rows, static fn (array $a, array $b): int => $a['daysLeft'] <=> $b['daysLeft']);
-
-        return $rows;
+        return $this->upcoming->forViewer($centre, $viewer, $year);
     }
 
     #[Route('/partes/{id}/registrar', name: 'app_notifications_register_report', methods: ['GET', 'POST'])]

@@ -380,7 +380,8 @@ completa de su grupo**, no solo de los partes que él mismo registra:
   - Estudiantes de su grupo que han **alcanzado el umbral** de un tipo de
     nota diaria activa, y a los que, por tanto, hay que registrarles un parte.
 - Estos avisos aparecen tanto en el **panel de inicio** como en la campana de
-  notificaciones, para no perder de vista lo urgente.
+  notificaciones, que los agrupa por prioridad: primero lo **próximo a
+  prescribir**, después partes, sanciones y tareas de sanción.
 
 ---
 

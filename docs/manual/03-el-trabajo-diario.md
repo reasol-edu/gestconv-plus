@@ -276,11 +276,22 @@ sanción prescrita sale de las notificaciones pendientes, igual que un parte pre
 
 Los mismos partes y sanciones pendientes de notificar, junto con las [tareas de
 sanción](#tareas-de-sancion) propias todavía sin cumplimentar, aparecen también en la campana
-**Tareas pendientes** de la cabecera, ordenados por antigüedad. Cada elemento enlaza directamente
-a su pantalla de registro o de cumplimentación. Quien tutoriza algún grupo o es administrador/a
-también ve ahí, y en la tarjeta **Notas que implican parte** del [panel de inicio](#la-pantalla-de-inicio),
-los estudiantes que han alcanzado el umbral de un tipo de nota (ver
-[Listado de estudiantes](#listado-de-estudiantes)).
+**Tareas pendientes** de la cabecera, agrupados en secciones por prioridad:
+
+1. **Próximos a prescribir**: los partes y sanciones que están a punto de prescribir, con los días
+   que les quedan, el más urgente primero. Si hay alguno, el contador de la campana se pone en rojo.
+   Estos elementos no se repiten en las secciones siguientes.
+2. **Partes pendientes** de notificar.
+3. **Sanciones pendientes** de notificar.
+4. **Tareas de sanción** propias sin cumplimentar.
+5. **Notas que dan lugar a parte**, solo para la administración del centro: los estudiantes que han
+   alcanzado el umbral de un tipo de nota (ver [Listado de estudiantes](#listado-de-estudiantes)).
+   Los tutores ven ese aviso en la tarjeta **Notas que implican parte** del
+   [panel de inicio](#la-pantalla-de-inicio), no en la campana.
+
+Cada sección muestra sus 4 primeros elementos, ordenados por antigüedad, y una línea «y N más» que
+lleva a la pantalla completa; así una sección con muchos elementos no tapa a las demás. Cada
+elemento enlaza directamente a su pantalla de registro o de cumplimentación.
 
 Antes de las colas de partes y sanciones, la pestaña muestra los **estudiantes con notificaciones
 pendientes** (solo lo que el docente puede notificar), con una columna de partes pendientes y otra

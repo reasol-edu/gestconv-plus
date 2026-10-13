@@ -90,10 +90,72 @@ class NotificationBellComponentTest extends ControllerTestCase
         self::assertStringContainsString('Tarea de sanción de Ana García pendiente de cumplimentar', $labels[1]);
     }
 
-    public function testBellIncludesNoteThresholdForTutor(): void
+    public function testBellPutsReportsNearPrescriptionFirstWithoutRepeatingThem(): void
+    {
+        [$centre, $year, $course, $group, $teacher] = $this->makeScenario('prescription');
+
+        $recent = $this->makeReport($year, $group, $teacher, 'Carla', 'Díaz');
+        $old    = $this->makeReport($year, $group, $teacher, 'Bruno', 'Ruiz');
+        // Plazo por defecto: 14 días para prescribir, aviso con 7 → este parte prescribe en 4 días
+        $old->setOccurredAt(new \DateTimeImmutable('-10 days'));
+        $this->persist($recent, $old);
+        $this->loginAs($teacher, $centre);
+
+        $render = $this->createLiveComponent('NotificationBellComponent', [], $this->client)->render();
+
+        $sections = $render->crawler()->filter('section');
+        self::assertCount(2, $sections);
+        self::assertStringContainsString('Próximos a prescribir', $sections->eq(0)->filter('h3')->text());
+        self::assertStringContainsString('Parte de Bruno Ruiz a punto de prescribir', $sections->eq(0)->text());
+        self::assertStringContainsString('Prescribe en 4 días', $sections->eq(0)->text());
+        self::assertStringContainsString('Partes pendientes', $sections->eq(1)->filter('h3')->text());
+        self::assertStringContainsString('Parte de Carla Díaz pendiente de notificar', $sections->eq(1)->text());
+        self::assertStringNotContainsString('Bruno', $sections->eq(1)->text());
+        self::assertStringContainsString('2', $render->crawler()->filter('button span')->text());
+    }
+
+    public function testBellLimitsEachSectionAndCountsTheRest(): void
+    {
+        [$centre, $year, $course, $group, $teacher] = $this->makeScenario('limit');
+        for ($i = 0; $i < 6; ++$i) {
+            $this->persist($this->makeReport($year, $group, $teacher, 'Alumno' . $i, 'Apellido'));
+        }
+        $this->loginAs($teacher, $centre);
+
+        $render = $this->createLiveComponent('NotificationBellComponent', [], $this->client)->render();
+
+        self::assertCount(4, $render->crawler()->filter('section li p.text-sm'));
+        self::assertStringContainsString('y 2 más', $render->crawler()->text());
+        self::assertStringContainsString('6', $render->crawler()->filter('button span')->text());
+    }
+
+    public function testBellExcludesNoteThresholdForTutor(): void
+    {
+        [$centre, $year, $course, $group, $teacher] = $this->makeScenario('threshold-tutor');
+        $group->addTutor($teacher);
+        $this->flush();
+
+        $type = (new DailyNoteType())->setEducationalCentre($centre)->setName('Retraso a primera hora')->setOccurrencesForReport(2)->setPosition(0);
+        $this->persist($type);
+        $student = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-nbc-threshold-tutor');
+        $student->addGroup($group);
+        $this->persist($student);
+
+        $this->persist(
+            (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher),
+            (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher),
+        );
+        $this->loginAs($teacher, $centre);
+
+        $render = $this->createLiveComponent('NotificationBellComponent', [], $this->client)->render();
+
+        self::assertStringContainsString('No tienes tareas pendientes', $render->crawler()->text());
+    }
+
+    public function testBellIncludesNoteThresholdForCentreAdmin(): void
     {
         [$centre, $year, $course, $group, $teacher] = $this->makeScenario('threshold');
-        $group->addTutor($teacher);
+        $centre->addAdmin($teacher);
         $this->flush();
 
         $type = (new DailyNoteType())->setEducationalCentre($centre)->setName('Retraso a primera hora')->setOccurrencesForReport(2)->setPosition(0);

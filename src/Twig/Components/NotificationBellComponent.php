@@ -12,82 +12,148 @@ use App\Repository\DailyNoteRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Service\PendingNotificationQueue;
 use App\Service\TenantContext;
+use App\Service\UpcomingPrescriptions;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
+/**
+ * Campana de notificaciones. Agrupa lo pendiente en secciones por prioridad: primero lo que
+ * prescribe pronto (se pierde para siempre si no se comunica a tiempo), luego partes, sanciones,
+ * tareas de sanción y, solo para la administración del centro, estudiantes cuyas notas llegan al
+ * umbral para generar un parte. Cada sección muestra unos pocos elementos para que ninguna tape a
+ * las demás; el resto está en la pantalla de notificaciones.
+ */
 #[AsLiveComponent]
 class NotificationBellComponent extends AbstractController
 {
     use DefaultActionTrait;
 
-    public const MAX_ITEMS = 8;
+    public const MAX_PER_SECTION = 4;
 
-    /** @var list<array{type: 'report'|'sanction'|'task'|'note_threshold', entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable}>|null */
-    private ?array $items = null;
+    /** Orden de las secciones, de más a menos urgente. */
+    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold'];
+
+    /** @var array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>|null */
+    private ?array $grouped = null;
 
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly PendingNotificationQueue $pendingNotificationQueue,
         private readonly SanctionTaskRepository $sanctionTaskRepository,
         private readonly DailyNoteRepository $dailyNoteRepository,
+        private readonly UpcomingPrescriptions $upcomingPrescriptions,
     ) {}
 
-    /** @return list<array{type: 'report'|'sanction'|'task'|'note_threshold', entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable}> */
-    public function getItems(): array
+    /**
+     * Elementos pendientes por sección (sin truncar), solo las que tienen alguno.
+     *
+     * @return array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>
+     */
+    private function grouped(): array
     {
-        if ($this->items !== null) {
-            return $this->items;
+        if ($this->grouped !== null) {
+            return $this->grouped;
         }
 
         $centre = $this->tenantContext->getSelectedCentre();
         $user   = $this->getUser();
         if ($centre === null || !$user instanceof Teacher) {
-            return $this->items = [];
+            return $this->grouped = [];
         }
 
         $year = $this->tenantContext->getViewYear($centre);
         if ($year === null) {
-            return $this->items = [];
+            return $this->grouped = [];
+        }
+
+        $sections = array_fill_keys(self::SECTIONS, []);
+
+        // Lo próximo a prescribir va arriba, y no se repite en las secciones de pendientes.
+        $prescribing = [];
+        if (!$this->tenantContext->isViewingNonActiveYear($centre)) {
+            foreach ($this->upcomingPrescriptions->forViewer($centre, $user, $year) as $row) {
+                $entity = $row['report'] ?? $row['sanction'];
+                if ($entity === null) {
+                    continue;
+                }
+                $prescribing[$entity->getId()->toRfc4122()] = true;
+                $date                                      = $entity instanceof IncidentReport ? $entity->getOccurredAt() : $entity->getCreatedAt();
+                $sections['prescription'][]                = ['type' => 'prescription_' . $row['type'], 'entity' => $entity, 'date' => $date, 'daysLeft' => $row['daysLeft']];
+            }
         }
 
         $queue = $this->pendingNotificationQueue->forViewer($centre, $user, $year);
-
-        $items = [];
         foreach ($queue['reports'] as $report) {
-            $items[] = ['type' => 'report', 'entity' => $report, 'date' => $report->getOccurredAt()];
+            if (!isset($prescribing[$report->getId()->toRfc4122()])) {
+                $sections['report'][] = ['type' => 'report', 'entity' => $report, 'date' => $report->getOccurredAt(), 'daysLeft' => null];
+            }
         }
         foreach ($queue['sanctions'] as $sanction) {
-            $items[] = ['type' => 'sanction', 'entity' => $sanction, 'date' => $sanction->getCreatedAt()];
+            if (!isset($prescribing[$sanction->getId()->toRfc4122()])) {
+                $sections['sanction'][] = ['type' => 'sanction', 'entity' => $sanction, 'date' => $sanction->getCreatedAt(), 'daysLeft' => null];
+            }
         }
         foreach ($this->sanctionTaskRepository->findPendingForTeacher($centre, $user, $year) as $task) {
-            $items[] = [
-                'type'   => 'task',
-                'entity' => $task,
-                'date'   => $task->getSanction()->getEffectiveFrom() ?? $task->getSanction()->getCreatedAt(),
-            ];
-        }
-        foreach ($this->dailyNoteRepository->findStudentsAtThreshold($centre, $user, $year) as $row) {
-            $items[] = [
-                'type'   => 'note_threshold',
-                'entity' => $row,
-                'date'   => $row['lastNoteAt'] ?? new \DateTimeImmutable('@0'),
+            $sections['task'][] = [
+                'type'     => 'task',
+                'entity'   => $task,
+                'date'     => $task->getSanction()->getEffectiveFrom() ?? $task->getSanction()->getCreatedAt(),
+                'daysLeft' => null,
             ];
         }
 
-        usort($items, static fn (array $a, array $b): int => $a['date'] <=> $b['date']);
+        // Las notas que llegan al umbral de parte solo interesan a la administración del centro;
+        // al profesorado y a los tutores les basta con su pantalla de notas y el panel de inicio.
+        if ($user->isAdmin() || $centre->getAdmins()->contains($user)) {
+            foreach ($this->dailyNoteRepository->findStudentsAtThreshold($centre, $user, $year) as $row) {
+                $sections['note_threshold'][] = [
+                    'type'     => 'note_threshold',
+                    'entity'   => $row,
+                    'date'     => $row['lastNoteAt'] ?? new \DateTimeImmutable('@0'),
+                    'daysLeft' => null,
+                ];
+            }
+        }
 
-        return $this->items = $items;
+        foreach ($sections as $key => $items) {
+            if ($key !== 'prescription') {
+                usort($items, static fn (array $a, array $b): int => $a['date'] <=> $b['date']);
+                $sections[$key] = $items;
+            }
+        }
+
+        return $this->grouped = array_filter($sections, static fn (array $items): bool => $items !== []);
     }
 
     public function getTotal(): int
     {
-        return count($this->getItems());
+        return array_sum(array_map('count', $this->grouped()));
     }
 
-    /** @return list<array{type: 'report'|'sanction'|'task'|'note_threshold', entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable}> */
-    public function getVisibleItems(): array
+    /**
+     * Secciones a pintar, en orden de prioridad, con sus primeros elementos y cuántos quedan fuera.
+     *
+     * @return list<array{key: string, total: int, hidden: int, items: list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>}>
+     */
+    public function getSections(): array
     {
-        return array_slice($this->getItems(), 0, self::MAX_ITEMS);
+        $sections = [];
+        foreach ($this->grouped() as $key => $items) {
+            $sections[] = [
+                'key'    => $key,
+                'total'  => count($items),
+                'hidden' => max(0, count($items) - self::MAX_PER_SECTION),
+                'items'  => array_slice($items, 0, self::MAX_PER_SECTION),
+            ];
+        }
+
+        return $sections;
+    }
+
+    /** Hay algo a punto de prescribir: la campana se tiñe de rojo, que es lo único que no puede esperar. */
+    public function hasUrgent(): bool
+    {
+        return isset($this->grouped()['prescription']);
     }
 }

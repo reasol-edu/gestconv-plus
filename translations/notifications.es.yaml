@@ -3,7 +3,16 @@ bell:
     title: 'Tareas pendientes'
     empty: 'No tienes tareas pendientes'
     view_all: 'Ver todas en el panel'
+    more: '{1} y 1 más|]1,Inf[ y %count% más'
+    section:
+        prescription: 'Próximos a prescribir'
+        report: 'Partes pendientes'
+        sanction: 'Sanciones pendientes'
+        task: 'Tareas de sanción'
+        note_threshold: 'Notas que dan lugar a parte'
     item:
+        prescription_report: 'Parte de %student% a punto de prescribir'
+        prescription_sanction: 'Sanción de %student% a punto de prescribir'
         report: 'Parte de %student% pendiente de notificar'
         sanction: 'Sanción de %student% pendiente de notificar'
         task: 'Tarea de sanción de %student% pendiente de cumplimentar'

@@ -7,7 +7,7 @@
         {{ ux_icon('heroicons:bell', {class: 'h-5 w-5'}) }}
         {% if this.total > 0 %}
             <span class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full
-                         bg-red-500 px-1 text-[10px] font-semibold leading-none text-white">
+                         {{ this.hasUrgent ? 'bg-red-600' : 'bg-amber-500' }} px-1 text-[10px] font-semibold leading-none text-white">
                 {{ this.total > 99 ? '99+' : this.total }}
             </span>
         {% endif %}
@@ -29,11 +29,31 @@
                 <p class="text-sm text-gray-500">{{ 'bell.empty'|trans({}, 'notifications') }}</p>
             </div>
         {% else %}
-            <ul class="max-h-80 divide-y divide-gray-100 overflow-y-auto">
-                {% for item in this.visibleItems %}
+            <div class="max-h-96 overflow-y-auto">
+            {% for section in this.sections %}
+            {% set sectionUrgent = section.key == 'prescription' %}
+            <section aria-labelledby="bell-section-{{ section.key }}">
+            <h3 id="bell-section-{{ section.key }}"
+                class="flex items-center justify-between gap-2 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide
+                       {{ sectionUrgent ? 'bg-red-50 text-red-800' : 'bg-gray-50 text-gray-500' }}">
+                <span>{{ ('bell.section.' ~ section.key)|trans({}, 'notifications') }}</span>
+                <span class="rounded-full px-1.5 {{ sectionUrgent ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600' }}">{{ section.total }}</span>
+            </h3>
+            <ul class="divide-y divide-gray-100">
+                {% for item in section.items %}
                     {% set entity = item.entity %}
                     <li>
-                        {% if item.type == 'note_threshold' %}
+                        {% if item.type starts with 'prescription_' %}
+                            {% set isReportItem = item.type == 'prescription_report' %}
+                            <a href="{{ isReportItem ? path('app_notifications_register_report', {id: entity.id}) : path('app_notifications_register_sanction', {id: entity.id}) }}"
+                               class="block px-4 py-2.5 hover:bg-red-50/50 transition-colors">
+                                <p class="text-sm text-gray-800">
+                                    {{ (isReportItem ? 'bell.item.prescription_report' : 'bell.item.prescription_sanction')|trans({'%student%': entity.student.name.firstName ~ ' ' ~ entity.student.name.lastName}, 'notifications') }}
+                                    {% if entity.group is not empty %}<span class="text-xs text-gray-400">({{ entity.group.name }})</span>{% endif %}
+                                </p>
+                                <p class="mt-0.5 text-xs font-medium text-red-700">{{ 'notification.upcoming.in_days'|trans({'%count%': item.daysLeft}, 'notifications') }}</p>
+                            </a>
+                        {% elseif item.type == 'note_threshold' %}
                             <a href="{{ path('app_daily_notes_index', {tab: 'students', typeId: entity.typeId}) }}" class="block px-4 py-2.5 hover:bg-gray-50 transition-colors">
                                 <p class="text-sm text-gray-800">
                                     {{ 'bell.item.note_threshold'|trans({'%student%': entity.firstName ~ ' ' ~ entity.lastName, '%count%': entity.activeCount, '%type%': entity.typeName}, 'notifications') }}
@@ -60,7 +80,18 @@
                         {% endif %}
                     </li>
                 {% endfor %}
+                {% if section.hidden > 0 %}
+                    {% set moreHref = section.key == 'task' ? path('app_sanction_tasks_index') : (section.key == 'note_threshold' ? path('app_daily_notes_index', {tab: 'students'}) : path('app_notifications_index')) %}
+                    <li>
+                        <a href="{{ moreHref }}" class="block px-4 py-1.5 text-xs font-medium text-forest-700 hover:bg-gray-50 transition-colors">
+                            {{ 'bell.more'|trans({'%count%': section.hidden}, 'notifications') }}
+                        </a>
+                    </li>
+                {% endif %}
             </ul>
+            </section>
+            {% endfor %}
+            </div>
             <div class="border-t border-gray-100 px-4 py-2.5">
                 <a href="{{ path('app_notifications_index') }}" class="text-xs font-medium text-forest-700 hover:text-forest-800">
                     {{ 'bell.view_all'|trans({}, 'notifications') }}
