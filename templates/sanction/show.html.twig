@@ -312,29 +312,35 @@
                 {% if sanction.shareCode %}
                     {% set shareCodeFormatted = sanction.shareCode|slice(0, 5) ~ '-' ~ sanction.shareCode|slice(5) %}
                     {% set shareUrl = url('app_public_tasks_view', {code: shareCodeFormatted}) %}
-                    {% if shareOpen %}
-                        <dl class="text-sm space-y-1">
-                            <div class="flex flex-wrap gap-x-2"><dt class="text-gray-500">{{ 'sanction.share.link'|trans({}, 'admin') }}:</dt><dd class="font-mono text-gray-900 break-all">{{ shareUrl }}</dd></div>
-                            <div class="flex flex-wrap gap-x-2"><dt class="text-gray-500">{{ 'sanction.share.code'|trans({}, 'admin') }}:</dt><dd class="font-mono tracking-wider text-gray-900">{{ shareCodeFormatted }}</dd></div>
-                            <p class="text-xs text-gray-500">{{ 'sanction.share.short_address'|trans({'%url%': url('app_public_tasks_entry')}, 'admin') }}</p>
-                        </dl>
-                    {% else %}
+                    {% if not shareOpen %}
                         <p class="text-sm text-amber-700">{{ 'sanction.share.expired'|trans({'%date%': shareUntil|date('format.date'|trans)}, 'admin') }}</p>
                     {% endif %}
+                    <dl class="text-sm space-y-1">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <dt class="text-gray-500">{{ 'sanction.share.link'|trans({}, 'admin') }}:</dt>
+                            <dd class="font-mono text-gray-900 break-all">{{ shareUrl }}</dd>
+                            <dd>
+                                <button type="button" data-controller="clipboard" data-clipboard-text-value="{{ shareUrl }}" data-clipboard-done-value="{{ 'sanction.share.copied'|trans({}, 'admin') }}"
+                                        data-action="clipboard#copy"
+                                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                    {{ ux_icon('heroicons:clipboard-document', {class: 'h-3.5 w-3.5'}) }}
+                                    <span data-clipboard-target="label">{{ 'sanction.share.copy'|trans({}, 'admin') }}</span>
+                                </button>
+                            </dd>
+                        </div>
+                        <div class="flex flex-wrap gap-x-2"><dt class="text-gray-500">{{ 'sanction.share.code'|trans({}, 'admin') }}:</dt><dd class="font-mono tracking-wider text-gray-900">{{ shareCodeFormatted }}</dd></div>
+                        <p class="text-xs text-gray-500">{{ 'sanction.share.short_address'|trans({'%url%': url('app_public_tasks_entry')}, 'admin') }}</p>
+                    </dl>
+                    <a href="{{ shareUrl }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-forest-700 transition-colors">
+                        {{ ux_icon('heroicons:arrow-top-right-on-square', {class: 'h-3.5 w-3.5'}) }}
+                        {{ 'sanction.share.open'|trans({}, 'admin') }}
+                    </a>
                 {% else %}
                     <p class="text-sm text-gray-500">{{ 'sanction.share.none'|trans({}, 'admin') }}</p>
                 {% endif %}
 
                 {% if not is_viewing_past_year() %}
                     <div class="flex flex-wrap gap-2">
-                        {% if shareOpen %}
-                            <button type="button" data-controller="clipboard" data-clipboard-text-value="{{ shareUrl }}" data-clipboard-done-value="{{ 'sanction.share.copied'|trans({}, 'admin') }}"
-                                    data-action="clipboard#copy"
-                                    class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                                {{ ux_icon('heroicons:clipboard-document', {class: 'h-4 w-4'}) }}
-                                <span data-clipboard-target="label">{{ 'sanction.share.copy'|trans({}, 'admin') }}</span>
-                            </button>
-                        {% endif %}
                         {% if shareCanIssue %}
                             <form method="post" action="{{ path('app_sanctions_share_link', {id: sanction.id}) }}"
                                   {% if sanction.shareCode %}class="js-confirm-form" data-confirm="{{ 'sanction.share.regenerate_confirm'|trans({}, 'admin')|e('html_attr') }}"{% endif %}>

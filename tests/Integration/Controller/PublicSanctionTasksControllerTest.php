@@ -100,6 +100,26 @@ class PublicSanctionTasksControllerTest extends ControllerTestCase
         self::assertSelectorTextNotContains('body', 'García');
     }
 
+    public function testTutorStillSeesExpiredLinkButOtherTeacherDoesNot(): void
+    {
+        [, $tutor, $centre] = $this->makeSanction('2026-03-02', '2026-03-09');
+
+        $other = (new Teacher(new PersonName('Otro', 'Docente')))->setUsername('otro.docente');
+        $this->persist($other);
+        $this->loginAs($other, $centre);
+        $this->client->request('GET', '/t/ABCDE-23456');
+        self::assertResponseStatusCodeSame(404);
+
+        $this->loginAs($tutor, $centre);
+        $this->client->request('GET', '/t/ABCDE-23456');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'García, Ana');
+        self::assertSelectorTextContains('body', 'ya ha terminado');
+
+        $this->client->request('GET', '/t/ABCDE-23456/tareas.zip');
+        self::assertResponseIsSuccessful();
+    }
+
     public function testUnknownCodeIsNotFound(): void
     {
         $this->makeSanction('2026-03-02', '2026-03-12');

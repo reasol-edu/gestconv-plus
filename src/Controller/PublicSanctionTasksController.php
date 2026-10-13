@@ -10,6 +10,7 @@ use App\Entity\SanctionTaskAttachment;
 use App\Repository\SanctionRepository;
 use App\Repository\SanctionTaskAttachmentRepository;
 use App\Repository\SanctionTaskRepository;
+use App\Security\Voter\SanctionVoter;
 use App\Service\AttachmentDownloadResponder;
 use App\Service\AttachmentZipExporter;
 use App\Service\SanctionShareCode;
@@ -86,6 +87,7 @@ class PublicSanctionTasksController extends AbstractController
             'code'        => $this->shareCode->format((string) $sanction->getShareCode()),
             'entries'     => $visible,
             'hasFiles'    => $attachments !== [],
+            'expired'     => !$this->shareCode->isOpen($sanction),
         ]));
     }
 
@@ -146,13 +148,14 @@ class PublicSanctionTasksController extends AbstractController
         $normalized = $this->shareCode->normalize($code);
         $sanction   = $normalized === null ? null : $this->sanctions->findByShareCode($normalized);
 
-        if ($sanction === null || !$this->shareCode->isOpen($sanction)) {
-            $limiter->consume();
-
-            return null;
+        // Quien puede gestionar el enlace (con sesión iniciada) lo sigue viendo tras el fin de la sanción.
+        if ($sanction !== null && ($this->shareCode->isOpen($sanction) || $this->isGranted(SanctionVoter::SHARE_TASKS, $sanction))) {
+            return $sanction;
         }
 
-        return $sanction;
+        $limiter->consume();
+
+        return null;
     }
 
     private function registerFailure(Request $request): void
