@@ -56,6 +56,24 @@ class SanctionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Sanción a la que da acceso un código del enlace público (sin guiones y normalizado).
+     * Solo carga lo que ve el alumno: estudiante y grupo; las tareas se piden aparte.
+     */
+    public function findByShareCode(string $code): ?Sanction
+    {
+        $result = $this->createQueryBuilder('s')
+            ->addSelect('st', 'g')
+            ->join('s.student', 'st')
+            ->join('s.group', 'g')
+            ->where('s.shareCode = :code')
+            ->setParameter('code', $code)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof Sanction ? $result : null;
+    }
+
+    /**
      * Builds the sanction listing query for the given centre, restricted to the viewer's
      * visibility and ordered by creation date DESC.
      *

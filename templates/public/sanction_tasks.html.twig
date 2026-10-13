@@ -1,0 +1,69 @@
+{% extends 'public/layout.html.twig' %}
+
+{% block public_content %}
+<div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+    <div class="px-6 py-5 sm:px-8 border-b border-gray-100">
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'public_tasks.page_title'|trans({}, 'messages') }}</h1>
+        <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-3">
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'public_tasks.student'|trans({}, 'messages') }}</dt>
+                <dd class="mt-1 text-gray-900">{{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'public_tasks.group'|trans({}, 'messages') }}</dt>
+                <dd class="mt-1 text-gray-900">{{ sanction.group.name }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'public_tasks.period'|trans({}, 'messages') }}</dt>
+                <dd class="mt-1 text-gray-900">
+                    {{ 'public_tasks.period_value'|trans({
+                        '%from%': sanction.effectiveFrom ? sanction.effectiveFrom|date('format.date'|trans) : '—',
+                        '%to%': sanction.effectiveTo|date('format.date'|trans),
+                    }, 'messages') }}
+                </dd>
+            </div>
+        </dl>
+    </div>
+
+    <div class="px-6 py-5 sm:px-8 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'public_tasks.tasks'|trans({}, 'messages') }}</h2>
+            {% if hasFiles %}
+                <a href="{{ path('app_public_tasks_zip', {code: code}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 shadow-xs
+                          hover:border-forest-300 hover:text-forest-700 transition-colors">
+                    {{ ux_icon('heroicons:archive-box-arrow-down', {class: 'h-4 w-4 shrink-0'}) }}
+                    {{ 'public_tasks.download_all'|trans({}, 'messages') }}
+                </a>
+            {% endif %}
+        </div>
+
+        {% for entry in entries %}
+            <section>
+                <h3 class="text-sm font-semibold text-gray-800 mb-1.5">{{ entry.task.groupTeacher.subject }}</h3>
+                {% if entry.task.description %}
+                    <div class="prose prose-sm max-w-none text-gray-700">{{ entry.task.description|sanitize_html('app.rich_text') }}</div>
+                {% endif %}
+                {% if entry.attachments is not empty %}
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        {% for attachment in entry.attachments %}
+                            <a href="{{ path('app_public_tasks_attachment', {code: code, attachmentId: attachment.id}) }}"
+                               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                      hover:border-forest-300 hover:text-forest-700 hover:bg-forest-50 transition-colors">
+                                {{ ux_icon('heroicons:paper-clip', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                                {{ attachment.filename }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+        {% else %}
+            <p class="text-sm text-gray-500">{{ 'public_tasks.empty'|trans({}, 'messages') }}</p>
+        {% endfor %}
+    </div>
+
+    <div class="px-6 py-4 sm:px-8 border-t border-gray-100 text-xs text-gray-500">
+        {{ 'public_tasks.available_until'|trans({'%date%': sanction.effectiveTo|date('format.date'|trans)}, 'messages') }}
+    </div>
+</div>
+{% endblock %}

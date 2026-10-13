@@ -27,6 +27,8 @@ final class SanctionVoter extends Voter
     public const NOTIFY       = 'sanction.notify';
     /** Set or clear the prescription date by hand. Administrators only. */
     public const PRESCRIBE    = 'sanction.prescribe';
+    /** Create, regenerate or delete the public link to the sanction's tasks. Tutors of the group, centre admins and committee members. */
+    public const SHARE_TASKS  = 'sanction.share_tasks';
 
     public function __construct(
         private readonly AppSettingsInterface $settings,
@@ -38,7 +40,7 @@ final class SanctionVoter extends Voter
             return $subject instanceof EducationalCentre;
         }
 
-        return in_array($attribute, [self::VIEW, self::EDIT, self::EDIT_FOLLOWUP, self::DELETE, self::NOTIFY, self::PRESCRIBE], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::EDIT_FOLLOWUP, self::DELETE, self::NOTIFY, self::PRESCRIBE, self::SHARE_TASKS], true)
             && $subject instanceof Sanction;
     }
 
@@ -69,6 +71,10 @@ final class SanctionVoter extends Voter
 
         if ($centre->getAdmins()->contains($user) || $centre->getCommitteeMembers()->contains($user)) {
             return true;
+        }
+
+        if ($attribute === self::SHARE_TASKS) {
+            return $subject->getGroup()->getTutors()->contains($user);
         }
 
         $canView = $subject->getReports()->exists(

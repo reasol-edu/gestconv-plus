@@ -49,7 +49,8 @@ final class TenantContextSubscriber
 
         // Admin section and centre-hub routes resolve their centre from the
         // URL, not from the session, so they do not require centre selection
-        if (\is_string($route) && (\str_starts_with($route, 'app_admin') || \str_starts_with($route, 'app_centre'))) {
+        // y las páginas públicas (enlace de tareas de sanción) no dependen del centro seleccionado
+        if (\is_string($route) && (\str_starts_with($route, 'app_admin') || \str_starts_with($route, 'app_centre') || \str_starts_with($route, 'app_public_'))) {
             return;
         }
 

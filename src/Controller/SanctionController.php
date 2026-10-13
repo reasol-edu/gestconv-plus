@@ -31,6 +31,7 @@ use App\Service\NonWorkingDayChecker;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\SanctionFormHandler;
+use App\Service\SanctionShareCode;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,6 +39,7 @@ use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/sanciones')]
@@ -82,6 +84,7 @@ class SanctionController extends AbstractController
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
         private readonly ClockInterface $clock,
         private readonly IncidentEmailNotifier $notifier,
+        private readonly SanctionShareCode $shareCode,
     ) {}
 
     #[Route('', name: 'app_sanctions_index')]
@@ -208,6 +211,8 @@ class SanctionController extends AbstractController
             'sanction'     => $sanction,
             'history'      => $this->communications->findBySanction($sanction),
             'observations' => $this->sanctionObservations->findBySanction($sanction),
+            'shareOpen'     => $this->shareCode->isOpen($sanction),
+            'shareCanIssue' => $this->shareCode->canIssue($sanction),
         ]);
     }
 
@@ -246,6 +251,8 @@ class SanctionController extends AbstractController
                 'observationsByReport'    => $this->reportObservations->findByIncidentReports($reports),
                 'communicationsByReport'  => $this->communications->findByIncidentReports($reports),
                 'footerHtml'              => $footer,
+                'tasksUrl'                => $this->shareUrlForPdf($sanction),
+                'tasksShortUrl'           => $this->generateUrl('app_public_tasks_entry', [], UrlGeneratorInterface::ABSOLUTE_URL),
             ],
             $this->translator->trans('sanction.show_title', [], 'admin')
                 . ' — ' . $sanction->getStudent()->getName()->getLastName() . ', ' . $sanction->getStudent()->getName()->getFirstName(),
@@ -414,6 +421,93 @@ class SanctionController extends AbstractController
         $this->addFlash('success', $this->t('sanction.flash.deleted'));
 
         return $this->redirectToRoute('app_sanctions_index');
+    }
+
+    /** Crea el enlace público de las tareas o, si ya existe, lo regenera (el anterior deja de valer). */
+    #[Route('/{id}/enlace', name: 'app_sanctions_share_link', methods: ['POST'])]
+    public function shareLink(string $id, Request $request): Response
+    {
+        $sanction = $this->sanctions->findById($id);
+        if ($sanction === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(SanctionVoter::SHARE_TASKS, $sanction);
+        $this->denyIfViewingPastYear($this->centreFor($sanction));
+
+        if (!$this->isCsrfTokenValid('share_sanction_' . $id, $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (!$this->shareCode->canIssue($sanction)) {
+            $this->addFlash('error', $this->t('sanction.share.flash.no_valid_end'));
+
+            return $this->redirectToRoute('app_sanctions_show', ['id' => $id]);
+        }
+
+        $regenerated = $sanction->getShareCode() !== null;
+
+        $this->assignShareCode($sanction);
+
+        $this->activityLog->log($regenerated ? 'sanction.share_regenerated' : 'sanction.share_created', [
+            'entityId' => $sanction->getId()->toRfc4122(),
+        ]);
+
+        $this->addFlash('success', $this->t($regenerated ? 'sanction.share.flash.regenerated' : 'sanction.share.flash.created'));
+
+        return $this->redirectToRoute('app_sanctions_show', ['id' => $id]);
+    }
+
+    private function assignShareCode(Sanction $sanction): void
+    {
+        do {
+            $code = $this->shareCode->generate();
+        } while ($this->sanctions->findByShareCode($code) !== null);
+
+        $sanction->setShareCode($code);
+        $this->em->flush();
+    }
+
+    /**
+     * URL pública de las tareas para incluirla en el PDF: solo si la sanción tiene tareas y un
+     * enlace vigente. Generar el PDF nunca crea el enlace; se hace desde la ficha.
+     */
+    private function shareUrlForPdf(Sanction $sanction): ?string
+    {
+        if ($sanction->getTasks()->isEmpty() || !$this->shareCode->isOpen($sanction)) {
+            return null;
+        }
+
+        return $this->generateUrl('app_public_tasks_view', ['code' => $this->shareCode->format((string) $sanction->getShareCode())], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+
+    #[Route('/{id}/enlace/eliminar', name: 'app_sanctions_share_link_delete', methods: ['POST'])]
+    public function deleteShareLink(string $id, Request $request): Response
+    {
+        $sanction = $this->sanctions->findById($id);
+        if ($sanction === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $this->denyAccessUnlessGranted(SanctionVoter::SHARE_TASKS, $sanction);
+        $this->denyIfViewingPastYear($this->centreFor($sanction));
+
+        if (!$this->isCsrfTokenValid('share_sanction_' . $id, $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if ($sanction->getShareCode() !== null) {
+            $sanction->setShareCode(null);
+            $this->em->flush();
+
+            $this->activityLog->log('sanction.share_deleted', [
+                'entityId' => $sanction->getId()->toRfc4122(),
+            ]);
+        }
+
+        $this->addFlash('success', $this->t('sanction.share.flash.deleted'));
+
+        return $this->redirectToRoute('app_sanctions_show', ['id' => $id]);
     }
 
     #[Route('/{id}/tareas/refrescar', name: 'app_sanction_tasks_refresh_preview', methods: ['GET'])]

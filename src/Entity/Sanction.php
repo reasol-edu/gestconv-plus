@@ -14,6 +14,7 @@ use Symfony\Component\Uid\Uuid;
 use function Symfony\Component\Clock\now;
 
 #[ORM\Entity(repositoryClass: SanctionRepository::class)]
+#[ORM\UniqueConstraint(name: 'uq_sanction_share_code', columns: ['share_code'])]
 class Sanction
 {
     #[ORM\Id]
@@ -99,6 +100,10 @@ class Sanction
     /** @var Collection<int, SanctionTask> */
     #[ORM\OneToMany(targetEntity: SanctionTask::class, mappedBy: 'sanction', orphanRemoval: true, cascade: ['persist'])]
     private Collection $tasks;
+
+    /** Código Base32 (sin guiones) del enlace público de las tareas; null si no hay enlace activo. Ver SanctionShareCode. */
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $shareCode = null;
 
     public function __construct()
     {
@@ -377,6 +382,18 @@ class Sanction
     public function getTasks(): Collection
     {
         return $this->tasks;
+    }
+
+    public function getShareCode(): ?string
+    {
+        return $this->shareCode;
+    }
+
+    public function setShareCode(?string $shareCode): static
+    {
+        $this->shareCode = $shareCode;
+
+        return $this;
     }
 
     public function hasIncompleteTasks(): bool

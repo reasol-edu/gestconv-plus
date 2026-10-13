@@ -5,6 +5,11 @@ framework:
             policy: fixed_window
             limit: 5
             interval: '15 minutes'
+        # Códigos de enlace de tareas de sanción erróneos o caducados (por IP)
+        sanction_share:
+            policy: fixed_window
+            limit: 10
+            interval: '15 minutes'
         # Búsqueda global ⌘K (por usuario)
         search:
             policy: sliding_window
@@ -14,6 +19,10 @@ framework:
 when@test:
     framework:
         rate_limiter:
+            sanction_share:
+                policy: fixed_window
+                limit: 1000
+                interval: '15 minutes'
             password_reset:
                 policy: fixed_window
                 limit: 1000

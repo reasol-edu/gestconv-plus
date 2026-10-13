@@ -46,6 +46,14 @@
         <p>{{ sanction.effectiveFrom|date('format.date'|trans) }} &rarr; {{ sanction.effectiveTo|date('format.date'|trans) }}</p>
     {% endif %}
 
+    {# El PDF adjunto a los correos no lleva enlace: solo se pasa tasksUrl desde la ficha #}
+    {% if tasksUrl is defined and tasksUrl %}
+        <p class="subsection-title">{{ 'pdf.sanction.tasks_link.title'|trans({}, 'admin') }}</p>
+        <p>{{ 'pdf.sanction.tasks_link.intro'|trans({'%date%': sanction.effectiveTo|date('format.date'|trans)}, 'admin') }}</p>
+        <p style="font-size: 12pt; font-weight: bold; margin: 4pt 0">{{ tasksUrl }}</p>
+        <p>{{ 'pdf.sanction.tasks_link.alternative'|trans({'%url%': tasksShortUrl, '%code%': sanction.shareCode|slice(0, 5) ~ '-' ~ sanction.shareCode|slice(5)}, 'admin') }}</p>
+    {% endif %}
+
     <p class="subsection-title">{{ 'sanction.field.details'|trans({}, 'admin') }}</p>
     <div class="prose-block">{{ sanction.details|sanitize_html('app.rich_text') }}</div>
 

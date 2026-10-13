@@ -300,6 +300,68 @@
             {% endfor %}
         </div>
     </div>
+
+    {% if is_granted('sanction.share_tasks', sanction) %}
+        {% set shareUntil = sanction.effectiveTo %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-4 space-y-3">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'sanction.share.title'|trans({}, 'admin') }}</h2>
+            {% if shareUntil is null %}
+                <p class="text-sm text-gray-500">{{ 'sanction.share.help_no_end'|trans({}, 'admin') }}</p>
+            {% else %}
+                <p class="text-sm text-gray-500">{{ 'sanction.share.help'|trans({'%date%': shareUntil|date('format.date'|trans)}, 'admin') }}</p>
+                {% if sanction.shareCode %}
+                    {% set shareCodeFormatted = sanction.shareCode|slice(0, 5) ~ '-' ~ sanction.shareCode|slice(5) %}
+                    {% set shareUrl = url('app_public_tasks_view', {code: shareCodeFormatted}) %}
+                    {% if shareOpen %}
+                        <dl class="text-sm space-y-1">
+                            <div class="flex flex-wrap gap-x-2"><dt class="text-gray-500">{{ 'sanction.share.link'|trans({}, 'admin') }}:</dt><dd class="font-mono text-gray-900 break-all">{{ shareUrl }}</dd></div>
+                            <div class="flex flex-wrap gap-x-2"><dt class="text-gray-500">{{ 'sanction.share.code'|trans({}, 'admin') }}:</dt><dd class="font-mono tracking-wider text-gray-900">{{ shareCodeFormatted }}</dd></div>
+                            <p class="text-xs text-gray-500">{{ 'sanction.share.short_address'|trans({'%url%': url('app_public_tasks_entry')}, 'admin') }}</p>
+                        </dl>
+                    {% else %}
+                        <p class="text-sm text-amber-700">{{ 'sanction.share.expired'|trans({'%date%': shareUntil|date('format.date'|trans)}, 'admin') }}</p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-sm text-gray-500">{{ 'sanction.share.none'|trans({}, 'admin') }}</p>
+                {% endif %}
+
+                {% if not is_viewing_past_year() %}
+                    <div class="flex flex-wrap gap-2">
+                        {% if shareOpen %}
+                            <button type="button" data-controller="clipboard" data-clipboard-text-value="{{ shareUrl }}" data-clipboard-done-value="{{ 'sanction.share.copied'|trans({}, 'admin') }}"
+                                    data-action="clipboard#copy"
+                                    class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                {{ ux_icon('heroicons:clipboard-document', {class: 'h-4 w-4'}) }}
+                                <span data-clipboard-target="label">{{ 'sanction.share.copy'|trans({}, 'admin') }}</span>
+                            </button>
+                        {% endif %}
+                        {% if shareCanIssue %}
+                            <form method="post" action="{{ path('app_sanctions_share_link', {id: sanction.id}) }}"
+                                  {% if sanction.shareCode %}class="js-confirm-form" data-confirm="{{ 'sanction.share.regenerate_confirm'|trans({}, 'admin')|e('html_attr') }}"{% endif %}>
+                                <input type="hidden" name="_token" value="{{ csrf_token('share_sanction_' ~ sanction.id) }}">
+                                <button type="submit"
+                                        class="{{ sanction.shareCode ? 'js-confirm-trigger ' : '' }}inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                    {{ ux_icon(sanction.shareCode ? 'heroicons:arrow-path' : 'heroicons:link', {class: 'h-4 w-4'}) }}
+                                    {{ (sanction.shareCode ? 'sanction.share.regenerate' : 'sanction.share.generate')|trans({}, 'admin') }}
+                                </button>
+                            </form>
+                        {% endif %}
+                        {% if sanction.shareCode %}
+                            <form method="post" action="{{ path('app_sanctions_share_link_delete', {id: sanction.id}) }}"
+                                  class="js-confirm-form" data-confirm="{{ 'sanction.share.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('share_sanction_' ~ sanction.id) }}">
+                                <button type="submit"
+                                        class="js-confirm-trigger inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
+                                    {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}
+                                    {{ 'sanction.share.delete'|trans({}, 'admin') }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
     {% endif %}
 
     <div>
