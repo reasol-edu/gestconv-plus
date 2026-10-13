@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-10-13
+
+### Changed
+
+- Quien puede gestionar el enlace de tareas de una sanción (tutor/a del grupo, comisión de convivencia y administradores) puede seguir abriéndolo con su sesión iniciada cuando la sanción ha terminado; el alumno sigue sin acceso pasado el último día. La ficha de la sanción muestra el enlace también cuando ha caducado y el botón de copiar queda junto al propio enlace.
+
 ## [1.7.0] - 2026-10-13
 
 ### Added
