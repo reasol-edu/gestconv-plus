@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-10-13
+
+### Changed
+
+- La campana de notificaciones agrupa ahora los avisos en secciones por prioridad: primero los partes y sanciones **próximos a prescribir** (con los días que les quedan; el contador se pone en rojo si hay alguno), después partes pendientes, sanciones pendientes y tareas de sanción. Cada sección muestra sus 4 primeros elementos y un «y N más», para que una sección con muchos avisos no tape a las demás.
+- Las notas que alcanzan el umbral para generar un parte solo aparecen en la campana de la administración del centro; los tutores las siguen viendo en el panel de inicio y en su pantalla de notas.
+- En la pantalla de gestión de docentes del centro, el formulario «Añadir docente al curso académico» pasa a estar después del listado.
+
 ## [1.7.2] - 2026-10-13
 
 ### Fixed
