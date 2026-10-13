@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-10-13
+
+### Added
+
+- **Enlace público a las tareas de una sanción.** El tutor/a del grupo, la comisión de convivencia y los administradores pueden generarlo, regenerarlo o eliminarlo desde el detalle de la sanción. El alumno accede sin iniciar sesión mediante una dirección corta (`/t/XXXXX-XXXXX`, un código Base32 de 10 caracteres) o escribiendo el código en `/t`, y ve su nombre, grupo, fechas de la sanción y las tareas de cada materia (texto y adjuntos), con descarga de todo en un ZIP. El acceso se cierra al terminar la sanción y los códigos erróneos se limitan por IP.
+- El PDF de la sanción incluye la dirección y el código del enlace cuando la sanción tiene tareas y el enlace ya existe.
+- Nueva ficha rápida para el alumnado y las familias sobre cómo consultar las tareas, y apartados nuevos en el manual y la presentación.
+
+**Al actualizar:** hay que ejecutar las migraciones (`make migrate`); añaden una columna a las sanciones.
+
 ## [1.6.1] - 2026-10-12
 
 ### Changed
