@@ -35,10 +35,10 @@ class SanctionTaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * Whether any sanction task still references this group/teacher/subject assignment. Used to
-     * block removing the assignment from the group's teaching offer directly (that would silently
-     * destroy the task's content); such removals must go through "refrescar materias" instead,
-     * which warns about the tasks it would delete.
+     * Whether any sanction task still references this group/teacher/subject assignment. Removing
+     * the assignment from the group's teaching offer then needs an explicit confirmation, because
+     * the tasks (and their content) are deleted with it (see GroupTeacherRemover); changing its
+     * group or subject stays blocked, and "refrescar materias" warns about the tasks it deletes.
      */
     public function existsForGroupTeacher(GroupTeacher $groupTeacher): bool
     {
@@ -50,6 +50,34 @@ class SanctionTaskRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
 
         return (int) $count > 0;
+    }
+
+    /**
+     * Every task linked to a teacher's subject in a group (with its attachments, which go with
+     * the task when it is deleted).
+     *
+     * @return list<SanctionTask>
+     */
+    public function findByGroupTeacher(GroupTeacher $groupTeacher): array
+    {
+        /** @var list<SanctionTask> $result */
+        $result = $this->createQueryBuilder('t')
+            ->where('t.groupTeacher = :groupTeacher')
+            ->setParameter('groupTeacher', $groupTeacher->getId(), 'uuid')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    public function countByGroupTeacher(GroupTeacher $groupTeacher): int
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.groupTeacher = :groupTeacher')
+            ->setParameter('groupTeacher', $groupTeacher->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Repository\GroupRepository;
 use App\Repository\GroupTeacherRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\GroupTeacherRemover;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -56,11 +57,16 @@ class TeacherSubjectsComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $editSubject = '';
 
+    /** Materia cuyo borrado espera confirmación porque tiene tareas de sanción asociadas. */
+    #[LiveProp]
+    public string $confirmDeleteId = '';
+
     /** @var array<string, string> */
     #[LiveProp]
     public array $errors = [];
 
     public function __construct(
+        private readonly GroupTeacherRemover $remover,
         private readonly EntityManagerInterface $em,
         private readonly TranslatorInterface $translator,
         private readonly GroupRepository $groups,
@@ -228,19 +234,51 @@ class TeacherSubjectsComponent extends AbstractController
             return;
         }
 
+        // Con tareas de sanción asociadas no se borra a la primera: se pide confirmación, porque
+        // las tareas desaparecerían con la materia.
         if ($this->sanctionTasks->existsForGroupTeacher($assignment)) {
-            $this->flashError($this->t('group.error.teacher_has_sanction_tasks'));
+            $this->confirmDeleteId = $id;
 
             return;
         }
 
-        $assignment->getGroup()->removeTeacherAssignment($assignment);
-        $this->em->flush();
-
+        $this->remover->remove($assignment, false);
+        $this->confirmDeleteId = '';
         if ($this->editingId === $id) {
             $this->editingId = '';
         }
         $this->flashSuccess($this->t('centre_teachers.subjects.flash.deleted'));
+    }
+
+    #[LiveAction]
+    public function confirmDeleteSubject(#[LiveArg] string $id): void
+    {
+        $this->requireWritableCentre();
+        $assignment = $this->findAssignment($id);
+        if ($assignment === null || $this->confirmDeleteId !== $id) {
+            return;
+        }
+
+        $this->remover->remove($assignment, true);
+        $this->confirmDeleteId = '';
+        if ($this->editingId === $id) {
+            $this->editingId = '';
+        }
+        $this->flashSuccess($this->t('centre_teachers.subjects.flash.deleted'));
+    }
+
+    #[LiveAction]
+    public function cancelDelete(): void
+    {
+        $this->confirmDeleteId = '';
+    }
+
+    /** Número de tareas de sanción que se borrarían con la materia pendiente de confirmar. */
+    public function getConfirmTaskCount(): int
+    {
+        $assignment = $this->confirmDeleteId === '' ? null : $this->findAssignment($this->confirmDeleteId);
+
+        return $assignment === null ? 0 : $this->sanctionTasks->countByGroupTeacher($assignment);
     }
 
     private function requireWritableCentre(): EducationalCentre
@@ -267,10 +305,5 @@ class TeacherSubjectsComponent extends AbstractController
     private function flashSuccess(string $message): void
     {
         $this->dispatchBrowserEvent('flash:show', ['type' => 'success', 'message' => $message]);
-    }
-
-    private function flashError(string $message): void
-    {
-        $this->dispatchBrowserEvent('flash:show', ['type' => 'error', 'message' => $message]);
     }
 }

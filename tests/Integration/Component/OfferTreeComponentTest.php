@@ -8,9 +8,16 @@ use App\Entity\AcademicYear;
 use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
+use App\Entity\GroupTeacher;
 use App\Entity\PersonName;
+use App\Entity\Sanction;
+use App\Entity\SanctionMeasure;
+use App\Entity\SanctionMeasureCategory;
+use App\Entity\SanctionTask;
+use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\GroupTeacherRepository;
+use App\Service\SanctionTaskGenerator;
 use App\Tests\Integration\ControllerTestCase;
 use Symfony\UX\LiveComponent\Test\InteractsWithLiveComponents;
 
@@ -91,7 +98,55 @@ class OfferTreeComponentTest extends ControllerTestCase
         self::assertCount(0, $assignments);
     }
 
+    // ── removeGroupTeacher con tareas de sanción ─────────────────────────────
+
+    public function testRemoveGroupTeacherAsksForConfirmationWhenItHasSanctionTasksThenDeletesThem(): void
+    {
+        [$admin, $centre, $year, , $group, $teacher] = $this->makeScenario();
+        $group->addTeacher($teacher, 'Matemáticas');
+        $assignment = $group->getTeacherAssignments()->first();
+        self::assertInstanceOf(GroupTeacher::class, $assignment);
+        $this->flush();
+        $this->generateSanctionTasks($centre, $year, $group, $teacher);
+        $this->loginAs($admin, $centre);
+        $id = $assignment->getId()->toRfc4122();
+
+        $component = $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client);
+        $component->set('groupId', $group->getId()->toRfc4122())->call('removeGroupTeacher', ['id' => $id]);
+
+        // Todavía no se ha borrado nada: avisa y espera confirmación.
+        $this->em->clear();
+        self::assertNotNull($this->em->find(GroupTeacher::class, $assignment->getId()));
+        self::assertStringContainsString('tarea de sanción asociada', $component->render()->crawler()->text());
+
+        $component->call('confirmRemoveGroupTeacher', ['id' => $id]);
+
+        $this->em->clear();
+        self::assertNull($this->em->find(GroupTeacher::class, $assignment->getId()));
+        self::assertCount(0, $this->em->getRepository(SanctionTask::class)->findAll());
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function generateSanctionTasks(EducationalCentre $centre, AcademicYear $year, Group $group, Teacher $teacher): void
+    {
+        $student  = (new Student(new PersonName('Ana', 'García')))->setStudentId('NIE-otc-1');
+        $category = (new SanctionMeasureCategory())->setEducationalCentre($centre)->setName('Correcciones')->setPosition(0);
+        $measure  = (new SanctionMeasure())
+            ->setEducationalCentre($centre)->setCategory($category)->setName('Expulsión con actividades')
+            ->setHasDateRange(true)->setPosition(0)->setActive(true);
+        $sanction = (new Sanction())
+            ->setAcademicYear($year)->setStudent($student)->setGroup($group)->setRegisteredBy($teacher)
+            ->setDetails('Detalles de prueba')->setNoMeasureApplied(false)
+            ->setEffectiveFrom(new \DateTimeImmutable('+2 days'))->setEffectiveTo(new \DateTimeImmutable('+7 days'));
+        $sanction->addMeasure($measure);
+        $this->persist($student, $category, $measure, $sanction);
+
+        /** @var SanctionTaskGenerator $generator */
+        $generator = self::getContainer()->get(SanctionTaskGenerator::class);
+        self::assertCount(1, $generator->generateFor($sanction));
+        $this->flush();
+    }
 
     /** @return array{0: Teacher, 1: EducationalCentre, 2: AcademicYear, 3: Course, 4: Group, 5: Teacher} */
     private function makeScenario(): array

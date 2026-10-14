@@ -13,6 +13,7 @@ use App\Entity\PersonName;
 use App\Entity\Sanction;
 use App\Entity\SanctionMeasure;
 use App\Entity\SanctionMeasureCategory;
+use App\Entity\SanctionTask;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\GroupTeacherRepository;
@@ -176,6 +177,72 @@ class TeacherSubjectsComponentTest extends ControllerTestCase
             $this->em->find(AcademicYear::class, $year->getId()),
         );
         self::assertCount(1, $assignments);
+
+        // En vez de borrar, avisa y pide confirmación.
+        self::assertStringContainsString('tarea de sanción asociada', $component->render()->crawler()->text());
+    }
+
+    public function testConfirmDeleteRemovesSubjectAndItsSanctionTasks(): void
+    {
+        [$admin, $centre, $year, $course, $group, $teacher] = $this->makeScenario();
+        $group->addTeacher($teacher, 'Matemáticas');
+        $assignment = $group->getTeacherAssignments()->first();
+        self::assertInstanceOf(GroupTeacher::class, $assignment);
+        $this->flush();
+
+        $this->generateSanctionTasksFor($centre, $year, $group, $teacher);
+        $this->loginAs($admin, $centre);
+        $id = $assignment->getId()->toRfc4122();
+
+        $component = $this->createLiveComponent('Admin:TeacherSubjectsComponent', ['centre' => $centre, 'teacher' => $teacher], $this->client);
+        $component->call('deleteSubject', ['id' => $id]);
+        $component->call('confirmDeleteSubject', ['id' => $id]);
+
+        $this->em->clear();
+        self::assertNull($this->em->find(GroupTeacher::class, $assignment->getId()));
+        self::assertCount(0, $this->em->getRepository(SanctionTask::class)->findAll());
+    }
+
+    public function testConfirmDeleteWithoutPriorRequestDoesNothing(): void
+    {
+        [$admin, $centre, $year, $course, $group, $teacher] = $this->makeScenario();
+        $group->addTeacher($teacher, 'Matemáticas');
+        $assignment = $group->getTeacherAssignments()->first();
+        self::assertInstanceOf(GroupTeacher::class, $assignment);
+        $this->flush();
+
+        $this->generateSanctionTasksFor($centre, $year, $group, $teacher);
+        $this->loginAs($admin, $centre);
+
+        // Saltarse el aviso (confirmar sin haber pedido borrar antes) no borra nada.
+        $this->createLiveComponent('Admin:TeacherSubjectsComponent', ['centre' => $centre, 'teacher' => $teacher], $this->client)
+            ->call('confirmDeleteSubject', ['id' => $assignment->getId()->toRfc4122()]);
+
+        $this->em->clear();
+        self::assertNotNull($this->em->find(GroupTeacher::class, $assignment->getId()));
+        self::assertCount(1, $this->em->getRepository(SanctionTask::class)->findAll());
+    }
+
+    public function testCancelDeleteKeepsEverything(): void
+    {
+        [$admin, $centre, $year, $course, $group, $teacher] = $this->makeScenario();
+        $group->addTeacher($teacher, 'Matemáticas');
+        $assignment = $group->getTeacherAssignments()->first();
+        self::assertInstanceOf(GroupTeacher::class, $assignment);
+        $this->flush();
+
+        $this->generateSanctionTasksFor($centre, $year, $group, $teacher);
+        $this->loginAs($admin, $centre);
+        $id = $assignment->getId()->toRfc4122();
+
+        $component = $this->createLiveComponent('Admin:TeacherSubjectsComponent', ['centre' => $centre, 'teacher' => $teacher], $this->client);
+        $component->call('deleteSubject', ['id' => $id]);
+        $component->call('cancelDelete');
+        $component->call('confirmDeleteSubject', ['id' => $id]);
+
+        $this->em->clear();
+        self::assertNotNull($this->em->find(GroupTeacher::class, $assignment->getId()));
+        self::assertStringNotContainsString('tarea de sanción asociada', $component->render()->crawler()->text());
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

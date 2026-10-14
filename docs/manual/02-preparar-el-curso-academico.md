@@ -179,6 +179,13 @@ página.
 4. Al seleccionar un grupo aparece su formulario de edición: aquí se asignan tutores/as y
    docentes.
 
+!!! warning "Quitar una materia que tiene tareas de sanción"
+    Una materia de un docente en un grupo (en el formulario del grupo o en
+    **Centro educativo › Docentes › Materias y grupos**) puede tener ya tareas de sanción
+    asociadas. En ese caso, al pulsar eliminar no se borra nada: la aplicación avisa de cuántas
+    tareas hay y pide confirmación. Si se confirma con **Eliminar materia y tareas**, se borran
+    también esas tareas, con su contenido y adjuntos, y no se pueden recuperar.
+
 !!! warning "Los nombres deben coincidir con Séneca"
     Si creas los grupos a mano, su nombre debe coincidir exactamente con la columna «Unidad» de
     Séneca; de lo contrario, la importación de estudiantes no podrá asignar cada estudiante a su

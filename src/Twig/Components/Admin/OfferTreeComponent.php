@@ -14,6 +14,7 @@ use App\Repository\GroupRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\GroupTeacherRemover;
 use App\Service\TenantContext;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -75,7 +76,12 @@ class OfferTreeComponent extends AbstractController
     #[LiveProp(writable: true)]
     public bool $confirmingDelete = false;
 
+    /** Asignación docente–materia cuyo borrado espera confirmación porque tiene tareas de sanción. */
+    #[LiveProp]
+    public string $confirmDeleteTeacherId = '';
+
     public function __construct(
+        private readonly GroupTeacherRemover $remover,
         private readonly EntityManagerInterface $em,
         private readonly TranslatorInterface $translator,
         private readonly CourseRepository $courses,
@@ -400,15 +406,62 @@ class OfferTreeComponent extends AbstractController
             return;
         }
 
+        // Con tareas de sanción asociadas no se borra a la primera: se pide confirmación, porque
+        // las tareas desaparecerían con la materia.
         if ($this->sanctionTasks->existsForGroupTeacher($assignment)) {
-            $this->errors = ['teachers' => $this->t('group.error.teacher_has_sanction_tasks')];
+            $this->confirmDeleteTeacherId = $id;
+            $this->errors                 = [];
 
             return;
         }
 
-        $group->removeTeacherAssignment($assignment);
-        $this->em->flush();
+        $this->remover->remove($assignment, false);
+        $this->confirmDeleteTeacherId = '';
         $this->flashSuccess($this->t('group.flash.saved'));
+    }
+
+    #[LiveAction]
+    public function confirmRemoveGroupTeacher(#[LiveArg] string $id): void
+    {
+        $this->requireWritableCentre();
+        $group = $this->getSelectedGroup();
+        if ($group === null || $this->confirmDeleteTeacherId !== $id) {
+            return;
+        }
+
+        $assignment = $group->getTeacherAssignments()->findFirst(
+            static fn (int $i, GroupTeacher $gt): bool => $gt->getId()->toRfc4122() === $id
+        );
+        if ($assignment === null) {
+            return;
+        }
+
+        $this->remover->remove($assignment, true);
+        $this->confirmDeleteTeacherId = '';
+        $this->flashSuccess($this->t('group.flash.saved'));
+    }
+
+    #[LiveAction]
+    public function cancelRemoveGroupTeacher(): void
+    {
+        $this->confirmDeleteTeacherId = '';
+    }
+
+    /** Número de tareas de sanción que se borrarían con la materia pendiente de confirmar. */
+    public function getConfirmTaskCount(): int
+    {
+        $group = $this->confirmDeleteTeacherId === '' ? null : $this->getSelectedGroup();
+        if ($group === null) {
+            return 0;
+        }
+
+        foreach ($group->getTeacherAssignments() as $assignment) {
+            if ($assignment->getId()->toRfc4122() === $this->confirmDeleteTeacherId) {
+                return $this->sanctionTasks->countByGroupTeacher($assignment);
+            }
+        }
+
+        return 0;
     }
 
     private function resolveTeacher(string $id): ?Teacher
