@@ -126,6 +126,7 @@ centro. Quién puede registrar el regreso o gestionar el pase prioritario depend
 | Marcar «Ha regresado» en la salida de otro docente | — | ✓ (su grupo) | — | — | ✓ | ✓ |
 | Ver el historial de salidas de un estudiante en su ficha | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Ver y filtrar todas las salidas del curso (pestaña Historial) | — | — | — | — | ✓ | ✓ |
+| Eliminar una salida del historial (con confirmación) | — | — | — | — | ✓ | ✓ |
 | Conceder, modificar o retirar el pase prioritario | — | — | — | — | ✓ | ✓ |
 | Configurar los motivos de salida | — | — | — | — | ✓ | ✓ |
 

@@ -337,6 +337,11 @@ salidas del curso: se puede buscar por estudiante o docente, filtrar por grupo, 
 (siguen fuera o ya han regresado) y fechas, y ordenar por columnas. Para las salidas que han
 terminado se indica el tiempo que estuvo fuera el estudiante.
 
+La administración (global o del centro) puede además **eliminar una salida** desde ese historial,
+con el botón de la papelera de su fila. La aplicación pide confirmación antes de borrarla: la salida
+desaparece definitivamente de la base de datos y no se puede recuperar. Solo se puede borrar mientras
+se consulta el curso activo, y cada eliminación queda en el registro de actividad.
+
 ![Pestaña Historial de la sección Salidas](img/salidas/salidas-historial.png)
 
 ## Notificaciones

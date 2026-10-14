@@ -17,8 +17,10 @@ use App\Repository\StudentExitRepository;
 use App\Repository\StudentPriorityPassRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\StudentExitVoter;
+use App\Service\ActivityLogService;
 use App\Service\AppSettings;
 use App\Service\TenantContext;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
@@ -67,7 +69,13 @@ class ExitHistoryListComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $sortDir = 'desc';
 
+    /** Salida cuyo borrado espera confirmación. */
+    #[LiveProp]
+    public string $confirmDeleteId = '';
+
     public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly ActivityLogService $activityLog,
         private readonly StudentExitRepository $exits,
         private readonly ExitReasonRepository $reasons,
         private readonly GroupRepository $groups,
@@ -145,6 +153,12 @@ class ExitHistoryListComponent extends AbstractController
         return $this->passRepository->findByStudentsIndexed($students, $year);
     }
 
+    /** Se puede borrar solo en el curso activo; al consultar un curso pasado el historial es de lectura. */
+    public function canDelete(): bool
+    {
+        return !$this->tenantContext->isViewingNonActiveYear($this->centre);
+    }
+
     public function hasActiveFilters(): bool
     {
         return $this->search !== '' || $this->groupId !== '' || $this->reasonId !== ''
@@ -168,5 +182,58 @@ class ExitHistoryListComponent extends AbstractController
     {
         $this->search = $this->groupId = $this->reasonId = $this->teacherId = $this->status = $this->from = $this->to = '';
         $this->page   = 1;
+    }
+
+    /** Pide confirmación para borrar una salida (no borra nada todavía). */
+    #[LiveAction]
+    public function askDelete(#[LiveArg] string $id): void
+    {
+        $this->requireWritable();
+        $this->confirmDeleteId = $this->findInCentre($id) === null ? '' : $id;
+    }
+
+    #[LiveAction]
+    public function cancelDelete(): void
+    {
+        $this->confirmDeleteId = '';
+    }
+
+    /** Elimina de la base de datos la salida cuyo borrado se había pedido antes. */
+    #[LiveAction]
+    public function confirmDelete(#[LiveArg] string $id): void
+    {
+        $this->requireWritable();
+        $exit = $this->findInCentre($id);
+        if ($exit === null || $this->confirmDeleteId !== $id) {
+            return;
+        }
+
+        $data = [
+            'entityId'  => $exit->getId()->toRfc4122(),
+            'studentId' => $exit->getStudent()->getId()->toRfc4122(),
+            'groupId'   => $exit->getGroup()->getId()->toRfc4122(),
+            'reasonId'  => $exit->getReason()->getId()->toRfc4122(),
+        ];
+        $this->em->remove($exit);
+        $this->em->flush();
+        $this->activityLog->log('student_exit.deleted', $data);
+
+        $this->confirmDeleteId = '';
+    }
+
+    /** Solo administración (global o del centro) y sin estar viendo un curso pasado. */
+    private function requireWritable(): void
+    {
+        $this->denyAccessUnlessGranted(StudentExitVoter::MANAGE, $this->centre);
+        if ($this->tenantContext->isViewingNonActiveYear($this->centre)) {
+            throw $this->createAccessDeniedException();
+        }
+    }
+
+    private function findInCentre(string $id): ?StudentExit
+    {
+        $exit = $this->exits->findById($id);
+
+        return $exit !== null && $exit->getAcademicYear()->getEducationalCentre() === $this->centre ? $exit : null;
     }
 }

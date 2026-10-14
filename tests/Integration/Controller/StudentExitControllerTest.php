@@ -397,6 +397,80 @@ class StudentExitControllerTest extends ControllerTestCase
         self::assertStringNotContainsString('Pérez, Luis', $searched);
     }
 
+    // ── borrado desde el historial (solo administración) ──────────────────────
+
+    public function testAdminDeletesAnExitFromTheHistoryAfterConfirming(): void
+    {
+        $s    = $this->makeScenario();
+        $exit = $this->makeExit($s, $s['studentA'], $s['groupA'], $s['other']);
+        $this->loginAs($s['cadmin'], $s['centre']);
+        $id = $exit->getId()->toRfc4122();
+
+        $component = $this->createLiveComponent('ExitHistoryListComponent', ['centre' => $s['centre']], $this->client);
+        $component->call('askDelete', ['id' => $id]);
+
+        // Todavía no se ha borrado: pide confirmación.
+        $this->em->clear();
+        self::assertNotNull($this->em->find(StudentExit::class, $exit->getId()));
+        self::assertStringContainsString('no se puede recuperar', $component->render()->crawler()->text());
+
+        $component->call('confirmDelete', ['id' => $id]);
+
+        $this->em->clear();
+        self::assertNull($this->em->find(StudentExit::class, $exit->getId()));
+    }
+
+    public function testConfirmingWithoutAskingFirstDeletesNothing(): void
+    {
+        $s    = $this->makeScenario();
+        $exit = $this->makeExit($s, $s['studentA'], $s['groupA'], $s['other']);
+        $this->loginAs($s['cadmin'], $s['centre']);
+
+        $this->createLiveComponent('ExitHistoryListComponent', ['centre' => $s['centre']], $this->client)
+            ->call('confirmDelete', ['id' => $exit->getId()->toRfc4122()]);
+
+        $this->em->clear();
+        self::assertNotNull($this->em->find(StudentExit::class, $exit->getId()));
+    }
+
+    public function testCancellingTheDeleteKeepsTheExit(): void
+    {
+        $s    = $this->makeScenario();
+        $exit = $this->makeExit($s, $s['studentA'], $s['groupA'], $s['other']);
+        $this->loginAs($s['cadmin'], $s['centre']);
+        $id = $exit->getId()->toRfc4122();
+
+        $component = $this->createLiveComponent('ExitHistoryListComponent', ['centre' => $s['centre']], $this->client);
+        $component->call('askDelete', ['id' => $id]);
+        $component->call('cancelDelete');
+        $component->call('confirmDelete', ['id' => $id]);
+
+        $this->em->clear();
+        self::assertNotNull($this->em->find(StudentExit::class, $exit->getId()));
+        self::assertStringNotContainsString('no se puede recuperar', $component->render()->crawler()->text());
+    }
+
+    public function testDeleteIsNotAvailableWhileViewingAPastYear(): void
+    {
+        $s    = $this->makeScenario();
+        $exit = $this->makeExit($s, $s['studentA'], $s['groupA'], $s['other']);
+        $past = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($s['centre']);
+        $this->persist($past);
+        $this->loginAs($s['cadmin'], $s['centre']);
+        $this->viewPastYear($past);
+
+        $component = $this->createLiveComponent('ExitHistoryListComponent', ['centre' => $s['centre']], $this->client);
+        try {
+            $component->call('askDelete', ['id' => $exit->getId()->toRfc4122()]);
+            self::fail('Debería haberse denegado el acceso.');
+        } catch (\Throwable) {
+            // Esperado: 403.
+        }
+
+        $this->em->clear();
+        self::assertNotNull($this->em->find(StudentExit::class, $exit->getId()));
+    }
+
     // ── ficha del estudiante ──────────────────────────────────────────────────
 
     public function testStudentSheetShowsExitHistoryAndPassBadge(): void
