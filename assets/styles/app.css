@@ -26,6 +26,10 @@
 
 @source inline("bg-green-500 bg-green-700 bg-blue-700 bg-gray-600");
 
+/* Los accesos rápidos del inicio calculan su número de columnas (xl:grid-cols-{{ n }}): Tailwind solo
+   genera las clases que encuentra escritas tal cual, así que se listan aquí todas las posibles. */
+@source inline("xl:grid-cols-5 xl:grid-cols-6 xl:grid-cols-7 xl:grid-cols-8");
+
 @media (prefers-reduced-motion: reduce) {
     /* El pulso de carga de los listados no debe animarse si se pide menos
        movimiento; el atenuado (opacity) sigue indicando el estado de carga. */

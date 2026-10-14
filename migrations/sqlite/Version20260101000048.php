@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace DoctrineMigrations;
 
+use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Yaml\Yaml;
 
 final class Version20260101000048 extends AbstractMigration
@@ -92,22 +94,26 @@ final class Version20260101000048 extends AbstractMigration
      */
     private function seedDefaultReasonsForExistingCentres(): void
     {
-        $uuid = "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-4' || substr(hex(randomblob(2)),2)"
-            . " || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(hex(randomblob(2)),2) || '-' || hex(randomblob(6)))";
-
         $config  = Yaml::parseFile(dirname(__DIR__, 2) . '/config/exit_reasons.yaml');
         $reasons = is_array($config) && is_array($config['reasons'] ?? null) ? $config['reasons'] : [];
+
+        // Doctrine guarda los UUID en SQLite como 16 bytes (aunque la columna se declare CHAR(36))
+        // y los busca con ese mismo valor: un id de texto no se encontraría después. Por eso los ids
+        // se generan aquí, en binario, en vez de con una expresión SQL de texto.
+        $centreIds = $this->connection->fetchFirstColumn('SELECT id FROM educational_centre');
 
         foreach ($reasons as $position => $name) {
             if (!is_string($name) || $name === '' || !is_int($position)) {
                 continue;
             }
 
-            $this->addSql(
-                'INSERT INTO exit_reason (id, educational_centre_id, name, position, active) '
-                . 'SELECT ' . $uuid . ', id, ?, ?, 1 FROM educational_centre',
-                [$name, $position]
-            );
+            foreach ($centreIds as $centreId) {
+                $this->addSql(
+                    'INSERT INTO exit_reason (id, educational_centre_id, name, position, active) VALUES (?, ?, ?, ?, 1)',
+                    [Uuid::v7()->toBinary(), $centreId, $name, $position],
+                    [ParameterType::BINARY, ParameterType::BINARY, ParameterType::STRING, ParameterType::INTEGER]
+                );
+            }
         }
     }
 

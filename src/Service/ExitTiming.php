@@ -65,18 +65,10 @@ final class ExitTiming
         ], 'admin');
     }
 
-    /** Duración total para columnas de tiempo fuera: «12 min», «1 h 05 min». */
+    /** Duración total para las columnas de tiempo fuera, siempre en minutos: «12 min», «75 min». */
     public function duration(int $seconds): string
     {
-        $minutes = intdiv($seconds + 30, 60);
-        if ($minutes < 60) {
-            return $this->translator->trans('exit.duration.minutes', ['%minutes%' => $minutes], 'admin');
-        }
-
-        return $this->translator->trans('exit.duration.hours', [
-            '%hours%'   => intdiv($minutes, 60),
-            '%minutes%' => sprintf('%02d', $minutes % 60),
-        ], 'admin');
+        return $this->translator->trans('exit.duration.minutes', ['%minutes%' => intdiv($seconds + 30, 60)], 'admin');
     }
 
     /**

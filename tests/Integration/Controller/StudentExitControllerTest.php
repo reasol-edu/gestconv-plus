@@ -331,6 +331,34 @@ class StudentExitControllerTest extends ControllerTestCase
         self::assertStringContainsString('Ahora mismo no hay ningún estudiante fuera del aula', $text);
     }
 
+    public function testCurrentListQueryCountDoesNotGrowWithTheNumberOfExits(): void
+    {
+        $s = $this->makeScenario();
+        $this->makeExit($s, $s['studentA'], $s['groupA'], $s['other']);
+        $this->loginAs($s['teacher'], $s['centre']);
+        $withOne = $this->countQueries('/salidas');
+
+        // Cuatro salidas más, de estudiantes, grupos y docentes distintos. countQueries() vacía el
+        // identity map, así que se recargan las referencias que hacen falta.
+        $course = $this->em->find(Course::class, $s['groupA']->getCourse()->getId());
+        $s['year']   = $this->em->find(AcademicYear::class, $s['year']->getId());
+        $s['reason'] = $this->em->find(ExitReason::class, $s['reason']->getId());
+        self::assertNotNull($course);
+        for ($i = 0; $i < 4; $i++) {
+            $group   = (new Group())->setName('2º' . $i)->setCourse($course);
+            $student = (new Student(new PersonName('Extra', 'Alumno' . $i)))->setStudentId('NIE-X-' . $i . uniqid('', false));
+            $author  = $this->makeTeacher('extra.exit.' . $i . uniqid('', false));
+            $group->addTutor($author);
+            $student->addGroup($group);
+            $this->persist($author, $group, $student);
+            $this->makeExit($s, $student, $group, $author);
+        }
+        $this->loginAs($s['teacher'], $s['centre']);
+        $withFive = $this->countQueries('/salidas');
+
+        self::assertLessThanOrEqual($withOne, $withFive);
+    }
+
     // ── historial de dirección ────────────────────────────────────────────────
 
     public function testHistoryComponentIsDeniedToRegularTeacher(): void

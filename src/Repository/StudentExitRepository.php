@@ -57,7 +57,10 @@ class StudentExitRepository extends ServiceEntityRepository
     public function findCurrent(AcademicYear $year): array
     {
         /** @var list<StudentExit> $result */
+        // Se traen también los tutores de cada grupo: el listado en vivo pregunta por cada salida si
+        // el docente puede registrar su regreso, y sin esto sería una consulta por grupo en cada sondeo.
         $result = $this->baseQuery()
+            ->leftJoin('g.tutors', 'gt')->addSelect('gt')
             ->where('e.academicYear = :year')
             ->andWhere('e.returnedAt IS NULL')
             ->setParameter('year', $year->getId(), 'uuid')

@@ -69,7 +69,7 @@ class ExitTimingTest extends TestCase
     {
         self::assertSame('exit.duration.minutes|12', $this->timing->duration(12 * 60 + 20));
         self::assertSame('exit.duration.minutes|13', $this->timing->duration(12 * 60 + 40));
-        self::assertSame('exit.duration.hours|1,05', $this->timing->duration(65 * 60));
+        self::assertSame('exit.duration.minutes|75', $this->timing->duration(75 * 60), 'Siempre en minutos, sin pasar a horas');
     }
 
     public function testSecondsUsesNowWhileOutAndReturnTimeWhenBack(): void
