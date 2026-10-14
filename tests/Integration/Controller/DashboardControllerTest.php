@@ -136,6 +136,43 @@ class DashboardControllerTest extends ControllerTestCase
         self::assertCount(0, $crawler->filter('#quick-actions a[href$="/sanciones/nueva"]'));
     }
 
+    public function testSidebarGroupsSectionsAndHidesManagementFromRegularTeachers(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        $nav = $crawler->filter('aside nav')->text();
+        self::assertStringContainsString('DÍA A DÍA', mb_strtoupper($nav));
+        self::assertStringContainsString('CONVIVENCIA', mb_strtoupper($nav));
+        self::assertStringNotContainsString('GESTIÓN', mb_strtoupper($nav));
+        // Orden: Salidas (día a día) antes que Partes (convivencia).
+        self::assertLessThan(mb_strpos($nav, 'Partes'), mb_strpos($nav, 'Salidas'));
+    }
+
+    public function testSidebarShowsManagementGroupToCentreAdmin(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(true);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertStringContainsString('GESTIÓN', mb_strtoupper($crawler->filter('aside nav')->text()));
+    }
+
+    public function testQuickActionsAreSplitIntoDailyAndConductGroups(): void
+    {
+        [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/');
+
+        self::assertCount(2, $crawler->filter('#quick-actions section'));
+        self::assertSelectorExists('#quick-actions section:first-child a[href$="/salidas/nueva"]');
+        self::assertSelectorExists('#quick-actions section:last-child a[href$="/partes/nuevo"]');
+    }
+
     public function testQuickActionsNotifyIsDisabledWhenNothingPending(): void
     {
         [$teacher, $centre] = $this->makeScenarioWithActiveYear(false);

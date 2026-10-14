@@ -100,7 +100,11 @@ Cada bloque solo añade lo que ese rol tiene **de más** sobre el anterior.
 - Si tienes acceso a **varios centros educativos**, un selector en la cabecera
   permite cambiar de centro sin cerrar sesión.
 - El menú lateral se adapta a tu rol: solo muestra las secciones que puedes
-  usar.
+  usar, agrupadas en **Día a día** (salidas, guardias, ausencias, calendario),
+  **Convivencia** (partes, notas, sanciones, tareas, notificaciones, mi
+  tutoría) y **Gestión** (informes y centro, solo dirección).
+- Los **accesos rápidos** del inicio siguen esos mismos grupos: en el móvil,
+  baldosas de un toque.
 
 ---
 
@@ -721,7 +725,7 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 ![bg right:38% fit](../manual/img/informes/informes-estadisticas-grupo.png)
 
-- Nueva sección **Informes** en el menú lateral, tras Calendario, reservada
+- Sección **Informes** en el grupo **Gestión** del menú lateral, reservada
   al equipo directivo y a los administradores.
 - El informe **Estadísticas por grupo** resume, para un rango de fechas
   elegido, los partes de cada grupo del curso —estudiantes únicos, partes

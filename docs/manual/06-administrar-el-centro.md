@@ -200,6 +200,8 @@ Fuente, Conserjería, Departamentos, Carro portátiles, Secretaría, Jefat. de E
 Otros; los centros que ya existían antes de esta funcionalidad los reciben automáticamente al
 actualizar.
 
+![Administración de motivos de salida del aula](img/centro/centro-motivos-salida.png)
+
 Un motivo que ya se ha usado en alguna salida no se puede eliminar (aparece un aviso); desactívalo
 en su lugar.
 

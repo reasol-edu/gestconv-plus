@@ -10,24 +10,52 @@ permiso especial para nada de lo que se explica aquí.
     plazo, prescribe. Registrar el parte es solo la mitad del trabajo: la otra mitad es dejar
     constancia de que la familia ha sido informada.
 
+## Cómo está organizado el menú
+
+El menú lateral agrupa las secciones por lo que se hace con ellas, y solo muestra las que el perfil
+puede usar (un grupo sin ninguna entrada visible no aparece):
+
+- **Inicio**, suelto arriba.
+- **Día a día** — lo que se usa en mitad de la clase, también desde el móvil: **Salidas**,
+  **Guardias**, **Ausencias** y **Calendario**.
+- **Convivencia** — **Partes**, **Notas**, **Sanciones**, **Tareas de sanción**,
+  **Notificaciones** y **Mi tutoría**. Es el recorrido completo de un incidente: se registra, se
+  sanciona si procede, se cumplen las tareas y se informa a la familia.
+- **Gestión** — **Informes** y **Centro educativo**, solo para el equipo directivo y la
+  administración. **Administración** (solo administradores globales) queda aparte, al final.
+
 ## La pantalla de inicio
 
 El panel de inicio muestra un resumen del curso activo, adaptado al perfil de quien entra.
 
 ![Panel de inicio con las tarjetas de resumen](img/inicio.png)
 
-En la parte superior están los **accesos rápidos**: botones grandes pensados para el móvil, uno
-por cada acción habitual, que solo aparecen para quien puede realizarlas:
+En la parte superior están los **accesos rápidos**: botones grandes, uno por cada acción habitual,
+que solo aparecen para quien puede realizarlas. Siguen los mismos dos bloques y el mismo orden que
+el menú lateral (ver [Cómo está organizado el menú](#como-esta-organizado-el-menu)). En el móvil son
+baldosas compactas, de dos en dos, para llegar a cada acción con un solo toque; en pantallas mayores
+son tarjetas con una línea de ayuda y se reparten en tantas columnas como caben.
+
+**Día a día**
+
+- **Autorizar salida** — todo el profesorado; para [dejar salir a un estudiante del
+  aula](#salidas).
+- **Guardias** — quien tiene guardia en algún tramo del curso, o la administración del centro.
+- **Registrar ausencia** — todo el profesorado.
+
+**Convivencia**
 
 - **Nuevo parte** — todo el profesorado.
 - **Nueva nota** — todo el profesorado; para registrar un [aviso de comportamiento del día a
   día](#notas) sin abrir un parte.
-- **Notificar** — con un contador en rojo si hay algo pendiente de comunicar; en gris y sin
-  contador cuando no queda nada pendiente.
 - **Nueva sanción** — solo quien puede registrar sanciones.
 - **Cumplimentar tareas** — visible para cualquier docente con grupos de materia, con un contador
   de sus propias [tareas de sanción](#tareas-de-sancion) pendientes.
-- **Registrar ausencia** — todo el profesorado.
+- **Notificar** — con un contador en rojo si hay algo pendiente de comunicar; en gris y sin
+  contador cuando no queda nada pendiente.
+
+Las acciones más frecuentes también están en la paleta de comandos (`Ctrl+K` / `⌘K`): autorizar
+una salida, ver quién está fuera, crear un parte o una nota, ir a notificaciones o cambiar de curso.
 
 Debajo, las tarjetas de estadísticas:
 
@@ -274,6 +302,8 @@ Si el estudiante tiene **pase prioritario** (ver más abajo), se muestra su just
 aviso destacado antes de elegir el motivo. Un estudiante que ya tiene una salida abierta no puede
 volver a salir hasta que se registre su regreso.
 
+![Último paso de Autorizar salida, con el aviso de pase prioritario](img/salidas/salidas-autorizar.png)
+
 ### Quién está fuera ahora
 
 La pantalla principal muestra, en tiempo real (se actualiza sola cada pocos segundos), los
@@ -281,6 +311,8 @@ estudiantes que están fuera: nombre y grupo, docente que autorizó, motivo con 
 la hora de salida junto a un texto como «Hace 12 minutos». Si la salida no es de hoy se añade la
 fecha. A partir de los **10 minutos** el tiempo cambia de color —ámbar a los 10, naranja a los 20 y
 rojo a los 30— para que las ausencias largas destaquen.
+
+![Pantalla Salidas con las salidas propias y las de otros docentes](img/salidas/salidas-ahora.png)
 
 Las salidas que has autorizado tú aparecen **aparte y primero**, con un botón **Ha regresado** que
 cierra la salida (la sección no se muestra si no tienes ninguna). En las salidas de otros docentes
@@ -295,6 +327,8 @@ salud). La administración del centro puede concederles un **pase prioritario** 
 actual y se muestra con el distintivo **PASE** junto al nombre del estudiante en todos los
 listados de salidas.
 
+![Pase prioritario y salidas en la ficha del estudiante](img/alumnado/alumnado-pase-prioritario.png)
+
 ### Historial
 
 En la ficha de cada estudiante hay un listado de sus salidas autorizadas. El equipo directivo y la
@@ -302,6 +336,8 @@ administración disponen además de la pestaña **Historial** en la sección Sal
 salidas del curso: se puede buscar por estudiante o docente, filtrar por grupo, motivo, estado
 (siguen fuera o ya han regresado) y fechas, y ordenar por columnas. Para las salidas que han
 terminado se indica el tiempo que estuvo fuera el estudiante.
+
+![Pestaña Historial de la sección Salidas](img/salidas/salidas-historial.png)
 
 ## Notificaciones
 

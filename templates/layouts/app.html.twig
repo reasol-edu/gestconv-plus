@@ -11,6 +11,8 @@
      data-command-palette-actions-value="{{ [
          {label: 'actions.new_incident'|trans({}, 'search'), url: path('app_incidents_new')},
          {label: 'actions.new_exit'|trans({}, 'search'), url: path('app_exits_new')},
+         {label: 'actions.exits'|trans({}, 'search'), url: path('app_exits_index')},
+         {label: 'actions.new_note'|trans({}, 'search'), url: path('app_daily_notes_new')},
          {label: 'actions.notifications'|trans({}, 'search'), url: path('app_notifications_index')},
          {label: 'actions.change_year'|trans({}, 'search'), url: path('app_select_year_page')},
      ]|json_encode }}"
@@ -98,6 +100,12 @@
                 </a>
             {% endmacro %}
 
+            {# Título de grupo de secciones, precedido de una línea separadora #}
+            {% macro nav_heading(label) %}
+                <div class="my-3 h-px bg-white/8"></div>
+                <p class="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-wider text-forest-500">{{ label }}</p>
+            {% endmacro %}
+
             {# Inicio #}
             {{ _self.nav_item(
                 'dashboard'|trans({}, 'navigation'),
@@ -107,129 +115,54 @@
                 'app_dashboard'
             ) }}
 
-            <div class="my-3 h-px bg-white/8"></div>
-
-            {# Mi tutoría — solo para docentes que tutorizan algún grupo del curso visualizado #}
-            {% if active_centre and tutors_any_group() %}
-                {% set tutorship_active = current_route starts with 'app_tutorship' %}
-                <a href="{{ path('app_tutorship_index') }}"
-                    {{ tutorship_active ? 'aria-current="page"' : '' }}
-                   class="{{ tutorship_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:academic-cap', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'tutorship'|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
-
-            {# Guardias — administradores del centro y docentes con guardia en algún tramo del curso visualizado #}
-            {% if active_centre and (is_centre_admin() or is_guard_any_time_slot()) %}
-                {% set guards_active = current_route starts with 'app_guards' %}
-                <a href="{{ path('app_guards_index') }}"
-                    {{ guards_active ? 'aria-current="page"' : '' }}
-                   class="{{ guards_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:shield-check', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ (is_centre_admin() ? 'guards' : 'my_guards')|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
-
-            {# Partes de convivencia — todos los docentes #}
+            {# ── Día a día: lo que se usa en mitad de la clase, también desde el móvil ── #}
             {% if active_centre %}
-                {% set incidents_active = current_route starts with 'app_incidents' %}
-                <a href="{{ path('app_incidents_index') }}"
-                    {{ incidents_active ? 'aria-current="page"' : '' }}
-                   class="{{ incidents_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'incident_reports'|trans({}, 'navigation') }}</span>
-                </a>
+                {{ _self.nav_heading('section.daily'|trans({}, 'navigation')) }}
+
+                {# Salidas — todos los docentes con centro activo #}
+                {{ _self.nav_item('exits'|trans({}, 'navigation'), path('app_exits_index'), 'heroicons:arrow-right-on-rectangle', current_route, 'app_exits') }}
+
+                {# Guardias — administradores del centro y docentes con guardia en algún tramo del curso visualizado #}
+                {% if is_centre_admin() or is_guard_any_time_slot() %}
+                    {{ _self.nav_item((is_centre_admin() ? 'guards' : 'my_guards')|trans({}, 'navigation'), path('app_guards_index'), 'heroicons:shield-check', current_route, 'app_guards') }}
+                {% endif %}
+
+                {# Ausencias — administradores del centro y docentes del curso visualizado #}
+                {% if is_centre_admin() or belongs_to_view_year() %}
+                    {{ _self.nav_item('absences'|trans({}, 'navigation'), path('app_absences_index'), 'heroicons:user-minus', current_route, 'app_absences') }}
+                {% endif %}
             {% endif %}
 
-            {# Salidas — todos los docentes con centro activo #}
+            {# Calendario — sin centro activo también se muestra, así que va fuera del bloque anterior #}
+            {% if not active_centre %}
+                <div class="my-3 h-px bg-white/8"></div>
+            {% endif %}
+            {{ _self.nav_item('calendar'|trans({}, 'navigation'), path('app_calendar'), 'heroicons:calendar-days', current_route, 'app_calendar') }}
+
+            {# ── Convivencia: partes, notas, sanciones y su seguimiento ── #}
             {% if active_centre %}
-                {% set exits_active = current_route starts with 'app_exits' %}
-                <a href="{{ path('app_exits_index') }}"
-                    {{ exits_active ? 'aria-current="page"' : '' }}
-                   class="{{ exits_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:arrow-right-on-rectangle', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'exits'|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
+                {{ _self.nav_heading('section.conduct'|trans({}, 'navigation')) }}
 
-            {# Notas — todos los docentes con centro activo #}
-            {% if active_centre %}
-                {% set daily_notes_active = current_route starts with 'app_daily_notes' %}
-                <a href="{{ path('app_daily_notes_index') }}"
-                    {{ daily_notes_active ? 'aria-current="page"' : '' }}
-                   class="{{ daily_notes_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:pencil-square', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'daily_notes'|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
+                {{ _self.nav_item('incident_reports'|trans({}, 'navigation'), path('app_incidents_index'), 'heroicons:exclamation-triangle', current_route, 'app_incidents') }}
+                {{ _self.nav_item('daily_notes'|trans({}, 'navigation'), path('app_daily_notes_index'), 'heroicons:pencil-square', current_route, 'app_daily_notes') }}
+                {{ _self.nav_item('sanctions'|trans({}, 'navigation'), path('app_sanctions_index'), 'heroicons:scale', current_route, 'app_sanctions') }}
 
-            {# Sanciones — todos los docentes con centro activo #}
-            {% if active_centre %}
-                {% set sanctions_active = current_route starts with 'app_sanctions' %}
-                <a href="{{ path('app_sanctions_index') }}"
-                    {{ sanctions_active ? 'aria-current="page"' : '' }}
-                   class="{{ sanctions_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:scale', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'sanctions'|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
+                {# Tareas de sanción — solo para docentes con materia en algún grupo del curso visualizado #}
+                {% if teaches_any_group() %}
+                    {{ _self.nav_item('sanction_tasks'|trans({}, 'navigation'), path('app_sanction_tasks_index'), 'heroicons:clipboard-document-list', current_route, 'app_sanction_tasks') }}
+                {% endif %}
 
-            {# Notificaciones — todos los docentes con centro activo #}
-            {% if active_centre %}
-                {% set notifications_active = current_route starts with 'app_notifications' %}
-                <a href="{{ path('app_notifications_index') }}"
-                    {{ notifications_active ? 'aria-current="page"' : '' }}
-                   class="{{ notifications_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:bell-alert', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'notifications'|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
+                {{ _self.nav_item('notifications'|trans({}, 'navigation'), path('app_notifications_index'), 'heroicons:bell-alert', current_route, 'app_notifications') }}
 
-            {# Ausencias — administradores del centro y docentes del curso visualizado #}
-            {% if active_centre and (is_centre_admin() or belongs_to_view_year()) %}
-                {% set absences_active = current_route starts with 'app_absences' %}
-                <a href="{{ path('app_absences_index') }}"
-                    {{ absences_active ? 'aria-current="page"' : '' }}
-                   class="{{ absences_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:user-minus', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'absences'|trans({}, 'navigation') }}</span>
-                </a>
+                {# Mi tutoría — solo para docentes que tutorizan algún grupo del curso visualizado #}
+                {% if tutors_any_group() %}
+                    {{ _self.nav_item('tutorship'|trans({}, 'navigation'), path('app_tutorship_index'), 'heroicons:academic-cap', current_route, 'app_tutorship') }}
+                {% endif %}
             {% endif %}
-
-            {# Tareas de sanción — solo para docentes con materia en algún grupo del curso visualizado #}
-            {% if active_centre and teaches_any_group() %}
-                {% set sanction_tasks_active = current_route starts with 'app_sanction_tasks' %}
-                <a href="{{ path('app_sanction_tasks_index') }}"
-                    {{ sanction_tasks_active ? 'aria-current="page"' : '' }}
-                   class="{{ sanction_tasks_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon('heroicons:clipboard-document-list', {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ 'sanction_tasks'|trans({}, 'navigation') }}</span>
-                </a>
-            {% endif %}
-
-            {# Calendario #}
-            {{ _self.nav_item(
-                'calendar'|trans({}, 'navigation'),
-                path('app_calendar'),
-                'heroicons:calendar-days',
-                current_route,
-                'app_calendar'
-            ) }}
 
             {# Cambio de sección: las herramientas de gestión (solo equipo directivo y admins) #}
             {% if active_centre and is_granted('educational_centre.section', active_centre) %}
-                <div class="my-3 h-px bg-white/8"></div>
-                <p class="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-wider text-forest-500">{{ 'section.management'|trans({}, 'navigation') }}</p>
+                {{ _self.nav_heading('section.management'|trans({}, 'navigation')) }}
             {% endif %}
 
             {# Informes — solo para equipo directivo y admins #}

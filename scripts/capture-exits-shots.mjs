@@ -177,7 +177,7 @@ await page.locator('main a', { hasText: '1ºESO A' }).first().click();
 await page.waitForLoadState('networkidle');
 await page.fill('input[type="search"]', 'carla');
 await page.waitForTimeout(300);
-check('paso 2: el estudiante que ya está fuera sale marcado «Fuera»', (await page.locator('li:not(.hidden)').innerText()).includes('Fuera'));
+check('paso 2: el estudiante que ya está fuera sale marcado «Fuera»', (await page.locator('li[data-list-filter-target="item"]:not(.hidden)').innerText()).includes('Fuera'));
 await page.locator('li[data-list-filter-target="item"]:not(.hidden) a').click();
 await page.waitForLoadState('networkidle');
 check('paso 3: con una salida abierta el botón está desactivado', await page.locator('button[type="submit"]:has-text("Autorizar salida")').isDisabled());

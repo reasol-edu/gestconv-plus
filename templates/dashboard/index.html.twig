@@ -48,151 +48,57 @@
     {% set can_sanction         = is_granted('sanction.create', active_centre) %}
     {% set can_register_absence = is_centre_admin() or belongs_to_view_year() %}
     {% if not viewing_past %}
-        {# Las tarjetas se reparten solas: tantas columnas como quepan con un mínimo de 17 rem cada una, sea cual sea el número de accesos y el ancho de pantalla. #}
-        {# Mismo orden que el menú lateral: Guardias, Partes, Salidas, Notas, Sanciones, Notificaciones, Ausencias y Tareas de sanción. #}
-        <div id="quick-actions" class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,17rem),1fr))] gap-3">
-            {% if hasGuardsAccess %}
-                <a href="{{ path('app_guards_index') }}"
-                   class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
-                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                        {{ ux_icon('heroicons:shield-check', {class: 'h-6 w-6'}) }}
-                    </span>
-                    <span class="min-w-0">
-                        <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_guards'|trans({}, 'dashboard') }}</span>
-                        <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_guards_help'|trans({}, 'dashboard') }}</span>
-                    </span>
-                </a>
-            {% endif %}
-
-            <a href="{{ path('app_incidents_new') }}"
-               class="flex items-center gap-3 rounded-2xl bg-forest-600 px-5 py-5 text-white shadow-xs hover:bg-forest-700 transition-colors">
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15">
-                    {{ ux_icon('heroicons:document-plus', {class: 'h-6 w-6'}) }}
-                </span>
-                <span class="min-w-0">
-                    <span class="block text-base font-semibold">{{ 'quick_action_new_report'|trans({}, 'dashboard') }}</span>
-                    <span class="block text-xs text-forest-50/90 truncate">{{ 'quick_action_new_report_help'|trans({}, 'dashboard') }}</span>
-                </span>
-            </a>
-
-            <a href="{{ path('app_exits_new') }}"
-               class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-600">
-                    {{ ux_icon('heroicons:arrow-right-on-rectangle', {class: 'h-6 w-6'}) }}
-                </span>
-                <span class="min-w-0">
-                    <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_exit'|trans({}, 'dashboard') }}</span>
-                    <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_exit_help'|trans({}, 'dashboard') }}</span>
-                </span>
-            </a>
-
-            <a href="{{ path('app_daily_notes_new') }}"
-               class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-600">
-                    {{ ux_icon('heroicons:pencil-square', {class: 'h-6 w-6'}) }}
-                </span>
-                <span class="min-w-0">
-                    <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_new_note'|trans({}, 'dashboard') }}</span>
-                    <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_new_note_help'|trans({}, 'dashboard') }}</span>
-                </span>
-            </a>
-
-            {% if can_sanction %}
-                {% if sanctionableCount > 0 %}
-                    <a href="{{ path('app_sanctions_new') }}"
-                       class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
-                        <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
-                            {{ ux_icon('heroicons:scale', {class: 'h-6 w-6'}) }}
-                            <span class="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-xs">
-                                {{ sanctionableCount }}
-                            </span>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_new_sanction'|trans({}, 'dashboard') }}</span>
-                            <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_new_sanction_help'|trans({}, 'dashboard') }}</span>
-                        </span>
-                    </a>
-                {% else %}
-                    <div class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 opacity-60" aria-disabled="true">
-                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-200 text-gray-400">
-                            {{ ux_icon('heroicons:scale', {class: 'h-6 w-6'}) }}
-                        </span>
-                        <span class="min-w-0">
-                            <span class="block text-base font-semibold text-gray-500">{{ 'quick_action_new_sanction'|trans({}, 'dashboard') }}</span>
-                            <span class="block text-xs text-gray-400 truncate">{{ 'quick_action_new_sanction_none'|trans({}, 'dashboard') }}</span>
-                        </span>
-                    </div>
-                {% endif %}
-            {% endif %}
-
-            {% set has_pending_notify = pendingQueue.total > 0 %}
-            {% if has_pending_notify %}
-                <a href="{{ path('app_notifications_index') }}"
-                   class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
-                    <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                        {{ ux_icon('heroicons:bell-alert', {class: 'h-6 w-6'}) }}
-                        <span class="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-xs">
-                            {{ pendingQueue.total }}
-                        </span>
-                    </span>
-                    <span class="min-w-0">
-                        <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_notify'|trans({}, 'dashboard') }}</span>
-                        <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_notify_help'|trans({}, 'dashboard') }}</span>
-                    </span>
-                </a>
-            {% else %}
-                <div class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 opacity-60" aria-disabled="true">
-                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-200 text-gray-400">
-                        {{ ux_icon('heroicons:bell-alert', {class: 'h-6 w-6'}) }}
-                    </span>
-                    <span class="min-w-0">
-                        <span class="block text-base font-semibold text-gray-500">{{ 'quick_action_notify'|trans({}, 'dashboard') }}</span>
-                        <span class="block text-xs text-gray-400 truncate">{{ 'quick_action_notify_none'|trans({}, 'dashboard') }}</span>
-                    </span>
+        {# Dos bloques con los mismos títulos y el mismo orden que el menú lateral. Se reparten solos en columnas: dos baldosas compactas por fila en el móvil y tantas tarjetas anchas como quepan (mínimo 17 rem, todas del mismo ancho en los dos bloques) en pantallas mayores. #}
+        {% set grid_classes = 'grid grid-cols-2 gap-2.5 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] sm:gap-3' %}
+        <div id="quick-actions" class="space-y-5">
+            <section aria-labelledby="quick-daily-title">
+                <h2 id="quick-daily-title" class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'quick_actions.daily'|trans({}, 'dashboard') }}</h2>
+                <div class="{{ grid_classes }}">
+                    {% include 'dashboard/_quick_action.html.twig' with {url: path('app_exits_new'), icon: 'heroicons:arrow-right-on-rectangle', label: 'quick_action_exit'|trans({}, 'dashboard'), help: 'quick_action_exit_help'|trans({}, 'dashboard'), tone: 'primary'} only %}
+                    {% if hasGuardsAccess %}
+                        {% include 'dashboard/_quick_action.html.twig' with {url: path('app_guards_index'), icon: 'heroicons:shield-check', label: 'quick_action_guards'|trans({}, 'dashboard'), help: 'quick_action_guards_help'|trans({}, 'dashboard'), tone: 'blue'} only %}
+                    {% endif %}
+                    {% if can_register_absence %}
+                        {% include 'dashboard/_quick_action.html.twig' with {url: path('app_absences_new'), icon: 'heroicons:user-minus', label: 'quick_action_new_absence'|trans({}, 'dashboard'), help: (is_centre_admin() ? 'quick_action_new_absence_help_admin' : 'quick_action_new_absence_help_self')|trans({}, 'dashboard'), tone: 'blue'} only %}
+                    {% endif %}
                 </div>
-            {% endif %}
+            </section>
 
-            {% if can_register_absence %}
-                <a href="{{ path('app_absences_new') }}"
-                   class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
-                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                        {{ ux_icon('heroicons:user-minus', {class: 'h-6 w-6'}) }}
-                    </span>
-                    <span class="min-w-0">
-                        <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_new_absence'|trans({}, 'dashboard') }}</span>
-                        <span class="block text-xs text-gray-500 truncate">{{ (is_centre_admin() ? 'quick_action_new_absence_help_admin' : 'quick_action_new_absence_help_self')|trans({}, 'dashboard') }}</span>
-                    </span>
-                </a>
-            {% endif %}
-
-            {% if hasTeachingGroups %}
-                {% if pendingSanctionTasksCount > 0 %}
-                    <a href="{{ path('app_sanction_tasks_index') }}"
-                       class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
-                        <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                            {{ ux_icon('heroicons:clipboard-document-list', {class: 'h-6 w-6'}) }}
-                            <span class="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-xs">
-                                {{ pendingSanctionTasksCount }}
-                            </span>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="block text-base font-semibold text-gray-900">{{ 'quick_action_pending_tasks'|trans({}, 'dashboard') }}</span>
-                            <span class="block text-xs text-gray-500 truncate">{{ 'quick_action_pending_tasks_help'|trans({}, 'dashboard') }}</span>
-                        </span>
-                    </a>
-                {% else %}
-                    <div class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-5 opacity-60" aria-disabled="true">
-                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-200 text-gray-400">
-                            {{ ux_icon('heroicons:clipboard-document-list', {class: 'h-6 w-6'}) }}
-                        </span>
-                        <span class="min-w-0">
-                            <span class="block text-base font-semibold text-gray-500">{{ 'quick_action_pending_tasks'|trans({}, 'dashboard') }}</span>
-                            <span class="block text-xs text-gray-400 truncate">{{ 'quick_action_pending_tasks_none'|trans({}, 'dashboard') }}</span>
-                        </span>
-                    </div>
-                {% endif %}
-            {% endif %}
-
+            <section aria-labelledby="quick-conduct-title">
+                <h2 id="quick-conduct-title" class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'quick_actions.conduct'|trans({}, 'dashboard') }}</h2>
+                <div class="{{ grid_classes }}">
+                    {% include 'dashboard/_quick_action.html.twig' with {url: path('app_incidents_new'), icon: 'heroicons:document-plus', label: 'quick_action_new_report'|trans({}, 'dashboard'), help: 'quick_action_new_report_help'|trans({}, 'dashboard'), tone: 'primary'} only %}
+                    {% include 'dashboard/_quick_action.html.twig' with {url: path('app_daily_notes_new'), icon: 'heroicons:pencil-square', label: 'quick_action_new_note'|trans({}, 'dashboard'), help: 'quick_action_new_note_help'|trans({}, 'dashboard'), tone: 'forest'} only %}
+                    {% if can_sanction %}
+                        {% include 'dashboard/_quick_action.html.twig' with {
+                            url: sanctionableCount > 0 ? path('app_sanctions_new') : null,
+                            icon: 'heroicons:scale',
+                            label: 'quick_action_new_sanction'|trans({}, 'dashboard'),
+                            help: (sanctionableCount > 0 ? 'quick_action_new_sanction_help' : 'quick_action_new_sanction_none')|trans({}, 'dashboard'),
+                            tone: 'red',
+                            badge: sanctionableCount
+                        } only %}
+                    {% endif %}
+                    {% if hasTeachingGroups %}
+                        {% include 'dashboard/_quick_action.html.twig' with {
+                            url: pendingSanctionTasksCount > 0 ? path('app_sanction_tasks_index') : null,
+                            icon: 'heroicons:clipboard-document-list',
+                            label: 'quick_action_pending_tasks'|trans({}, 'dashboard'),
+                            help: (pendingSanctionTasksCount > 0 ? 'quick_action_pending_tasks_help' : 'quick_action_pending_tasks_none')|trans({}, 'dashboard'),
+                            tone: 'amber',
+                            badge: pendingSanctionTasksCount
+                        } only %}
+                    {% endif %}
+                    {% include 'dashboard/_quick_action.html.twig' with {
+                        url: pendingQueue.total > 0 ? path('app_notifications_index') : null,
+                        icon: 'heroicons:bell-alert',
+                        label: 'quick_action_notify'|trans({}, 'dashboard'),
+                        help: (pendingQueue.total > 0 ? 'quick_action_notify_help' : 'quick_action_notify_none')|trans({}, 'dashboard'),
+                        tone: 'amber',
+                        badge: pendingQueue.total
+                    } only %}
+                </div>
+            </section>
         </div>
     {% endif %}
 

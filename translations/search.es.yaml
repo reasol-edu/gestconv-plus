@@ -8,5 +8,7 @@ groups:
 actions:
     new_incident: 'Nuevo parte'
     new_exit: 'Autorizar salida'
+    exits: 'Ver quién está fuera'
+    new_note: 'Nueva nota'
     notifications: 'Ir a notificaciones'
     change_year: 'Cambiar de curso'
