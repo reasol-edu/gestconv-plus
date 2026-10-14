@@ -171,7 +171,10 @@ class DashboardControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('#quick-actions a[href$="/sanciones/nueva"]'));
-        self::assertStringContainsString('No hay partes pendientes de sancionar', $crawler->filter('#quick-actions [aria-disabled="true"]')->last()->text());
+        self::assertStringContainsString(
+            'No hay partes pendientes de sancionar',
+            implode(' ', $crawler->filter('#quick-actions [aria-disabled="true"]')->each(static fn ($node): string => $node->text())),
+        );
     }
 
     public function testQuickActionsShowNewSanctionButtonForCentreAdminWhenReportsArePendingSanction(): void
