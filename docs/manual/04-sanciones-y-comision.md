@@ -39,7 +39,8 @@ El registro tiene dos pasos:
 1. **Seleccionar al estudiante** — pulsa **Nueva sanción**. El buscador filtra en vivo mientras
    se escribe y la tabla muestra, para cada estudiante, cuántos partes sancionables tiene (ya
    comunicados a la familia y sin sanción), cuántos incluyen conductas graves y cuántos han
-   prescrito.
+   prescrito. El listado se ordena poniendo primero a quienes tienen más partes graves y, en caso
+   de empate, a quienes tienen más partes sancionables.
 
    ![Buscador de alumnado con partes sancionables](img/sanciones/sanciones-buscar-alumno.png)
 
