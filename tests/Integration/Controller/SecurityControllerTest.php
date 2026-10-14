@@ -20,6 +20,15 @@ class SecurityControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testLoginPageShowsTheVersionNextToTheNameInTheSmallScreenHeader(): void
+    {
+        $this->client->request('GET', '/login');
+
+        $version = 'v' . self::getContainer()->getParameter('app.version');
+        // La cabecera compacta (la que se ve por debajo de «lg») lleva el nombre y la versión juntos.
+        self::assertStringContainsString($version, $this->client->getCrawler()->filter('div.lg\:hidden')->first()->text());
+    }
+
     public function testLoginPageRendersUsernameAndPasswordFields(): void
     {
         $this->client->request('GET', '/login');
