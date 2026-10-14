@@ -129,9 +129,9 @@ sanciones (ver [Permisos de un vistazo](08-permisos-de-un-vistazo.md)).
 
 ## Catálogos del centro
 
-Al crear el centro se configuran automáticamente cuatro catálogos con valores por defecto,
+Al crear el centro se configuran automáticamente seis catálogos con valores por defecto,
 pensados para empezar a trabajar sin más preparación. Conviene revisarlos al menos una vez y
-adaptarlos al plan de convivencia del centro. Los cuatro comparten la misma mecánica: cada
+adaptarlos al plan de convivencia del centro. Los seis comparten la misma mecánica: cada
 elemento se puede **activar o desactivar** (solo los activos aparecen en los formularios), se
 reordena con las flechas, y se puede editar o eliminar.
 
@@ -191,15 +191,27 @@ antes de esta funcionalidad los reciben automáticamente al actualizar.
 Un tipo que ya se ha usado en alguna nota no se puede eliminar (aparece un aviso); desactívalo en
 su lugar.
 
+### Motivos de salida del aula
+
+En **Centro educativo › Motivos de salida del aula** se configura la lista —plana, sin
+categorías— de destinos entre los que el profesorado elige al
+[autorizar una salida](03-el-trabajo-diario.md#salidas). Los 9 motivos por defecto son: Servicio,
+Fuente, Conserjería, Departamentos, Carro portátiles, Secretaría, Jefat. de Estudios, Dirección y
+Otros; los centros que ya existían antes de esta funcionalidad los reciben automáticamente al
+actualizar.
+
+Un motivo que ya se ha usado en alguna salida no se puede eliminar (aparece un aviso); desactívalo
+en su lugar.
+
 ### Copiar catálogos entre centros
 
-Los cinco catálogos incluyen botones **Exportar configuración** e **Importar configuración**
+Los seis catálogos incluyen botones **Exportar configuración** e **Importar configuración**
 para copiar la configuración de un centro a otro: la exportación descarga un fichero con los elementos y sus
 categorías, y la importación lo vuelve a cargar, creando lo que no exista y actualizando el resto
 por nombre (sin distinguir mayúsculas). Al importar se puede marcar la opción de **vaciar el
 catálogo existente** antes de incorporar el fichero; esta acción no se puede deshacer (los
 elementos ya usados —métodos de comunicación en alguna comunicación, tipos de nota en alguna
-nota— se conservan aunque se marque).
+nota, motivos de salida en alguna salida— se conservan aunque se marque).
 
 ## Ajustes del centro
 

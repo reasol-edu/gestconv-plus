@@ -118,6 +118,7 @@ Sin ningún rol especial, todo docente puede:
 
 - **Registrar partes de convivencia** de los estudiantes de sus grupos.
 - **Registrar notas diarias** (retraso, uso del móvil…) sin necesidad de un parte formal.
+- **Autorizar salidas del aula** desde el móvil y controlar quién está fuera.
 - Consultar y filtrar **los partes que él mismo ha registrado**.
 - **Notificar a la familia** los partes cuyo aviso le corresponde (según el
   ajuste "quién notifica" del centro).
@@ -164,6 +165,23 @@ incidente los afecta conjuntamente.
   por tipo, sin más — quien registra el parte al alcanzar el umbral es el
   tutor/a del grupo o administración, desde la pestaña **Listado de
   estudiantes**, no cualquier docente.
+
+---
+
+## Salidas del aula: quién está fuera ahora
+
+- Sección **Salidas**, pensada para el **móvil**: el botón **Autorizar
+  salida** queda fijo abajo y también está en la pantalla de inicio.
+- Tres toques: **grupo** (primero los tuyos) → **estudiante** → **motivo**
+  (cuadrícula de botones, configurable por el centro) y, si quieres, una
+  observación.
+- La pantalla muestra **en tiempo real** quién está fuera, con "Hace 12
+  minutos"; a partir de los **10 minutos** el tiempo se pone ámbar, naranja y
+  rojo.
+- Tus salidas van aparte y primero, con el botón **Ha regresado**; en las de
+  otros solo lo tienen tutores del grupo, dirección y administración.
+- El distintivo **PASE** marca a los estudiantes con **pase prioritario**
+  (justificación visible al autorizar su salida).
 
 ---
 

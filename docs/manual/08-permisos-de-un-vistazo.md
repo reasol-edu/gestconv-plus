@@ -113,6 +113,24 @@ visibilidad que la [tabla de Sanciones](#sanciones) — pero sin dar acceso al c
 tareas de otros docentes, que sigue siendo exclusivo de quien la tiene asignada. **Refrescar
 materias** exige además el permiso de edición sobre la sanción, igual que registrar o eliminarla.
 
+## Salidas
+
+Las [salidas del aula](03-el-trabajo-diario.md#salidas) las autoriza cualquier docente del
+centro. Quién puede registrar el regreso o gestionar el pase prioritario depende del perfil.
+
+| Acción | Docente | Tutor/a del grupo | Comisión | Orientador/a | Admin de centro | Admin global |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Autorizar una salida | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Ver quién está fuera ahora | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Marcar «Ha regresado» en una salida que ha autorizado él mismo | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Marcar «Ha regresado» en la salida de otro docente | — | ✓ (su grupo) | — | — | ✓ | ✓ |
+| Ver el historial de salidas de un estudiante en su ficha | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Ver y filtrar todas las salidas del curso (pestaña Historial) | — | — | — | — | ✓ | ✓ |
+| Conceder, modificar o retirar el pase prioritario | — | — | — | — | ✓ | ✓ |
+| Configurar los motivos de salida | — | — | — | — | ✓ | ✓ |
+
+Las altas, los regresos y los cambios en el pase prioritario quedan en el registro de actividad.
+
 ## Guardias
 
 Las [guardias](03-el-trabajo-diario.md#guardias) muestran, para el tramo horario y día
