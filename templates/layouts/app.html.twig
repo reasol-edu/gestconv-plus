@@ -10,6 +10,7 @@
      data-command-palette-url-value="{{ path('app_search') }}"
      data-command-palette-actions-value="{{ [
          {label: 'actions.new_incident'|trans({}, 'search'), url: path('app_incidents_new')},
+         {label: 'actions.new_exit'|trans({}, 'search'), url: path('app_exits_new')},
          {label: 'actions.notifications'|trans({}, 'search'), url: path('app_notifications_index')},
          {label: 'actions.change_year'|trans({}, 'search'), url: path('app_select_year_page')},
      ]|json_encode }}"
@@ -153,6 +154,18 @@
                           group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
                     {{ ux_icon('heroicons:pencil-square', {class: 'h-5 w-5 shrink-0'}) }}
                     <span class="truncate">{{ 'daily_notes'|trans({}, 'navigation') }}</span>
+                </a>
+            {% endif %}
+
+            {# Salidas — todos los docentes con centro activo #}
+            {% if active_centre %}
+                {% set exits_active = current_route starts with 'app_exits' %}
+                <a href="{{ path('app_exits_index') }}"
+                    {{ exits_active ? 'aria-current="page"' : '' }}
+                   class="{{ exits_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
+                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+                    {{ ux_icon('heroicons:arrow-right-on-rectangle', {class: 'h-5 w-5 shrink-0'}) }}
+                    <span class="truncate">{{ 'exits'|trans({}, 'navigation') }}</span>
                 </a>
             {% endif %}
 

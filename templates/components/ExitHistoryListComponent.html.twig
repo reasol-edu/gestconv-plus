@@ -1,0 +1,163 @@
+{% import 'components/_pagination_live.html.twig' as pager %}
+{% import 'components/_sort_header.html.twig' as sh %}
+{% import 'exit/_macros.html.twig' as ex %}
+<div {{ attributes }}>
+    {% set pagination = this.pagination %}
+    {% set passes = this.passesFor(pagination.items) %}
+
+    <div class="space-y-3 border-b border-gray-100 bg-gray-50/50 px-4 py-3 sm:px-6">
+        <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                {{ ux_icon('heroicons:magnifying-glass', {class: 'h-4 w-4 text-gray-400'}) }}
+            </div>
+            <input type="search"
+                   data-model="norender|search"
+                   data-action="input->live#action"
+                   data-live-action-param="resetPage"
+                   placeholder="{{ 'exit.history.search'|trans({}, 'admin') }}"
+                   value="{{ search }}"
+                   class="block min-h-11 w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400
+                          focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+        </div>
+
+        <details class="group" {{ (groupId or reasonId or teacherId or status or from or to) ? 'open' : '' }}>
+            <summary class="flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-forest-700">
+                {{ ux_icon('heroicons:funnel', {class: 'h-4 w-4'}) }}
+                {{ 'exit.history.more_filters'|trans({}, 'admin') }}
+            </summary>
+            <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {% set select_class = 'block min-h-11 w-full rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors' %}
+
+                <select data-model="norender|groupId" data-action="change->live#action" data-live-action-param="resetPage"
+                        aria-label="{{ 'exit.history.filter.group'|trans({}, 'admin') }}" class="{{ select_class }}">
+                    <option value="">{{ 'exit.history.filter.group'|trans({}, 'admin') }}</option>
+                    {% for group in this.groups %}
+                        <option value="{{ group.id.toRfc4122 }}" {{ groupId == group.id.toRfc4122 ? 'selected' : '' }}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <select data-model="norender|reasonId" data-action="change->live#action" data-live-action-param="resetPage"
+                        aria-label="{{ 'exit.history.filter.reason'|trans({}, 'admin') }}" class="{{ select_class }}">
+                    <option value="">{{ 'exit.history.filter.reason'|trans({}, 'admin') }}</option>
+                    {% for reason in this.reasons %}
+                        <option value="{{ reason.id.toRfc4122 }}" {{ reasonId == reason.id.toRfc4122 ? 'selected' : '' }}>{{ reason.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <select data-model="norender|teacherId" data-action="change->live#action" data-live-action-param="resetPage"
+                        aria-label="{{ 'exit.history.filter.teacher'|trans({}, 'admin') }}" class="{{ select_class }}">
+                    <option value="">{{ 'exit.history.filter.teacher'|trans({}, 'admin') }}</option>
+                    {% for teacher in this.teachers %}
+                        <option value="{{ teacher.id.toRfc4122 }}" {{ teacherId == teacher.id.toRfc4122 ? 'selected' : '' }}>{{ teacher.name.lastName }}, {{ teacher.name.firstName }}</option>
+                    {% endfor %}
+                </select>
+
+                <select data-model="norender|status" data-action="change->live#action" data-live-action-param="resetPage"
+                        aria-label="{{ 'exit.history.filter.status'|trans({}, 'admin') }}" class="{{ select_class }}">
+                    <option value="">{{ 'exit.history.filter.status'|trans({}, 'admin') }}</option>
+                    <option value="out" {{ status == 'out' ? 'selected' : '' }}>{{ 'exit.history.status.out'|trans({}, 'admin') }}</option>
+                    <option value="returned" {{ status == 'returned' ? 'selected' : '' }}>{{ 'exit.history.status.returned'|trans({}, 'admin') }}</option>
+                </select>
+
+                <label class="flex items-center gap-2 text-sm text-gray-600">
+                    <span class="w-14 shrink-0">{{ 'exit.history.filter.from'|trans({}, 'admin') }}</span>
+                    <input type="date" data-model="norender|from" data-action="change->live#action" data-live-action-param="resetPage"
+                           value="{{ from }}" class="{{ select_class }}">
+                </label>
+                <label class="flex items-center gap-2 text-sm text-gray-600">
+                    <span class="w-14 shrink-0">{{ 'exit.history.filter.to'|trans({}, 'admin') }}</span>
+                    <input type="date" data-model="norender|to" data-action="change->live#action" data-live-action-param="resetPage"
+                           value="{{ to }}" class="{{ select_class }}">
+                </label>
+            </div>
+        </details>
+
+        {% if this.hasActiveFilters %}
+            <button type="button" data-action="live#action" data-live-action-param="clearFilters"
+                    class="text-sm font-medium text-gray-500 underline hover:text-gray-700">
+                {{ 'exit.history.clear'|trans({}, 'admin') }}
+            </button>
+        {% endif %}
+    </div>
+
+    {% if pagination.totalItems == 0 %}
+        <div class="px-6 py-12 text-center">
+            <p class="text-sm text-gray-400">{{ 'exit.history.empty'|trans({}, 'admin') }}</p>
+        </div>
+    {% else %}
+        {# Móvil: tarjetas #}
+        <ul class="divide-y divide-gray-100 lg:hidden">
+            {% for exit in pagination.items %}
+                <li class="space-y-1 px-4 py-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <p class="text-sm font-semibold text-gray-900">
+                            {{ exit.student.name.lastName }}, {{ exit.student.name.firstName }}
+                            {% if passes[exit.student.id.toRfc4122] is defined %}{{ ex.pass_badge() }}{% endif %}
+                            <span class="font-normal text-gray-500">· {{ exit.group.name }}</span>
+                        </p>
+                        {% if exit.returned %}
+                            <span class="shrink-0 text-sm font-semibold tabular-nums text-gray-700">{{ exit_duration(exit_seconds(exit)) }}</span>
+                        {% else %}
+                            {{ ex.timer(exit) }}
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-gray-700">{{ exit.reason.name }} · {{ ex.exit_time(exit) }}
+                        {% if exit.returned %}→ <span class="tabular-nums">{{ exit.returnedAt|date('H:i') }}</span>{% endif %}</p>
+                    <p class="text-xs text-gray-500">{{ exit.authorizedBy.name.full }}</p>
+                    {% if exit.observations %}<p class="text-sm text-gray-500">{{ exit.observations }}</p>{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        {# Pantallas anchas: tabla ordenable #}
+        <div class="hidden overflow-x-auto lg:block">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        {{ sh.th('exit.field.student'|trans({}, 'admin'), 'student', sort, sortDir) }}
+                        {{ sh.th('exit.field.group'|trans({}, 'admin'), 'group', sort, sortDir) }}
+                        {{ sh.th('exit.field.reason'|trans({}, 'admin'), 'reason', sort, sortDir) }}
+                        {{ sh.th('exit.field.teacher'|trans({}, 'admin'), 'teacher', sort, sortDir) }}
+                        {{ sh.th('exit.field.left_at'|trans({}, 'admin'), 'exitedAt', sort, sortDir) }}
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'exit.field.returned_at'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'exit.field.time_out'|trans({}, 'admin') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for exit in pagination.items %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-3 font-medium text-gray-900">
+                                <a href="{{ path('app_students_show', {id: exit.student.id}) }}" class="hover:text-forest-700 hover:underline">{{ exit.student.name.lastName }}, {{ exit.student.name.firstName }}</a>
+                                {% if passes[exit.student.id.toRfc4122] is defined %}{{ ex.pass_badge() }}{% endif %}
+                            </td>
+                            <td class="px-6 py-3 text-gray-700">{{ exit.group.name }}</td>
+                            <td class="px-6 py-3 text-gray-900">
+                                {{ exit.reason.name }}
+                                {% if exit.observations %}<span class="block text-xs text-gray-500">{{ exit.observations }}</span>{% endif %}
+                            </td>
+                            <td class="px-6 py-3 text-gray-700">{{ exit.authorizedBy.name.full }}</td>
+                            <td class="px-6 py-3 text-gray-900">{{ ex.exit_time(exit) }}</td>
+                            <td class="px-6 py-3 text-gray-700">
+                                {% if exit.returned %}
+                                    <span class="tabular-nums">{{ exit.returnedAt|date('H:i') }}</span>
+                                    {% if exit.returnedBy %}<span class="block text-xs text-gray-500">{{ exit.returnedBy.name.full }}</span>{% endif %}
+                                {% else %}
+                                    <span class="text-gray-400">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-3 text-right">
+                                {% if exit.returned %}
+                                    <span class="font-semibold tabular-nums text-gray-800">{{ exit_duration(exit_seconds(exit)) }}</span>
+                                {% else %}
+                                    {{ ex.timer(exit) }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {{ pager.nav(pagination) }}
+    {% endif %}
+</div>

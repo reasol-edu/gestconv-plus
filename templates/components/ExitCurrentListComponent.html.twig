@@ -1,0 +1,83 @@
+{% import 'exit/_macros.html.twig' as ex %}
+<div {{ attributes }} data-poll="delay(5000)|$render" class="space-y-6">
+    {% set mine = this.mine %}
+    {% set others = this.others %}
+    {% set passes = this.passes %}
+
+    {% macro card(exit, passes, canReturn, highlight) %}
+        {% import 'exit/_macros.html.twig' as ex %}
+        {% set student = exit.student %}
+        <article class="flex flex-col gap-3 rounded-2xl border p-4 shadow-xs {{ highlight ? 'border-forest-300 bg-forest-50/60' : 'border-gray-200 bg-white' }}">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="text-base font-semibold leading-tight text-gray-900">
+                        <a href="{{ path('app_students_show', {id: student.id}) }}" class="hover:text-forest-700 hover:underline">{{ student.name.lastName }}, {{ student.name.firstName }}</a>
+                        {% if passes[student.id.toRfc4122] is defined %}{{ ex.pass_badge() }}{% endif %}
+                    </p>
+                    <p class="mt-0.5 text-sm text-gray-500">{{ exit.group.name }}</p>
+                </div>
+                {{ ex.timer(exit) }}
+            </div>
+
+            <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                <dt class="text-gray-500">{{ 'exit.field.reason'|trans({}, 'admin') }}</dt>
+                <dd class="font-medium text-gray-900">{{ exit.reason.name }}</dd>
+                <dt class="text-gray-500">{{ 'exit.field.left_at'|trans({}, 'admin') }}</dt>
+                <dd class="text-gray-900">{{ ex.exit_time(exit) }}</dd>
+                <dt class="text-gray-500">{{ 'exit.field.teacher'|trans({}, 'admin') }}</dt>
+                <dd class="text-gray-900">{{ exit.authorizedBy.name.full }}</dd>
+            </dl>
+
+            {% if exit.observations %}
+                <p class="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">{{ exit.observations }}</p>
+            {% endif %}
+
+            {% if canReturn %}
+                <button type="button"
+                        data-action="live#action"
+                        data-live-action-param="markReturned"
+                        data-live-id-param="{{ exit.id.toRfc4122 }}"
+                        class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl {{ highlight ? 'bg-forest-600 text-white hover:bg-forest-700' : 'border border-forest-300 bg-white text-forest-700 hover:bg-forest-50' }}
+                               px-4 py-3 text-base font-semibold transition-colors">
+                    {{ ux_icon('heroicons:arrow-uturn-left', {class: 'h-5 w-5'}) }}
+                    {{ 'exit.returned_button'|trans({}, 'admin') }}
+                </button>
+            {% endif %}
+        </article>
+    {% endmacro %}
+
+    {% if mine is empty and others is empty %}
+        <div class="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
+            {{ ux_icon('heroicons:check-circle', {class: 'mx-auto h-10 w-10 text-forest-300 mb-3'}) }}
+            <p class="text-sm text-gray-500">{{ 'exit.empty'|trans({}, 'admin') }}</p>
+        </div>
+    {% else %}
+        {% if mine is not empty %}
+            <section aria-labelledby="exit-mine-title">
+                <h2 id="exit-mine-title" class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-forest-800">
+                    {{ 'exit.mine.title'|trans({}, 'admin') }}
+                    <span class="rounded-full bg-forest-600 px-2 py-0.5 text-xs font-bold text-white">{{ mine|length }}</span>
+                </h2>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {% for exit in mine %}
+                        {{ _self.card(exit, passes, this.canReturn(exit), true) }}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if others is not empty %}
+            <section aria-labelledby="exit-others-title">
+                <h2 id="exit-others-title" class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-600">
+                    {{ (mine is empty ? 'exit.all.title' : 'exit.others.title')|trans({}, 'admin') }}
+                    <span class="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-bold text-gray-700">{{ others|length }}</span>
+                </h2>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {% for exit in others %}
+                        {{ _self.card(exit, passes, this.canReturn(exit), false) }}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    {% endif %}
+</div>

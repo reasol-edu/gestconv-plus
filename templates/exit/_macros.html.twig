@@ -1,0 +1,28 @@
+{#
+   Piezas compartidas por las pantallas de salidas.
+   - pass_badge: distintivo «PASE» de un estudiante con pase prioritario.
+   - timer: tiempo que lleva fuera; el navegador va sumando segundos desde la cifra del servidor
+     (controlador exit-timer) y cambia de color a partir de los 10 minutos.
+   - exit_time: hora de salida, con la fecha si no es de hoy.
+#}
+{% macro pass_badge() %}
+    <span class="inline-flex items-center rounded-md bg-violet-100 px-1.5 py-0.5 align-middle text-[11px] font-bold tracking-wide text-violet-800"
+          title="{{ 'priority_pass.badge_title'|trans({}, 'admin') }}">{{ 'priority_pass.badge'|trans({}, 'admin') }}</span>
+{% endmacro %}
+
+{% macro timer(exit) %}
+    {% set seconds = exit_seconds(exit) %}
+    {% set level_classes = ['bg-gray-100 text-gray-700', 'bg-amber-100 text-amber-800', 'bg-orange-200 text-orange-900', 'bg-red-600 text-white'] %}
+    <span data-controller="exit-timer"
+          data-exit-timer-seconds-value="{{ seconds }}"
+          data-exit-timer-labels-value="{{ exit_labels() }}"
+          data-exit-timer-thresholds-value="{{ exit_thresholds() }}"
+          class="inline-flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1 text-sm font-semibold tabular-nums {{ level_classes[exit_level(seconds)] }}">
+        {{ ux_icon('heroicons:clock', {class: 'h-4 w-4 shrink-0'}) }}
+        <span data-exit-timer-target="ago">{{ exit_ago(seconds) }}</span>
+    </span>
+{% endmacro %}
+
+{% macro exit_time(exit) %}
+    <span class="tabular-nums">{{ exit.exitedAt|date('H:i') }}</span>{% if not exit_is_today(exit.exitedAt) %} <span class="text-gray-500">· {{ exit.exitedAt|date('d/m/Y') }}</span>{% endif %}
+{% endmacro %}

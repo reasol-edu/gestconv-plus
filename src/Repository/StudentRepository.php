@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
+use App\Entity\Group;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -137,6 +138,26 @@ class StudentRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('s')
             ->where('1 = 0')
             ->getQuery();
+    }
+
+    /**
+     * Estudiantes del grupo ordenados por apellidos y nombre.
+     *
+     * @return list<Student>
+     */
+    public function findByGroupOrdered(Group $group): array
+    {
+        /** @var list<Student> $result */
+        $result = $this->createQueryBuilder('s')
+            ->join('s.groups', 'g')
+            ->where('g = :group')
+            ->setParameter('group', $group->getId(), 'uuid')
+            ->orderBy('s.name.lastName', 'ASC')
+            ->addOrderBy('s.name.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
     }
 
     public function findById(string $id): ?Student

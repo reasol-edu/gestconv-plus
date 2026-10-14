@@ -1,0 +1,61 @@
+{% extends 'layouts/app.html.twig' %}
+{% import 'exit/_macros.html.twig' as ex %}
+
+{% block title %}{{ group.name }} · {{ 'exit.authorize'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl space-y-5 px-4 py-6 sm:px-6 sm:py-8"
+     data-controller="list-filter">
+
+    <div>
+        <a href="{{ path('app_exits_new') }}" class="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-gray-500 hover:text-forest-700">
+            {{ ux_icon('heroicons:chevron-left', {class: 'h-4 w-4'}) }}
+            {{ 'exit.new.groups'|trans({}, 'admin') }}
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">{{ group.name }}</h1>
+        <p class="mt-1 text-sm text-gray-500">{{ 'exit.new.step_student'|trans({}, 'admin') }}</p>
+    </div>
+
+    {% if students is not empty %}
+        <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                {{ ux_icon('heroicons:magnifying-glass', {class: 'h-5 w-5 text-gray-400'}) }}
+            </div>
+            <input type="search" inputmode="search" autocomplete="off"
+                   data-list-filter-target="input"
+                   data-action="input->list-filter#filter"
+                   placeholder="{{ 'exit.new.filter_students'|trans({}, 'admin') }}"
+                   aria-label="{{ 'exit.new.filter_students'|trans({}, 'admin') }}"
+                   class="block min-h-12 w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-3 text-base text-gray-900 placeholder-gray-400
+                          focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+        </div>
+    {% endif %}
+
+    <ul class="space-y-2">
+        {% for student in students %}
+            {% set sid = student.id.toRfc4122 %}
+            <li data-list-filter-target="item" data-text="{{ student.name.lastName }} {{ student.name.firstName }}">
+                <a href="{{ path('app_exits_new', {groupId: group.id, studentId: student.id}) }}"
+                   class="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-xs transition-colors
+                          hover:border-forest-300 hover:bg-forest-50 active:bg-forest-100">
+                    <span class="min-w-0 text-base font-medium text-gray-900">
+                        {{ student.name.lastName }}, {{ student.name.firstName }}
+                        {% if passes[sid] is defined %}{{ ex.pass_badge() }}{% endif %}
+                    </span>
+                    {% if outNow[sid] is defined %}
+                        <span class="shrink-0 rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">{{ 'exit.new.out_now'|trans({}, 'admin') }}</span>
+                    {% else %}
+                        {{ ux_icon('heroicons:chevron-right', {class: 'h-5 w-5 shrink-0 text-gray-300'}) }}
+                    {% endif %}
+                </a>
+            </li>
+        {% else %}
+            <li class="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-10 text-center text-sm text-gray-500">{{ 'exit.new.no_students'|trans({}, 'admin') }}</li>
+        {% endfor %}
+    </ul>
+
+    <p data-list-filter-target="empty" class="hidden rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-8 text-center text-sm text-gray-500">
+        {{ 'exit.new.no_match'|trans({}, 'admin') }}
+    </p>
+</div>
+{% endblock %}

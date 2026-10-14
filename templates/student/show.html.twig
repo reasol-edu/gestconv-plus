@@ -1,4 +1,5 @@
 {% extends 'layouts/app.html.twig' %}
+{% import 'exit/_macros.html.twig' as ex %}
 
 {% block title %}{{ student.name.lastName }}, {{ student.name.firstName }} · {{ centre.name }} · {{ app_name }}{% endblock %}
 
@@ -26,6 +27,7 @@
             <p class="text-sm text-gray-500 mb-1">{{ 'student.show.title'|trans({}, 'admin') }}</p>
             <h1 class="text-2xl font-bold text-gray-900">
                 {{ student.name.lastName }}, {{ student.name.firstName }}
+                {% if priorityPass %}{{ ex.pass_badge() }}{% endif %}
             </h1>
             <p class="mt-1 text-sm text-gray-500">
                 {{ student.studentId }}
@@ -103,6 +105,55 @@
             {% endif %}
         </div>
     {% endif %}
+
+    {# ── Pase prioritario (curso actual) ───────────────────────────────────── #}
+    {% if academicYear is not null and (priorityPass or canManagePass) %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+            <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-6 py-3.5">
+                <h2 class="text-sm font-semibold text-gray-800">{{ 'priority_pass.section_title'|trans({}, 'admin') }}</h2>
+                {% if priorityPass %}{{ ex.pass_badge() }}{% endif %}
+            </div>
+            {% if canManagePass %}
+                <form method="post" action="{{ path('app_students_priority_pass_save', {id: student.id}) }}" class="space-y-3 px-6 py-4">
+                    <input type="hidden" name="_token" value="{{ csrf_token('priority_pass_' ~ student.id.toRfc4122) }}">
+                    <p class="text-xs text-gray-500">{{ 'priority_pass.section_help'|trans({}, 'admin') }}</p>
+                    <label for="pass-description" class="block text-sm font-medium text-gray-700">{{ 'priority_pass.field.description'|trans({}, 'admin') }}</label>
+                    <textarea id="pass-description" name="description" rows="3" maxlength="1000" required
+                              class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900
+                                     focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">{{ priorityPass ? priorityPass.description : '' }}</textarea>
+                    <div class="flex flex-wrap items-center justify-end gap-2">
+                        <button type="submit"
+                                class="inline-flex items-center gap-1.5 rounded-xl bg-forest-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                            {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                            {{ (priorityPass ? 'priority_pass.save' : 'priority_pass.grant')|trans({}, 'admin') }}
+                        </button>
+                    </div>
+                </form>
+                {% if priorityPass %}
+                    <form method="post" action="{{ path('app_students_priority_pass_delete', {id: student.id}) }}"
+                          class="js-confirm-form border-t border-gray-100 px-6 py-3 text-right"
+                          data-confirm="{{ 'priority_pass.revoke_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('priority_pass_' ~ student.id.toRfc4122) }}">
+                        <button type="submit"
+                                class="js-confirm-trigger inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-3.5 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                            {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}
+                            {{ 'priority_pass.revoke'|trans({}, 'admin') }}
+                        </button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <p class="whitespace-pre-line px-6 py-4 text-sm text-gray-700">{{ priorityPass.description }}</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {# ── Salidas autorizadas ───────────────────────────────────────────────── #}
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+        <div class="border-b border-gray-100 px-6 py-3.5">
+            <h2 class="text-sm font-semibold text-gray-800">{{ 'exit.student.history_title'|trans({}, 'admin') }}</h2>
+        </div>
+        <twig:StudentExitListComponent :student="student" :todayOnly="false" />
+    </div>
 
     {# ── Historial ─────────────────────────────────────────────────────────── #}
     {% if isRelatedToStudent %}

@@ -1,0 +1,77 @@
+{% import 'components/_pagination_live.html.twig' as pager %}
+{% import 'exit/_macros.html.twig' as ex %}
+<div {{ attributes }}>
+    {% set pagination = this.pagination %}
+
+    {% if pagination.totalItems == 0 %}
+        <div class="px-6 py-8 text-center">
+            <p class="text-sm text-gray-400">{{ (todayOnly ? 'exit.student.empty_today' : 'exit.student.empty')|trans({}, 'admin') }}</p>
+        </div>
+    {% else %}
+        {# Móvil: una tarjeta por salida #}
+        <ul class="divide-y divide-gray-100 sm:hidden">
+            {% for exit in pagination.items %}
+                <li class="space-y-1 px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-sm font-semibold text-gray-900">{{ exit.reason.name }}</p>
+                        {% if exit.returned %}
+                            <span class="shrink-0 text-sm font-semibold tabular-nums text-gray-700">{{ exit_duration(exit_seconds(exit)) }}</span>
+                        {% else %}
+                            {{ ex.timer(exit) }}
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        {{ ex.exit_time(exit) }}
+                        {% if exit.returned %}→ <span class="tabular-nums">{{ exit.returnedAt|date('H:i') }}</span>{% endif %}
+                        · {{ exit.authorizedBy.name.full }}
+                    </p>
+                    {% if exit.observations %}<p class="text-sm text-gray-500">{{ exit.observations }}</p>{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        {# Pantallas anchas: tabla #}
+        <div class="hidden overflow-x-auto sm:block">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left">{{ 'exit.field.left_at'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left">{{ 'exit.field.reason'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left">{{ 'exit.field.teacher'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-6 py-3 text-left">{{ 'exit.field.returned_at'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-6 py-3 text-right">{{ 'exit.field.time_out'|trans({}, 'admin') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for exit in pagination.items %}
+                        <tr>
+                            <td class="px-6 py-3 text-gray-900">{{ ex.exit_time(exit) }}</td>
+                            <td class="px-6 py-3 text-gray-900">
+                                <span class="font-medium">{{ exit.reason.name }}</span>
+                                {% if exit.observations %}<span class="block text-xs text-gray-500">{{ exit.observations }}</span>{% endif %}
+                            </td>
+                            <td class="px-6 py-3 text-gray-700">{{ exit.authorizedBy.name.full }}</td>
+                            <td class="px-6 py-3 text-gray-700">
+                                {% if exit.returned %}
+                                    <span class="tabular-nums">{{ exit.returnedAt|date('H:i') }}</span>
+                                    {% if exit.returnedBy %}<span class="block text-xs text-gray-500">{{ exit.returnedBy.name.full }}</span>{% endif %}
+                                {% else %}
+                                    <span class="text-gray-400">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-3 text-right">
+                                {% if exit.returned %}
+                                    <span class="font-semibold tabular-nums text-gray-800">{{ exit_duration(exit_seconds(exit)) }}</span>
+                                {% else %}
+                                    {{ ex.timer(exit) }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {{ pager.nav(pagination) }}
+    {% endif %}
+</div>

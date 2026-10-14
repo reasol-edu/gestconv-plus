@@ -13,7 +13,9 @@ use App\Repository\DailyNoteRepository;
 use App\Repository\DailyNoteTypeRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
+use App\Repository\StudentPriorityPassRepository;
 use App\Repository\StudentRepository;
+use App\Security\Voter\StudentExitVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
 use App\Service\StudentContactVisibility;
@@ -45,6 +47,7 @@ class StudentController extends AbstractController
         private readonly SanctionRepository $sanctions,
         private readonly DailyNoteRepository $dailyNotes,
         private readonly DailyNoteTypeRepository $dailyNoteTypes,
+        private readonly StudentPriorityPassRepository $priorityPasses,
         private readonly StudentContactVisibility $contactVisibility,
         private readonly EntityManagerInterface $em,
         private readonly EntityChangeTracker $changeTracker,
@@ -172,6 +175,10 @@ class StudentController extends AbstractController
             'isRelatedToStudent' => $isRelatedToStudent,
             'noteStats'          => $noteStats,
             'academicYear'       => $year,
+            'priorityPass'       => $year === null ? null : $this->priorityPasses->findOneByStudentAndYear($student, $year),
+            'canManagePass'      => $year !== null
+                && !$this->tenantContext->isViewingNonActiveYear($centre)
+                && $this->isGranted(StudentExitVoter::MANAGE, $centre),
         ]);
     }
 

@@ -7,5 +7,6 @@ groups:
     actions: 'Acciones'
 actions:
     new_incident: 'Nuevo parte'
+    new_exit: 'Autorizar salida'
     notifications: 'Ir a notificaciones'
     change_year: 'Cambiar de curso'

@@ -259,6 +259,31 @@ class GroupRepository extends ServiceEntityRepository
     }
 
     /**
+     * Grupos del curso en los que el docente da clase o es tutor/a, por nombre.
+     *
+     * @return Group[]
+     */
+    public function findTaughtOrTutoredInYear(AcademicYear $year, Teacher $viewer): array
+    {
+        $qb = $this->createQueryBuilder('g');
+
+        return $qb
+            ->join('g.course', 'c')
+            ->leftJoin('g.groupTeachers', 'gt')
+            ->where('c.academicYear = :year')
+            ->andWhere($qb->expr()->orX(
+                'gt.teacher = :viewer',
+                ':viewer MEMBER OF g.tutors',
+            ))
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('viewer', $viewer->getId(), 'uuid')
+            ->orderBy('g.name', 'ASC')
+            ->distinct()
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Returns groups for the centre's active year with courses eagerly loaded,
      * sorted by course name → group name.
      *

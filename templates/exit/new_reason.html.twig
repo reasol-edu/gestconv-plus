@@ -1,0 +1,92 @@
+{% extends 'layouts/app.html.twig' %}
+{% import 'exit/_macros.html.twig' as ex %}
+
+{% block title %}{{ student.name.full }} · {{ 'exit.authorize'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+
+    <div>
+        <a href="{{ path('app_exits_new', {groupId: group.id}) }}" class="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-gray-500 hover:text-forest-700">
+            {{ ux_icon('heroicons:chevron-left', {class: 'h-4 w-4'}) }}
+            {{ group.name }}
+        </a>
+        <h1 class="text-2xl font-bold leading-tight text-gray-900">
+            {{ student.name.lastName }}, {{ student.name.firstName }}
+            {% if pass %}{{ ex.pass_badge() }}{% endif %}
+        </h1>
+        <p class="mt-1 text-sm text-gray-500">{{ group.name }}</p>
+    </div>
+
+    {% if pass %}
+        <div role="note" class="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-4">
+            <p class="flex items-center gap-2 text-sm font-semibold text-violet-900">
+                {{ ux_icon('heroicons:identification', {class: 'h-5 w-5 shrink-0'}) }}
+                {{ 'priority_pass.notice_title'|trans({}, 'admin') }}
+            </p>
+            <p class="mt-1.5 whitespace-pre-line text-sm text-violet-900">{{ pass.description }}</p>
+        </div>
+    {% endif %}
+
+    {% if alreadyOut %}
+        <div role="alert" class="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+            {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-5 w-5 shrink-0 mt-0.5'}) }}
+            <p>{{ 'exit.error.already_out'|trans({}, 'admin') }}</p>
+        </div>
+    {% endif %}
+
+    {% if errors.reason is defined %}
+        <div role="alert" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{{ errors.reason }}</div>
+    {% endif %}
+
+    <form method="post" action="{{ path('app_exits_new', {groupId: group.id, studentId: student.id}) }}" data-controller="form-submit" class="space-y-6">
+        <input type="hidden" name="_token" value="{{ csrf_token('new_exit') }}">
+
+        <fieldset>
+            <legend class="mb-3 text-base font-semibold text-gray-900">{{ 'exit.new.step_reason'|trans({}, 'admin') }}</legend>
+            {% if reasons is empty %}
+                <p class="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-8 text-center text-sm text-gray-500">{{ 'exit.new.no_reasons'|trans({}, 'admin') }}</p>
+            {% else %}
+                <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                    {% for reason in reasons %}
+                        <label class="relative block">
+                            <input type="radio" name="reason_id" value="{{ reason.id.toRfc4122 }}" required class="peer sr-only"
+                                   {{ formData.reason_id == reason.id.toRfc4122 ? 'checked' : '' }}>
+                            <span class="flex min-h-16 items-center justify-center rounded-2xl border-2 border-gray-200 bg-white px-3 py-3 text-center text-base font-semibold text-gray-800 shadow-xs transition-colors
+                                         hover:border-forest-300 active:bg-forest-100
+                                         peer-checked:border-forest-600 peer-checked:bg-forest-600 peer-checked:text-white
+                                         peer-focus-visible:ring-3 peer-focus-visible:ring-forest-500/40">
+                                {{ reason.name }}
+                            </span>
+                        </label>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </fieldset>
+
+        <div>
+            <label for="observations" class="mb-1.5 block text-sm font-medium text-gray-700">{{ 'exit.field.observations'|trans({}, 'admin') }} <span class="font-normal text-gray-400">({{ 'exit.field.optional'|trans({}, 'admin') }})</span></label>
+            <textarea id="observations" name="observations" rows="2" maxlength="500"
+                      class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-base text-gray-900
+                             focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">{{ formData.observations }}</textarea>
+        </div>
+
+        {# En el móvil el botón queda pegado abajo mientras se desplaza el formulario. #}
+        <div class="sticky bottom-0 -mx-4 border-t border-gray-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
+            <button type="submit" {{ alreadyOut or reasons is empty ? 'disabled' : '' }}
+                    class="flex min-h-16 w-full items-center justify-center gap-2 rounded-2xl bg-forest-600 px-6 py-4 text-xl font-bold text-white shadow-sm transition-colors
+                           hover:bg-forest-700 active:bg-forest-800 disabled:cursor-not-allowed disabled:opacity-50">
+                {{ ux_icon('heroicons:arrow-right-on-rectangle', {class: 'h-6 w-6'}) }}
+                {{ 'exit.authorize'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+
+    <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs" aria-labelledby="exit-today-title">
+        <h2 id="exit-today-title" class="border-b border-gray-100 px-4 py-3 text-sm font-semibold text-gray-800 sm:px-6">
+            {{ 'exit.student.today_title'|trans({}, 'admin') }}
+        </h2>
+        <twig:StudentExitListComponent :student="student" :todayOnly="true" />
+    </section>
+</div>
+{% endblock %}
