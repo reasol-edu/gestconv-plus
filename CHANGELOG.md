@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.1] - 2026-10-14
+
+### Fixed
+
+- La administración (global o del centro) puede eliminar una salida del aula desde la pestaña Historial de Salidas, con confirmación previa. Se borra definitivamente de la base de datos, solo en el curso activo, y queda constancia en el registro de actividad.
+
 ## [1.10.0] - 2026-10-14
 
 ### Changed
