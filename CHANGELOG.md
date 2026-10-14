@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-10-14
+
+### Added
+
+- Nueva sección **Salidas** para controlar qué estudiantes están fuera del aula con permiso de un docente, pensada para usarse desde el móvil. Se autoriza una salida en tres pasos (grupo, con los del docente primero; estudiante, con buscador; y motivo, en una cuadrícula de botones con observaciones opcionales), con un botón fijo «Autorizar salida» también en el inicio y en la paleta de comandos.
+- La pantalla de salidas muestra en tiempo real quién está fuera, con estudiante, grupo, docente, motivo, hora de salida y «Hace X minutos»; a partir de los 10 minutos el tiempo pasa a ámbar, naranja (20) y rojo (30). Las salidas propias van aparte con el botón «Ha regresado»; en las de otros solo lo ven el tutor/a del grupo, la dirección y la administración.
+- Historial de salidas por estudiante en su ficha y, para el equipo directivo y la administración, una pestaña con todas las del curso, filtrable por estudiante, docente, grupo, motivo, estado y fechas, ordenable y con el tiempo fuera en minutos.
+- Catálogo de **motivos de salida** en «Centro educativo» (ordenable, activable, exportable e importable), con los motivos por defecto: Servicio, Fuente, Conserjería, Departamentos, Carro portátiles, Secretaría, Jefat. de Estudios, Dirección y Otros. Los centros existentes los reciben al actualizar.
+- **Pase prioritario** por estudiante y curso, que concede la administración desde la ficha con una justificación: el estudiante aparece con el distintivo PASE en los listados de salidas y la justificación se muestra al autorizar su salida.
+- Fichas rápidas «Autorizar una salida del aula» y «Quién está fuera y registrar el regreso» para el profesorado.
+
+### Changed
+
+- Al eliminar una materia de un docente que tiene tareas de sanción asociadas, la aplicación ya no lo bloquea: avisa de cuántas tareas se perderían y, si se confirma, borra la materia junto con sus tareas y adjuntos (desde el formulario del grupo y desde las materias del docente).
+
+### Fixed
+
+- Los accesos rápidos del inicio generan las clases de columnas necesarias cuando hay cinco o más.
+
+Incluye la migración `Version20260101000048` (tablas `exit_reason`, `student_exit` y `student_priority_pass`, y siembra de los motivos por defecto en los centros existentes).
+
 ## [1.8.1] - 2026-10-14
 
 ### Changed
