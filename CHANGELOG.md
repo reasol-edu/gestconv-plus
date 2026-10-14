@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-10-14
+
+### Changed
+
+- El menú lateral agrupa ahora las secciones por lo que se hace con ellas, con un título para cada grupo: **Día a día** (Salidas, Guardias, Ausencias y Calendario), **Convivencia** (Partes, Notas, Sanciones, Tareas de sanción, Notificaciones y Mi tutoría) y **Gestión** (Informes y Centro educativo, solo para el equipo directivo y la administración). Un grupo sin ninguna entrada visible para el perfil no aparece.
+- Los accesos rápidos del inicio siguen los mismos bloques y el mismo orden que el menú. En el móvil son baldosas compactas de dos en dos, para llegar a cada acción con un toque; en pantallas mayores son tarjetas del mismo ancho que se reparten en tantas columnas como caben, sin desbordes ni líneas saturadas.
+- La paleta de comandos (`Ctrl+K`) incluye «Ver quién está fuera» y «Nueva nota».
+- Se regeneran todas las capturas del manual y de las fichas con el nuevo menú, se añaden las de la sección Salidas y se actualizan el manual y la presentación.
+
 ## [1.9.0] - 2026-10-14
 
 ### Added
