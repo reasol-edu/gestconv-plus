@@ -302,7 +302,7 @@ class SanctionRepository extends ServiceEntityRepository
             JOIN g.course c
             JOIN c.academicYear ay
             ' . $whereClause . '
-            ORDER BY sanctionableCount DESC, s.name.lastName ASC, s.name.firstName ASC
+            ORDER BY seriousCount DESC, sanctionableCount DESC, s.name.lastName ASC, s.name.firstName ASC
         ';
 
         $query = $this->getEntityManager()

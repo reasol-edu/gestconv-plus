@@ -806,6 +806,63 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame(1, $result['rows'][0]['seriousCount']);
     }
 
+    public function testFindStudentStatsOrdersBySeriousThenSanctionableCount(): void
+    {
+        $world      = $this->makeWorld();
+        $seriousCat = (new IncidentBehaviorCategory())
+            ->setEducationalCentre($world['centre'])
+            ->setName('Graves')
+            ->setSerious(true)
+            ->setPosition(1);
+        $seriousBeh = (new IncidentBehavior())
+            ->setEducationalCentre($world['centre'])
+            ->setCategory($seriousCat)
+            ->setName('Agresión')
+            ->setPosition(0)
+            ->setActive(true);
+        $this->persist($seriousCat, $seriousBeh);
+        $teacher = $this->makeTeacher('stats.order');
+        $this->persist($teacher);
+
+        $onlyMany   = $world['student']; // 3 normales, 0 graves
+        $oneSerious = (new Student(new PersonName('Bea', 'Beltrán')))->setStudentId('NIE-B' . uniqid('', false));
+        $seriousAnd = (new Student(new PersonName('Carlos', 'Cano')))->setStudentId('NIE-C' . uniqid('', false));
+        $this->persist($oneSerious, $seriousAnd);
+        foreach ([$onlyMany, $oneSerious, $seriousAnd] as $s) {
+            $world['group']->addStudent($s);
+        }
+        $this->flush();
+
+        $report = function (Student $student, bool $serious) use ($world, $teacher, $seriousBeh): void {
+            $r = (new IncidentReport())
+                ->setAcademicYear($world['year'])
+                ->setNumber(++$this->nextReportNumber)
+                ->setStudent($student)
+                ->setGroup($world['group'])
+                ->setRegisteredBy($teacher)
+                ->setOccurredAt(new \DateTimeImmutable())
+                ->setDescription('<p>Test</p>')
+                ->setExpelledFromClass(false);
+            $r->addBehavior($serious ? $seriousBeh : $world['behavior']);
+            $this->persist($r);
+            $this->notify($r, $world, $teacher);
+        };
+
+        for ($i = 0; $i < 3; $i++) {
+            $report($onlyMany, false);
+        }
+        $report($oneSerious, true);
+        $report($seriousAnd, true);
+        $report($seriousAnd, false);
+
+        $result = $this->repo->findStudentStatsForCentre($world['centre']);
+
+        self::assertSame(
+            ['Cano', 'Beltrán', 'García'],
+            array_column($result['rows'], 'lastName'),
+        );
+    }
+
     public function testFindStudentStatsCountsPrescribedReports(): void
     {
         $world   = $this->makeWorld();
