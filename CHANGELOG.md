@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.2] - 2026-10-15
+
+### Fixed
+
+- La pantalla de login muestra la versión de la aplicación junto al nombre cuando el viewport es pequeño (en pantallas grandes ya aparecía en el panel lateral).
+- En el manual en PDF, los enlaces a títulos numerados, a anclas explícitas y a capítulos cuyo nombre de fichero no coincide con su título ya apuntan a su destino. El filtro de enlaces construye ahora una tabla con los identificadores reales de los encabezados, y los identificadores dejan de contener bytes inválidos.
+
 ## [1.10.1] - 2026-10-14
 
 ### Fixed
