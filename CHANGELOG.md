@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.3] - 2026-10-22
+
+### Security
+
+- Los binarios descargables pasan a FrankenPHP 1.13.2, que lleva PHP 8.5.12, y la imagen Docker se reconstruye siempre sobre la última imagen base de PHP 8.4 (8.4.27 o posterior). Con ello se corrige **PHP2Shell** (CVE-2026-109618 y CVE-2026-109619), dos fallos críticos que permiten ejecutar código en el servidor sin autenticarse. Las versiones anteriores, también las descargables, son vulnerables: actualiza cuanto antes. Cambiar el `php.ini` no lo evita.
+- FrankenPHP 1.13.2 corrige además otras vulnerabilidades propias del servidor.
+
+### Changed
+
+- Ya no se publica el binario para Mac con procesador Intel: FrankenPHP dejó de ofrecerlo. Quien lo use puede recurrir a Docker; el manual lo explica.
+- Las pruebas automáticas se ejecutan con PHP 8.4 y 8.5, porque los binarios llevan ahora PHP 8.5.
+
 ## [1.10.2] - 2026-10-15
 
 ### Fixed
