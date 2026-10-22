@@ -50,13 +50,18 @@ están en el apartado **Assets** de la última versión:
 |--------------|---------------------|
 | **Windows** | `gestconv-plus-…-windows-x86_64.zip` |
 | **Mac con chip Apple** (M1, M2, M3, M4…) | `gestconv-plus-…-macos-arm64.tar.gz` |
-| **Mac con procesador Intel** | `gestconv-plus-…-macos-x86_64.tar.gz` |
 | **Linux** (PC habitual) | `gestconv-plus-…-linux-x86_64.tar.gz` |
 | **Linux ARM** (p. ej. Raspberry Pi) | `gestconv-plus-…-linux-aarch64.tar.gz` |
 
 !!! question "¿Qué Mac tengo?"
     Abre el menú Apple () arriba a la izquierda → **Acerca de este Mac**.
-    Si aparece «Chip Apple M…» elige el archivo *arm64*; si aparece «Procesador Intel», el *x86_64*.
+    Si aparece «Chip Apple M…» elige el archivo *arm64*.
+
+!!! warning "Mac con procesador Intel"
+    Desde la versión 1.10.3 no hay descarga para Mac con procesador Intel, porque FrankenPHP (el servidor que
+    va dentro del archivo) dejó de publicar ese binario. Las últimas versiones con descarga para Intel
+    (hasta la 1.10.2) **llevan una versión de PHP con la vulnerabilidad PHP2Shell**, así que no las uses. En
+    esos equipos, usa [Docker](#despliegue-con-docker).
 
 ### Paso 2 · Descomprime el archivo
 
@@ -205,6 +210,11 @@ script `start.sh` elimina la cuarentena automáticamente, pero si el problema pe
 ```bash
 xattr -d com.apple.quarantine frankenphp
 ```
+
+!!! info "Cada archivo lleva su propio PHP"
+    Los archivos descargables incluyen su propio PHP, que no depende del que haya instalado en tu equipo.
+    Los parches de seguridad de PHP llegan con una versión nueva de GestConv+, así que mantén al día la que
+    tengas instalada.
 
 ### Actualizar a una nueva versión
 
@@ -420,6 +430,15 @@ docker compose up -d
 ```
 
 Las migraciones se aplican automáticamente en cada arranque.
+
+!!! danger "Actualizaciones de seguridad de PHP"
+    El **binario nativo** (y la instalación en Ubuntu Server) lleva su propio PHP dentro, y la **imagen Docker**
+    el de su imagen base: ninguno se actualiza con el PHP del sistema. Cuando PHP publica un parche de
+    seguridad, se incorpora en una versión nueva de GestConv+, y hay que instalarla (en Docker, con
+    `docker compose pull`). Un caso reciente es **PHP2Shell** (CVE-2026-109618 y CVE-2026-109619, de
+    octubre de 2026), que permite ejecutar código sin autenticarse: están corregidos desde la versión **1.10.3**
+    (PHP 8.5.12 en los binarios, 8.4.27 en la imagen Docker) y cambiar el `php.ini` no lo evita. En Plesk
+    o en cualquier instalación con el PHP del sistema, actualiza PHP a 8.4.27 o posterior (8.5.12 o posterior en 8.5).
 
 ### Comandos útiles
 
