@@ -1,5 +1,23 @@
 {% extends 'base.html.twig' %}
 
+{# Elementos del menú lateral (las macros van en la raíz de la plantilla) #}
+{% macro nav_item(label, route, icon, current_route, prefix) %}
+    {% set is_active = current_route starts with prefix %}
+    <a href="{{ route }}"
+       {{ is_active ? 'aria-current="page"' : '' }}
+       class="{{ is_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
+              group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
+        {{ ux_icon(icon, {class: 'h-5 w-5 shrink-0'}) }}
+        <span class="truncate">{{ label }}</span>
+    </a>
+{% endmacro %}
+
+{# Título de grupo de secciones, precedido de una línea separadora #}
+{% macro nav_heading(label) %}
+    <div class="my-3 h-px bg-white/8"></div>
+    <p class="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-wider text-forest-500">{{ label }}</p>
+{% endmacro %}
+
 {% block body %}
 {% set current_route = app.request.attributes.get('_route') %}
 {% set active_centre = active_centre() %}
@@ -88,23 +106,6 @@
 
         {# Navegación principal #}
         <nav class="flex-1 overflow-y-auto px-3 py-4">
-
-            {% macro nav_item(label, route, icon, current_route, prefix) %}
-                {% set is_active = current_route starts with prefix %}
-                <a href="{{ route }}"
-                   {{ is_active ? 'aria-current="page"' : '' }}
-                   class="{{ is_active ? 'bg-forest-800 text-white border-l-2 border-forest-300' : 'text-forest-300 hover:bg-forest-900 hover:text-white border-l-2 border-transparent' }}
-                          group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150">
-                    {{ ux_icon(icon, {class: 'h-5 w-5 shrink-0'}) }}
-                    <span class="truncate">{{ label }}</span>
-                </a>
-            {% endmacro %}
-
-            {# Título de grupo de secciones, precedido de una línea separadora #}
-            {% macro nav_heading(label) %}
-                <div class="my-3 h-px bg-white/8"></div>
-                <p class="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-wider text-forest-500">{{ label }}</p>
-            {% endmacro %}
 
             {# Inicio #}
             {{ _self.nav_item(
