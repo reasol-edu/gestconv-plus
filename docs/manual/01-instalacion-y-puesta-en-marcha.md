@@ -50,18 +50,17 @@ están en el apartado **Assets** de la última versión:
 |--------------|---------------------|
 | **Windows** | `gestconv-plus-…-windows-x86_64.zip` |
 | **Mac con chip Apple** (M1, M2, M3, M4…) | `gestconv-plus-…-macos-arm64.tar.gz` |
+| **Mac con procesador Intel** | `gestconv-plus-…-macos-x86_64.tar.gz` |
 | **Linux** (PC habitual) | `gestconv-plus-…-linux-x86_64.tar.gz` |
 | **Linux ARM** (p. ej. Raspberry Pi) | `gestconv-plus-…-linux-aarch64.tar.gz` |
 
 !!! question "¿Qué Mac tengo?"
     Abre el menú Apple () arriba a la izquierda → **Acerca de este Mac**.
-    Si aparece «Chip Apple M…» elige el archivo *arm64*.
+    Si aparece «Chip Apple M…» elige el archivo *arm64*; si aparece «Procesador Intel», el *x86_64*.
 
-!!! warning "Mac con procesador Intel"
-    Desde la versión 1.10.3 no hay descarga para Mac con procesador Intel, porque FrankenPHP (el servidor que
-    va dentro del archivo) dejó de publicar ese binario. Las últimas versiones con descarga para Intel
-    (hasta la 1.10.2) **llevan una versión de PHP con la vulnerabilidad PHP2Shell**, así que no las uses. En
-    esos equipos, usa [Docker](#despliegue-con-docker).
+!!! warning "Versiones con la vulnerabilidad PHP2Shell"
+    Los archivos de las versiones **anteriores a la 1.10.3** llevan una versión de PHP con la vulnerabilidad
+    PHP2Shell, así que no los uses. Descarga siempre la última versión.
 
 ### Paso 2 · Descomprime el archivo
 
@@ -439,6 +438,10 @@ Las migraciones se aplican automáticamente en cada arranque.
     octubre de 2026), que permite ejecutar código sin autenticarse: están corregidos desde la versión **1.10.3**
     (PHP 8.5.12 en los binarios, 8.4.27 en la imagen Docker) y cambiar el `php.ini` no lo evita. En Plesk
     o en cualquier instalación con el PHP del sistema, actualiza PHP a 8.4.27 o posterior (8.5.12 o posterior en 8.5).
+
+    Si en Linux el servicio se detiene con `status=4/ILL` («instrucción ilegal») en cuanto recibe una petición,
+    tienes el binario de la 1.10.3 o la 1.10.4 en una CPU sin las instrucciones SHA-NI (habitual en máquinas
+    virtuales): actualiza a la 1.10.5 o posterior, que usa un FrankenPHP sin ese defecto y con el mismo PHP corregido.
 
 ### Comandos útiles
 
