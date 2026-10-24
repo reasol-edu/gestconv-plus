@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-10-24
+
+### Added
+
+- **Modo mantenimiento**: un ajuste global (Ajustes globales → Mantenimiento) que cierra la aplicación a todo el mundo salvo a los administradores globales, para actualizar, restaurar una copia o intervenir sin que nadie encuentre datos a medias. El resto del profesorado, con o sin sesión iniciada, recibe una página 503 animada con el estilo de las páginas de error; la pantalla de acceso lo avisa, y los administradores (también con «Acceder como») ven una franja que les recuerda que está activado. Se bloquea todo menos el acceso, la salida y los estáticos, incluidos las actualizaciones en vivo, el enlace público de tareas y la recuperación de contraseña. Los avisos por correo y las tareas automáticas siguen funcionando. Documentado en el manual, con capturas.
+
+### Fixed
+
+- **Instalaciones con SQLite** (el binario nativo y la demostración): guardar cualquier ajuste fallaba con un error de clave foránea, porque el catálogo de ajustes se sembró con ids que Doctrine no reconoce. Además, en las bases que ya tenían centros cuando se ejecutaron las migraciones antiguas, los métodos de comunicación, las ubicaciones, los tipos de nota y las asignaciones de docentes a grupos quedaban sin poder localizarse por su id. Una migración nueva repara todos esos ids y las referencias a ellos; en una base sin el problema no hace nada.
+- **Actualizar con SQLite desde antes de la 1.9.0** con algún centro creado: la migración de Salidas fallaba con «FOREIGN KEY constraint failed» y la actualización no se completaba. Corregida.
+- El formulario de nueva nota del día compara correctamente el tipo seleccionado al volver a mostrarse con datos, y se eliminan los avisos de obsolescencia de Twig.
+
+### Changed
+
+- Los binarios descargables pasan a **FrankenPHP 1.13.3** (PHP 8.5.12, con PHP2Shell corregido), que corrige el fallo `status=4/ILL` de los binarios de Linux de la 1.13.2 en CPUs sin SHA-NI. La compilación verifica ahora el SHA-256 de cada binario de FrankenPHP que empaqueta.
+- Ya no se publica el binario para Mac con procesador Intel: FrankenPHP dejó de ofrecerlo en la 1.13.2. La última versión con descarga para Intel es la 1.10.5; quien lo use puede recurrir a Docker, y el manual lo explica.
+
 ## [1.10.5] - 2026-10-23
 
 ### Fixed
