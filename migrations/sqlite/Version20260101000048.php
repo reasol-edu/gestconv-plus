@@ -97,9 +97,10 @@ final class Version20260101000048 extends AbstractMigration
         $config  = Yaml::parseFile(dirname(__DIR__, 2) . '/config/exit_reasons.yaml');
         $reasons = is_array($config) && is_array($config['reasons'] ?? null) ? $config['reasons'] : [];
 
-        // Doctrine guarda los UUID en SQLite como 16 bytes (aunque la columna se declare CHAR(36))
-        // y los busca con ese mismo valor: un id de texto no se encontraría después. Por eso los ids
-        // se generan aquí, en binario, en vez de con una expresión SQL de texto.
+        // Doctrine guarda los UUID en SQLite como un TEXTO con los 16 bytes (la columna se declara CHAR(36)):
+        // los envía como cadena, no como blob, y los busca con ese mismo valor, así que ni un id de texto
+        // de 36 caracteres ni un blob se encontrarían después, ni coincidirían con la clave foránea del
+        // centro. Por eso los ids se generan aquí, en PHP, y se envían igual que Doctrine: como cadena.
         $centreIds = $this->connection->fetchFirstColumn('SELECT id FROM educational_centre');
 
         foreach ($reasons as $position => $name) {
@@ -111,7 +112,7 @@ final class Version20260101000048 extends AbstractMigration
                 $this->addSql(
                     'INSERT INTO exit_reason (id, educational_centre_id, name, position, active) VALUES (?, ?, ?, ?, 1)',
                     [Uuid::v7()->toBinary(), $centreId, $name, $position],
-                    [ParameterType::BINARY, ParameterType::BINARY, ParameterType::STRING, ParameterType::INTEGER]
+                    [ParameterType::STRING, ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER]
                 );
             }
         }

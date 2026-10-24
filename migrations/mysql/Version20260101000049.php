@@ -12,7 +12,7 @@ final class Version20260101000049 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Sin cambios en MySQL / MariaDB: la conversión de ids de setting_definition a UUID binario solo hace falta en SQLite (MySQL)';
+        return 'Sin cambios en MySQL / MariaDB: la normalización de los ids sembrados por migraciones solo hace falta en SQLite (MySQL)';
     }
 
     public function up(Schema $schema): void

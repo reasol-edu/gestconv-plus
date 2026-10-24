@@ -53,18 +53,24 @@ The **platform guard** (`abortIf` against `PostgreSQLPlatform`/`MySQLPlatform`/
 a migration from the wrong folder from running by mistake if `MIGRATIONS_PATH`
 were misconfigured.
 
-### Gotcha: seed rows with a UUID id, on SQLite, need a blob literal
+### Gotcha: seed rows with a UUID id, on SQLite, must use the format Doctrine uses
 
-Doctrine's `uuid` type is 16 raw bytes on SQLite (the column is declared `CHAR(36)`, but the value is
-bound as binary), on MySQL (`BINARY(16)`, hence `UNHEX(REPLACE(UUID(), '-', ''))`) and a native `uuid` on
-PostgreSQL. A migration that seeds a row on SQLite with `'7d0c4e0a-3f5b-…'` (text) writes an id nothing can
-reference: every foreign key to it fails when the application later tries to store a value (the settings
-catalogue had this bug until `Version20260101000049`: saving any setting failed on SQLite installs, i.e. the
-native binary). Write it as a hex blob literal: `X'7d0c4e0a3f5b4a9e9a625b1f0d8c2e41'`. To check a seed,
-`SELECT typeof(id), count(*) FROM <table> GROUP BY 1` must say `blob`, never `text`. Older migrations that
-backfill rows for *existing* centres (9, 26, 30, 36) still use text ids on SQLite (they only matter for a
-database that already had centres when they ran; not fixed yet); the per-centre catalogues seeded since
-(`Version20260101000048`) generate binary ids in PHP.
+Doctrine's `uuid` type is `BINARY(16)` on MySQL (hence `UNHEX(REPLACE(UUID(), '-', ''))`), a native `uuid`
+on PostgreSQL, and on SQLite a **TEXT value holding the 16 raw bytes** of the UUID (the column is declared
+`CHAR(36)`, but Doctrine binds `toBinary()` as a *string*, not as a blob). In SQLite a TEXT, a BLOB and a
+36-character text never compare equal, so a row seeded in any other format is listed but unreachable: the
+ORM can't `find()` it and every foreign key to it fails when the application stores a value. Neither
+`'7d0c4e0a-3f5b-…'` (text) nor `X'7d0c4e0a3f5b…'` (blob) works; **bind the id as a parameter**:
+`$this->addSql('INSERT … VALUES (?, …)', [Uuid::fromString('7d0c4e0a-…')->toBinary()])` (see
+`Version20260101000050`). To give new ids to existing rows, generate them in PHP the same way
+(`Version20260101000048` used `ParameterType::BINARY`, which is a blob: wrong).
+
+`Version20260101000049` repairs every table (settings catalogue, communication methods, locations, note
+types, `group_teacher`, exit reasons): it rewrites any id stored as a blob or as a 36-character text, and
+the foreign keys that reference it, and does nothing on a database that is already right. The old
+migrations were left alone on purpose: they already ran in every published version. To check a seed,
+`SELECT typeof(id), length(id) = 36, count(*) FROM <table> GROUP BY 1, 2` must say `text|0`, never `blob`
+or `text|1`; the real test is the ORM: `find()` a seeded row and save something that references it.
 
 Verify manually against a disposable database before considering a migration done
 (there's no automated suite that runs them against all three platforms):

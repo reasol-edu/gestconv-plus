@@ -12,7 +12,7 @@ final class Version20260101000049 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Sin cambios en PostgreSQL: la conversión de ids de setting_definition a UUID binario solo hace falta en SQLite (PostgreSQL)';
+        return 'Sin cambios en PostgreSQL: la normalización de los ids sembrados por migraciones solo hace falta en SQLite (PostgreSQL)';
     }
 
     public function up(Schema $schema): void
