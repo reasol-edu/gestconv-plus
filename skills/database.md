@@ -53,6 +53,19 @@ The **platform guard** (`abortIf` against `PostgreSQLPlatform`/`MySQLPlatform`/
 a migration from the wrong folder from running by mistake if `MIGRATIONS_PATH`
 were misconfigured.
 
+### Gotcha: seed rows with a UUID id, on SQLite, need a blob literal
+
+Doctrine's `uuid` type is 16 raw bytes on SQLite (the column is declared `CHAR(36)`, but the value is
+bound as binary), on MySQL (`BINARY(16)`, hence `UNHEX(REPLACE(UUID(), '-', ''))`) and a native `uuid` on
+PostgreSQL. A migration that seeds a row on SQLite with `'7d0c4e0a-3f5b-…'` (text) writes an id nothing can
+reference: every foreign key to it fails when the application later tries to store a value (the settings
+catalogue had this bug until `Version20260101000049`: saving any setting failed on SQLite installs, i.e. the
+native binary). Write it as a hex blob literal: `X'7d0c4e0a3f5b4a9e9a625b1f0d8c2e41'`. To check a seed,
+`SELECT typeof(id), count(*) FROM <table> GROUP BY 1` must say `blob`, never `text`. Older migrations that
+backfill rows for *existing* centres (9, 26, 30, 36) still use text ids on SQLite (they only matter for a
+database that already had centres when they ran; not fixed yet); the per-centre catalogues seeded since
+(`Version20260101000048`) generate binary ids in PHP.
+
 Verify manually against a disposable database before considering a migration done
 (there's no automated suite that runs them against all three platforms):
 
