@@ -170,6 +170,7 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Gestionar docentes de la plataforma | ✓ |
 | Ver el registro de actividad | ✓ |
 | Configuración global | ✓ |
+| Activar el [modo mantenimiento](07-administrar-la-plataforma.md#modo-mantenimiento), que cierra la aplicación al resto de usuarios | ✓ |
 
 ## Otras acciones y permisos generales
 

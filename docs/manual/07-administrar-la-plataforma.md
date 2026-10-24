@@ -161,8 +161,9 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 ## Ajustes disponibles
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
-Visualización, Correo electrónico, Modo tablón, Notificaciones a familias, Avisos por correo,
-Personalización de informes, Plantillas de informes, Ausencias y Tareas de sanción.
+Mantenimiento, Visualización, Correo electrónico, Modo tablón, Notificaciones a familias, Avisos
+por correo, Personalización de informes, Plantillas de informes, Ausencias, Tareas de sanción y
+Subida de ficheros.
 
 ### Visualización
 
@@ -440,6 +441,43 @@ así que todas las tareas de una misma sanción caducan a la vez. Una tarea prog
 al final de la descripción de la tarea una nota con la fecha, hora, nombre y tamaño del fichero
 eliminado. Un valor de 0 desactiva esta eliminación automática para ese ámbito.
 
+### Modo mantenimiento {#modo-mantenimiento}
+
+| Ajuste | Ámbito | Tipo | Por defecto |
+|---|---|---|---|
+| Modo mantenimiento | Solo global | Activado / Desactivado | Desactivado |
+
+**Modo mantenimiento** (en **Administración → Ajustes globales**, categoría **Mantenimiento**,
+la primera de la lista) cierra la aplicación a todo el mundo salvo a los **administradores
+globales**. Sirve para trabajar sin que nadie se encuentre datos a medias: antes de
+[actualizar](07-administrar-la-plataforma.md#actualizacion), de restaurar una
+[copia de seguridad](07-administrar-la-plataforma.md#copias-de-seguridad) o de
+cualquier otra intervención delicada. Es un ajuste **solo global**: no existe a nivel de centro ni
+personal, porque afecta a todos los centros del servidor. Viene **desactivado**; el cambio se
+guarda al instante y rige desde la petición siguiente.
+
+Mientras está activado:
+
+- **Los administradores globales** siguen trabajando con normalidad. En la parte superior de cada
+  pantalla ven un aviso ámbar —**«Modo mantenimiento activado»**— con un enlace a los ajustes para
+  desactivarlo, de modo que no se quede puesto por descuido. Un administrador que usa
+  **Acceder como** para ver la aplicación como otro docente conserva el acceso: cuenta quien
+  suplanta, no el docente suplantado.
+- **El resto del profesorado**, tenga o no la sesión iniciada, recibe la página
+  **«Aplicación en mantenimiento»** (respuesta HTTP 503, con la cabecera `Retry-After`) en cualquier
+  dirección de la aplicación. Si tenía la sesión abierta, la página ofrece **Cerrar sesión**. Es una
+  página animada, con el mismo estilo que las de error: dos engranajes giran en sentidos contrarios
+  y los círculos del fondo se desplazan suavemente con el ratón. Quien tenga activada en su sistema
+  la opción de «reducir movimiento» la ve sin animaciones.
+- **Quien aún no ha iniciado sesión** llega a la pantalla de acceso, que lo explica en un aviso
+  encima del formulario. El acceso (y la salida) sigue abierto precisamente para que los
+  administradores puedan entrar. Un docente que no sea administrador puede iniciar sesión, pero se
+  encuentra a continuación la página de mantenimiento.
+- **Las demás vías de entrada también se cierran**: las actualizaciones en vivo de las pantallas,
+  el enlace público de tareas del alumnado y la recuperación de contraseña.
+- **Los avisos por correo y las demás tareas automáticas siguen funcionando**: el modo
+  mantenimiento solo limita el acceso de las personas, no detiene el servidor.
+
 ## Copias de seguridad
 
 Lo único imprescindible de respaldar es la **base de datos**: contiene todos los partes,
@@ -503,7 +541,8 @@ php bin/console messenger:failed:retry   # reintentarlos
 
 ## Actualización
 
-1. Haz una **copia de seguridad** de la base de datos (ver arriba).
+1. Haz una **copia de seguridad** de la base de datos (ver arriba). Si quieres que nadie use la
+   aplicación mientras tanto, activa antes el [modo mantenimiento](07-administrar-la-plataforma.md#modo-mantenimiento).
 2. Actualiza según el tipo de despliegue:
     - **Docker** — `docker compose pull && docker compose up -d`.
     - **Binario nativo** — sigue los pasos de
