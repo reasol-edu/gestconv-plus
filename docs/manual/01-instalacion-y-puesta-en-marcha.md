@@ -50,13 +50,18 @@ están en el apartado **Assets** de la última versión:
 |--------------|---------------------|
 | **Windows** | `gestconv-plus-…-windows-x86_64.zip` |
 | **Mac con chip Apple** (M1, M2, M3, M4…) | `gestconv-plus-…-macos-arm64.tar.gz` |
-| **Mac con procesador Intel** | `gestconv-plus-…-macos-x86_64.tar.gz` |
 | **Linux** (PC habitual) | `gestconv-plus-…-linux-x86_64.tar.gz` |
 | **Linux ARM** (p. ej. Raspberry Pi) | `gestconv-plus-…-linux-aarch64.tar.gz` |
 
 !!! question "¿Qué Mac tengo?"
     Abre el menú Apple () arriba a la izquierda → **Acerca de este Mac**.
-    Si aparece «Chip Apple M…» elige el archivo *arm64*; si aparece «Procesador Intel», el *x86_64*.
+    Si aparece «Chip Apple M…» elige el archivo *arm64*.
+
+!!! warning "Mac con procesador Intel"
+    Desde la versión 1.11.0 no hay descarga para Mac con procesador Intel, porque FrankenPHP (el servidor que
+    va dentro del archivo) dejó de publicar ese binario. La última versión con descarga para Intel es la
+    1.10.5 (lleva PHP 8.5.12, ya corregido, pero no recibirá parches de seguridad posteriores). En esos
+    equipos, usa [Docker](#despliegue-con-docker), que sí se mantiene al día.
 
 !!! warning "Versiones con la vulnerabilidad PHP2Shell"
     Los archivos de las versiones **anteriores a la 1.10.3** llevan una versión de PHP con la vulnerabilidad
