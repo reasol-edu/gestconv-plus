@@ -447,6 +447,8 @@ eliminado. Un valor de 0 desactiva esta eliminación automática para ese ámbit
 |---|---|---|---|
 | Modo mantenimiento | Solo global | Activado / Desactivado | Desactivado |
 
+![Categoría «Mantenimiento» de los ajustes globales: el ajuste «Modo mantenimiento», con su desplegable en «Por defecto (Desactivado)»](img/admin/admin-mantenimiento-ajuste.png)
+
 **Modo mantenimiento** (en **Administración → Ajustes globales**, categoría **Mantenimiento**,
 la primera de la lista) cierra la aplicación a todo el mundo salvo a los **administradores
 globales**. Sirve para trabajar sin que nadie se encuentre datos a medias: antes de
@@ -463,16 +465,22 @@ Mientras está activado:
   desactivarlo, de modo que no se quede puesto por descuido. Un administrador que usa
   **Acceder como** para ver la aplicación como otro docente conserva el acceso: cuenta quien
   suplanta, no el docente suplantado.
+
+  ![Pantalla de Administración vista por un administrador global con el modo mantenimiento activado: una franja ámbar «Modo mantenimiento activado. El resto del profesorado no puede acceder a la aplicación mientras esté así. Desactivarlo en Ajustes globales»](img/admin/admin-mantenimiento-aviso.png)
 - **El resto del profesorado**, tenga o no la sesión iniciada, recibe la página
   **«Aplicación en mantenimiento»** (respuesta HTTP 503, con la cabecera `Retry-After`) en cualquier
   dirección de la aplicación. Si tenía la sesión abierta, la página ofrece **Cerrar sesión**. Es una
   página animada, con el mismo estilo que las de error: dos engranajes giran en sentidos contrarios
   y los círculos del fondo se desplazan suavemente con el ratón. Quien tenga activada en su sistema
   la opción de «reducir movimiento» la ve sin animaciones.
+
+  ![Página «Aplicación en mantenimiento» que ve un docente: sobre un fondo oscuro con círculos y rombos, dos engranajes entrelazados (uno ámbar y otro azul), la etiqueta «Mantenimiento», el título, el texto «solo pueden entrar los administradores de la plataforma», tres puntos de progreso, el botón Cerrar sesión y el nombre y la versión de la aplicación](img/admin/admin-mantenimiento-pagina.png)
 - **Quien aún no ha iniciado sesión** llega a la pantalla de acceso, que lo explica en un aviso
   encima del formulario. El acceso (y la salida) sigue abierto precisamente para que los
   administradores puedan entrar. Un docente que no sea administrador puede iniciar sesión, pero se
   encuentra a continuación la página de mantenimiento.
+
+  ![Pantalla de acceso con un aviso ámbar encima del formulario: «La aplicación está en mantenimiento: solo pueden entrar los administradores de la plataforma»](img/admin/admin-mantenimiento-login.png)
 - **Las demás vías de entrada también se cierran**: las actualizaciones en vivo de las pantallas,
   el enlace público de tareas del alumnado y la recuperación de contraseña.
 - **Los avisos por correo y las demás tareas automáticas siguen funcionando**: el modo
