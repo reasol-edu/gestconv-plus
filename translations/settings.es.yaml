@@ -28,6 +28,7 @@ settings.category.absences.label: 'Ausencias'
 settings.category.sanction_tasks.label: 'Tareas de sanción'
 settings.category.uploads.label: 'Subida de ficheros'
 settings.category.maintenance.label: 'Mantenimiento'
+settings.category.features.label: 'Secciones de la aplicación'
 
 # ── Definiciones de ajustes ───────────────────────────────────────────────────
 settings.key.page_size.label: 'Resultados por página'
@@ -301,3 +302,12 @@ settings.key.uploads_max_total_size_mb.description: 'Suma máxima de los fichero
 
 settings.key.maintenance_enabled.label: 'Modo mantenimiento'
 settings.key.maintenance_enabled.description: 'Con el modo mantenimiento activado, solo los administradores globales pueden usar la aplicación: el resto del profesorado, esté o no con la sesión iniciada, ve una página de mantenimiento. Los avisos por correo y las demás tareas automáticas siguen funcionando.'
+
+settings.key.features_exits.label: 'Salidas del aula'
+settings.key.features_exits.description: 'Activa o desactiva la sección Salidas (autorizar y registrar las salidas del aula, y el pase prioritario del alumnado). Desactivada, desaparece del menú, de los accesos rápidos y de la ficha del alumno, y sus direcciones dejan de funcionar. Los datos ya registrados se conservan.'
+settings.key.features_absences.label: 'Ausencias del profesorado'
+settings.key.features_absences.description: 'Activa o desactiva la sección Ausencias (ausencias del profesorado y sus actividades para el alumnado). Desactivada, desaparece del menú, de los accesos rápidos y del calendario, y sus direcciones dejan de funcionar. Los datos ya registrados se conservan.'
+settings.key.features_daily_notes.label: 'Notas del día'
+settings.key.features_daily_notes.description: 'Activa o desactiva la sección Notas (anotaciones diarias sobre el alumnado y sus avisos al llegar al umbral de parte). Desactivada, desaparece del menú, de los accesos rápidos, de la ficha del alumno y de las alertas, y sus direcciones dejan de funcionar. Los datos ya registrados se conservan.'
+settings.key.features_sanction_tasks.label: 'Tareas de sanción'
+settings.key.features_sanction_tasks.description: 'Activa o desactiva las tareas de sanción: que se pidan tareas al profesorado de un grupo cuando se sanciona a un alumno. Desactivadas, las sanciones nuevas no generan tareas ni avisos, desaparecen el menú, los recordatorios y el enlace público para el alumno, y sus direcciones dejan de funcionar. Las tareas ya creadas se conservan.'

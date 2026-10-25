@@ -10,6 +10,8 @@ use App\Message\SanctionTaskReminderMessage;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Service\AppSettingsInterface;
+use App\Service\Feature;
+use App\Service\FeatureToggle;
 use App\Service\IncidentEmailNotifier;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -23,11 +25,16 @@ final class SanctionTaskReminderHandler
         private readonly AppSettingsInterface $settings,
         private readonly IncidentEmailNotifier $notifier,
         private readonly ClockInterface $clock,
+        private readonly FeatureToggle $features,
     ) {}
 
     public function __invoke(SanctionTaskReminderMessage $message): void
     {
         foreach ($this->centres->findAll() as $centre) {
+            if (!$this->features->isEnabledForCentre(Feature::SanctionTasks, $centre)) {
+                continue;
+            }
+
             $reminderDays = $this->settings->getForCentre('notifications.sanction_task_reminder_days', $centre);
             if (!is_int($reminderDays) || $reminderDays <= 0) {
                 continue;

@@ -13,6 +13,7 @@ class SanctionTaskGenerator
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly IncidentEmailNotifier $notifier,
+        private readonly FeatureToggle $features,
     ) {}
 
     /**
@@ -20,13 +21,18 @@ class SanctionTaskGenerator
      * snapshotting the group's teaching assignments at this moment. No-op if the sanction's
      * measures don't require dates, or if tasks already exist for this sanction (subsequent
      * changes to the group's teaching assignments are handled separately by "refrescar
-     * materias", not by calling this method again).
+     * materias", not by calling this method again). Also a no-op when the centre has the
+     * "tareas de sanción" feature turned off (features.sanction_tasks).
      *
      * @return list<SanctionTask> the tasks created, empty if none were needed
      */
     public function generateFor(Sanction $sanction): array
     {
         if (!$sanction->requiresDates() || !$sanction->getTasks()->isEmpty()) {
+            return [];
+        }
+
+        if (!$this->features->isEnabledForCentre(Feature::SanctionTasks, $sanction->getGroup()->getAcademicYear()->getEducationalCentre())) {
             return [];
         }
 

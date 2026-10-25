@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\Course;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
@@ -16,9 +17,12 @@ use App\Entity\PersonName;
 use App\Entity\Sanction;
 use App\Entity\SanctionMeasure;
 use App\Entity\SanctionMeasureCategory;
+use App\Entity\SettingDefinition;
+use App\Entity\SettingType;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\SanctionTaskRepository;
+use App\Service\Feature;
 use App\Service\SanctionTaskGenerator;
 use App\Tests\Integration\RepositoryTestCase;
 
@@ -62,6 +66,21 @@ class SanctionTaskRepositoryTest extends RepositoryTestCase
         $tasks = $this->generator->generateFor($sanction);
 
         self::assertSame([], $tasks);
+        self::assertSame([], $this->repository->findBySanction($sanction));
+    }
+
+    public function testDoesNotGenerateTasksWhenTheCentreHasTheFeatureDisabled(): void
+    {
+        $world      = $this->makeWorld('nofeature');
+        $definition = (new SettingDefinition())->setKey(Feature::SanctionTasks->setting())->setType(SettingType::Boolean)
+            ->setDefaultValue('true')->setGlobalScope(true)->setCentreScope(true);
+        $this->em->persist($definition);
+        $this->em->persist((new CentreSettingValue())->setDefinition($definition)->setCentre($world['centre'])->setValue('false'));
+        $this->em->flush();
+
+        $sanction = $this->makeSanction($world, requiresDates: true);
+
+        self::assertSame([], $this->generator->generateFor($sanction));
         self::assertSame([], $this->repository->findBySanction($sanction));
     }
 

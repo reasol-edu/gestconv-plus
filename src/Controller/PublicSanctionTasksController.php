@@ -13,6 +13,8 @@ use App\Repository\SanctionTaskRepository;
 use App\Security\Voter\SanctionVoter;
 use App\Service\AttachmentDownloadResponder;
 use App\Service\AttachmentZipExporter;
+use App\Service\Feature;
+use App\Service\FeatureToggle;
 use App\Service\SanctionShareCode;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -36,6 +38,7 @@ class PublicSanctionTasksController extends AbstractController
         private readonly SanctionTaskRepository $tasks,
         private readonly SanctionTaskAttachmentRepository $taskAttachments,
         private readonly SanctionShareCode $shareCode,
+        private readonly FeatureToggle $features,
         private readonly AttachmentDownloadResponder $downloadResponder,
         private readonly AttachmentZipExporter $zipExporter,
         #[Target('sanction_share')]
@@ -147,6 +150,11 @@ class PublicSanctionTasksController extends AbstractController
 
         $normalized = $this->shareCode->normalize($code);
         $sanction   = $normalized === null ? null : $this->sanctions->findByShareCode($normalized);
+
+        // Con las tareas de sanción desactivadas en su centro, el enlace deja de funcionar.
+        if ($sanction !== null && !$this->features->isEnabledForCentre(Feature::SanctionTasks, $sanction->getGroup()->getAcademicYear()->getEducationalCentre())) {
+            $sanction = null;
+        }
 
         // Quien puede gestionar el enlace (con sesión iniciada) lo sigue viendo tras el fin de la sanción.
         if ($sanction !== null && ($this->shareCode->isOpen($sanction) || $this->isGranted(SanctionVoter::SHARE_TASKS, $sanction))) {

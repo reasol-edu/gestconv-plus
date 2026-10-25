@@ -247,7 +247,7 @@
 
     </div>
 
-    {% if sanction.tasks is not empty %}
+    {% if sanction.tasks is not empty and feature_enabled('sanction_tasks') %}
     <div>
         <div class="flex items-center justify-between mb-3">
             <h2 class="text-base font-semibold text-gray-900">{{ 'sanction_task.title'|trans({}, 'admin') }}</h2>
@@ -301,7 +301,7 @@
         </div>
     </div>
 
-    {% if is_granted('sanction.share_tasks', sanction) %}
+    {% if is_granted('sanction.share_tasks', sanction) and feature_enabled('sanction_tasks') %}
         {% set shareUntil = sanction.effectiveTo %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-4 space-y-3">
             <h2 class="text-base font-semibold text-gray-900">{{ 'sanction.share.title'|trans({}, 'admin') }}</h2>

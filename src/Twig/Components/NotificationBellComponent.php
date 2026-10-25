@@ -10,6 +10,8 @@ use App\Entity\SanctionTask;
 use App\Entity\Teacher;
 use App\Repository\DailyNoteRepository;
 use App\Repository\SanctionTaskRepository;
+use App\Service\Feature;
+use App\Service\FeatureToggle;
 use App\Service\PendingNotificationQueue;
 use App\Service\TenantContext;
 use App\Service\UpcomingPrescriptions;
@@ -43,6 +45,7 @@ class NotificationBellComponent extends AbstractController
         private readonly SanctionTaskRepository $sanctionTaskRepository,
         private readonly DailyNoteRepository $dailyNoteRepository,
         private readonly UpcomingPrescriptions $upcomingPrescriptions,
+        private readonly FeatureToggle $features,
     ) {}
 
     /**
@@ -94,18 +97,20 @@ class NotificationBellComponent extends AbstractController
                 $sections['sanction'][] = ['type' => 'sanction', 'entity' => $sanction, 'date' => $sanction->getCreatedAt(), 'daysLeft' => null];
             }
         }
-        foreach ($this->sanctionTaskRepository->findPendingForTeacher($centre, $user, $year) as $task) {
-            $sections['task'][] = [
-                'type'     => 'task',
-                'entity'   => $task,
-                'date'     => $task->getSanction()->getEffectiveFrom() ?? $task->getSanction()->getCreatedAt(),
-                'daysLeft' => null,
-            ];
+        if ($this->features->isEnabled(Feature::SanctionTasks)) {
+            foreach ($this->sanctionTaskRepository->findPendingForTeacher($centre, $user, $year) as $task) {
+                $sections['task'][] = [
+                    'type'     => 'task',
+                    'entity'   => $task,
+                    'date'     => $task->getSanction()->getEffectiveFrom() ?? $task->getSanction()->getCreatedAt(),
+                    'daysLeft' => null,
+                ];
+            }
         }
 
         // Las notas que llegan al umbral de parte solo interesan a la administración del centro;
         // al profesorado y a los tutores les basta con su pantalla de notas y el panel de inicio.
-        if ($user->isAdmin() || $centre->getAdmins()->contains($user)) {
+        if ($this->features->isEnabled(Feature::DailyNotes) && ($user->isAdmin() || $centre->getAdmins()->contains($user))) {
             foreach ($this->dailyNoteRepository->findStudentsAtThreshold($centre, $user, $year) as $row) {
                 $sections['note_threshold'][] = [
                     'type'     => 'note_threshold',

@@ -27,7 +27,7 @@
             <p class="text-sm text-gray-500 mb-1">{{ 'student.show.title'|trans({}, 'admin') }}</p>
             <h1 class="text-2xl font-bold text-gray-900">
                 {{ student.name.lastName }}, {{ student.name.firstName }}
-                {% if priorityPass %}{{ ex.pass_badge() }}{% endif %}
+                {% if priorityPass and feature_enabled('exits') %}{{ ex.pass_badge() }}{% endif %}
             </h1>
             <p class="mt-1 text-sm text-gray-500">
                 {{ student.studentId }}
@@ -41,12 +41,14 @@
                 {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
                 {{ 'incident.new'|trans({}, 'admin') }}
             </a>
-            <a href="{{ firstGroup ? path('app_daily_notes_new', {studentId: student.id, groupId: firstGroup.id}) : path('app_daily_notes_new') }}"
-               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
-                      hover:bg-gray-50 transition-colors shadow-xs">
-                {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
-                {{ 'daily_note.new'|trans({}, 'admin') }}
-            </a>
+            {% if feature_enabled('daily_notes') %}
+                <a href="{{ firstGroup ? path('app_daily_notes_new', {studentId: student.id, groupId: firstGroup.id}) : path('app_daily_notes_new') }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
+                    {{ 'daily_note.new'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
             {% if firstGroup and is_granted('sanction.create', centre) %}
                 <a href="{{ path('app_sanctions_new', {studentId: student.id, groupId: firstGroup.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
@@ -107,7 +109,7 @@
     {% endif %}
 
     {# ── Pase prioritario (curso actual) ───────────────────────────────────── #}
-    {% if academicYear is not null and (priorityPass or canManagePass) %}
+    {% if feature_enabled('exits') and academicYear is not null and (priorityPass or canManagePass) %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
             <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-6 py-3.5">
                 <h2 class="text-sm font-semibold text-gray-800">{{ 'priority_pass.section_title'|trans({}, 'admin') }}</h2>
@@ -148,12 +150,14 @@
     {% endif %}
 
     {# ── Salidas autorizadas ───────────────────────────────────────────────── #}
+    {% if feature_enabled('exits') %}
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
         <div class="border-b border-gray-100 px-6 py-3.5">
             <h2 class="text-sm font-semibold text-gray-800">{{ 'exit.student.history_title'|trans({}, 'admin') }}</h2>
         </div>
         <twig:StudentExitListComponent :student="student" :todayOnly="false" />
     </div>
+    {% endif %}
 
     {# ── Historial ─────────────────────────────────────────────────────────── #}
     {% if isRelatedToStudent %}

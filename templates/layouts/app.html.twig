@@ -26,14 +26,18 @@
 {% set viewing_past = is_viewing_past_year() %}
 <div data-controller="sidebar command-palette confirm"
      data-command-palette-url-value="{{ path('app_search') }}"
-     data-command-palette-actions-value="{{ [
-         {label: 'actions.new_incident'|trans({}, 'search'), url: path('app_incidents_new')},
-         {label: 'actions.new_exit'|trans({}, 'search'), url: path('app_exits_new')},
-         {label: 'actions.exits'|trans({}, 'search'), url: path('app_exits_index')},
-         {label: 'actions.new_note'|trans({}, 'search'), url: path('app_daily_notes_new')},
-         {label: 'actions.notifications'|trans({}, 'search'), url: path('app_notifications_index')},
-         {label: 'actions.change_year'|trans({}, 'search'), url: path('app_select_year_page')},
-     ]|json_encode }}"
+     data-command-palette-actions-value="{{ (
+         [{label: 'actions.new_incident'|trans({}, 'search'), url: path('app_incidents_new')}]
+         |merge(feature_enabled('exits') ? [
+             {label: 'actions.new_exit'|trans({}, 'search'), url: path('app_exits_new')},
+             {label: 'actions.exits'|trans({}, 'search'), url: path('app_exits_index')},
+         ] : [])
+         |merge(feature_enabled('daily_notes') ? [{label: 'actions.new_note'|trans({}, 'search'), url: path('app_daily_notes_new')}] : [])
+         |merge([
+             {label: 'actions.notifications'|trans({}, 'search'), url: path('app_notifications_index')},
+             {label: 'actions.change_year'|trans({}, 'search'), url: path('app_select_year_page')},
+         ])
+     )|json_encode }}"
      data-confirm-cancel-value="{{ 'ui.cancel'|trans }}"
      data-confirm-confirm-value="{{ 'ui.confirm_delete'|trans }}"
      data-confirm-close-value="{{ 'ui.close'|trans }}"
@@ -121,7 +125,9 @@
                 {{ _self.nav_heading('section.daily'|trans({}, 'navigation')) }}
 
                 {# Salidas — todos los docentes con centro activo #}
-                {{ _self.nav_item('exits'|trans({}, 'navigation'), path('app_exits_index'), 'heroicons:arrow-right-on-rectangle', current_route, 'app_exits') }}
+                {% if feature_enabled('exits') %}
+                    {{ _self.nav_item('exits'|trans({}, 'navigation'), path('app_exits_index'), 'heroicons:arrow-right-on-rectangle', current_route, 'app_exits') }}
+                {% endif %}
 
                 {# Guardias — administradores del centro y docentes con guardia en algún tramo del curso visualizado #}
                 {% if is_centre_admin() or is_guard_any_time_slot() %}
@@ -129,7 +135,7 @@
                 {% endif %}
 
                 {# Ausencias — administradores del centro y docentes del curso visualizado #}
-                {% if is_centre_admin() or belongs_to_view_year() %}
+                {% if feature_enabled('absences') and (is_centre_admin() or belongs_to_view_year()) %}
                     {{ _self.nav_item('absences'|trans({}, 'navigation'), path('app_absences_index'), 'heroicons:user-minus', current_route, 'app_absences') }}
                 {% endif %}
             {% endif %}
@@ -145,11 +151,13 @@
                 {{ _self.nav_heading('section.conduct'|trans({}, 'navigation')) }}
 
                 {{ _self.nav_item('incident_reports'|trans({}, 'navigation'), path('app_incidents_index'), 'heroicons:exclamation-triangle', current_route, 'app_incidents') }}
-                {{ _self.nav_item('daily_notes'|trans({}, 'navigation'), path('app_daily_notes_index'), 'heroicons:pencil-square', current_route, 'app_daily_notes') }}
+                {% if feature_enabled('daily_notes') %}
+                    {{ _self.nav_item('daily_notes'|trans({}, 'navigation'), path('app_daily_notes_index'), 'heroicons:pencil-square', current_route, 'app_daily_notes') }}
+                {% endif %}
                 {{ _self.nav_item('sanctions'|trans({}, 'navigation'), path('app_sanctions_index'), 'heroicons:scale', current_route, 'app_sanctions') }}
 
                 {# Tareas de sanción — solo para docentes con materia en algún grupo del curso visualizado #}
-                {% if teaches_any_group() %}
+                {% if feature_enabled('sanction_tasks') and teaches_any_group() %}
                     {{ _self.nav_item('sanction_tasks'|trans({}, 'navigation'), path('app_sanction_tasks_index'), 'heroicons:clipboard-document-list', current_route, 'app_sanction_tasks') }}
                 {% endif %}
 

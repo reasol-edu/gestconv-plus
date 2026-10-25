@@ -51,24 +51,30 @@
         {# Dos bloques con los mismos títulos y el mismo orden que el menú lateral. Se reparten solos en columnas: dos baldosas compactas por fila en el móvil y tantas tarjetas anchas como quepan (mínimo 17 rem, todas del mismo ancho en los dos bloques) en pantallas mayores. #}
         {% set grid_classes = 'grid grid-cols-2 gap-2.5 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] sm:gap-3' %}
         <div id="quick-actions" class="space-y-5">
+            {% if feature_enabled('exits') or hasGuardsAccess or (can_register_absence and feature_enabled('absences')) %}
             <section aria-labelledby="quick-daily-title">
                 <h2 id="quick-daily-title" class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'quick_actions.daily'|trans({}, 'dashboard') }}</h2>
                 <div class="{{ grid_classes }}">
-                    {% include 'dashboard/_quick_action.html.twig' with {url: path('app_exits_new'), icon: 'heroicons:arrow-right-on-rectangle', label: 'quick_action_exit'|trans({}, 'dashboard'), help: 'quick_action_exit_help'|trans({}, 'dashboard'), tone: 'primary'} only %}
+                    {% if feature_enabled('exits') %}
+                        {% include 'dashboard/_quick_action.html.twig' with {url: path('app_exits_new'), icon: 'heroicons:arrow-right-on-rectangle', label: 'quick_action_exit'|trans({}, 'dashboard'), help: 'quick_action_exit_help'|trans({}, 'dashboard'), tone: 'primary'} only %}
+                    {% endif %}
                     {% if hasGuardsAccess %}
                         {% include 'dashboard/_quick_action.html.twig' with {url: path('app_guards_index'), icon: 'heroicons:shield-check', label: 'quick_action_guards'|trans({}, 'dashboard'), help: 'quick_action_guards_help'|trans({}, 'dashboard'), tone: 'blue'} only %}
                     {% endif %}
-                    {% if can_register_absence %}
+                    {% if can_register_absence and feature_enabled('absences') %}
                         {% include 'dashboard/_quick_action.html.twig' with {url: path('app_absences_new'), icon: 'heroicons:user-minus', label: 'quick_action_new_absence'|trans({}, 'dashboard'), help: (is_centre_admin() ? 'quick_action_new_absence_help_admin' : 'quick_action_new_absence_help_self')|trans({}, 'dashboard'), tone: 'blue'} only %}
                     {% endif %}
                 </div>
             </section>
+            {% endif %}
 
             <section aria-labelledby="quick-conduct-title">
                 <h2 id="quick-conduct-title" class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'quick_actions.conduct'|trans({}, 'dashboard') }}</h2>
                 <div class="{{ grid_classes }}">
                     {% include 'dashboard/_quick_action.html.twig' with {url: path('app_incidents_new'), icon: 'heroicons:document-plus', label: 'quick_action_new_report'|trans({}, 'dashboard'), help: 'quick_action_new_report_help'|trans({}, 'dashboard'), tone: 'primary'} only %}
-                    {% include 'dashboard/_quick_action.html.twig' with {url: path('app_daily_notes_new'), icon: 'heroicons:pencil-square', label: 'quick_action_new_note'|trans({}, 'dashboard'), help: 'quick_action_new_note_help'|trans({}, 'dashboard'), tone: 'forest'} only %}
+                    {% if feature_enabled('daily_notes') %}
+                        {% include 'dashboard/_quick_action.html.twig' with {url: path('app_daily_notes_new'), icon: 'heroicons:pencil-square', label: 'quick_action_new_note'|trans({}, 'dashboard'), help: 'quick_action_new_note_help'|trans({}, 'dashboard'), tone: 'forest'} only %}
+                    {% endif %}
                     {% if can_sanction %}
                         {% include 'dashboard/_quick_action.html.twig' with {
                             url: sanctionableCount > 0 ? path('app_sanctions_new') : null,
@@ -79,7 +85,7 @@
                             badge: sanctionableCount
                         } only %}
                     {% endif %}
-                    {% if hasTeachingGroups %}
+                    {% if hasTeachingGroups and feature_enabled('sanction_tasks') %}
                         {% include 'dashboard/_quick_action.html.twig' with {
                             url: pendingSanctionTasksCount > 0 ? path('app_sanction_tasks_index') : null,
                             icon: 'heroicons:clipboard-document-list',
@@ -235,7 +241,7 @@
         </a>
         {% endif %}
 
-        {% if hasFullAccess or tutoredGroups|length > 0 %}
+        {% if (hasFullAccess or tutoredGroups|length > 0) and feature_enabled('sanction_tasks') %}
         {% set has_incomplete_tasks = sanctionsWithIncompleteTasksCount > 0 %}
         <a href="{{ path('app_sanctions_index') }}?pendingTasksOnly=1" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
             <div class="flex items-center justify-between">
@@ -253,7 +259,7 @@
         </a>
         {% endif %}
 
-        {% if canSeeNoteThresholds %}
+        {% if canSeeNoteThresholds and feature_enabled('daily_notes') %}
         {% set has_note_thresholds = noteThresholdCount > 0 %}
         <a href="{{ path('app_daily_notes_index', {tab: 'students'}) }}" class="col-span-1 block rounded-2xl border border-gray-200 bg-white p-5 shadow-xs hover:border-forest-300 hover:shadow-sm transition">
             <div class="flex items-center justify-between">

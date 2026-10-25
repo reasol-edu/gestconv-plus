@@ -161,9 +161,9 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 ## Ajustes disponibles
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
-Mantenimiento, Visualización, Correo electrónico, Modo tablón, Notificaciones a familias, Avisos
-por correo, Personalización de informes, Plantillas de informes, Ausencias, Tareas de sanción y
-Subida de ficheros.
+Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón,
+Notificaciones a familias, Avisos por correo, Personalización de informes, Plantillas de informes,
+Ausencias, Tareas de sanción y Subida de ficheros.
 
 ### Visualización
 
@@ -485,6 +485,40 @@ Mientras está activado:
   el enlace público de tareas del alumnado y la recuperación de contraseña.
 - **Los avisos por correo y las demás tareas automáticas siguen funcionando**: el modo
   mantenimiento solo limita el acceso de las personas, no detiene el servidor.
+
+### Secciones de la aplicación {#secciones-de-la-aplicacion}
+
+| Ajuste | Ámbito | Tipo | Por defecto |
+|---|---|---|---|
+| Salidas del aula | Global, centro | Activado / Desactivado | Activado |
+| Ausencias del profesorado | Global, centro | Activado / Desactivado | Activado |
+| Notas del día | Global, centro | Activado / Desactivado | Activado |
+| Tareas de sanción | Global, centro | Activado / Desactivado | Activado |
+
+Permiten que un centro (o toda la plataforma) no use una parte de la aplicación. Todas vienen
+**activadas**, así que nada cambia hasta que alguien las desactiva. Siguen las reglas de cualquier
+otro ajuste: el valor de un centro prevalece sobre el global, salvo que el global esté bloqueado.
+
+Con una sección desactivada:
+
+- **Desaparece de la interfaz**: del menú lateral, de los accesos rápidos del inicio, de la
+  paleta de comandos y de las pantallas donde aparecía (la ficha del alumno, el calendario, las
+  alertas de la campana).
+- **Sus direcciones dejan de funcionar**: quien las escriba a mano o las tenga guardadas recibe
+  una página «no encontrada».
+- **Los datos se conservan**: volver a activarla deja todo como estaba.
+
+Qué incluye cada una:
+
+- **Salidas del aula**: la autorización y el registro de salidas, y el **pase prioritario** del
+  alumnado, que depende de ellas.
+- **Ausencias del profesorado**: el registro de ausencias y sus actividades, y su apartado en el
+  calendario.
+- **Notas del día**: las anotaciones diarias sobre el alumnado y las alertas por umbral de parte.
+- **Tareas de sanción**: la petición de tareas al profesorado del grupo al sancionar a un alumno.
+  Con la sección desactivada, las sanciones nuevas no generan tareas ni sus avisos por correo, no
+  se envían los recordatorios y el enlace público para el alumno deja de abrirse. Las sanciones y
+  las tareas ya creadas no se borran.
 
 ## Copias de seguridad
 
