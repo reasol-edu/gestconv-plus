@@ -36,6 +36,22 @@ enum Feature: string
     }
 
     /**
+     * Prefijos de las rutas de los catálogos de la sección. Llevan el centro en la dirección
+     * (/centro/{centreId}/…), que no tiene por qué ser el seleccionado, así que se comprueba ese.
+     *
+     * @return list<string>
+     */
+    public function catalogRoutePrefixes(): array
+    {
+        return match ($this) {
+            self::Exits         => ['app_centre_exit_reasons'],
+            self::DailyNotes    => ['app_centre_daily_note_types'],
+            self::Absences,
+            self::SanctionTasks => [],
+        };
+    }
+
+    /**
      * Nombres de los Live Components de cada sección: sus actualizaciones llegan por una ruta
      * común (ux_live_component), así que se bloquean aparte para que no queden accesibles.
      *

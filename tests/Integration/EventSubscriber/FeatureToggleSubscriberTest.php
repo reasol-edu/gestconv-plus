@@ -30,6 +30,14 @@ final class FeatureToggleSubscriberTest extends ControllerTestCase
         $this->loginAs($teacher, $this->centre);
     }
 
+    private function signInAsAdmin(): void
+    {
+        $this->centre = (new EducationalCentre())->setCode('12345678')->setName('Centro')->setCity('Ciudad');
+        $admin        = (new Teacher(new PersonName('Nombre', 'Admin')))->setUsername('admin')->setAdmin(true);
+        $this->persist($this->centre, $admin);
+        $this->loginAs($admin, $this->centre);
+    }
+
     /** Define los cuatro ajustes (como hace la migración) con el valor global indicado. */
     private function defineFeatures(bool $global = true): void
     {
@@ -134,6 +142,49 @@ final class FeatureToggleSubscriberTest extends ControllerTestCase
 
         self::assertCount(0, $crawler->filter('nav a[href="/salidas"]'));
         self::assertCount(1, $crawler->filter('nav a[href="/notas"]'), 'las demás secciones siguen en el menú');
+    }
+
+    /** @return iterable<string, array{Feature, string}> */
+    public static function catalogs(): iterable
+    {
+        yield 'motivos de salida' => [Feature::Exits, 'motivos-salida'];
+        yield 'tipos de nota'     => [Feature::DailyNotes, 'tipos-notas'];
+    }
+
+    #[DataProvider('catalogs')]
+    public function testACatalogIsOpenWhileItsSectionIsEnabled(Feature $feature, string $path): void
+    {
+        $this->signInAsAdmin();
+        $this->defineFeatures();
+
+        $this->client->request('GET', sprintf('/centro/%s/%s', $this->centre->getId()->toRfc4122(), $path));
+
+        self::assertSame(200, $this->client->getResponse()->getStatusCode());
+    }
+
+    #[DataProvider('catalogs')]
+    public function testACatalogOfADisabledSectionAnswersNotFound(Feature $feature, string $path): void
+    {
+        $this->signInAsAdmin();
+        $this->defineFeatures();
+        $this->disableForCentre($feature);
+
+        $this->client->request('GET', sprintf('/centro/%s/%s', $this->centre->getId()->toRfc4122(), $path));
+
+        self::assertSame(404, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testACatalogIsJudgedByTheCentreInTheUrlNotTheSelectedOne(): void
+    {
+        $this->signInAsAdmin();
+        $this->defineFeatures();
+        $other = (new EducationalCentre())->setCode('87654321')->setName('Otro')->setCity('Ciudad');
+        $this->persist($other);
+        $this->persist((new CentreSettingValue())->setDefinition($this->definitions['exits'])->setCentre($other)->setValue('false'));
+
+        $this->client->request('GET', sprintf('/centro/%s/motivos-salida', $other->getId()->toRfc4122()));
+
+        self::assertSame(404, $this->client->getResponse()->getStatusCode(), 'el centro seleccionado lo tiene activado, pero el de la dirección no');
     }
 
     public function testLiveComponentUpdatesOfADisabledSectionAreBlocked(): void

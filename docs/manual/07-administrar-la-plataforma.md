@@ -505,7 +505,8 @@ Con una sección desactivada:
   paleta de comandos y de las pantallas donde aparecía (la ficha del alumno, el calendario, las
   alertas de la campana).
 - **Sus direcciones dejan de funcionar**: quien las escriba a mano o las tenga guardadas recibe
-  una página «no encontrada».
+  una página «no encontrada». Lo mismo ocurre con los catálogos de la sección (los motivos de
+  salida y los tipos de nota), que además desaparecen del panel del centro.
 - **Los datos se conservan**: volver a activarla deja todo como estaba.
 
 Qué incluye cada una:
