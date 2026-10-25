@@ -47,6 +47,8 @@ avanzar o retroceder de día sin volver al calendario:
 - **Eventos** de ese día, con su horario, descripción, enlace si lo tienen, y los grupos a los que
   están asociados y la etiqueta **General** si los ve todo el profesorado.
 
+![Vista de detalle de un día, con un evento dentro de su tramo horario](img/calendario/calendario-dia.png)
+
 Quien puede [publicar eventos](#quien-puede-publicar-eventos) tiene además un botón **Añadir
 evento** que abre el formulario de alta con la fecha del día ya rellenada.
 
@@ -90,7 +92,13 @@ Cada evento tiene:
       los grupos asociados (y la dirección y los administradores).
 
 Si no se elige ningún grupo, el evento es **general** automáticamente y el formulario no muestra
-ninguna opción de visibilidad.
+ninguna opción de visibilidad:
+
+![Formulario de un evento sin grupos asociados: no hay opciones de visibilidad](img/calendario/evento-formulario-sin-grupos.png)
+
+En cuanto se elige un grupo aparecen las dos opciones, cada una con su explicación:
+
+![Formulario de un evento con un grupo asociado: aparecen las opciones «General» y «Restringido a grupos»](img/calendario/evento-formulario.png)
 
 ## Modo tablón
 

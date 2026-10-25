@@ -65,6 +65,8 @@ tablón, así como el nombre del grupo en los listados de partes, sanciones, not
 - Para **volver al color por defecto**, pulsa **Volver al color por defecto**: se elimina el color
   personalizado y el grupo recupera el calculado.
 
+![Formulario de un grupo con su color personalizado y el botón para volver al color por defecto](img/centro/centro-oferta-color.png)
+
 Si el centro no tiene un curso académico activo, la sección muestra un aviso y no permite
 gestionar la oferta formativa. El paso a paso completo está en
 [Preparar el curso académico](02-preparar-el-curso-academico.md#la-oferta-formativa-a-mano).
