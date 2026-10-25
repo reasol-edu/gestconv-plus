@@ -240,6 +240,9 @@ el día a día:
 - **Plantillas de informes** — un PDF propio como fondo de cada página de los informes, general
   o por tipo de informe (ver
   [Plantillas de informes](07-administrar-la-plataforma.md#plantillas-de-informes)).
+- **Secciones de la aplicación** — activar o desactivar Salidas, Ausencias, Notas y tareas de
+  sanción en este centro (ver
+  [Secciones de la aplicación](07-administrar-la-plataforma.md#secciones-de-la-aplicacion)).
 
 La referencia completa de todos los ajustes, con sus rangos y valores por defecto, está en
 [Ajustes disponibles](07-administrar-la-plataforma.md#ajustes-disponibles); la mecánica de

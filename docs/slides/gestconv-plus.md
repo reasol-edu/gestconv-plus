@@ -792,6 +792,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Los cuatro catálogos se pueden **exportar e importar en JSON** para copiar
   la configuración entre centros, con la opción de vaciar lo existente antes
   de importar.
+- **Salidas, Ausencias, Notas y tareas de sanción** se pueden desactivar por
+  centro o para toda la plataforma; vienen activadas y los datos se conservan.
 
 ---
 

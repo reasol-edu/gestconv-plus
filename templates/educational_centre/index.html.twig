@@ -280,7 +280,7 @@
         {% endif %}
 
         {# ── Motivos de salida del aula ── equipo directivo y admins #}
-        {% if is_granted('educational_centre.section', centre) %}
+        {% if is_granted('educational_centre.section', centre) and feature_enabled_for('exits', centre) %}
             <a href="{{ path('app_centre_exit_reasons_index', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">
@@ -304,7 +304,7 @@
         {% endif %}
 
         {# ── Tipos de notas diarias ── equipo directivo y admins #}
-        {% if is_granted('educational_centre.section', centre) %}
+        {% if is_granted('educational_centre.section', centre) and feature_enabled_for('daily_notes', centre) %}
             <a href="{{ path('app_centre_daily_note_types_index', {centreId: centre.id}) }}"
                class="group rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col
                       hover:border-forest-200 hover:shadow-sm transition-all">

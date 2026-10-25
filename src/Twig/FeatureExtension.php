@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Twig;
 
+use App\Entity\EducationalCentre;
 use App\Service\Feature;
 use App\Service\FeatureToggle;
 use Twig\Extension\AbstractExtension;
@@ -20,6 +21,8 @@ final class FeatureExtension extends AbstractExtension
     {
         return [
             new TwigFunction('feature_enabled', fn (string $feature): bool => $this->features->isEnabled(Feature::from($feature))),
+            // Para pantallas de un centro que no tiene por qué ser el seleccionado (p. ej. el de un administrador global).
+            new TwigFunction('feature_enabled_for', fn (string $feature, EducationalCentre $centre): bool => $this->features->isEnabledForCentre(Feature::from($feature), $centre)),
         ];
     }
 }

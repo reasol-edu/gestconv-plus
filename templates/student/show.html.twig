@@ -86,7 +86,7 @@
     {% include 'student/_contact.html.twig' with { student: student, canSeeContact: canSeeContact, canEditContact: canEditContact } %}
 
     {# ── Notas diarias ─────────────────────────────────────────────────────── #}
-    {% if academicYear is not null %}
+    {% if academicYear is not null and feature_enabled('daily_notes') %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
             <div class="border-b border-gray-100 px-6 py-3.5">
                 <h2 class="text-sm font-semibold text-gray-800">{{ 'daily_note.student_history_title'|trans({}, 'admin') }}</h2>

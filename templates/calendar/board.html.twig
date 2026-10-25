@@ -98,7 +98,7 @@
                                                         <p class="text-xs text-gray-400 dark:text-forest-400">{{ 'board_today_no_guards'|trans({}, 'calendar') }}</p>
                                                     {% endif %}
 
-                                                    {% if entry.activities is not empty %}
+                                                    {% if entry.activities is not empty and feature_enabled('absences') %}
                                                         <p class="mt-2 pt-2 border-t border-gray-100 dark:border-white/10 text-[11px] font-semibold text-gray-500 dark:text-forest-300">
                                                             {{ 'board_today_slot_absences_label'|trans({}, 'calendar') }}:
                                                         </p>

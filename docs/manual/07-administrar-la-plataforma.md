@@ -513,7 +513,9 @@ Qué incluye cada una:
 - **Salidas del aula**: la autorización y el registro de salidas, y el **pase prioritario** del
   alumnado, que depende de ellas.
 - **Ausencias del profesorado**: el registro de ausencias y sus actividades, y su apartado en el
-  calendario.
+  calendario y en el tablón. La pantalla de **Guardias** no se desactiva con
+  ella: sigue disponible y sigue mostrando las ausencias que ya estuvieran registradas, pero sin
+  ausencias nuevas que cubrir no tendrá apenas nada que enseñar.
 - **Notas del día**: las anotaciones diarias sobre el alumnado y las alertas por umbral de parte.
 - **Tareas de sanción**: la petición de tareas al profesorado del grupo al sancionar a un alumno.
   Con la sección desactivada, las sanciones nuevas no generan tareas ni sus avisos por correo, no
