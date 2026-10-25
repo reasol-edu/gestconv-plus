@@ -31,8 +31,9 @@ use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 #[AsLiveComponent]
 class CalendarComponent extends AbstractCalendarComponent
 {
-    private const array ABSENCE_COLOR  = ['bg' => 'bg-amber-100', 'text' => 'text-amber-800', 'border' => 'border-amber-300'];
-    private const array GENERAL_EVENT_COLOR = ['bg' => 'bg-sky-100', 'text' => 'text-sky-800', 'border' => 'border-sky-300'];
+    /** Colores base de lo que no pertenece a un grupo (ámbar para las ausencias, azul cielo para los eventos generales). */
+    private const string ABSENCE_COLOR       = '#f59e0b';
+    private const string GENERAL_EVENT_COLOR = '#0ea5e9';
 
     /** @var list<Sanction|Absence|SchoolEvent>|null */
     private ?array $itemsCache = null;
@@ -99,7 +100,7 @@ class CalendarComponent extends AbstractCalendarComponent
                     return [
                         'label'   => $item->getStudent()->getName()->full() . ' · ' . $group->getName(),
                         'details' => $item->getCalendarLabel() ?? trim(strip_tags($item->getDetails())),
-                        'color'   => $this->colorPalette->colorFor($group->getId()->toRfc4122()),
+                        'color'   => $this->colorPalette->forGroup($group),
                         'icon'    => 'heroicons:exclamation-triangle',
                     ];
                 }
@@ -107,15 +108,15 @@ class CalendarComponent extends AbstractCalendarComponent
                     return [
                         'label'   => $item->getTeacher()->getName()->full(),
                         'details' => '',
-                        'color'   => self::ABSENCE_COLOR,
+                        'color'   => $this->colorPalette->fromHex(self::ABSENCE_COLOR),
                         'icon'    => 'heroicons:user-circle',
                     ];
                 }
 
                 $firstGroup = $item->getGroups()->first();
                 $color      = $item->isGeneral() || $firstGroup === false
-                    ? self::GENERAL_EVENT_COLOR
-                    : $this->colorPalette->colorFor($firstGroup->getId()->toRfc4122());
+                    ? $this->colorPalette->fromHex(self::GENERAL_EVENT_COLOR)
+                    : $this->colorPalette->forGroup($firstGroup);
 
                 return [
                     'label'   => $item->getStartTime()->format('H:i') . '–' . $item->getEndTime()->format('H:i') . ' ' . $item->getName(),

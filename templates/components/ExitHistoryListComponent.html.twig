@@ -115,7 +115,7 @@
                         <p class="text-sm font-semibold text-gray-900">
                             {{ exit.student.name.lastName }}, {{ exit.student.name.firstName }}
                             {% if passes[exit.student.id.toRfc4122] is defined %}{{ ex.pass_badge() }}{% endif %}
-                            <span class="font-normal text-gray-500">· {{ exit.group.name }}</span>
+                            <twig:GroupChip :group="exit.group" class="ml-1 font-normal" />
                         </p>
                         {% if exit.returned %}
                             <span class="shrink-0 text-sm font-semibold tabular-nums text-gray-700">{{ exit_duration(exit_seconds(exit)) }}</span>
@@ -163,7 +163,7 @@
                                 <a href="{{ path('app_students_show', {id: exit.student.id}) }}" class="hover:text-forest-700 hover:underline">{{ exit.student.name.lastName }}, {{ exit.student.name.firstName }}</a>
                                 {% if passes[exit.student.id.toRfc4122] is defined %}{{ ex.pass_badge() }}{% endif %}
                             </td>
-                            <td class="px-6 py-3 text-gray-700">{{ exit.group.name }}</td>
+                            <td class="px-6 py-3"><twig:GroupChip :group="exit.group" /></td>
                             <td class="px-6 py-3 text-gray-900">
                                 {{ exit.reason.name }}
                                 {% if exit.observations %}<span class="block text-xs text-gray-500">{{ exit.observations }}</span>{% endif %}

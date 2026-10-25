@@ -26,6 +26,13 @@
         {% endif %}
     </div>
 
+    {% if item.events is not empty %}
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'guards.events_title'|trans({}, 'admin') }}</h3>
+            {% include 'calendar/_slot_events.html.twig' with {events: item.events, class: 'mt-0'} only %}
+        </div>
+    {% endif %}
+
     <div class="px-6 py-4">
         <div class="flex items-center justify-between gap-3 mb-3">
             <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'guards.absences_title'|trans({}, 'admin') }}</h3>
@@ -52,7 +59,7 @@
                                     <div class="flex flex-wrap gap-1.5 mb-2">
                                         {% for subject in activity.subjects %}
                                             <span class="inline-flex items-center rounded-full bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-0.5 text-xs font-medium">
-                                                {{ subject.subject }} <span class="text-forest-500 font-normal ml-1">{{ subject.group.name }}</span>
+                                                {{ subject.subject }} <twig:GroupChip :group="subject.group" class="ml-1" />
                                             </span>
                                         {% endfor %}
                                     </div>

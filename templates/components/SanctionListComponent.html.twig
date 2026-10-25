@@ -84,7 +84,7 @@
                             <td data-label="{{ 'sanction.col.student'|trans({}, 'admin')|e('html_attr') }}"
                                 class="px-6 py-4 font-medium text-gray-900">
                                 {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
-                                <div class="font-normal text-xs text-gray-500">{{ sanction.group.name }}</div>
+                                <div class="mt-0.5 font-normal"><twig:GroupChip :group="sanction.group" /></div>
                                 {% if sanction.registeredInSeneca is same as true or
                                       (not sanction.noMeasureApplied and (sanction.measuresEffective is same as false or sanction.familyClaimed is same as true)) %}
                                     <div class="flex flex-wrap gap-1 mt-1">

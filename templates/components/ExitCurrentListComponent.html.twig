@@ -14,7 +14,7 @@
                         <a href="{{ path('app_students_show', {id: student.id}) }}" class="hover:text-forest-700 hover:underline">{{ student.name.lastName }}, {{ student.name.firstName }}</a>
                         {% if passes[student.id.toRfc4122] is defined %}{{ ex.pass_badge() }}{% endif %}
                     </p>
-                    <p class="mt-0.5 text-sm text-gray-500">{{ exit.group.name }}</p>
+                    <p class="mt-1"><twig:GroupChip :group="exit.group" /></p>
                 </div>
                 {{ ex.timer(exit) }}
             </div>

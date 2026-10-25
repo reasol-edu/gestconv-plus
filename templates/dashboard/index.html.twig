@@ -128,6 +128,9 @@
                         {% if event.description is not empty %}
                             <p class="mt-0.5 truncate text-xs text-gray-500">{{ event.description }}</p>
                         {% endif %}
+                        {% if event.groups|length > 0 %}
+                            <p class="mt-1 flex flex-wrap gap-1">{% for group in event.groups %}<twig:GroupChip :group="group" />{% endfor %}</p>
+                        {% endif %}
                     </div>
                     <p class="shrink-0 text-right text-xs text-gray-400 tabular-nums whitespace-nowrap">
                         {{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }}
@@ -316,7 +319,7 @@
                                         <p class="truncate text-sm font-medium text-gray-800">
                                             {{ sanction.student.name.lastName }}, {{ sanction.student.name.firstName }}
                                         </p>
-                                        <p class="mt-0.5 text-xs text-gray-500">{{ sanction.group.name }}</p>
+                                        <p class="mt-1"><twig:GroupChip :group="sanction.group" /></p>
                                         {% if sanction.noMeasureApplied %}
                                             <span class="mt-1 inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-[11px] font-medium">
                                                 {{ 'sanction.badge.no_measure'|trans({}, 'admin') }}
@@ -376,7 +379,7 @@
                                     <p class="truncate text-sm font-medium text-gray-800">
                                         {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
                                     </p>
-                                    <p class="mt-0.5 text-xs text-gray-500">{{ report.group.name }} · {{ report.occurredAt|date('format.date'|trans) }}</p>
+                                    <p class="mt-1 flex items-center gap-1.5 text-xs text-gray-500"><twig:GroupChip :group="report.group" /> · {{ report.occurredAt|date('format.date'|trans) }}</p>
                                 </div>
                                 {% if report.isNotified %}
                                     <span class="shrink-0 inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium">
@@ -439,7 +442,7 @@
                     <li>
                         <a href="{{ path('app_tutorship_index', {groupId: entry.group.id}) }}"
                            class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
-                            <p class="truncate text-sm font-medium text-gray-800">{{ entry.group.name }}</p>
+                            <p class="truncate text-sm font-medium"><twig:GroupChip :group="entry.group" class="text-sm" /></p>
                             <p class="shrink-0 text-xs text-gray-500">{{ entry.students }} {{ 'tutored_groups_students'|trans({}, 'dashboard') }}</p>
                         </a>
                     </li>

@@ -49,11 +49,20 @@ class DayDetailBuilder
             $activitiesBySlot[$activity->getTimeSlot()->getId()->toRfc4122()][] = $activity;
         }
 
+        if ($isAdmin) {
+            $events = $this->events->findAllForAcademicYearAndDate($year, $date);
+        } elseif ($viewer !== null) {
+            $events = $this->events->findVisibleForTeacherAndDate($viewer, $year, $date);
+        } else {
+            $events = [];
+        }
+
         $timeSlots = [];
         foreach ($slots as $slot) {
             $timeSlots[] = new BoardTodayTimeSlot(
                 $slot,
                 $activitiesBySlot[$slot->getId()->toRfc4122()] ?? [],
+                BoardTodayTimeSlot::eventsDuring($slot, $events),
             );
         }
 
@@ -67,14 +76,6 @@ class DayDetailBuilder
         );
 
         $absentTeachers = $isAdmin ? $this->absences->findTeachersAbsentOn($year, $date) : [];
-
-        if ($isAdmin) {
-            $events = $this->events->findAllForAcademicYearAndDate($year, $date);
-        } elseif ($viewer !== null) {
-            $events = $this->events->findVisibleForTeacherAndDate($viewer, $year, $date);
-        } else {
-            $events = [];
-        }
 
         return new DayDetailReport(
             $date,

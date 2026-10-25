@@ -121,7 +121,7 @@
                                     </a>
                                 </td>
                                 <td data-label="{{ 'daily_note.col.group'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-6 py-4 text-gray-600">{{ note.group.name }}</td>
+                                    class="px-6 py-4"><twig:GroupChip :group="note.group" /></td>
                                 <td data-label="{{ 'daily_note.col.type'|trans({}, 'admin')|e('html_attr') }}"
                                     class="px-6 py-4 text-gray-600">{{ note.type.name }}</td>
                                 <td data-label="{{ 'daily_note.col.teacher'|trans({}, 'admin')|e('html_attr') }}"

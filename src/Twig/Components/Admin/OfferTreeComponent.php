@@ -68,6 +68,10 @@ class OfferTreeComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $editDetails = '';
 
+    /** Color personalizado del grupo seleccionado (#rrggbb); vacío si usa el calculado. */
+    #[LiveProp(writable: true)]
+    public string $editColor = '';
+
     /** @var array<string, string> */
     #[LiveProp]
     public array $errors = [];
@@ -215,7 +219,7 @@ class OfferTreeComponent extends AbstractController
         $this->newTeacherId = $this->newTeacherSubject = '';
         $selected = $this->getSelected();
         if ($selected === null) {
-            $this->editName = $this->editDetails = '';
+            $this->editName = $this->editDetails = $this->editColor = '';
 
             return;
         }
@@ -223,6 +227,7 @@ class OfferTreeComponent extends AbstractController
         $entity = $selected['entity'];
         $this->editName    = $entity->getName();
         $this->editDetails = $entity->getDetails() ?? '';
+        $this->editColor   = $entity instanceof Group ? ($entity->getColor() ?? '') : '';
     }
 
     // ── Add actions ──────────────────────────────────────────────────────────
@@ -287,14 +292,42 @@ class OfferTreeComponent extends AbstractController
             return;
         }
 
-        $entity  = $selected['entity'];
+        $entity = $selected['entity'];
+
+        if ($entity instanceof Group && $this->editColor !== '' && preg_match('/^#[0-9a-f]{6}$/i', $this->editColor) !== 1) {
+            $this->errors = ['color' => $this->t('group.error.color_invalid')];
+
+            return;
+        }
+
         $details = trim($this->editDetails);
         $entity->setName($name);
         $entity->setDetails($details !== '' ? $details : null);
+        if ($entity instanceof Group) {
+            $entity->setColor($this->editColor !== '' ? $this->editColor : null);
+        }
 
         $this->em->flush();
         $this->errors = [];
         $this->flashSuccess($this->t($selected['type'] . '.flash.saved'));
+    }
+
+    /** Quita el color personalizado del grupo seleccionado: vuelve a usar el calculado. */
+    #[LiveAction]
+    public function resetGroupColor(): void
+    {
+        $this->requireWritableCentre();
+        $group = $this->getSelectedGroup();
+        if ($group === null) {
+            return;
+        }
+
+        $group->setColor(null);
+        $this->em->flush();
+
+        $this->editColor = '';
+        $this->errors    = [];
+        $this->flashSuccess($this->t('group.flash.color_reset'));
     }
 
     #[LiveAction]

@@ -31,7 +31,7 @@
             </h1>
             <p class="mt-1 text-sm text-gray-500">
                 {{ student.studentId }}
-                {%- for group in activeGroups %} · {{ group.name }}{% endfor %}
+                {%- for group in activeGroups %} <twig:GroupChip :group="group" />{% endfor %}
             </p>
         </div>
         <div class="flex items-center gap-2 shrink-0">

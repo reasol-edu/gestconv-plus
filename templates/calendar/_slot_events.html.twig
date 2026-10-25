@@ -1,0 +1,15 @@
+{# Eventos del día que caen dentro de un tramo horario, mostrados en el propio tramo. #}
+{% if events is not empty %}
+    <ul class="{{ class|default('mt-2') }} space-y-1">
+        {% for event in events %}
+            <li class="flex items-start gap-1.5 text-xs text-gray-600">
+                {{ ux_icon('heroicons:megaphone', {class: 'mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-500'}) }}
+                <span>
+                    <span class="font-medium">{{ event.name }}</span>
+                    <span class="tabular-nums text-gray-400">{{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }}</span>
+                    {% for group in event.groups %}<twig:GroupChip :group="group" class="ml-0.5" />{% endfor %}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

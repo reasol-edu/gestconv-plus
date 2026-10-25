@@ -57,6 +57,7 @@ class BoardTodayBuilder
             $timeSlots[] = new BoardTodayTimeSlot(
                 $slot,
                 $activitiesBySlot[$slot->getId()->toRfc4122()] ?? [],
+                BoardTodayTimeSlot::eventsDuring($slot, $events),
             );
         }
 

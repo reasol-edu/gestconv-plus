@@ -10,7 +10,7 @@
         <div class="divide-y divide-gray-100">
             {% for groupName, entries in sanctionsByGroup %}
                 <div class="px-6 py-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ groupName }}</p>
+                    <p class="mb-3"><twig:GroupChip :group="(entries|first).sanction.group" /></p>
                     <ul class="space-y-3">
                         {% for entry in entries %}
                             {% include 'guards/_sanction.html.twig' with { entry: entry } %}

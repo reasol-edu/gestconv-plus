@@ -125,6 +125,7 @@
                                             data-live-id-param="{{ group.id }}"
                                             class="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors
                                                    {{ is_sel ? 'bg-forest-50 ring-1 ring-inset ring-forest-200' : 'hover:bg-gray-50' }}">
+                                        <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: {{ group_color(group).hex }}" aria-hidden="true"></span>
                                         <span class="flex-1 min-w-0 truncate text-sm {{ is_sel ? 'font-semibold text-forest-800' : 'text-gray-800' }}">
                                             {{ group.name }}
                                         </span>
@@ -308,6 +309,35 @@
                                             </div>
                                             {% if errors.teachers is defined %}<p class="mt-1 text-xs text-red-600">{{ errors.teachers }}</p>{% endif %}
                                         {% endif %}
+                                    </div>
+
+                                    {# Color del grupo: el personalizado o, si no tiene, el calculado a partir de su id #}
+                                    {% set default_color = group_default_color(sel_group) %}
+                                    {% set has_custom_color = editColor != '' or sel_group.color is not null %}
+                                    <div class="border-t border-gray-100 pt-4 sm:col-span-3">
+                                        <label class="mb-1 block text-xs font-medium text-gray-600" for="group-color">{{ 'group.field.color'|trans({}, 'admin') }}</label>
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            <input id="group-color" type="color"
+                                                   data-model="norender|editColor"
+                                                   value="{{ editColor != '' ? editColor : (sel_group.color ?? default_color) }}"
+                                                   class="h-9 w-14 cursor-pointer rounded-lg border border-gray-200 bg-white p-1">
+                                            <twig:GroupChip :group="sel_group" />
+                                            <span class="text-xs text-gray-500">
+                                                {% if has_custom_color %}
+                                                    {{ 'group.color.custom'|trans({}, 'admin') }}
+                                                {% else %}
+                                                    {{ 'group.color.default'|trans({'%color%': default_color}, 'admin') }}
+                                                {% endif %}
+                                            </span>
+                                            {% if has_custom_color %}
+                                                <button type="button" data-action="live#action" data-live-action-param="resetGroupColor"
+                                                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                                                    {{ ux_icon('heroicons:arrow-uturn-left', {class: 'h-3.5 w-3.5'}) }}{{ 'group.color.reset'|trans({'%color%': default_color}, 'admin') }}
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">{{ 'group.color.help'|trans({}, 'admin') }}</p>
+                                        {% if errors.color is defined %}<p class="mt-1 text-xs text-red-600">{{ errors.color }}</p>{% endif %}
                                     </div>
 
                                     <div class="border-t border-gray-100 pt-4 sm:col-span-3">

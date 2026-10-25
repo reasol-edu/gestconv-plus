@@ -104,6 +104,83 @@ class DayDetailBuilderTest extends RepositoryTestCase
         self::assertCount(1, $report->sanctionedStudents);
     }
 
+    private function makeSlot(array $world, string $name, string $from, string $to): TimeSlot
+    {
+        // 2026-03-10 es martes -> dayOfWeek 1
+        $slot = (new TimeSlot())
+            ->setName($name)
+            ->setDayOfWeek(1)
+            ->setStartTime(new \DateTimeImmutable($from))
+            ->setEndTime(new \DateTimeImmutable($to))
+            ->setAcademicYear($world['year']);
+        $this->persist($slot);
+
+        return $slot;
+    }
+
+    public function testAnEventInsideATimeSlotIsShownInThatSlot(): void
+    {
+        $world = $this->makeWorld('eventinslot');
+        $this->makeSlot($world, '1ª hora', '08:00', '08:55');
+        $this->makeSlot($world, '2ª hora', '09:00', '09:55');
+        $this->makeEvent($world, 'Charla', general: true); // 09:00–10:00
+
+        $report = $this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-10'));
+
+        self::assertSame([], $report->timeSlots[0]->events, 'no coincide con la primera hora');
+        self::assertCount(1, $report->timeSlots[1]->events);
+        self::assertSame('Charla', $report->timeSlots[1]->events[0]->getName());
+    }
+
+    public function testAnEventOverlappingTwoSlotsAppearsInBoth(): void
+    {
+        $world = $this->makeWorld('eventtwoslots');
+        $this->makeSlot($world, '1ª hora', '08:30', '09:25');
+        $this->makeSlot($world, '2ª hora', '09:30', '10:25');
+        $this->makeEvent($world, 'Taller', general: true); // 09:00–10:00
+
+        $report = $this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-10'));
+
+        self::assertCount(1, $report->timeSlots[0]->events);
+        self::assertCount(1, $report->timeSlots[1]->events);
+    }
+
+    public function testASlotThatOnlyTouchesTheEventEdgeDoesNotShowIt(): void
+    {
+        $world = $this->makeWorld('eventedge');
+        $this->makeSlot($world, '1ª hora', '08:00', '09:00'); // acaba cuando empieza el evento
+        $this->makeEvent($world, 'Charla', general: true);
+
+        $report = $this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-10'));
+
+        self::assertSame([], $report->timeSlots[0]->events);
+    }
+
+    public function testEventsOutsideAnySlotAreListedApart(): void
+    {
+        $world = $this->makeWorld('eventoutside');
+        $this->makeSlot($world, '1ª hora', '08:00', '08:55');
+        $this->makeEvent($world, 'Charla', general: true); // 09:00–10:00, sin tramo
+
+        $report = $this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-10'));
+
+        self::assertCount(1, $report->events, 'sigue en el listado completo del día');
+        self::assertCount(1, \App\Service\BoardTodayTimeSlot::eventsOutside($report->timeSlots, $report->events));
+    }
+
+    public function testASlotOnlyShowsTheEventsTheViewerCanSee(): void
+    {
+        $world  = $this->makeWorld('eventvisibility');
+        $viewer = $this->makeTeacher('unrelated-slot');
+        $this->persist($viewer);
+        $this->makeSlot($world, '2ª hora', '09:00', '09:55');
+        $this->makeEvent($world, 'Reunión ajena', general: false, groups: [$world['group']]);
+
+        $report = $this->builder->build($world['year'], $viewer, false, new \DateTimeImmutable('2026-03-10'));
+
+        self::assertSame([], $report->timeSlots[0]->events);
+    }
+
     public function testBuildIncludesTimeSlotsForTheWeekday(): void
     {
         $world = $this->makeWorld('slots');

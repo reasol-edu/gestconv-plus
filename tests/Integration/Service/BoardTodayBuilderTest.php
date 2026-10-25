@@ -8,6 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\NonWorkingDay;
 use App\Entity\SchoolEvent;
+use App\Entity\TimeSlot;
 use App\Service\BoardTodayBuilder;
 use App\Tests\Integration\RepositoryTestCase;
 
@@ -53,6 +54,26 @@ class BoardTodayBuilderTest extends RepositoryTestCase
         self::assertCount(0, $report->timeSlots);
         self::assertCount(1, $report->events);
         self::assertSame('Jornada de puertas abiertas', $report->events[0]->getName());
+    }
+
+    public function testBuildPlacesAnEventInsideTheSlotItOverlapsAndKeepsTheRestApart(): void
+    {
+        // 2026-03-10 es martes -> dayOfWeek 1
+        $slot = (new TimeSlot())->setName('2ª hora')->setDayOfWeek(1)
+            ->setStartTime(new \DateTimeImmutable('09:00'))->setEndTime(new \DateTimeImmutable('09:55'))
+            ->setAcademicYear($this->year);
+        $this->persist($slot);
+        $this->makeEvent('Charla', new \DateTimeImmutable('2026-03-10')); // 09:00–10:00
+        $late = $this->makeEvent('Claustro', new \DateTimeImmutable('2026-03-10'));
+        $late->setStartTime(new \DateTimeImmutable('17:00'))->setEndTime(new \DateTimeImmutable('18:00'));
+        $this->flush();
+
+        $report = $this->builder->build($this->year, new \DateTimeImmutable('2026-03-10'));
+
+        self::assertCount(1, $report->timeSlots[0]->events);
+        self::assertSame('Charla', $report->timeSlots[0]->events[0]->getName());
+        self::assertCount(1, $report->eventsOutsideSlots());
+        self::assertSame('Claustro', $report->eventsOutsideSlots()[0]->getName());
     }
 
     public function testBuildEventsListIsEmptyWhenNoneRegistered(): void

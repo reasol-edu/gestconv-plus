@@ -27,6 +27,10 @@ class Group
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $details = null;
 
+    /** Color personalizado en formato #rrggbb; null usa el que calcula GroupColorPalette. */
+    #[ORM\Column(length: 7, nullable: true)]
+    private ?string $color = null;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private Course $course;
@@ -76,6 +80,18 @@ class Group
     public function setDetails(?string $details): static
     {
         $this->details = $details;
+
+        return $this;
+    }
+
+    public function getColor(): ?string
+    {
+        return $this->color;
+    }
+
+    public function setColor(?string $color): static
+    {
+        $this->color = $color !== null && preg_match('/^#[0-9a-f]{6}$/i', $color) === 1 ? strtolower($color) : null;
 
         return $this;
     }

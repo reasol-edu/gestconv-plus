@@ -94,9 +94,7 @@
                                         </span>
                                     {% endif %}
                                     {% for group in event.groups %}
-                                        <span class="inline-flex items-center rounded-full bg-forest-50 px-2 py-0.5 text-xs font-medium text-forest-700">
-                                            {{ group.name }}
-                                        </span>
+                                        <twig:GroupChip :group="group" />
                                     {% endfor %}
                                 </div>
                             </td>

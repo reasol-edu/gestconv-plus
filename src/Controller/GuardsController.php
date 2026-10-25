@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Attribute\CurrentCentre;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
+use App\Entity\SchoolEvent;
 use App\Entity\Teacher;
 use App\Repository\AbsenceRepository;
 use App\Repository\ActivityAttachmentRepository;
@@ -14,6 +15,7 @@ use App\Repository\ActivityRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\SanctionTaskAttachmentRepository;
 use App\Repository\SanctionTaskRepository;
+use App\Repository\SchoolEventRepository;
 use App\Repository\TimeSlotRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\AttachmentDownloadResponder;
@@ -36,6 +38,7 @@ class GuardsController extends AbstractController
         private readonly TeacherYearRoles $roles,
         private readonly TimeSlotRepository $timeSlots,
         private readonly BoardTodayBuilder $boardTodayBuilder,
+        private readonly SchoolEventRepository $events,
         private readonly SanctionRepository $sanctions,
         private readonly SanctionTaskRepository $tasks,
         private readonly AbsenceRepository $absences,
@@ -71,6 +74,15 @@ class GuardsController extends AbstractController
 
         $report = $this->boardTodayBuilder->build($year, $date);
 
+        // El informe del tablón trae todos los eventos; quien no es de la dirección solo ve los suyos.
+        $visibleEventIds = null;
+        if (!$isAdmin) {
+            $visibleEventIds = array_map(
+                static fn (SchoolEvent $event): string => $event->getId()->toRfc4122(),
+                $this->events->findVisibleForTeacherAndDate($user, $year, $date),
+            );
+        }
+
         $slots = [];
         foreach ($report->timeSlots as $item) {
             if (!$isAdmin && !$item->timeSlot->getGuards()->contains($user)) {
@@ -97,6 +109,12 @@ class GuardsController extends AbstractController
                 'timeSlot'       => $item->timeSlot,
                 'rows'           => $rows,
                 'hasAttachments' => $hasAttachments,
+                'events'         => $visibleEventIds === null
+                    ? $item->events
+                    : array_values(array_filter(
+                        $item->events,
+                        static fn (SchoolEvent $event): bool => in_array($event->getId()->toRfc4122(), $visibleEventIds, true),
+                    )),
             ];
         }
 

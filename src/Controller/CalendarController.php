@@ -165,7 +165,7 @@ class CalendarController extends AbstractController
     /**
      * @param list<Sanction> $sanctions
      *
-     * @return list<array{groupId: string, groupName: string, student: string, details: string, from: \DateTimeImmutable, to: ?\DateTimeImmutable}>
+     * @return list<array{groupId: string, groupName: string, groupColor: ?string, student: string, details: string, from: \DateTimeImmutable, to: ?\DateTimeImmutable}>
      */
     private function toBoardItems(array $sanctions): array
     {
@@ -180,6 +180,7 @@ class CalendarController extends AbstractController
             $items[] = [
                 'groupId'   => $group->getId()->toRfc4122(),
                 'groupName' => $group->getName(),
+                'groupColor' => $group->getColor(),
                 'student'   => $sanction->getStudent()->getName()->full(),
                 'details'   => $sanction->getCalendarLabel() ?? trim(strip_tags($sanction->getDetails())),
                 'from'      => $from,

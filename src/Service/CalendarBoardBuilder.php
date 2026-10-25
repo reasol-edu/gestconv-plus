@@ -16,10 +16,10 @@ final class CalendarBoardBuilder
     ) {}
 
     /**
-     * @param list<array{groupId: string, groupName: string, student: string, details: string, from: \DateTimeImmutable, to: ?\DateTimeImmutable}> $items
-     * @param list<\DateTimeImmutable>                                                                                                              $days
+     * @param list<array{groupId: string, groupName: string, groupColor?: ?string, student: string, details: string, from: \DateTimeImmutable, to: ?\DateTimeImmutable}> $items
+     * @param list<\DateTimeImmutable>                                                                                                                                   $days
      *
-     * @return list<array{day: \DateTimeImmutable, groups: list<array{name: string, color: array{bg: string, text: string, border: string}, items: list<array{student: string, details: string, from: \DateTimeImmutable, to: ?\DateTimeImmutable}>}>}>
+     * @return list<array{day: \DateTimeImmutable, groups: list<array{name: string, color: array{hex: string, bg: string, text: string, border: string, style: string}, items: list<array{student: string, details: string, from: \DateTimeImmutable, to: ?\DateTimeImmutable}>}>}>
      */
     public function build(array $items, array $days): array
     {
@@ -28,7 +28,7 @@ final class CalendarBoardBuilder
         foreach ($days as $day) {
             $dayStart = $day->setTime(0, 0, 0);
 
-            /** @var array<string, array{name: string, color: array{bg: string, text: string, border: string}, items: list<array{student: string, details: string, from: \DateTimeImmutable, to: ?\DateTimeImmutable}>}> $groups */
+            /** @var array<string, array{name: string, color: array{hex: string, bg: string, text: string, border: string, style: string}, items: list<array{student: string, details: string, from: \DateTimeImmutable, to: ?\DateTimeImmutable}>}> $groups */
             $groups = [];
 
             foreach ($items as $item) {
@@ -41,7 +41,7 @@ final class CalendarBoardBuilder
 
                 $groups[$item['groupId']] ??= [
                     'name'  => $item['groupName'],
-                    'color' => $this->colorPalette->colorFor($item['groupId']),
+                    'color' => $this->colorPalette->colorFor($item['groupId'], $item['groupColor'] ?? null),
                     'items' => [],
                 ];
 

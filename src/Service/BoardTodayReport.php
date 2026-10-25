@@ -23,4 +23,14 @@ final readonly class BoardTodayReport
         public ?string $nonWorkingDayLabel = null,
         public array $events = [],
     ) {}
+
+    /**
+     * Eventos del día que no caen dentro de ningún tramo horario (los demás se muestran en su tramo).
+     *
+     * @return list<SchoolEvent>
+     */
+    public function eventsOutsideSlots(): array
+    {
+        return BoardTodayTimeSlot::eventsOutside($this->timeSlots, $this->events);
+    }
 }

@@ -28,7 +28,7 @@
                                 {{ report.student.name.lastName }}, {{ report.student.name.firstName }}
                             </td>
                             <td data-label="{{ 'notification.index.col.group'|trans({}, 'notifications')|e('html_attr') }}"
-                                class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ report.group.name }}</td>
+                                class="px-6 py-3 whitespace-nowrap"><twig:GroupChip :group="report.group" /></td>
                             <td data-label="{{ 'notification.index.col.date'|trans({}, 'notifications')|e('html_attr') }}"
                                 class="px-6 py-3 text-gray-500 whitespace-nowrap">{{ report.occurredAt|date('format.datetime'|trans) }}</td>
                             {% set age = date().diff(date(report.occurredAt)).days %}

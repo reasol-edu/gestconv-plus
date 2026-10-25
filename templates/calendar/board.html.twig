@@ -85,6 +85,16 @@
                                                 <p class="text-[11px] text-gray-400 dark:text-forest-400">{{ entry.timeSlot.startTime|date('format.time'|trans) }}–{{ entry.timeSlot.endTime|date('format.time'|trans) }}</p>
                                             </div>
                                             <div class="flex-1 px-3 py-2 overflow-hidden" data-controller="board-column">
+                                                {% if entry.events is not empty %}
+                                                    <ul class="mb-2 space-y-1">
+                                                        {% for event in entry.events %}
+                                                            <li class="flex items-start gap-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+                                                                {{ ux_icon('heroicons:megaphone', {class: 'mt-0.5 h-3.5 w-3.5 shrink-0'}) }}
+                                                                <span>{{ event.name }}{% for group in event.groups %} <twig:GroupChip :group="group" />{% endfor %}</span>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                {% endif %}
                                                 {% if entry.timeSlot.guards is empty and entry.activities is empty %}
                                                     <p class="text-xs text-gray-400 dark:text-forest-400">{{ 'board_today_no_guards'|trans({}, 'calendar') }}</p>
                                                 {% else %}
@@ -116,7 +126,7 @@
                                                                         <span class="font-medium">{{ activity.absence.teacher.name.full() }}</span>
                                                                         {% if activity.subjects is not empty %}
                                                                             <span class="text-gray-500 dark:text-forest-300">
-                                                                                — {% for subject in activity.subjects %}{{ subject.subject }}{% if subject.group %} ({{ subject.group.name }}){% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+                                                                                — {% for subject in activity.subjects %}{{ subject.subject }}{% if subject.group %} <twig:GroupChip :group="subject.group" />{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
                                                                             </span>
                                                                         {% endif %}
                                                                     </span>
@@ -144,7 +154,7 @@
                                                                                 <div class="flex flex-wrap gap-1.5 mb-3">
                                                                                     {% for subject in activity.subjects %}
                                                                                         <span class="inline-flex items-center rounded-full bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-0.5 text-xs font-medium dark:bg-forest-800 dark:text-forest-100 dark:border-forest-700">
-                                                                                            {{ subject.subject }} <span class="text-forest-500 dark:text-forest-300 font-normal ml-1">{{ subject.group.name }}</span>
+                                                                                            {{ subject.subject }} <twig:GroupChip :group="subject.group" class="ml-1" />
                                                                                         </span>
                                                                                     {% endfor %}
                                                                                 </div>
@@ -195,16 +205,19 @@
                         {% if report.sanctionedStudents is empty %}
                             <span class="text-gray-400 dark:text-forest-400">{{ 'board_today_no_sanctions'|trans({}, 'calendar') }}</span>
                         {% else %}
-                            {% for sanction in report.sanctionedStudents %}{{ sanction.student.name.full() }} ({{ sanction.group.name }}){% if sanction.label %} — {{ sanction.label }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+                            {% for sanction in report.sanctionedStudents %}{{ sanction.student.name.full() }} <twig:GroupChip :group="sanction.group" />{% if sanction.label %} — {{ sanction.label }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
                         {% endif %}
                     </div>
 
                     <div class="shrink-0 px-6 py-3 border-t border-gray-200 dark:border-white/10 text-lg text-gray-600 dark:text-forest-300 text-center">
                         <span class="font-semibold">{{ 'board_today_events_label'|trans({}, 'calendar') }}:</span>
+                        {% set outside = report.eventsOutsideSlots %}
                         {% if report.events is empty %}
                             <span class="text-gray-400 dark:text-forest-400">{{ 'board_today_no_events'|trans({}, 'calendar') }}</span>
+                        {% elseif outside is empty %}
+                            <span class="text-gray-400 dark:text-forest-400">{{ 'board_today_events_in_slots'|trans({}, 'calendar') }}</span>
                         {% else %}
-                            {% for event in report.events %}{{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }} {{ event.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                            {% for event in outside %}{{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }} {{ event.name }}{% for group in event.groups %} <twig:GroupChip :group="group" />{% endfor %}{% if not loop.last %}, {% endif %}{% endfor %}
                         {% endif %}
                     </div>
                 {% else %}
@@ -231,7 +244,7 @@
                                         <div class="space-y-3">
                                             {% for group in day.groups %}
                                                 <div>
-                                                    <p class="mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold {{ group.color.bg }} {{ group.color.text }}">
+                                                    <p class="mb-1 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold" style="{{ group.color.style }}">
                                                         {{ group.name }}
                                                     </p>
                                                     <ul class="space-y-1.5 pl-1 text-sm">

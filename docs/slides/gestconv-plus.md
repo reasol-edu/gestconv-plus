@@ -557,15 +557,17 @@ el centro**, no solo de sus propios grupos:
 
 ## Eventos de centro
 
-- Nuevo catálogo, gestionado por administradores desde la pestaña
-  **Eventos** de la sección Calendario: listado paginado con búsqueda y
-  filtro por grupo.
+- Se gestionan desde la pestaña **Eventos** de la sección Calendario:
+  listado paginado con búsqueda y filtro por grupo. Quién puede publicarlos
+  es un ajuste: **equipo directivo** (por defecto) o **todos**.
 - Cada evento tiene fecha, hora de inicio y fin, nombre, descripción y
-  enlace opcionales, y una visibilidad **general** (todo el profesorado) o
-  **restringida a uno o varios grupos** (solo quien los imparte o
-  tutoriza).
+  enlace opcionales, y **grupos asociados** opcionales: sin grupos es
+  general; con grupos, **general** (todo el profesorado) o **restringido**
+  (solo quien los imparte o tutoriza).
 - Se muestra en el calendario, la vista de día, el modo tablón y el panel
-  de inicio de quien deba verlo.
+  de inicio, y dentro del **tramo horario** con el que coincide.
+- Cada grupo tiene un **color** (calculado o personalizado en la oferta
+  formativa) que se usa en todo lo relacionado con él.
 
 ---
 

@@ -129,7 +129,7 @@
                                     </a>
                                 </td>
                                 <td data-label="{{ 'incident.col.group'|trans({}, 'admin')|e('html_attr') }}"
-                                    class="px-4 py-4 text-gray-600">{{ report.group.name }}</td>
+                                    class="px-4 py-4"><twig:GroupChip :group="report.group" /></td>
                                 <td data-label="{{ 'incident.col.teacher'|trans({}, 'admin')|e('html_attr') }}"
                                     class="px-4 py-4 text-gray-600">{{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</td>
                                 <td data-label="{{ 'incident.col.behaviors'|trans({}, 'admin')|e('html_attr') }}"

@@ -48,7 +48,22 @@ al instante, sin recargar la página.
 - **Cursos** — cada entrada del año activo (por ejemplo, «1º ESO», «2º Bachillerato»). Desde su
   formulario se puede cambiar el nombre y añadir observaciones.
 - **Grupos** — unidades de un curso (por ejemplo, 1ºA, 1ºB). Cada grupo pertenece a un único
-  curso, y su formulario permite asignar tutores/as y docentes.
+  curso, y su formulario permite asignar tutores/as y docentes, y elegir su **color** (ver
+  más abajo).
+
+#### Color de un grupo
+
+Cada grupo tiene un color que se aplica a todo lo relacionado con él: las barras del
+[calendario](05-calendario-y-tablon.md), los listados del panel de inicio, las guardias y el modo
+tablón, así como el nombre del grupo en los listados de partes, sanciones, notas y salidas.
+
+- Sin hacer nada, cada grupo usa un **color por defecto** que la aplicación calcula a partir del
+  propio grupo, de modo que siempre es el mismo y los distintos grupos se distinguen entre sí. El
+  formulario del grupo muestra ese color y su código (por ejemplo, `#3b82f6`).
+- Para **personalizarlo**, elige otro en el selector de color del formulario y pulsa **Guardar**.
+  Un punto de color junto al nombre del grupo en la columna de grupos muestra el que tiene.
+- Para **volver al color por defecto**, pulsa **Volver al color por defecto**: se elimina el color
+  personalizado y el grupo recupera el calculado.
 
 Si el centro no tiene un curso académico activo, la sección muestra un aviso y no permite
 gestionar la oferta formativa. El paso a paso completo está en

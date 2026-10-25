@@ -84,9 +84,7 @@
                                     </span>
                                 {% endif %}
                                 {% for group in event.groups %}
-                                    <span class="inline-flex items-center rounded-full bg-forest-50 px-2 py-0.5 text-xs font-medium text-forest-700">
-                                        {{ group.name }}
-                                    </span>
+                                    <twig:GroupChip :group="group" />
                                 {% endfor %}
                             </div>
                         </div>
@@ -116,6 +114,7 @@
                                 {% for guard in entry.timeSlot.guards %}{{ guard.name.full() }}{% if not loop.last %}, {% endif %}{% endfor %}
                             </p>
                         {% endif %}
+                        {% include 'calendar/_slot_events.html.twig' with {events: entry.events} only %}
                         {% if entry.activities is not empty %}
                             <ul class="mt-2 space-y-1">
                                 {% for activity in entry.activities %}
@@ -124,7 +123,7 @@
                                         <span>
                                             <span class="font-medium">{{ activity.absence.teacher.name.full() }}</span>
                                             {% if activity.subjects is not empty %}
-                                                <span class="text-gray-400">— {% for subject in activity.subjects %}{{ subject.subject }}{% if subject.group %} ({{ subject.group.name }}){% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+                                                <span class="text-gray-400">— {% for subject in activity.subjects %}{{ subject.subject }}{% if subject.group %} <twig:GroupChip :group="subject.group" />{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</span>
                                             {% endif %}
                                         </span>
                                     </li>
@@ -149,7 +148,7 @@
                 {% for entry in report.sanctionedStudents %}
                     <li class="px-6 py-3 text-sm">
                         <span class="font-medium text-gray-900">{{ entry.student.name.full() }}</span>
-                        <span class="text-gray-400">· {{ entry.group.name }}</span>
+                        <twig:GroupChip :group="entry.group" class="ml-1" />
                         {% if entry.label is not empty %}
                             <p class="text-xs text-gray-500 mt-0.5">{{ entry.label }}</p>
                         {% endif %}

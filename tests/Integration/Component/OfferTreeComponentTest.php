@@ -25,6 +25,66 @@ class OfferTreeComponentTest extends ControllerTestCase
 {
     use InteractsWithLiveComponents;
 
+    // ── color del grupo ──────────────────────────────────────────────────────
+
+    public function testSaveDetailStoresACustomGroupColor(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
+            ->call('selectGroup', ['id' => $group->getId()->toRfc4122()])
+            ->set('editColor', '#AA11BB')
+            ->call('saveDetail');
+
+        $this->em->clear();
+        self::assertSame('#aa11bb', $this->em->find(Group::class, $group->getId())?->getColor());
+    }
+
+    public function testSaveDetailWithoutTouchingTheColorKeepsTheComputedOne(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
+            ->call('selectGroup', ['id' => $group->getId()->toRfc4122()])
+            ->call('saveDetail');
+
+        $this->em->clear();
+        self::assertNull($this->em->find(Group::class, $group->getId())?->getColor());
+    }
+
+    public function testSaveDetailRejectsAnInvalidColor(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
+            ->call('selectGroup', ['id' => $group->getId()->toRfc4122()])
+            ->set('editColor', 'red;background:url(x)')
+            ->call('saveDetail');
+
+        $this->em->clear();
+        self::assertNull($this->em->find(Group::class, $group->getId())?->getColor());
+    }
+
+    public function testResetGroupColorGoesBackToTheComputedColor(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $group->setColor('#123456');
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $component = $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
+            ->call('selectGroup', ['id' => $group->getId()->toRfc4122()]);
+        self::assertStringContainsString('#123456', $component->render()->toString());
+
+        $component->call('resetGroupColor');
+
+        $this->em->clear();
+        self::assertNull($this->em->find(Group::class, $group->getId())?->getColor());
+    }
+
     // ── addGroupTeacher ──────────────────────────────────────────────────────
 
     public function testAddGroupTeacherCreatesAssignment(): void

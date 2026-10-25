@@ -654,6 +654,8 @@ Para cada tramo horario se muestran, una detrás de otra:
   modificar sus datos (nombre, horario y día, y la propia asignación de docentes de guardia), que
   abre el editor de [tramos horarios](06-administrar-el-centro.md#tramos-horarios) con ese tramo ya
   seleccionado.
+- **Eventos en este tramo** — los [eventos de centro](05-calendario-y-tablon.md#eventos-de-centro)
+  que coinciden con el horario del tramo y que puedes ver; solo aparece si hay alguno.
 - **Ausencias** — el docente ausente y, si dejó una actividad registrada para ese tramo, su
   descripción completa junto con los ficheros adjuntos disponibles para descargar. Si no dejó
   actividad, aparece un aviso indicándolo.

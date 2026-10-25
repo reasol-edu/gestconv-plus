@@ -22,9 +22,12 @@ quien la consulta:
   [Ausencias](03-el-trabajo-diario.md#ausencias)): se colorean en ámbar con el icono de un docente
   y muestran únicamente el nombre de quien está ausente, sin grupo ni descripción. El resto del
   profesorado no las ve en su calendario.
-- **Eventos de centro** (ver más abajo): se colorean según el grupo si están restringidos a uno, o
-  en azul con el icono de un megáfono si son generales, y muestran la hora seguida del nombre del
-  evento.
+- **Eventos de centro** (ver más abajo): se colorean con el color del primer grupo asociado si
+  están restringidos a grupos, o en azul con el icono de un megáfono si son generales, y muestran
+  la hora seguida del nombre del evento.
+
+Los colores de los grupos se calculan automáticamente, pero la dirección puede personalizarlos
+desde la [oferta formativa](06-administrar-el-centro.md#color-de-un-grupo).
 - Solo se muestran los días de lunes a viernes; los fines de semana no aparecen en la cuadrícula.
   Un evento en fin de semana sigue siendo visible en su [vista de detalle](#vista-de-detalle-de-un-dia),
   en el modo tablón y en el panel de inicio, aunque no aparezca en esta cuadrícula mensual.
@@ -36,8 +39,9 @@ Al hacer clic en cualquier día de la cuadrícula se abre su ficha completa, con
 avanzar o retroceder de día sin volver al calendario:
 
 - Aviso de **día no lectivo**, si aplica (con su descripción, si el día no lectivo la tiene).
-- **Tramos horarios y guardias** de ese día de la semana, con el profesorado de guardia y las
-  ausencias con actividad encomendada de cada tramo.
+- **Tramos horarios y guardias** de ese día de la semana, con el profesorado de guardia, las
+  ausencias con actividad encomendada y los **eventos** que caen dentro de cada tramo (los que se
+  solapan con su horario; un evento largo aparece en todos los tramos que cubre).
 - **Sanciones activas** ese día.
 - **Ausencias** del profesorado (solo administradores).
 - **Eventos** de ese día, con su horario, descripción, enlace si lo tienen, y los grupos a los que
@@ -110,6 +114,8 @@ los tramos horarios de la jornada:
 - Cada tramo indica el profesorado de guardia y, debajo, las **ausencias con actividad**: el
   docente ausente y, si se pulsa el icono de información, la descripción de la actividad
   encomendada y sus adjuntos, descargables desde el propio tablón.
+- Los **eventos** que caen dentro de un tramo (los que se solapan con su horario) aparecen en el
+  propio tramo, con los grupos asociados; el pie solo lista los que no coinciden con ningún tramo.
 - El tramo horario que coincide con la hora actual se resalta con un color de fondo distinto, y el
   resaltado se recalcula solo conforme avanza el reloj, sin necesidad de recargar la pantalla.
 - Al pie se listan, en una única línea cada una, las **ausencias de hoy** (todo el profesorado
