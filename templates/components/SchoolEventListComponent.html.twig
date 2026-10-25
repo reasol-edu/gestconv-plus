@@ -87,19 +87,18 @@
                                    class="font-medium text-gray-900 hover:text-forest-700 transition-colors">{{ event.name }}</a>
                             </td>
                             <td data-label="{{ 'school_event.col.scope'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
-                                {% if event.general %}
-                                    <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                                        {{ 'school_event.scope.general'|trans({}, 'admin') }}
-                                    </span>
-                                {% else %}
-                                    <div class="flex flex-wrap gap-1">
-                                        {% for group in event.groups %}
-                                            <span class="inline-flex items-center rounded-full bg-forest-50 px-2 py-0.5 text-xs font-medium text-forest-700">
-                                                {{ group.name }}
-                                            </span>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                                <div class="flex flex-wrap gap-1">
+                                    {% if event.general %}
+                                        <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                            {{ 'school_event.scope.general'|trans({}, 'admin') }}
+                                        </span>
+                                    {% endif %}
+                                    {% for group in event.groups %}
+                                        <span class="inline-flex items-center rounded-full bg-forest-50 px-2 py-0.5 text-xs font-medium text-forest-700">
+                                            {{ group.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-end gap-2">

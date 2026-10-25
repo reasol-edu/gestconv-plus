@@ -7,9 +7,12 @@ namespace App\Tests\Integration\Controller;
 use App\Entity\AcademicYear;
 use App\Entity\Course;
 use App\Entity\EducationalCentre;
+use App\Entity\GlobalSettingValue;
 use App\Entity\Group;
 use App\Entity\PersonName;
 use App\Entity\SchoolEvent;
+use App\Entity\SettingDefinition;
+use App\Entity\SettingType;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
 
@@ -171,7 +174,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         self::assertCount(0, $this->em->getRepository(SchoolEvent::class)->findAll());
     }
 
-    public function testNewPostRestrictedScopeWithoutGroupsRendersFormAgain(): void
+    public function testNewPostWithoutGroupsIsGeneralWhateverTheScopeSent(): void
     {
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
@@ -185,12 +188,151 @@ class SchoolEventControllerTest extends ControllerTestCase
             'start_time' => '09:00',
             'end_time'   => '10:00',
             'name'       => 'Evento',
-            'scope'      => 'restricted',
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $events = $this->em->getRepository(SchoolEvent::class)->findAll();
+        self::assertCount(1, $events);
+        self::assertTrue($events[0]->isGeneral(), 'sin grupos, el evento es general sin elegir nada');
+    }
+
+    public function testNewPostGeneralEventKeepsItsAssociatedGroups(): void
+    {
+        [$admin, $centre, $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/eventos/nuevo', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Excursión de 1ºA',
+            'scope'      => 'general',
+            'groups'     => [$group->getId()->toRfc4122()],
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $events = $this->em->getRepository(SchoolEvent::class)->findAll();
+        self::assertTrue($events[0]->isGeneral());
+        self::assertCount(1, $events[0]->getGroups(), 'un evento general también puede estar asociado a grupos');
+    }
+
+    public function testNewPostWithGroupsButNoScopeRendersFormAgain(): void
+    {
+        [$admin, $centre, $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/eventos/nuevo', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Evento',
+            'groups'     => [$group->getId()->toRfc4122()],
         ]);
 
         self::assertResponseIsSuccessful();
         $this->em->clear();
         self::assertCount(0, $this->em->getRepository(SchoolEvent::class)->findAll());
+    }
+
+    // ── quién puede publicar ──────────────────────────────────────────────────
+
+    private function definePublishScope(string $global): void
+    {
+        $definition = (new SettingDefinition())->setKey('events.publish_scope')->setType(SettingType::Choice)
+            ->setDefaultValue('management')->setChoices('all,management')->setGlobalScope(true)->setCentreScope(true);
+        $this->persist($definition, (new GlobalSettingValue())->setDefinition($definition)->setValue($global));
+    }
+
+    /** @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: AcademicYear} */
+    private function makeMemberScenario(): array
+    {
+        [$admin, $centre, $group, $year] = $this->makeScenario();
+        $teacher = $this->makeTeacher('teacher.member.' . uniqid('', false));
+        $year->addTeacher($teacher);
+        $this->persist($teacher);
+
+        return [$teacher, $centre, $group, $year];
+    }
+
+    public function testATeacherCannotPublishByDefault(): void
+    {
+        $this->definePublishScope('management');
+        [$teacher, $centre] = $this->makeMemberScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/eventos/nuevo');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testATeacherOfTheCentreCanPublishWhenTheSettingIsAll(): void
+    {
+        $this->definePublishScope('all');
+        [$teacher, $centre] = $this->makeMemberScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/eventos/nuevo');
+
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testATeacherOutsideTheCentreCannotPublishEvenWhenTheSettingIsAll(): void
+    {
+        $this->definePublishScope('all');
+        [, $centre] = $this->makeScenario();
+        $stranger = $this->makeTeacher('teacher.stranger');
+        $this->persist($stranger);
+        $this->loginAs($stranger, $centre);
+
+        $this->client->request('GET', '/eventos/nuevo');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testATeacherPublishingCannotTouchARestrictedEventOfOtherGroups(): void
+    {
+        $this->definePublishScope('all');
+        [$teacher, $centre, $group, $year] = $this->makeMemberScenario();
+        $event = $this->makeEvent($year, 'Reunión ajena')->setGeneral(false)->addGroup($group);
+        $this->persist($event);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/eventos/' . $event->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testATeacherPublishingCanEditAGeneralEvent(): void
+    {
+        $this->definePublishScope('all');
+        [$teacher, $centre, , $year] = $this->makeMemberScenario();
+        $event = $this->makeEvent($year, 'Claustro');
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/eventos/' . $event->getId()->toRfc4122() . '/editar');
+
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testTheCalendarOffersTheEventsTabOnlyToWhoCanPublish(): void
+    {
+        $this->definePublishScope('all');
+        [$teacher, $centre] = $this->makeMemberScenario();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/calendario');
+
+        self::assertCount(1, $crawler->filter('a[href*="tab=events"]'));
     }
 
     public function testNewPostWithInvalidUrlRendersFormAgain(): void

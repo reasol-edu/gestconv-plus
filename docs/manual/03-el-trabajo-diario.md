@@ -80,7 +80,7 @@ A continuación, las **sanciones en vigor en tus grupos** de esta semana y la pr
 quien imparte materia en algún grupo.
 
 Si hay alguno, una tarjeta **Eventos de hoy** lista los [eventos de
-centro](05-calendario-y-tablon.md#eventos-de-centro-solo-administradores) del día: los generales
+centro](05-calendario-y-tablon.md#eventos-de-centro) del día: los generales
 para cualquier docente, o los restringidos a algún grupo que se imparte o tutoriza; los
 administradores ven además los restringidos a grupos ajenos. Cada tarjeta enlaza a la
 [vista de detalle de ese día](05-calendario-y-tablon.md#vista-de-detalle-de-un-dia).

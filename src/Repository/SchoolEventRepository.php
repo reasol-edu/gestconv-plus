@@ -43,6 +43,18 @@ class SchoolEventRepository extends ServiceEntityRepository
         return $result instanceof SchoolEvent ? $result : null;
     }
 
+    /** Como findByAcademicYearAndId(), pero solo si el docente puede ver el evento (general o de sus grupos). */
+    public function findVisibleByAcademicYearAndId(Teacher $viewer, AcademicYear $year, string $id): ?SchoolEvent
+    {
+        $result = $this->visibleForTeacherQueryBuilder($viewer, $year)
+            ->andWhere('se.id = :id')
+            ->setParameter('id', $id, 'uuid')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof SchoolEvent ? $result : null;
+    }
+
     /** @return list<SchoolEvent> */
     public function findAllForAcademicYearAndDate(AcademicYear $year, \DateTimeImmutable $date): array
     {
@@ -100,9 +112,9 @@ class SchoolEventRepository extends ServiceEntityRepository
     }
 
     /** @return Query<null, SchoolEvent> */
-    public function createFilteredQuery(AcademicYear $year, string $search = '', string $groupId = ''): Query
+    public function createFilteredQuery(AcademicYear $year, string $search = '', string $groupId = '', ?Teacher $onlyVisibleTo = null): Query
     {
-        $qb = $this->baseQueryBuilder($year)
+        $qb = ($onlyVisibleTo !== null ? $this->visibleForTeacherQueryBuilder($onlyVisibleTo, $year) : $this->baseQueryBuilder($year))
             ->orderBy('se.date', 'DESC')
             ->addOrderBy('se.startTime', 'ASC');
 

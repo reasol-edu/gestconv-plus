@@ -7,6 +7,7 @@ namespace App\Twig\Components;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\SchoolEvent;
+use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\GroupRepository;
 use App\Repository\SchoolEventRepository;
@@ -42,7 +43,7 @@ class SchoolEventListComponent extends AbstractController
 
     public function mount(EducationalCentre $centre): void
     {
-        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
         $this->centre = $centre;
     }
 
@@ -63,8 +64,12 @@ class SchoolEventListComponent extends AbstractController
             return Paginator::fromQuery($this->events->findNoneQuery(), 1, $this->appSettings->getInt('page.size'));
         }
 
+        // Quien publica sin ser de la dirección solo ve en el listado los eventos que ve en el calendario.
+        $user    = $this->getUser();
+        $viewer  = !$this->isGranted(EducationalCentreVoter::SECTION, $this->centre) && $user instanceof Teacher ? $user : null;
+
         return $this->paginate(
-            $this->events->createFilteredQuery($year, trim($this->search), trim($this->groupId)),
+            $this->events->createFilteredQuery($year, trim($this->search), trim($this->groupId), $viewer),
         );
     }
 

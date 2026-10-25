@@ -29,6 +29,7 @@ settings.category.sanction_tasks.label: 'Tareas de sanción'
 settings.category.uploads.label: 'Subida de ficheros'
 settings.category.maintenance.label: 'Mantenimiento'
 settings.category.features.label: 'Secciones de la aplicación'
+settings.category.events.label: 'Eventos'
 
 # ── Definiciones de ajustes ───────────────────────────────────────────────────
 settings.key.page_size.label: 'Resultados por página'
@@ -302,6 +303,11 @@ settings.key.uploads_max_total_size_mb.description: 'Suma máxima de los fichero
 
 settings.key.maintenance_enabled.label: 'Modo mantenimiento'
 settings.key.maintenance_enabled.description: 'Con el modo mantenimiento activado, solo los administradores globales pueden usar la aplicación: el resto del profesorado, esté o no con la sesión iniciada, ve una página de mantenimiento. Los avisos por correo y las demás tareas automáticas siguen funcionando.'
+
+settings.key.events_publish_scope.label: 'Quién puede publicar eventos'
+settings.key.events_publish_scope.description: 'Quién puede crear, editar y eliminar los eventos del calendario del centro. «Equipo directivo» incluye a los administradores del centro y de la plataforma. Con «Todos», cualquier docente del centro puede publicar eventos y gestionar los que ve (los generales y los de sus grupos); no ve ni modifica los restringidos a grupos con los que no se relaciona.'
+settings.key.events_publish_scope.choice.all: 'Todos'
+settings.key.events_publish_scope.choice.management: 'Equipo directivo'
 
 settings.key.features_exits.label: 'Salidas del aula'
 settings.key.features_exits.description: 'Activa o desactiva la sección Salidas (autorizar y registrar las salidas del aula, y el pase prioritario del alumnado). Desactivada, desaparece del menú, de los accesos rápidos y de la ficha del alumno, y sus direcciones dejan de funcionar. Los datos ya registrados se conservan.'

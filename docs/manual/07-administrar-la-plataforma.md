@@ -161,7 +161,7 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 ## Ajustes disponibles
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
-Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón,
+Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón, Eventos,
 Notificaciones a familias, Avisos por correo, Personalización de informes, Plantillas de informes,
 Ausencias, Tareas de sanción y Subida de ficheros.
 
@@ -185,6 +185,16 @@ Activa o desactiva todos los correos automáticos de avisos de la aplicación (v
 [Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones)). Es el
 único ajuste con los tres ámbitos disponibles: un administrador global puede desactivarlos para
 todo el servidor, uno de centro para su centro, y cada docente para sí mismo.
+
+### Eventos
+
+| Ajuste | Ámbito | Tipo | Por defecto |
+|---|---|---|---|
+| Quién puede publicar eventos | Global, centro | Todos / Equipo directivo | Equipo directivo |
+
+Decide quién puede crear, editar y eliminar los
+[eventos de centro](05-calendario-y-tablon.md#quien-puede-publicar-eventos): solo la dirección y
+los administradores (valor por defecto) o cualquier docente del centro.
 
 ### Modo tablón
 

@@ -40,13 +40,15 @@ class CalendarController extends AbstractController
     public function index(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
         $isAdmin      = $this->isGranted(EducationalCentreVoter::SECTION, $centre);
+        $canPublish   = $this->isGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
         $requestedTab = $request->query->getString('tab');
-        $tab          = $isAdmin && $requestedTab === 'events' ? 'events' : 'calendar';
+        $tab          = $canPublish && $requestedTab === 'events' ? 'events' : 'calendar';
 
         return $this->render('calendar/index.html.twig', [
-            'centre'  => $centre,
-            'isAdmin' => $isAdmin,
-            'tab'     => $tab,
+            'centre'           => $centre,
+            'isAdmin'          => $isAdmin,
+            'canPublishEvents' => $canPublish,
+            'tab'              => $tab,
         ]);
     }
 
@@ -73,6 +75,7 @@ class CalendarController extends AbstractController
             'centre'   => $centre,
             'date'     => $parsedDate,
             'isAdmin'  => $isAdmin,
+            'canPublishEvents' => $this->isGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre),
             'report'   => $report,
             'prevDate' => $parsedDate->modify('-1 day')->format('Y-m-d'),
             'nextDate' => $parsedDate->modify('+1 day')->format('Y-m-d'),

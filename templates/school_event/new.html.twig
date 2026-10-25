@@ -63,38 +63,16 @@
         </div>
 
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
-            <h2 class="text-base font-semibold text-gray-900">{{ 'school_event.field.scope'|trans({}, 'admin') }}</h2>
+            <h2 class="text-base font-semibold text-gray-900">{{ 'school_event.field.groups'|trans({}, 'admin') }}</h2>
 
-            {% if errors.scope is defined %}
-                <p class="text-xs text-red-600">{{ errors.scope }}</p>
-            {% endif %}
-
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <twig:Form:RadioCard
-                    name="scope"
-                    value="general"
-                    label="{{ 'school_event.scope.general'|trans({}, 'admin') }}"
-                    help="{{ 'school_event.scope.general_help'|trans({}, 'admin') }}"
-                    :checked="values.scope == 'general'"
-                    data-event-scope-target="radio"
-                    data-action="change->event-scope#toggle" />
-
-                <twig:Form:RadioCard
-                    name="scope"
-                    value="restricted"
-                    label="{{ 'school_event.scope.restricted'|trans({}, 'admin') }}"
-                    help="{{ 'school_event.scope.restricted_help'|trans({}, 'admin') }}"
-                    :checked="values.scope == 'restricted'"
-                    data-event-scope-target="radio"
-                    data-action="change->event-scope#toggle" />
-            </div>
-
-            <div data-event-scope-target="groupsBlock" class="hidden">
+            <div>
                 <label for="groups" class="block text-sm font-medium text-gray-700 mb-1.5">
-                    {{ 'school_event.field.groups'|trans({}, 'admin') }}
+                    {{ 'school_event.field.groups_label'|trans({}, 'admin') }}
                 </label>
                 <select id="groups" name="groups[]" multiple
                         class="w-full text-sm ts-local"
+                        data-event-scope-target="groups"
+                        data-action="change->event-scope#toggle"
                         data-placeholder="{{ 'school_event.field.groups_placeholder'|trans({}, 'admin')|e('html_attr') }}"
                         data-no-results="{{ 'school_event.field.groups_no_results'|trans({}, 'admin')|e('html_attr') }}">
                     {% for group in availableGroups %}
@@ -104,6 +82,34 @@
                         </option>
                     {% endfor %}
                 </select>
+                <p class="mt-1.5 text-xs text-gray-500">{{ 'school_event.field.groups_help'|trans({}, 'admin') }}</p>
+            </div>
+
+            {# Solo con algún grupo elegido hay que decidir quién lo ve; sin grupos es general. #}
+            <div data-event-scope-target="scopeBlock" class="hidden space-y-3">
+                <h3 class="text-sm font-medium text-gray-700">{{ 'school_event.field.scope'|trans({}, 'admin') }}</h3>
+
+                {% if errors.scope is defined %}
+                    <p class="text-xs text-red-600">{{ errors.scope }}</p>
+                {% endif %}
+
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <twig:Form:RadioCard
+                        name="scope"
+                        value="general"
+                        label="{{ 'school_event.scope.general'|trans({}, 'admin') }}"
+                        help="{{ 'school_event.scope.general_help'|trans({}, 'admin') }}"
+                        :checked="values.scope == 'general'"
+                        data-event-scope-target="radio" />
+
+                    <twig:Form:RadioCard
+                        name="scope"
+                        value="restricted"
+                        label="{{ 'school_event.scope.restricted'|trans({}, 'admin') }}"
+                        help="{{ 'school_event.scope.restricted_help'|trans({}, 'admin') }}"
+                        :checked="values.scope == 'restricted'"
+                        data-event-scope-target="radio" />
+                </div>
             </div>
         </div>
 

@@ -29,7 +29,7 @@
                     {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
                 </a>
             </div>
-            {% if isAdmin %}
+            {% if canPublishEvents %}
                 <a href="{{ path('app_events_new', {date: date.format('Y-m-d')}) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
                           hover:bg-forest-700 transition-colors shadow-xs shrink-0">
@@ -71,25 +71,24 @@
                                         {{ event.url }}
                                     </a>
                                 {% endif %}
-                                {% if isAdmin %}
+                                {% if canPublishEvents %}
                                     <a href="{{ path('app_events_edit', {eventId: event.id.toRfc4122}) }}" class="block text-xs text-gray-400 hover:text-gray-600 mt-1">
                                         {{ 'school_event.action.edit'|trans({}, 'admin') }}
                                     </a>
                                 {% endif %}
                             </div>
-                            {% if event.general %}
-                                <span class="inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700 shrink-0">
-                                    {{ 'school_event.scope.general'|trans({}, 'admin') }}
-                                </span>
-                            {% else %}
-                                <div class="flex flex-wrap gap-1 justify-end shrink-0">
-                                    {% for group in event.groups %}
-                                        <span class="inline-flex items-center rounded-full bg-forest-50 px-2 py-0.5 text-xs font-medium text-forest-700">
-                                            {{ group.name }}
-                                        </span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            <div class="flex flex-wrap gap-1 justify-end shrink-0">
+                                {% if event.general %}
+                                    <span class="inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700">
+                                        {{ 'school_event.scope.general'|trans({}, 'admin') }}
+                                    </span>
+                                {% endif %}
+                                {% for group in event.groups %}
+                                    <span class="inline-flex items-center rounded-full bg-forest-50 px-2 py-0.5 text-xs font-medium text-forest-700">
+                                        {{ group.name }}
+                                    </span>
+                                {% endfor %}
+                            </div>
                         </div>
                     </li>
                 {% endfor %}

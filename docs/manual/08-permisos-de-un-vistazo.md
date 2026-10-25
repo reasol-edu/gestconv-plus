@@ -161,6 +161,7 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Gestionar conductas, medidas y métodos de comunicación | — | ✓ | ✓ |
 | Gestionar días no lectivos, con importación desde iCal y CSV de Séneca | — | ✓ | ✓ |
 | Gestionar perfiles (comisión y orientación) | — | ✓ | ✓ |
+| Publicar [eventos de centro](05-calendario-y-tablon.md#quien-puede-publicar-eventos) | Solo con el ajuste «Todos» | ✓ | ✓ |
 | Activar o desactivar [secciones](07-administrar-la-plataforma.md#secciones-de-la-aplicacion) (Salidas, Ausencias, Notas, tareas de sanción) en el centro, salvo que el valor global esté bloqueado | — | ✓ | ✓ |
 
 ## Administración global

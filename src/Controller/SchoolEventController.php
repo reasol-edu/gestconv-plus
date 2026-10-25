@@ -8,6 +8,7 @@ use App\Attribute\CurrentCentre;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\SchoolEvent;
+use App\Entity\Teacher;
 use App\Repository\GroupRepository;
 use App\Repository\SchoolEventRepository;
 use App\Security\Voter\EducationalCentreVoter;
@@ -37,7 +38,7 @@ class SchoolEventController extends AbstractController
     #[Route('/nuevo', name: 'app_events_new', methods: ['GET', 'POST'])]
     public function new(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
         $this->denyIfViewingPastYear($centre);
 
         $year = $this->tenantContext->getViewYear($centre);
@@ -89,18 +90,10 @@ class SchoolEventController extends AbstractController
     #[Route('/{eventId}/editar', name: 'app_events_edit', methods: ['GET', 'POST'])]
     public function edit(string $eventId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
         $this->denyIfViewingPastYear($centre);
 
-        $year = $this->tenantContext->getViewYear($centre);
-        if ($year === null) {
-            throw $this->createNotFoundException();
-        }
-
-        $event = $this->events->findByAcademicYearAndId($year, $eventId);
-        if ($event === null) {
-            throw $this->createNotFoundException();
-        }
+        $event = $this->findManageable($centre, $eventId);
 
         $errors = [];
         $values = [
@@ -154,18 +147,10 @@ class SchoolEventController extends AbstractController
     #[Route('/{eventId}/eliminar', name: 'app_events_delete', methods: ['POST'])]
     public function delete(string $eventId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
-        $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
         $this->denyIfViewingPastYear($centre);
 
-        $year = $this->tenantContext->getViewYear($centre);
-        if ($year === null) {
-            throw $this->createNotFoundException();
-        }
-
-        $event = $this->events->findByAcademicYearAndId($year, $eventId);
-        if ($event === null) {
-            throw $this->createNotFoundException();
-        }
+        $event = $this->findManageable($centre, $eventId);
 
         if (!$this->isCsrfTokenValid('delete_school_event_' . $eventId, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();
@@ -181,6 +166,28 @@ class SchoolEventController extends AbstractController
         $this->addFlash('success', $this->t('school_event.flash.deleted'));
 
         return $this->redirectToRoute('app_calendar', ['tab' => 'events']);
+    }
+
+    /**
+     * El evento del curso visualizado que quien publica puede gestionar: la dirección y los
+     * administradores, cualquiera; el resto del profesorado (con el ajuste «Todos»), solo los que
+     * ve, es decir, los generales y los de sus grupos.
+     */
+    private function findManageable(EducationalCentre $centre, string $eventId): SchoolEvent
+    {
+        $year = $this->tenantContext->getViewYear($centre);
+        if ($year === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $user = $this->getUser();
+        if (!$this->isGranted(EducationalCentreVoter::SECTION, $centre) && $user instanceof Teacher) {
+            $event = $this->events->findVisibleByAcademicYearAndId($user, $year, $eventId);
+        } else {
+            $event = $this->events->findByAcademicYearAndId($year, $eventId);
+        }
+
+        return $event ?? throw $this->createNotFoundException();
     }
 
     /** @return array<string, string> */
@@ -237,10 +244,9 @@ class SchoolEventController extends AbstractController
             $errors['time'] = $this->t('school_event.error.time_invalid');
         }
 
-        if (!in_array($values['scope'], ['general', 'restricted'], true)) {
+        // Sin grupos el evento es general sin más; solo con grupos hay que elegir entre las dos opciones.
+        if ($selectedGroupIds !== [] && !in_array($values['scope'], ['general', 'restricted'], true)) {
             $errors['scope'] = $this->t('school_event.error.scope_required');
-        } elseif ($values['scope'] === 'restricted' && $selectedGroupIds === []) {
-            $errors['scope'] = $this->t('school_event.error.groups_required');
         }
 
         if ($values['url'] !== '' && filter_var($values['url'], FILTER_VALIDATE_URL) === false) {
@@ -256,7 +262,21 @@ class SchoolEventController extends AbstractController
      */
     private function applyValues(SchoolEvent $event, array $values, EducationalCentre $centre, array $selectedGroupIds): void
     {
-        $general = $values['scope'] === 'general';
+        $centreGroupsById = [];
+        foreach ($this->groups->findByActiveYearOfCentreOrderedByName($centre) as $group) {
+            $centreGroupsById[$group->getId()->toRfc4122()] = $group;
+        }
+
+        $selected = [];
+        foreach ($selectedGroupIds as $groupId) {
+            if (is_string($groupId) && isset($centreGroupsById[$groupId])) {
+                $selected[$groupId] = $centreGroupsById[$groupId];
+            }
+        }
+
+        // Un evento puede estar asociado a grupos sea general o no: sin grupos es general sin más; con
+        // grupos, «general» lo ve todo el profesorado y «restringido» solo quien se relaciona con ellos.
+        $general = $selected === [] || $values['scope'] === 'general';
 
         $event->setDate($this->parseDate($values['date']) ?? $event->getDate())
             ->setStartTime($this->parseTime($values['start_time']) ?? $event->getStartTime())
@@ -270,17 +290,8 @@ class SchoolEventController extends AbstractController
             $event->removeGroup($group);
         }
 
-        if (!$general) {
-            $centreGroupsById = [];
-            foreach ($this->groups->findByActiveYearOfCentreOrderedByName($centre) as $group) {
-                $centreGroupsById[$group->getId()->toRfc4122()] = $group;
-            }
-
-            foreach ($selectedGroupIds as $groupId) {
-                if (is_string($groupId) && isset($centreGroupsById[$groupId])) {
-                    $event->addGroup($centreGroupsById[$groupId]);
-                }
-            }
+        foreach ($selected as $group) {
+            $event->addGroup($group);
         }
     }
 

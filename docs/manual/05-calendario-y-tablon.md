@@ -41,33 +41,52 @@ avanzar o retroceder de día sin volver al calendario:
 - **Sanciones activas** ese día.
 - **Ausencias** del profesorado (solo administradores).
 - **Eventos** de ese día, con su horario, descripción, enlace si lo tienen, y los grupos a los que
-  están restringidos (o la etiqueta **General**).
+  están asociados y la etiqueta **General** si los ve todo el profesorado.
 
-Los administradores de centro tienen además un botón **Añadir evento** que abre el formulario de
-alta con la fecha del día ya rellenada.
+Quien puede [publicar eventos](#quien-puede-publicar-eventos) tiene además un botón **Añadir
+evento** que abre el formulario de alta con la fecha del día ya rellenada.
 
-## Eventos de centro (solo administradores)
+## Eventos de centro {#eventos-de-centro}
 
 Un **evento de centro** es un aviso puntual con fecha y horario propios — una jornada de puertas
 abiertas, un claustro, una reunión de tutoría — que se muestra en el calendario, la vista de día,
 el modo tablón y el panel de inicio de quien deba verlo.
 
-Los administradores de centro gestionan los eventos desde la pestaña **Eventos**, junto a
+Quienes pueden publicar eventos los gestionan desde la pestaña **Eventos**, junto a
 **Calendario**, dentro de la misma sección del menú lateral: un listado paginado con búsqueda por
 nombre o descripción y un filtro por grupo, y un botón **Añadir evento** (también disponible desde
 la vista de detalle de un día, con la fecha ya rellenada).
+
+### Quién puede publicar eventos
+
+Lo decide el ajuste **Quién puede publicar eventos** (categoría **Eventos**, en los ajustes
+globales y en los de cada centro):
+
+- **Equipo directivo** (valor por defecto): solo los administradores del centro y de la
+  plataforma.
+- **Todos**: cualquier docente del centro, además de los administradores. Un docente que publica
+  puede editar y eliminar los eventos que ve (los generales y los de sus grupos), pero no ve ni
+  modifica los restringidos a grupos con los que no se relaciona.
+
+Los administradores ven siempre todos los eventos, tengan o no relación con ellos.
+
+### Datos de un evento
 
 Cada evento tiene:
 
 - **Fecha**, **hora de inicio** y **hora de fin** (obligatorias).
 - **Nombre** (obligatorio) y **descripción** (opcional).
 - **Enlace** opcional (por ejemplo, a un formulario de inscripción o más información).
-- **Visibilidad**, elegida con dos opciones:
-    - **General** — visible para todo el profesorado del centro.
-    - **Restringido a grupos** — visible solo para quien imparte clase o tutoriza alguno de los
-      grupos elegidos en un desplegable de búsqueda que admite varios grupos a la vez.
+- **Grupos asociados** (opcionales), elegidos en un desplegable de búsqueda que admite varios a la
+  vez. Un evento puede estar asociado a grupos aunque lo vea todo el centro.
+- **Visibilidad**, que solo aparece al elegir al menos un grupo:
+    - **General** — lo ve todo el profesorado del centro, imparta o no clase a los grupos
+      asociados; los grupos se muestran como información.
+    - **Restringido a grupos** — lo ve solo el profesorado que imparte clase o tutoriza alguno de
+      los grupos asociados (y la dirección y los administradores).
 
-Los administradores ven siempre todos los eventos, tengan o no relación con ellos.
+Si no se elige ningún grupo, el evento es **general** automáticamente y el formulario no muestra
+ninguna opción de visibilidad.
 
 ## Modo tablón
 

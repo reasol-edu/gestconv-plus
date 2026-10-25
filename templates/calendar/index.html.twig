@@ -7,7 +7,7 @@
 
     <div class="flex items-start justify-between gap-4 flex-wrap">
         <h1 class="text-2xl font-bold text-gray-900">{{ 'page_title'|trans({}, 'calendar') }}</h1>
-        {% if isAdmin and tab == 'events' %}
+        {% if canPublishEvents and tab == 'events' %}
             <a href="{{ path('app_events_new') }}"
                class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
                       hover:bg-forest-700 transition-colors shadow-xs shrink-0">
@@ -17,7 +17,7 @@
         {% endif %}
     </div>
 
-    {% if isAdmin %}
+    {% if canPublishEvents %}
     {# ── Pestañas ─────────────────────────────────────────────────────── #}
     <nav class="flex gap-6 border-b border-gray-200" aria-label="{{ 'tabs.aria'|trans({}, 'calendar') }}">
         <a href="{{ path('app_calendar', {tab: 'calendar'}) }}"
@@ -37,7 +37,7 @@
     </nav>
     {% endif %}
 
-    {% if tab == 'events' and isAdmin %}
+    {% if tab == 'events' and canPublishEvents %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
             <twig:SchoolEventListComponent :centre="centre" />
         </div>
