@@ -354,6 +354,39 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertSelectorNotExists('a[href="/actividades/nuevo?date=2026-03-10"]');
     }
 
+    public function testDayViewOffersEditOnlyOnTheActivitiesTheViewerCanManage(): void
+    {
+        $world   = $this->makeScenario();
+        $admin   = $this->makeAdmin('calendar.day.editlink.admin');
+        $teacher = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.day.editlink.teacher');
+        $world['year']->addTeacher($teacher);
+        $this->persist($teacher);
+
+        // Con «Todos» el docente publica, pero solo gestiona lo suyo.
+        $definition = (new SettingDefinition())->setKey('events.publish_scope')->setType(\App\Entity\SettingType::Choice)
+            ->setDefaultValue('management')->setChoices('all,management')->setGlobalScope(true)->setCentreScope(true);
+        $this->persist($definition, (new \App\Entity\GlobalSettingValue())->setDefinition($definition)->setValue('all'));
+
+        $events = [];
+        foreach ([['Mía', $teacher], ['Ajena', $admin]] as [$name, $author]) {
+            $event = (new SchoolEvent())->setAcademicYear($world['year'])->setDate(new \DateTimeImmutable('2026-03-10'))
+                ->setStartTime(new \DateTimeImmutable('09:00'))->setEndTime(new \DateTimeImmutable('10:00'))
+                ->setName($name)->setGeneral(true)->setCreatedBy($author);
+            $this->persist($event);
+            $events[$name] = $event->getId()->toRfc4122();
+        }
+
+        $this->loginAs($teacher, $world['centre']);
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+
+        self::assertSelectorExists('a[href="/actividades/' . $events['Mía'] . '/editar"]');
+        self::assertSelectorNotExists('a[href="/actividades/' . $events['Ajena'] . '/editar"]');
+
+        $this->loginAs($admin, $world['centre']);
+        $this->client->request('GET', '/calendario/dia/2026-03-10');
+        self::assertSelectorExists('a[href="/actividades/' . $events['Ajena'] . '/editar"]');
+    }
+
     public function testDayViewHidesAbsencesFromNonAdmin(): void
     {
         $world   = $this->makeScenario();

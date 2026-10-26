@@ -168,7 +168,7 @@ class SchoolEventController extends AbstractController
             'availableGroups'      => $this->groups->findByActiveYearOfCentreOrderedByName($centre),
             'selectedGroupIds'     => $selectedGroupIds,
             'availableTypes'       => $this->selectableTypes($centre, $event),
-            'availableTeachers'    => $this->teachers->findByAcademicYearOrderedByName($year),
+            'availableTeachers'    => $this->selectableTeachers($year, $event),
             'selectedCompanionIds' => $selectedCompanionIds,
         ]);
     }
@@ -256,6 +256,33 @@ class SchoolEventController extends AbstractController
     }
 
     /**
+     * Docentes que se pueden elegir como coordinación o acompañantes: los del curso y, al editar, quienes ya
+     * figuran en la actividad aunque hayan dejado de estar en el curso (para no perderlos al guardar).
+     *
+     * @return list<Teacher>
+     */
+    private function selectableTeachers(AcademicYear $year, ?SchoolEvent $event): array
+    {
+        $teachers = array_values($this->teachers->findByAcademicYearOrderedByName($year));
+        if ($event === null) {
+            return $teachers;
+        }
+
+        $known = [];
+        foreach ($teachers as $teacher) {
+            $known[$teacher->getId()->toRfc4122()] = true;
+        }
+        foreach ([$event->getCoordinator(), ...$event->getCompanions()->toArray()] as $current) {
+            if ($current !== null && !isset($known[$current->getId()->toRfc4122()])) {
+                $teachers[] = $current;
+                $known[$current->getId()->toRfc4122()] = true;
+            }
+        }
+
+        return $teachers;
+    }
+
+    /**
      * Tipos que se pueden elegir: los activos del catálogo y, al editar, el que ya tiene la actividad
      * aunque se haya desactivado después.
      *
@@ -328,9 +355,9 @@ class SchoolEventController extends AbstractController
         array $selectedGroupIds,
         array $selectedCompanionIds,
     ): void {
-        // Coordinador y acompañantes han de ser docentes del curso de la actividad; lo demás se ignora.
+        // Coordinador y acompañantes han de ser docentes del curso de la actividad (o quienes ya lo eran al guardarla); lo demás se ignora.
         $teachersById = [];
-        foreach ($this->teachers->findByAcademicYearOrderedByName($year) as $teacher) {
+        foreach ($this->selectableTeachers($year, $event) as $teacher) {
             $teachersById[$teacher->getId()->toRfc4122()] = $teacher;
         }
         $coordinator = $teachersById[$values['coordinator']] ?? null;

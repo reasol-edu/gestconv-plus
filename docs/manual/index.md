@@ -27,6 +27,8 @@ parte que pasa demasiado tiempo sin comunicarse acaba prescribiendo.
 - **Tutor/a de grupo** — además, ve los partes y sanciones de su grupo y puede comunicarlos.
 - **Comisión de convivencia** — ve todos los partes del centro y registra las sanciones.
 - **Orientador/a** — consulta todos los partes y sanciones del centro, sin poder editarlos.
+- **Coordinación de actividades** — gestiona todas las actividades de centro (calendario y tablón)
+  como si fuera administradora.
 - **Administración del centro** — configura el centro y tiene acceso completo a sus datos. Este
   papel corresponde, normalmente, al **equipo directivo**.
 - **Administración de la plataforma** — mantiene el servidor y puede gestionar todos los centros

@@ -10,7 +10,8 @@
  *  · calendario/calendario-tablon.png y calendario-tablon-proximos-dias.png — las dos pantallas del tablón
  *
  * Necesita un servidor arrancado en SHOTS_BASE_URL (con el reloj fijado al lunes de la demo, ver
- * scripts/seed/README.md) y una BD DESECHABLE con fixtures y `tmp:seed-shots`. Crea la actividad «Charla sobre el
+ * scripts/seed/README.md) y una BD DESECHABLE con fixtures y `tmp:seed-shots`. También hace falta
+ * SHOTS_ABSENCE_ID: el id (UUID) de la ausencia de pedro.fernandez que siembra `tmp:seed-shots`. Crea la actividad «Charla sobre el
  * acoso escolar» (hoy, 09:30–10:15, dentro de la 2ª hora) desde el propio formulario y personaliza el color de
  * 1º ESO A desde la oferta formativa, así que hay que restaurar la BD antes de repetirlo.
  */

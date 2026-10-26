@@ -199,5 +199,5 @@ página.
 4. Alumnado importado (la oferta formativa se crea sola).
 5. Tutorías asignadas en todos los grupos.
 6. Asignaciones docente-grupo importadas (opcional, pero recomendable).
-7. Perfiles de **comisión de convivencia** y **orientación** asignados (ver
+7. Perfiles de **comisión de convivencia**, **orientación** y **coordinación de actividades** asignados (ver
    [Administrar el centro educativo](06-administrar-el-centro.md#perfiles)).

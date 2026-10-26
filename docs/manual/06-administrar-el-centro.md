@@ -238,7 +238,7 @@ pasan a ser *Complementaria*.
 ![Administración de los tipos de actividad](img/centro/centro-tipos-actividad.png)
 
 Cada tipo tiene además un **color** opcional (gris si no se le da ninguno) con el que se pinta su
-distintivo en el calendario, las guardias, el panel de inicio, los listados y el tablón. Un tipo
+distintivo en la vista de día, las guardias, el panel de inicio, los listados y el tablón. Un tipo
 que ya tiene actividades no se puede eliminar (aparece un aviso); desactívalo en su lugar, y dejará
 de ofrecerse en las actividades nuevas sin afectar a las existentes. Esta tarjeta solo aparece si las
 Actividades están activadas.

@@ -74,7 +74,8 @@
                                         {{ event.url }}
                                     </a>
                                 {% endif %}
-                                {% if canPublishEvents %}
+                                {# Quien solo publica las suyas (ajuste «Todos») no puede editar las de otras personas. #}
+                                {% if canPublishEvents and (is_granted('educational_centre.manage_all_events', centre) or (event.createdBy is not null and event.createdBy == app.user)) %}
                                     <a href="{{ path('app_events_edit', {eventId: event.id.toRfc4122}) }}" class="block text-xs text-gray-400 hover:text-gray-600 mt-1">
                                         {{ 'school_event.action.edit'|trans({}, 'admin') }}
                                     </a>

@@ -293,6 +293,41 @@ class SchoolEventControllerTest extends ControllerTestCase
         self::assertSame($companion->getId()->toRfc4122(), $event->getCompanions()->first()->getId()->toRfc4122());
     }
 
+    public function testEditingKeepsACoordinatorAndCompanionWhoLeftTheYear(): void
+    {
+        [$admin, $centre, , $year] = $this->makeScenario();
+        $coordinator = $this->makeTeacher('sale.coord.' . uniqid('', false));
+        $companion   = $this->makeTeacher('sale.acomp.' . uniqid('', false));
+        $this->persist($coordinator, $companion);
+        // Ninguno de los dos pertenece ya al curso, pero siguen en la actividad.
+        $event = $this->makeEvent($year, 'Visita');
+        $event->setCoordinator($coordinator)->addCompanion($companion);
+        $this->persist($event);
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
+        self::assertCount(1, $crawler->filter('select[name="coordinator"] option[value="' . $coordinator->getId()->toRfc4122() . '"][selected]'));
+        self::assertCount(1, $crawler->filter('select[name="companions[]"] option[value="' . $companion->getId()->toRfc4122() . '"][selected]'));
+        $token = $crawler->filter('form:not([action]) [name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/actividades/' . $event->getId()->toRfc4122() . '/editar', [
+            '_token'      => $token,
+            'date'        => '2026-09-15',
+            'start_time'  => '09:00',
+            'end_time'    => '10:00',
+            'name'        => 'Visita renombrada',
+            'type'        => $this->typeId,
+            'coordinator' => $coordinator->getId()->toRfc4122(),
+            'companions'  => [$companion->getId()->toRfc4122()],
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $saved = $this->em->getRepository(SchoolEvent::class)->findAll()[0];
+        self::assertSame($coordinator->getId()->toRfc4122(), $saved->getCoordinator()?->getId()->toRfc4122());
+        self::assertCount(1, $saved->getCompanions());
+    }
+
     public function testTheOldEventsAddressRedirectsToActivities(): void
     {
         [$admin, $centre] = $this->makeScenario();
