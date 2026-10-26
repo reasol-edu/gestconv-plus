@@ -547,27 +547,33 @@ el centro**, no solo de sus propios grupos:
 
 - Vista mensual unificada: **sanciones** ya comunicadas (para todo el
   profesorado), **ausencias** del profesorado (solo administradores) y
-  **eventos de centro**, cada tipo con su icono y su color.
+  **actividades de centro**, cada tipo con su icono y su color.
 - Solo días lectivos (lunes a viernes), con el día actual resaltado.
 - Al hacer clic en un día se abre su **vista de detalle**, con navegación al
   día anterior/siguiente y el desglose completo: tramos horarios y guardias,
-  sanciones, ausencias y eventos de ese día.
+  sanciones, ausencias y actividades de ese día.
 
 ---
 
-## Eventos de centro
+## Actividades de centro
 
-- Se gestionan desde la pestaña **Eventos** de la sección Calendario:
-  listado paginado con búsqueda y filtro por grupo. Quién puede publicarlos
-  es un ajuste: **equipo directivo** (por defecto) o **todos**.
-- Cada evento tiene fecha, hora de inicio y fin, nombre, descripción y
-  enlace opcionales, y **grupos asociados** opcionales: sin grupos es
-  general; con grupos, **general** (todo el profesorado) o **restringido**
-  (solo quien los imparte o tutoriza).
-- Se muestra en el calendario, la vista de día, el modo tablón y el panel
-  de inicio, y dentro del **tramo horario** con el que coincide.
+- Se gestionan desde la pestaña **Actividades** de la sección Calendario:
+  listado paginado con búsqueda y filtros por grupo y por tipo. Quién puede
+  publicarlas es un ajuste: **equipo directivo** (por defecto) o **todos**
+  (cada docente solo gestiona las suyas). La **coordinación de actividades**,
+  un perfil del centro, gestiona todas como un administrador.
+- Cada actividad tiene fecha, horario, nombre, **tipo** (complementaria,
+  extraescolar u otros, editable por centro y con color), y opcionalmente
+  descripción, enlace, **lugar**, **departamento organizador**,
+  **coordinador/a**, profesorado acompañante y **grupos asociados**: sin
+  grupos es general; con grupos, **general** (todo el profesorado) o
+  **restringida** (solo quien los imparte o tutoriza).
+- Se muestra en el calendario, la vista de día, las guardias, el modo tablón
+  y el panel de inicio, y dentro del **tramo horario** con el que coincide.
 - Cada grupo tiene un **color** (calculado o personalizado en la oferta
-  formativa) que se usa en todo lo relacionado con él.
+  formativa) que se usa, como etiqueta, en todo lo relacionado con él.
+- Las Actividades se pueden **activar o desactivar** de golpe, global o por
+  centro.
 
 ---
 
@@ -578,12 +584,14 @@ el centro**, no solo de sus propios grupos:
 - Vista a pantalla completa, pensada para dejarse fija en una pantalla del
   centro (por ejemplo, la sala de profesorado). Solo lo activan los
   administradores, y pide confirmación antes de entrar.
-- Rota entre hasta tres pantallas — **Hoy**, **esta semana** y **semana que
-  viene** — con botones para avanzar o retroceder sin esperar a la rotación.
-- La pantalla **Hoy** muestra el profesorado de guardia por tramo horario
-  (con el tramo actual resaltado en vivo) y, al pie, las ausencias, las
-  sanciones y los **eventos del día** — estos últimos incluso en un día no
-  lectivo.
+- Rota entre dos pantallas — **Hoy** y **Próximos días** — con botones para
+  avanzar o retroceder sin esperar a la rotación.
+- La pantalla **Hoy** reparte en paneles el **alumnado sancionado** y el
+  **profesorado ausente por tramos horarios** (con el tramo actual resaltado
+  en vivo; quien no dejó tareas sale en todos los tramos), y debajo las
+  **actividades** de hoy y de los próximos días.
+- **Próximos días** muestra, en cinco columnas, las 5 jornadas lectivas
+  siguientes con sus sanciones, ausencias y actividades.
 - Es una sesión sin salida: solo se puede abandonar cerrando sesión con el
   botón de encendido/apagado.
 
@@ -794,8 +802,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Los cuatro catálogos se pueden **exportar e importar en JSON** para copiar
   la configuración entre centros, con la opción de vaciar lo existente antes
   de importar.
-- **Salidas, Ausencias, Notas y tareas de sanción** se pueden desactivar por
-  centro o para toda la plataforma; vienen activadas y los datos se conservan.
+- **Salidas, Ausencias, Notas, tareas de sanción y Actividades** se pueden
+  desactivar por centro o para toda la plataforma; vienen activadas y los
+  datos se conservan.
 
 ---
 
@@ -813,7 +822,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 ## Perfiles y roles especiales
 
 - Además de docente y tutor/a, el administrador de centro puede conceder los
-  roles de **comisión de convivencia** y **orientador/a** a cualquier
+  roles de **comisión de convivencia**, **orientador/a** y **coordinación de
+  actividades** (gestiona todas las actividades de centro) a cualquier
   docente del centro.
 - Estos roles amplían el alcance de visibilidad a **todo el centro**, tal y
   como se ha visto en el bloque anterior, sin necesidad de ser tutor/a de

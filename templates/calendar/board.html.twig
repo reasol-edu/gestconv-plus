@@ -64,9 +64,14 @@
                             · <span data-clock-target="display" class="tabular-nums"></span>
                         </p>
                     </div>
-                    {% include 'calendar/_board_today.html.twig' with {report: report, eventsDaysAhead: eventsDaysAhead} only %}
+                    {# Con varias pantallas, los botones de avance quedan en los márgenes y no tapan el contenido. #}
+                    <div class="flex-1 min-h-0 flex flex-col {{ screens|length > 1 ? 'px-14' : '' }}">
+                        {% include 'calendar/_board_today.html.twig' with {report: report, eventsDaysAhead: eventsDaysAhead} only %}
+                    </div>
                 {% else %}
-                    {% include 'calendar/_board_upcoming.html.twig' with {days: screen.days} only %}
+                    <div class="flex-1 min-h-0 flex flex-col {{ screens|length > 1 ? 'px-14' : '' }}">
+                        {% include 'calendar/_board_upcoming.html.twig' with {days: screen.days} only %}
+                    </div>
                 {% endif %}
             </section>
         {% endfor %}

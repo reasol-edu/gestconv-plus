@@ -104,6 +104,8 @@ final class TmpSeedShotsCommand extends Command
         // Beatriz cotutora de 1ºESO A (puede notificar sus partes y sanciones); Roberto y Pedro dan clase allí.
         $groupA->addTutor($beatriz);
         $groupA->addTeacher($roberto, 'Matemáticas');
+        // Rafael coordina las actividades del centro (perfil que se ve en la pantalla de perfiles).
+        $centre->addActivityCoordinator($rafael);
         $groupA->addTeacher($pedro, 'Lengua Castellana');
         $groupBac->addTeacher($pedro, 'Lengua Castellana');
         $this->em->flush();
@@ -142,6 +144,14 @@ final class TmpSeedShotsCommand extends Command
                 $task->setDescription('Resumen del tema 3 y ejercicios 1 a 8.')->setCompletedAt(new \DateTimeImmutable('2026-10-02 12:00'));
             }
         }
+
+        // ── Un alumno de 1ºESO B con una expulsión notificada que empieza el jueves (se ve en «Próximos días» del tablón)
+        $lucas = $this->students($groupB)[5];
+        $l1    = $this->report($lucas, $groupB, $beatriz, '2026-09-28 11:10', 'Agredió a un compañero durante el recreo.', true, $carmen, true);
+        $l2    = $this->report($lucas, $groupB, $roberto, '2026-09-30 09:40', 'Se negó a salir del aula tras ser expulsado de clase.', true, $carmen);
+        $s4    = $this->sanction($lucas, $groupB, $carmen, [$l1, $l2], 'Expulsión del centro durante dos días lectivos.', '2026-10-08', '2026-10-09', 'Expulsión 2 días');
+        $this->em->flush();
+        $this->notifySanction($s4, $carmen);
 
         // ── Marta (1ºBach): dos partes notificados y sancionables + uno pendiente; sanción antigua con seguimiento
         $this->report($marta, $groupBac, $roberto, '2026-09-22 09:50', 'Interrumpió la explicación de forma reiterada.', true, $carmen);
@@ -201,27 +211,34 @@ final class TmpSeedShotsCommand extends Command
         $abs1    = (new Absence())->setTeacher($pedro)->setAcademicYear($this->year)->setStartDate($today)->setEndDate($today);
         $this->em->persist($abs1);
         $act1 = (new Activity())->setAbsence($abs1)->setDate($today)->setTimeSlot($slots[0])
-            ->setDescription('<p>Ejercicios del tema 4, páginas 32 y 33. Corregir en la próxima clase.</p>')->addSubject($pedroGt);
+            ->setDescription('<p>Ejercicios del tema 4, páginas 32 y 33. Corregir en la próxima clase.</p>')->setClassroom('8')->addSubject($pedroGt);
         $abs1->addActivity($act1);
         $this->em->persist($act1);
         $this->em->flush();
         $pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 200 200]/Parent 2 0 R>>endobj\ntrailer<</Root 1 0 R>>";
         $this->em->persist(new ActivityAttachment($act1, 'ejercicios-tema-4.pdf', 'application/pdf', \strlen($pdf), $pdf));
         $act2 = (new Activity())->setAbsence($abs1)->setDate($today)->setTimeSlot($slots[1])
-            ->setDescription('<p>Lectura del capítulo 2 y resumen de media página.</p>')->addSubject($mariaGt);
+            ->setDescription('<p>Lectura del capítulo 2 y resumen de media página.</p>')->setClassroom('3')->addSubject($mariaGt);
         $abs1->addActivity($act2);
         $this->em->persist($act2);
         $abs2 = (new Absence())->setTeacher($maria)->setAcademicYear($this->year)->setStartDate($today)->setEndDate($today->modify('+1 day'));
         $this->em->persist($abs2);
 
-        // ── Eventos del centro (calendario)
+        // ── Actividades del centro (calendario, tablón y listados)
+        $types = [];
+        foreach ($this->em->getRepository(\App\Entity\SchoolEventType::class)->findBy(['educationalCentre' => $centre]) as $type) {
+            $types[$type->getName()] = $type;
+        }
         foreach ([
-            ['Reunión de claustro', '2026-10-07', '16:00', '17:30', true, []],
-            ['Excursión a la Sierra de Aracena', '2026-10-15', '08:30', '15:00', false, [$groupA, $groupB]],
-            ['Elecciones de delegados', '2026-10-20', '11:30', '12:30', true, []],
-        ] as [$name, $date, $from, $to, $general, $groups]) {
+            ['Reunión de claustro', '2026-10-07', '16:00', '17:30', true, [], 'Otros', 'Sala de profesorado', null, $carmen],
+            ['Visita a la biblioteca municipal', '2026-10-06', '10:15', '11:15', false, [$groupA], 'Complementaria', 'Biblioteca municipal', 'Lengua Castellana', $pedro],
+            ['Excursión a la Sierra de Aracena', '2026-10-15', '08:30', '15:00', false, [$groupA, $groupB], 'Extraescolar', 'Sierra de Aracena', 'Geografía e Historia', $rafael],
+            ['Elecciones de delegados', '2026-10-20', '11:30', '12:30', true, [], 'Complementaria', 'Aulas de tutoría', 'Orientación', $beatriz],
+        ] as [$name, $date, $from, $to, $general, $groups, $typeName, $location, $department, $coordinator]) {
             $event = (new SchoolEvent())->setAcademicYear($this->year)->setName($name)->setDate(new \DateTimeImmutable($date))
-                ->setStartTime(new \DateTimeImmutable("2000-01-01 $from"))->setEndTime(new \DateTimeImmutable("2000-01-01 $to"))->setGeneral($general);
+                ->setStartTime(new \DateTimeImmutable("2000-01-01 $from"))->setEndTime(new \DateTimeImmutable("2000-01-01 $to"))->setGeneral($general)
+                ->setType($types[$typeName] ?? null)->setLocation($location)->setOrganizingDepartment($department)->setCoordinator($coordinator)
+                ->setCreatedBy($carmen);
             foreach ($groups as $g) {
                 $event->addGroup($g);
             }

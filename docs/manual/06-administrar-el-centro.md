@@ -129,26 +129,30 @@ fechas de otras pantallas (tramos horarios, ausencias, calendario de sanciones).
 
 ### Perfiles
 
-La tarjeta **Perfiles** asigna los dos roles especiales a docentes concretos del centro:
+La tarjeta **Perfiles** asigna los roles especiales a docentes concretos del centro:
 
-![Asignación de los perfiles de comisión de convivencia y orientación](img/centro/centro-perfiles.png)
+![Asignación de los perfiles de comisión de convivencia, orientación y coordinación de actividades](img/centro/centro-perfiles.png)
 
 - **Comisión de convivencia** — ven todos los partes del centro y pueden registrar sanciones para
   cualquier estudiante, con los mismos permisos que un administrador de centro sobre partes y
   sanciones.
 - **Orientador/a** — ven todos los partes y sanciones del centro, pero no pueden crear, editar ni
   eliminar los que no han registrado ellos mismos.
+- **Coordinación de actividades** — ven, modifican y eliminan todas las
+  [actividades de centro](05-calendario-y-tablon.md#actividades-de-centro), las haya publicado quien
+  las haya publicado, como si fueran administradores; y pueden publicar aunque el ajuste solo lo
+  permita a la dirección. Este perfil solo se ofrece si las Actividades están activadas.
 
-Ambos perfiles se asignan mediante buscadores de docentes con autocompletado, restringidos al
-curso académico activo. Ninguno de los dos concede acceso al resto del panel del centro (oferta
+Los perfiles se asignan mediante buscadores de docentes con autocompletado, restringidos al
+curso académico activo. Ninguno concede acceso al resto del panel del centro (oferta
 formativa, estudiantes, catálogos…): solo amplían la visibilidad y los permisos sobre partes y
-sanciones (ver [Permisos de un vistazo](08-permisos-de-un-vistazo.md)).
+sanciones, o sobre las actividades (ver [Permisos de un vistazo](08-permisos-de-un-vistazo.md)).
 
 ## Catálogos del centro
 
-Al crear el centro se configuran automáticamente seis catálogos con valores por defecto,
+Al crear el centro se configuran automáticamente siete catálogos con valores por defecto,
 pensados para empezar a trabajar sin más preparación. Conviene revisarlos al menos una vez y
-adaptarlos al plan de convivencia del centro. Los seis comparten la misma mecánica: cada
+adaptarlos al plan de convivencia del centro. Los siete comparten la misma mecánica: cada
 elemento se puede **activar o desactivar** (solo los activos aparecen en los formularios), se
 reordena con las flechas, y se puede editar o eliminar.
 
@@ -222,9 +226,25 @@ actualizar.
 Un motivo que ya se ha usado en alguna salida no se puede eliminar (aparece un aviso); desactívalo
 en su lugar.
 
+### Tipos de actividad {#tipos-de-actividad}
+
+En **Centro educativo › Tipos de actividad** se configura la lista —plana— de tipos entre los que
+se elige al publicar una [actividad de centro](05-calendario-y-tablon.md#actividades-de-centro). Los
+3 tipos por defecto son **Complementaria**, **Extraescolar** y **Otros**; los centros que ya
+existían los reciben automáticamente al actualizar, y las actividades que ya estaban registradas
+pasan a ser *Complementaria*.
+
+![Administración de los tipos de actividad](img/centro/centro-tipos-actividad.png)
+
+Cada tipo tiene además un **color** opcional (gris si no se le da ninguno) con el que se pinta su
+distintivo en el calendario, las guardias, el panel de inicio, los listados y el tablón. Un tipo
+que ya tiene actividades no se puede eliminar (aparece un aviso); desactívalo en su lugar, y dejará
+de ofrecerse en las actividades nuevas sin afectar a las existentes. Esta tarjeta solo aparece si las
+Actividades están activadas.
+
 ### Copiar catálogos entre centros
 
-Los seis catálogos incluyen botones **Exportar configuración** e **Importar configuración**
+Los siete catálogos incluyen botones **Exportar configuración** e **Importar configuración**
 para copiar la configuración de un centro a otro: la exportación descarga un fichero con los elementos y sus
 categorías, y la importación lo vuelve a cargar, creando lo que no exista y actualizando el resto
 por nombre (sin distinguir mayúsculas). Al importar se puede marcar la opción de **vaciar el

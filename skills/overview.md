@@ -56,7 +56,7 @@ Depending on the area you're touching, also consult:
 | Duty | A time slot (`TimeSlot`) covered by a teacher during another teacher's absence |
 | Board mode | "Public screen" mode of the calendar (`/calendario/tablon`), no interactive session |
 | Daily note | `DailyNote` — a student follow-up note, not disciplinary |
-| School event | `SchoolEvent` — a general or group-restricted event shown on the calendar |
+| Activity (school event) | `SchoolEvent` — a general or group-restricted activity shown on the calendar, with a per-centre `SchoolEventType`; UI name «Actividad», routes under `/actividades`; the whole section is toggled by `features.events` |
 | Non-working day | A declared holiday (`NonWorkingDay`) or weekend; see `NonWorkingDayChecker` |
 
 ## Map of `src/`

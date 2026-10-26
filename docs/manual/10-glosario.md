@@ -72,6 +72,12 @@ Perfil especial de centro. Sus miembros ven todos los partes del centro y pueden
 **Orientador/a**
 Perfil especial de centro. Ve todos los partes y sanciones del centro, pero no puede modificar los que no ha registrado.
 
+**Coordinación de actividades**
+Perfil especial de centro. Sus miembros ven, modifican y eliminan todas las actividades de centro, las haya publicado quien las haya publicado, como si fueran administradores.
+
+**Actividad de centro**
+Aviso puntual con fecha, horario y tipo (complementaria, extraescolar u otros) que se muestra en el calendario, las guardias, el panel de inicio y el modo tablón. Puede indicar lugar, departamento organizador, coordinación y grupos destinatarios. Hasta la versión 1.12 se llamaba *evento*.
+
 **Tutor/a de grupo**
 Docente responsable de un grupo. Puede consultar todos los partes del grupo además de los propios.
 

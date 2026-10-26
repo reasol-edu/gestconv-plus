@@ -79,10 +79,10 @@ Debajo, las tarjetas de estadísticas:
 A continuación, las **sanciones en vigor en tus grupos** de esta semana y la próxima, visible para
 quien imparte materia en algún grupo.
 
-Si hay alguno, una tarjeta **Eventos de hoy** lista los [eventos de
-centro](05-calendario-y-tablon.md#eventos-de-centro) del día: los generales
-para cualquier docente, o los restringidos a algún grupo que se imparte o tutoriza; los
-administradores ven además los restringidos a grupos ajenos. Cada tarjeta enlaza a la
+Si hay alguna, una tarjeta **Actividades de hoy** lista las [actividades de
+centro](05-calendario-y-tablon.md#actividades-de-centro) del día, con su tipo: las generales
+para cualquier docente, o las restringidas a algún grupo que se imparte o tutoriza; los
+administradores y la coordinación de actividades ven además las restringidas a grupos ajenos. Cada tarjeta enlaza a la
 [vista de detalle de ese día](05-calendario-y-tablon.md#vista-de-detalle-de-un-dia).
 
 Y por último:
@@ -586,9 +586,11 @@ clases afectadas:
 3. **Grupo o asignatura** (opcional) — puede marcarse más de uno de los grupos o asignaturas que
    imparte quien registra la actividad, si la misma instrucción sirve para varias clases del mismo
    tramo.
-4. **Descripción** — instrucciones para quien cubra la clase, con formato de texto enriquecido.
+4. **Aula** (opcional) — dónde espera el alumnado. Se muestra junto al grupo en el
+   [modo tablón](05-calendario-y-tablon.md#pantalla-hoy).
+5. **Descripción** — instrucciones para quien cubra la clase, con formato de texto enriquecido.
    Es obligatoria.
-5. **Adjuntar ficheros** (opcional) — fichas de trabajo, presentaciones u otro material de apoyo.
+6. **Adjuntar ficheros** (opcional) — fichas de trabajo, presentaciones u otro material de apoyo.
    Se pueden seleccionar varios ficheros a la vez, de hasta 10 MB cada uno (límite configurable) y 50 MB en total por envío; los formatos admitidos
    son PDF, imágenes (PNG, JPG, GIF), documentos de Word, Excel, PowerPoint y OpenDocument, texto
    plano y ZIP.
@@ -599,7 +601,8 @@ clases afectadas:
    ![Aviso de un adjunto que supera el tamaño máximo](img/ausencias/adjunto-demasiado-grande.png)
 
 Una misma ausencia puede tener tantas actividades como clases afectadas, incluso varias el mismo
-día si hay más de un tramo horario implicado.
+día si hay más de un tramo horario implicado. Un docente ausente que no registra ninguna actividad
+un día aparece, en el tablón, en todos los tramos horarios de ese día.
 
 ### Consultar, editar y eliminar
 
@@ -654,8 +657,8 @@ Para cada tramo horario se muestran, una detrás de otra:
   modificar sus datos (nombre, horario y día, y la propia asignación de docentes de guardia), que
   abre el editor de [tramos horarios](06-administrar-el-centro.md#tramos-horarios) con ese tramo ya
   seleccionado.
-- **Eventos en este tramo** — los [eventos de centro](05-calendario-y-tablon.md#eventos-de-centro)
-  que coinciden con el horario del tramo y que puedes ver; solo aparece si hay alguno.
+- **Actividades en este tramo** — las [actividades de centro](05-calendario-y-tablon.md#actividades-de-centro)
+  que coinciden con el horario del tramo y que puedes ver; solo aparece si hay alguna.
 - **Ausencias** — el docente ausente y, si dejó una actividad registrada para ese tramo, su
   descripción completa junto con los ficheros adjuntos disponibles para descargar. Si no dejó
   actividad, aparece un aviso indicándolo.
@@ -741,7 +744,7 @@ agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni
 
 - Al pulsar **Tab** nada más cargar una pantalla aparece el enlace **Saltar al contenido
   principal**, que lleva directamente al contenido sin recorrer antes el menú lateral.
-- Si empiezas a rellenar un formulario (parte, sanción, ausencia, actividad, nota, evento, ficha
+- Si empiezas a rellenar un formulario (parte, sanción, ausencia, actividad, nota, actividad de centro, ficha
   de estudiante o tarea de sanción) y intentas salir de la página sin guardar —cerrar la pestaña,
   recargar o seguir un enlace—, el navegador pide confirmación antes de descartar los cambios. Al
   guardar el formulario, o si no has modificado nada, no se muestra ningún aviso.

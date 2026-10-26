@@ -11,10 +11,11 @@ capítulos anteriores enlazan aquí cada vez que un permiso entra en juego.
 | **Tutor/a de grupo** | Además, ve los partes y sanciones de su grupo |
 | **Comisión de convivencia** | Ve todo el centro y registra las sanciones |
 | **Orientador/a** | Lo consulta todo, sin editar nada |
+| **Coordinación de actividades** | Gestiona todas las actividades de centro |
 | **Administración de centro** | Configura el centro y tiene acceso completo a sus datos |
 | **Administración global** | Mantiene la plataforma y todos los centros del servidor |
 
-Los perfiles de **comisión de convivencia** y **orientador/a** se asignan a docentes concretos
+Los perfiles de **comisión de convivencia**, **orientador/a** y **coordinación de actividades** se asignan a docentes concretos
 desde la tarjeta Perfiles del panel del centro (ver
 [Administrar el centro educativo](06-administrar-el-centro.md#perfiles)). La condición de
 **tutor/a** viene de la asignación de tutorías en la oferta formativa (ver
@@ -160,9 +161,17 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Gestionar estudiantes | — | ✓ | ✓ |
 | Gestionar conductas, medidas y métodos de comunicación | — | ✓ | ✓ |
 | Gestionar días no lectivos, con importación desde iCal y CSV de Séneca | — | ✓ | ✓ |
-| Gestionar perfiles (comisión y orientación) | — | ✓ | ✓ |
-| Publicar [eventos de centro](05-calendario-y-tablon.md#quien-puede-publicar-eventos) | Solo con el ajuste «Todos» | ✓ | ✓ |
-| Activar o desactivar [secciones](07-administrar-la-plataforma.md#secciones-de-la-aplicacion) (Salidas, Ausencias, Notas, tareas de sanción) en el centro, salvo que el valor global esté bloqueado | — | ✓ | ✓ |
+| Gestionar perfiles (comisión, orientación y coordinación de actividades) | — | ✓ | ✓ |
+| Gestionar el catálogo de tipos de [actividad](05-calendario-y-tablon.md#actividades-de-centro) | — | ✓ | ✓ |
+| Activar o desactivar [secciones](07-administrar-la-plataforma.md#secciones-de-la-aplicacion) (Salidas, Ausencias, Notas, tareas de sanción, Actividades) en el centro, salvo que el valor global esté bloqueado | — | ✓ | ✓ |
+
+### Actividades de centro
+
+| Acción | Docente | Coordinación de actividades | Admin de centro | Admin global |
+|---|:---:|:---:|:---:|:---:|
+| Ver las actividades en el calendario | Las generales y las de sus grupos | Todas | Todas | Todas |
+| [Publicar](05-calendario-y-tablon.md#quien-puede-publicar-actividades) | Solo con el ajuste «Todos» | ✓ | ✓ | ✓ |
+| Listar, modificar y eliminar | Solo las que ha publicado, con el ajuste «Todos» | Todas | Todas | Todas |
 
 ## Administración global
 

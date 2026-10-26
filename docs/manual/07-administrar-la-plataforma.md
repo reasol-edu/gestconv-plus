@@ -161,7 +161,7 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 ## Ajustes disponibles
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
-Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón, Eventos,
+Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón, Actividades,
 Notificaciones a familias, Avisos por correo, Personalización de informes, Plantillas de informes,
 Ausencias, Tareas de sanción y Subida de ficheros.
 
@@ -186,20 +186,22 @@ Activa o desactiva todos los correos automáticos de avisos de la aplicación (v
 único ajuste con los tres ámbitos disponibles: un administrador global puede desactivarlos para
 todo el servidor, uno de centro para su centro, y cada docente para sí mismo.
 
-### Eventos
+### Actividades
 
 | Ajuste | Ámbito | Tipo | Por defecto |
 |---|---|---|---|
-| Quién puede publicar eventos | Global, centro | Todos / Equipo directivo | Equipo directivo |
+| Quién puede publicar actividades | Global, centro | Todos / Equipo directivo | Equipo directivo |
 
-Decide quién puede crear, editar y eliminar los
-[eventos de centro](05-calendario-y-tablon.md#quien-puede-publicar-eventos): solo la dirección y
-los administradores (valor por defecto) o cualquier docente del centro.
+Decide quién puede crear, editar y eliminar las
+[actividades de centro](05-calendario-y-tablon.md#quien-puede-publicar-actividades): solo la
+dirección y los administradores (valor por defecto) o cualquier docente del centro, que entonces
+solo gestiona las que ha publicado él. La coordinación de actividades, un perfil del centro,
+gestiona todas en cualquier caso.
 
 ### Modo tablón
 
-Tres ajustes de ámbito global o de centro controlan la alternancia de semanas y el tema de
-colores del modo tablón. Se describen en
+Cuatro ajustes de ámbito global o de centro controlan la duración de las pantallas, los días de
+antelación de las actividades y el tema de colores del modo tablón. Se describen en
 [Ajustes del modo tablón](05-calendario-y-tablon.md#ajustes-del-modo-tablon).
 
 ### Notificaciones a familias
@@ -504,6 +506,7 @@ Mientras está activado:
 | Ausencias del profesorado | Global, centro | Activado / Desactivado | Activado |
 | Notas del día | Global, centro | Activado / Desactivado | Activado |
 | Tareas de sanción | Global, centro | Activado / Desactivado | Activado |
+| Actividades de centro | Global, centro | Activado / Desactivado | Activado |
 
 Permiten que un centro (o toda la plataforma) no use una parte de la aplicación. Todas vienen
 **activadas**, así que nada cambia hasta que alguien las desactiva. Siguen las reglas de cualquier
@@ -532,6 +535,10 @@ Qué incluye cada una:
   Con la sección desactivada, las sanciones nuevas no generan tareas ni sus avisos por correo, no
   se envían los recordatorios y el enlace público para el alumno deja de abrirse. Las sanciones y
   las tareas ya creadas no se borran.
+- **Actividades de centro**: la publicación y gestión de
+  [actividades](05-calendario-y-tablon.md#actividades-de-centro), su pestaña del calendario, sus
+  avisos en el panel de inicio, la vista de día, las guardias y el tablón, el catálogo de tipos de
+  actividad y el perfil de coordinación de actividades. Se desactiva de una vez, entera.
 
 ## Copias de seguridad
 
