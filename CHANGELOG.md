@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-10-26
+
+### Added
+
+- **Ausencias con docente sustituto/a**: una ausencia puede marcarse como «existe docente sustituto/a». Entonces no aparece en el calendario, no pide actividades y no sale en el panel de inicio ni en el tablón; solo se ve en el listado de ausencias de quien tiene permiso para consultarlas. Tampoco figura de guardia en un tramo quien tiene ese día una ausencia con sustituto/a.
+- **Sustituciones de profesorado**: al añadir un docente a mano o importar un fichero (en la vista previa) se puede indicar, con un buscador, a quién sustituye; el nuevo docente hereda sus perfiles, tutorías, materias y guardias. El listado de docentes del centro tiene además la acción «Sustituir», que copia toda esa información de otro docente del curso a uno ya incluido.
+
 ## [1.13.0] - 2026-10-26
 
 ### Added
