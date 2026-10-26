@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-10-26
+
+### Added
+
+- **Secciones desactivables**: Salidas, Ausencias, Notas y tareas de sanción pueden desactivarse para toda la plataforma o para un centro (ajustes globales y de centro, categoría «Secciones de la aplicación»; vienen activadas). Una sección desactivada desaparece del menú, de los accesos rápidos, de la ficha del alumno, del calendario y de las alertas, y sus direcciones —también los catálogos de motivos de salida y tipos de nota— dejan de funcionar. Con las tareas de sanción desactivadas, las sanciones nuevas no piden tareas, no hay recordatorios y el enlace público para el alumno deja de abrirse. Los datos ya registrados se conservan.
+- **Quién puede publicar eventos**: un ajuste global y de centro (categoría «Eventos») para elegir entre «Equipo directivo» (por defecto, incluye a los administradores) y «Todos». Con «Todos», cualquier docente del centro puede crear, editar y eliminar los eventos que ve.
+- **Color de grupo**: cada grupo puede tener un color personalizado en la oferta formativa. Si no lo tiene, usa uno calculado automáticamente, que se muestra junto a un botón para quitar el personalizado y volver a él. El color se aplica al calendario, el panel de inicio, las guardias, el modo tablón y los listados de partes, sanciones, notas y salidas.
+- **Eventos dentro de su tramo horario**: los eventos que coinciden con un tramo se muestran en el propio tramo, en la vista de día, en las guardias y en la pantalla «Hoy» del tablón.
+
+### Changed
+
+- **Eventos y grupos**: un evento puede asociarse a grupos aunque lo vea todo el centro. Sin grupos es general automáticamente y el formulario no muestra nada que elegir; al seleccionar al menos un grupo aparecen «General» (lo ve todo el profesorado) y «Restringido a grupos» (solo quien se relaciona con ellos). Las ayudas explican la nueva semántica.
+
 ## [1.11.0] - 2026-10-24
 
 ### Added
