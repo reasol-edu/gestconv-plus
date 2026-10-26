@@ -112,7 +112,8 @@ Cada actividad tiene:
     - **General** — la ve todo el profesorado del centro, imparta o no clase a los grupos
       asociados; los grupos se muestran como información.
     - **Restringida a grupos** — la ve solo el profesorado que imparte clase o tutoriza alguno de
-      los grupos asociados (y la dirección, la coordinación y los administradores).
+      los grupos asociados (y la dirección, la coordinación y los administradores). Quien la
+      publica la ve siempre en su propio calendario, aunque no imparta en esos grupos.
 
 Si no se elige ningún grupo, la actividad es **general** automáticamente y el formulario no muestra
 ninguna opción de visibilidad:

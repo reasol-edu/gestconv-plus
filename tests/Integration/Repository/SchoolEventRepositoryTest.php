@@ -131,6 +131,23 @@ class SchoolEventRepositoryTest extends RepositoryTestCase
         self::assertSame('Reunión 1ºA', $result[0]->getName());
     }
 
+    public function testAnAuthorSeesTheirRestrictedActivityEvenIfTheyDoNotTeachItsGroups(): void
+    {
+        $world  = $this->makeWorld('author-sees');
+        $author = $this->makeTeacher('author');
+        $other  = $this->makeTeacher('other-viewer');
+        $date   = new \DateTimeImmutable('2026-03-10');
+        $this->makeEvent($world, general: false, name: 'Restringida mía', groups: [$world['group']], date: $date)->setCreatedBy($author);
+        $this->makeEvent($world, general: false, name: 'Restringida ajena', groups: [$world['group']], date: $date);
+        $this->flush();
+
+        $names = static fn (array $events): array => array_map(static fn (SchoolEvent $e): string => $e->getName(), $events);
+
+        self::assertSame(['Restringida mía'], $names($this->repository->findVisibleForTeacherAndDate($author, $world['year'], $date)));
+        self::assertSame(['Restringida mía'], $names($this->repository->findVisibleForTeacherInAcademicYear($author, $world['year'])));
+        self::assertSame([], $this->repository->findVisibleForTeacherAndDate($other, $world['year'], $date));
+    }
+
     public function testCreateFilteredQueryCanListOnlyTheActivitiesOfOneAuthor(): void
     {
         $world = $this->makeWorld('owned');

@@ -206,6 +206,8 @@ class SchoolEventRepository extends ServiceEntityRepository
             ->leftJoin('g.groupTeachers', 'gt')
             ->andWhere($qb->expr()->orX(
                 'se.general = true',
+                // Quien publica una actividad la ve siempre, aunque la restrinja a grupos en los que no imparte.
+                'se.createdBy = :viewer',
                 'gt.teacher = :viewer',
                 ':viewer MEMBER OF g.tutors',
             ))
