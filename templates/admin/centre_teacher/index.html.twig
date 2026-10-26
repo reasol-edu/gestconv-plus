@@ -71,6 +71,13 @@
                         </button>
                     </div>
                 </div>
+                <div class="mt-4 sm:max-w-md">
+                    <label for="teacher-replaces" class="block text-xs font-medium text-gray-600 mb-1.5">
+                        {{ 'centre_teachers.replaces.label'|trans({}, 'admin') }}
+                    </label>
+                    {% include 'admin/centre_teacher/_replaces_select.html.twig' with {name: 'replaces', id: 'teacher-replaces', year: centre.activeAcademicYear} only %}
+                    <p class="mt-1 text-xs text-gray-500">{{ 'centre_teachers.replaces.help'|trans({}, 'admin') }}</p>
+                </div>
             </form>
         </div>
     {% endif %}

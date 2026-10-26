@@ -1,0 +1,17 @@
+{# Buscador (autocompletar) del docente del curso al que sustituye uno nuevo; si se elige, hereda sus perfiles, tutorías y materias. #}
+<select name="{{ name }}"
+        {% if id is defined %}id="{{ id }}"{% endif %}
+        data-controller="symfony--ux-autocomplete--autocomplete"
+        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: year.id}) }}"
+        data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
+        data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
+        data-symfony--ux-autocomplete--autocomplete-placeholder-value="{{ 'centre_teachers.replaces.placeholder'|trans({}, 'admin') }}"
+        data-symfony--ux-autocomplete--autocomplete-preload-value="false"
+        data-symfony--ux-autocomplete--autocomplete-allow-empty-option-value="true"
+        data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body","plugins":{"clear_button":{}}}'
+        class="w-full">
+    <option value=""></option>
+    {% if selected is defined and selected is not null %}
+        <option value="{{ selected.id.toRfc4122 }}" selected>{{ selected.name.lastName }}, {{ selected.name.firstName }}</option>
+    {% endif %}
+</select>

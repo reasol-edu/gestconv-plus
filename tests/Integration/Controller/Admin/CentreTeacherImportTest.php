@@ -229,6 +229,87 @@ class CentreTeacherImportTest extends ControllerTestCase
 
     // ── Retirar del curso a quien no está en el listado ──────────────────────
 
+    // ── Sustitución ───────────────────────────────────────────────────────────
+
+    /** @return array{0: Teacher, 1: Group} el docente sustituido (con perfil, tutoría y materia) y su grupo */
+    private function makeTeacherWithAssignments(): array
+    {
+        $old    = $this->makeTeacher('sustituido');
+        $course = (new Course())->setName('1º ESO')->setAcademicYear($this->year);
+        $group  = (new Group())->setName('1ºA')->setCourse($course);
+        $this->persist($old, $course, $group);
+        $this->year->addTeacher($old);
+        $group->addTutor($old);
+        $group->addTeacher($old, 'Matemáticas');
+        $this->centre->addCommitteeMember($old);
+        $this->flush();
+
+        return [$old, $group];
+    }
+
+    public function testPreviewOffersTheReplacesSearchOnlyForTeachersWhoJoinTheYear(): void
+    {
+        $present = $this->makeTeacher('presente');
+        $this->persist($present);
+        $this->year->addTeacher($present);
+        $this->flush();
+
+        $crawler = $this->upload(self::HEADER . "\"Garcia, Juan\",\"juan.garcia\",\"\"\n\"Presente, Test\",\"presente\",\"\"\n");
+
+        self::assertCount(1, $crawler->filter('select[name="replaces[juan.garcia]"]'), 'el nuevo puede sustituir a alguien');
+        self::assertCount(0, $crawler->filter('select[name="replaces[presente]"]'), 'quien ya estaba en el curso, no');
+    }
+
+    public function testANewTeacherInheritsProfilesTutorshipsAndSubjectsOfTheOneTheyReplace(): void
+    {
+        [$old, $group] = $this->makeTeacherWithAssignments();
+
+        $crawler = $this->upload(self::HEADER . "\"Garcia, Juan\",\"juan.garcia\",\"\"\n");
+        $this->confirm($crawler, [
+            'usernames' => ['juan.garcia'],
+            'replaces'  => ['juan.garcia' => $old->getId()->toRfc4122()],
+        ]);
+
+        $this->em->clear();
+        $new      = $this->teacher('juan.garcia');
+        $oldAgain = $this->teacher('sustituido');
+        $centre   = $this->em->find(EducationalCentre::class, $this->centre->getId());
+        $groupNow = $this->em->find(Group::class, $group->getId());
+
+        self::assertTrue($centre->getCommitteeMembers()->contains($new), 'perfil copiado');
+        self::assertTrue($groupNow->getTutors()->contains($new), 'tutoría copiada');
+        self::assertTrue($groupNow->hasTeacherSubject($new, 'Matemáticas'), 'materia copiada');
+        // Es una copia: el sustituido conserva lo suyo.
+        self::assertTrue($centre->getCommitteeMembers()->contains($oldAgain));
+        self::assertTrue($groupNow->getTutors()->contains($oldAgain));
+        self::assertTrue($groupNow->hasTeacherSubject($oldAgain, 'Matemáticas'));
+    }
+
+    public function testTheReplacedTeacherMustBelongToTheYearAndTheRowMustBeSelected(): void
+    {
+        [$old, $group] = $this->makeTeacherWithAssignments();
+        $outsider = $this->makeTeacher('fuera');
+        $outsider->setUsername('fuera');
+        $this->persist($outsider);
+        $group->addTeacher($outsider, 'Física');   // tiene materias, pero no es del curso
+        $this->flush();
+
+        $crawler = $this->upload(self::HEADER . "\"Garcia, Juan\",\"juan.garcia\",\"\"\n\"Lopez, Ana\",\"ana.lopez\",\"\"\n");
+        $this->confirm($crawler, [
+            'usernames' => ['juan.garcia'],   // ana.lopez no se selecciona
+            'replaces'  => [
+                'juan.garcia' => $outsider->getId()->toRfc4122(),   // no es del curso: se ignora
+                'ana.lopez'   => $old->getId()->toRfc4122(),        // fila sin seleccionar: no se importa ni copia
+            ],
+        ]);
+
+        $this->em->clear();
+        $groupNow = $this->em->find(Group::class, $group->getId());
+        self::assertTrue($this->em->find(Teacher::class, $this->teacher('juan.garcia')->getId())?->getUsername() === 'juan.garcia');
+        self::assertFalse($groupNow->hasTeacherSubject($this->teacher('juan.garcia'), 'Física'));
+        self::assertNull($this->em->getRepository(Teacher::class)->findOneBy(['username' => 'ana.lopez']));
+    }
+
     public function testTeachersNotInTheFileAndWithoutLinksAreRemovedWhenRequested(): void
     {
         $libre = $this->makeTeacher('libre');

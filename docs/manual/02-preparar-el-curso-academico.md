@@ -54,15 +54,23 @@ La vista previa ofrece:
   activarla se muestra la lista de docentes del curso que no están en el fichero y **no tienen
   ninguna vinculación este curso** (no tutorizan ni imparten en ningún grupo, no tienen guardias
   ni ausencias previstas, no han registrado partes, sanciones ni notas y no tienen un rol en el
-  centro: administración, comisión de convivencia u orientación). Se pueden desmarcar los que se
+  centro: administración, comisión de convivencia, orientación o coordinación de actividades). Se pueden desmarcar los que se
   quieran conservar. Solo se retiran **de este curso**: los docentes siguen existiendo en el
   sistema y en otros cursos. Quien realiza la importación no se ofrece nunca para retirarse.
+- **Sustituye a** (columna de cada docente que se incorpora, opcional): si un docente nuevo cubre
+  a otro del curso —una baja, una sustitución—, búscalo en la lista con autocompletar (escribe al
+  menos 2 letras). Al importar, el nuevo **hereda una copia de todo lo que tenía el sustituido**:
+  sus perfiles del centro (administración, comisión de convivencia, orientación y coordinación de
+  actividades), sus tutorías y sus materias en cada grupo. El sustituido conserva lo suyo hasta que
+  se lo quites; no se copian las guardias ni la condición de administrador de la plataforma.
 - Solo se aplica lo que está marcado al pulsar **Importar la selección**.
 
 ![Panel de docentes que se retirarían del curso al activar la opción de retirada](img/centro/centro-docentes-importar-retirar.png)
 
 También se puede añadir un docente de forma manual, uno a uno, desde el mismo apartado — útil
-para altas puntuales durante el curso.
+para altas puntuales durante el curso. Tanto al añadir un docente que ya existe como al registrar
+uno nuevo se puede indicar **a quién sustituye** (con el mismo buscador): hereda entonces sus
+perfiles, tutorías y materias, igual que en la importación.
 
 ![Listado de docentes del centro tras la importación](img/centro/centro-docentes.png)
 

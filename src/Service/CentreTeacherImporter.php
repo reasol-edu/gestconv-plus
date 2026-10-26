@@ -28,6 +28,7 @@ final class CentreTeacherImporter
         private readonly TeacherRepository $teachers,
         private readonly EntityManagerInterface $em,
         private readonly CsvReader $csvReader,
+        private readonly TeacherReplacement $replacement,
     ) {}
 
     /**
@@ -142,7 +143,8 @@ final class CentreTeacherImporter
      * @param list<TeacherImportRow> $plan
      * @param list<string>           $selectedUsernames docentes a crear, añadir o actualizar
      * @param list<string>           $removeTeacherIds  ids (RFC 4122) de los docentes a retirar del curso
-     * @return array{created: int, added: int, emails: int, removed: int}
+     * @param array<string, string>  $replacements      usuario del docente que se incorpora => id (RFC 4122) del docente del curso al que sustituye
+     * @return array{created: int, added: int, emails: int, removed: int, replaced: int}
      */
     public function apply(
         AcademicYear $year,
@@ -152,9 +154,10 @@ final class CentreTeacherImporter
         bool $removeMissing,
         array $removeTeacherIds,
         ?Teacher $except = null,
+        array $replacements = [],
     ): array {
         $selected = array_flip($selectedUsernames);
-        $summary  = ['created' => 0, 'added' => 0, 'emails' => 0, 'removed' => 0];
+        $summary  = ['created' => 0, 'added' => 0, 'emails' => 0, 'removed' => 0, 'replaced' => 0];
 
         // Los candidatos a retirar se calculan antes de crear nada y siempre se revalidan aquí:
         // el servidor no se fía de los ids que llegan del formulario.
@@ -179,6 +182,15 @@ final class CentreTeacherImporter
                 ++$summary['added'];
             }
 
+            // Un docente que se incorpora ahora puede sustituir a otro del curso y heredar sus perfiles, tutorías y materias.
+            if ($teacher !== null && in_array($row->status, [TeacherImportRow::NEW, TeacherImportRow::ADD], true) && isset($replacements[$row->username])) {
+                $replaced = $this->findYearTeacher($year, $replacements[$row->username]);
+                if ($replaced !== null && $replaced !== $teacher) {
+                    $this->replacement->copyAssignments($replaced, $teacher, $year);
+                    ++$summary['replaced'];
+                }
+            }
+
             // Solo se rellena el correo que falta (nunca se pisa uno existente) y que nadie más usa.
             if ($importEmail && $teacher !== null && $row->email !== null && $row->fillsEmail()) {
                 $teacher->setEmail($row->email);
@@ -195,6 +207,18 @@ final class CentreTeacherImporter
         }
 
         return $summary;
+    }
+
+    /** Un docente del curso por su id; el servidor no se fía de lo que llega del formulario. */
+    private function findYearTeacher(AcademicYear $year, string $teacherId): ?Teacher
+    {
+        foreach ($year->getTeachers() as $candidate) {
+            if ($candidate->getId()->toRfc4122() === $teacherId) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     /**

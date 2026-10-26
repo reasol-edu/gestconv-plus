@@ -136,7 +136,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
     /**
      * Docentes con alguna vinculación en el curso: tutorizan o imparten en un grupo, tienen una
      * guardia asignada, tienen ausencias previstas, han registrado partes, sanciones o notas, o
-     * tienen un rol en el centro (administración, comisión de convivencia u orientación; estos son
+     * tienen un rol en el centro (administración, comisión de convivencia, orientación o coordinación de
+     * actividades; estos son
      * del centro, no del curso, pero impiden retirar al docente igualmente).
      *
      * Los ids se seleccionan como escalares (no se hidratan docentes) porque solo importa saber quién está vinculado.
@@ -163,6 +164,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ['SELECT t.id AS id FROM App\Entity\EducationalCentre c JOIN c.admins t WHERE c = :centre', 'centre'],
             ['SELECT t.id AS id FROM App\Entity\EducationalCentre c JOIN c.committeeMembers t WHERE c = :centre', 'centre'],
             ['SELECT t.id AS id FROM App\Entity\EducationalCentre c JOIN c.counselors t WHERE c = :centre', 'centre'],
+            ['SELECT t.id AS id FROM App\Entity\EducationalCentre c JOIN c.activityCoordinators t WHERE c = :centre', 'centre'],
         ];
 
         $ids = [];

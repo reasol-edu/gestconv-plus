@@ -7,7 +7,7 @@
 {% set count_add      = plan|filter(r => r.status == 'add')|length %}
 {% set count_email    = plan|filter(r => r.emailOnly)|length %}
 {% set count_same     = plan|filter(r => r.unchanged)|length %}
-<div class="px-6 py-8 max-w-4xl mx-auto space-y-8">
+<div class="px-6 py-8 max-w-6xl mx-auto space-y-8">
 
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
@@ -92,6 +92,7 @@
                             <th scope="col" class="px-4 py-3">{{ 'centre_teachers.import.preview.col_username'|trans({}, 'admin') }}</th>
                             <th scope="col" class="px-4 py-3">{{ 'centre_teachers.import.preview.col_email'|trans({}, 'admin') }}</th>
                             <th scope="col" class="px-4 py-3">{{ 'centre_teachers.import.preview.col_action'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="px-4 py-3 min-w-64">{{ 'centre_teachers.import.preview.col_replaces'|trans({}, 'admin') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -131,6 +132,12 @@
                                         <span class="inline-flex rounded-full bg-forest-50 px-2 py-0.5 font-medium text-forest-700">{{ 'centre_teachers.import.preview.action_email'|trans({}, 'admin') }}</span>
                                     {% else %}
                                         <span>{{ 'centre_teachers.import.preview.action_none'|trans({}, 'admin') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-xs">
+                                    {# Solo quien se incorpora ahora puede sustituir a alguien del curso. #}
+                                    {% if row.status in ['new', 'add'] %}
+                                        {% include 'admin/centre_teacher/_replaces_select.html.twig' with {name: 'replaces[' ~ row.username ~ ']', year: centre.activeAcademicYear} only %}
                                     {% endif %}
                                 </td>
                             </tr>

@@ -156,6 +156,17 @@
                 </label>
             </div>
 
+            {# Sustitución: el docente nuevo hereda perfiles, tutorías y materias de quien sustituye. #}
+            {% if centre.activeAcademicYear %}
+                <div>
+                    <label for="teacher-replaces" class="block text-sm font-medium text-gray-700 mb-1.5">
+                        {{ 'centre_teachers.replaces.label'|trans({}, 'admin') }}
+                    </label>
+                    {% include 'admin/centre_teacher/_replaces_select.html.twig' with {name: 'replaces', id: 'teacher-replaces', year: centre.activeAcademicYear, selected: replacedTeacher} only %}
+                    <p class="mt-1.5 text-xs text-gray-500">{{ 'centre_teachers.replaces.help'|trans({}, 'admin') }}</p>
+                </div>
+            {% endif %}
+
             <div class="flex items-center justify-end gap-3 pt-2">
                 <a href="{{ path('app_centre_teachers_index', {centreId: centre.id}) }}"
                    class="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700

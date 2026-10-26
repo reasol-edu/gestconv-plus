@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Controller\TranslatorTrait;
 use App\Controller\PastYearGuardTrait;
+use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
@@ -16,6 +17,7 @@ use App\Repository\TeacherRepository;
 use App\Service\CentreTeacherImporter;
 use App\Service\CsvReader;
 use App\Service\TeacherImportRow;
+use App\Service\TeacherReplacement;
 use App\Service\TenantContext;
 use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,6 +50,7 @@ class CentreTeacherController extends AbstractController
         private readonly CentreTeacherImporter $importer,
         private readonly ClockInterface $clock,
         private readonly UploadLimits $uploadLimits,
+        private readonly TeacherReplacement $replacement,
     ) {}
 
     #[Route('', name: 'app_centre_teachers_index')]
@@ -71,16 +74,21 @@ class CentreTeacherController extends AbstractController
         $username = trim($request->request->getString('username'));
         $teacher  = $username !== '' ? $this->teachers->findByUsername($username) : null;
 
+        $replacesId = trim($request->request->getString('replaces'));
+
         if ($teacher === null) {
             return $this->redirectToRoute('app_centre_teachers_register', [
                 'centreId' => $centre->getId(),
                 'username' => $username,
+                'replaces' => $replacesId,
             ]);
         }
 
         $year = $centre->getActiveAcademicYear();
         if ($year !== null && !$year->getTeachers()->contains($teacher)) {
+            $replaced = $this->findReplacedTeacher($year, $replacesId);
             $year->addTeacher($teacher);
+            $this->copyFromReplaced($year, $teacher, $replaced);
             $this->em->flush();
             $this->addFlash('success', $this->t('centre_teachers.flash.added'));
         }
@@ -142,12 +150,14 @@ class CentreTeacherController extends AbstractController
                 $request->request->getBoolean('remove_missing'),
                 $this->stringList($request->request->all('remove_teachers')),
                 $currentUser,
+                $this->replacementsFromRequest($request),
             );
             $this->em->flush();
 
             $this->addFlash('success', $this->translator->trans('centre_teachers.import.flash.summary', [
                 '%created%' => $summary['created'],
                 '%added%'   => $summary['added'],
+                '%replaced%' => $summary['replaced'],
                 '%emails%'  => $summary['emails'],
                 '%removed%' => $summary['removed'],
                 '%skipped%' => $parsed['skipped'],
@@ -210,6 +220,45 @@ class CentreTeacherController extends AbstractController
             'hasEmail'   => array_filter($plan, static fn (TeacherImportRow $r): bool => $r->email !== null) !== [],
             'candidates' => $this->importer->findRemovalCandidates($year, $plan, $currentUser),
         ]);
+    }
+
+    /**
+     * Los «sustituye a» de la vista previa: usuario del docente que se incorpora => id del docente al que sustituye.
+     *
+     * @return array<string, string>
+     */
+    private function replacementsFromRequest(Request $request): array
+    {
+        $replacements = [];
+        foreach ($request->request->all('replaces') as $username => $teacherId) {
+            if (is_string($teacherId) && trim($teacherId) !== '') {
+                $replacements[(string) $username] = trim($teacherId);
+            }
+        }
+
+        return $replacements;
+    }
+
+    /** El docente del curso al que sustituye uno nuevo (nulo si no se ha elegido o no es del curso). */
+    private function findReplacedTeacher(AcademicYear $year, string $teacherId): ?Teacher
+    {
+        return $teacherId !== '' ? $this->teachers->findByAcademicYearAndId($year, $teacherId) : null;
+    }
+
+    /** Copia lo que tenía el sustituido al docente nuevo y avisa de lo copiado. */
+    private function copyFromReplaced(AcademicYear $year, Teacher $new, ?Teacher $replaced): void
+    {
+        if ($replaced === null || $replaced === $new) {
+            return;
+        }
+
+        $copied = $this->replacement->copyAssignments($replaced, $new, $year);
+        $this->addFlash('success', $this->translator->trans('centre_teachers.flash.replacement_copied', [
+            '%name%'       => $replaced->getName()->full(),
+            '%profiles%'   => $copied['profiles'],
+            '%tutorships%' => $copied['tutorships'],
+            '%subjects%'   => $copied['subjects'],
+        ], 'admin'));
     }
 
     private function getTempImportDir(): string
@@ -374,6 +423,10 @@ class CentreTeacherController extends AbstractController
         ];
         $flags = ['admin' => false, 'active' => true, 'external' => true];
 
+        $registerYear = $centre->getActiveAcademicYear();
+        $replacesId   = trim($request->request->getString('replaces') ?: $request->query->getString('replaces'));
+        $replacedTeacher = $registerYear !== null ? $this->findReplacedTeacher($registerYear, $replacesId) : null;
+
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('register_centre_teacher', $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
@@ -412,6 +465,9 @@ class CentreTeacherController extends AbstractController
 
                 $this->em->persist($teacher);
                 $centre->getActiveAcademicYear()?->addTeacher($teacher);
+                if ($registerYear !== null) {
+                    $this->copyFromReplaced($registerYear, $teacher, $replacedTeacher);
+                }
                 $this->em->flush();
 
                 $this->addFlash('success', $this->t('centre_teachers.flash.registered_and_added'));
@@ -425,6 +481,7 @@ class CentreTeacherController extends AbstractController
             'errors' => $errors,
             'values' => $values,
             'flags'  => $flags,
+            'replacedTeacher' => $replacedTeacher,
         ]);
     }
 

@@ -100,6 +100,89 @@ class CentreTeacherControllerTest extends ControllerTestCase
         self::assertStringContainsString('/docentes-curso', (string) $this->client->getResponse()->headers->get('Location'));
     }
 
+    public function testAddKnownTeacherReplacingAnotherCopiesProfilesTutorshipsAndSubjects(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $old = $this->makeTeacher('sustituido.add');
+        $new = $this->makeTeacher('sustituto.add');
+        $course = (new \App\Entity\Course())->setName('1º ESO')->setAcademicYear($year);
+        $group  = (new \App\Entity\Group())->setName('1ºB')->setCourse($course);
+        $this->persist($admin, $centre, $year, $old, $new, $course, $group);
+        $centre->setActiveAcademicYear($year);
+        $year->addTeacher($old);
+        $group->addTutor($old);
+        $group->addTeacher($old, 'Lengua');
+        $centre->addCounselor($old);
+        $centre->addActivityCoordinator($old);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso');
+        self::assertSelectorExists('select[name="replaces"]');
+        // El listado ya trae formularios con su propio token (retirar docente): se toma el del formulario de añadir.
+        $token = $crawler->filterXPath('//form[.//input[@id="teacher-username"]]//input[@name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/a%C3%B1adir', [
+            '_token'   => $token,
+            'username' => 'sustituto.add',
+            'replaces' => $old->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $newAgain = $this->em->getRepository(\App\Entity\Teacher::class)->findOneBy(['username' => 'sustituto.add']);
+        $centreNow = $this->em->find(\App\Entity\EducationalCentre::class, $centre->getId());
+        $groupNow  = $this->em->find(\App\Entity\Group::class, $group->getId());
+        self::assertTrue($centreNow->getCounselors()->contains($newAgain));
+        self::assertTrue($centreNow->getActivityCoordinators()->contains($newAgain));
+        self::assertTrue($groupNow->getTutors()->contains($newAgain));
+        self::assertTrue($groupNow->hasTeacherSubject($newAgain, 'Lengua'));
+    }
+
+    public function testAddUnknownUsernameCarriesTheReplacedTeacherToTheRegisterForm(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $old = $this->makeTeacher('sustituido.reg');
+        $this->persist($admin, $centre, $year, $old);
+        $centre->setActiveAcademicYear($year);
+        $year->addTeacher($old);
+        $centre->addCommitteeMember($old);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso');
+        $token    = $crawler->filterXPath('//form[.//input[@id="teacher-username"]]//input[@name="_token"]')->attr('value');
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/a%C3%B1adir', [
+            '_token'   => $token,
+            'username' => 'nuevo.reg',
+            'replaces' => $old->getId()->toRfc4122(),
+        ]);
+        self::assertResponseRedirects();
+        $crawler = $this->client->followRedirect();
+
+        // El formulario de registro llega con el docente sustituido ya elegido; al guardar, el nuevo hereda sus perfiles.
+        self::assertSelectorExists('select[name="replaces"] option[selected][value="' . $old->getId()->toRfc4122() . '"]');
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/registrar', [
+            '_token'      => $token,
+            'first_name'  => 'Nuevo',
+            'last_name'   => 'Registrado',
+            'username'    => 'nuevo.reg',
+            'auth_method' => 'external',
+            'active'      => '1',
+            'replaces'    => $old->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $created   = $this->em->getRepository(\App\Entity\Teacher::class)->findOneBy(['username' => 'nuevo.reg']);
+        $centreNow = $this->em->find(\App\Entity\EducationalCentre::class, $centre->getId());
+        self::assertNotNull($created);
+        self::assertTrue($centreNow->getCommitteeMembers()->contains($created));
+    }
+
     public function testAddUnknownUsernameRedirectsToRegister(): void
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();
