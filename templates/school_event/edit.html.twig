@@ -180,7 +180,7 @@ new TomSelect(el, {
     plugins:        ['remove_button', 'checkbox_options'],
     render: {
         option: (d, esc) => `<div><span>${esc(d.name)}</span></div>`,
-        item: (d, esc) => `<span>${esc(d.name)}</span>`,
+        item: (d, esc) => `<div>${esc(d.name)}</div>`,
         no_results: () => `<div class="no-results px-3 py-2 text-sm">${noResults}</div>`,
     },
 });
