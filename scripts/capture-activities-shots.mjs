@@ -111,6 +111,10 @@ await director.locator('button[data-live-action-param="selectGroup"]', { hasText
 await director.waitForTimeout(800);
 await hideToolbar(director);
 
+// La casilla «Color personalizado» muestra el selector, que parte del color calculado.
+expect(await director.locator('#group-color').count() === 0, 'sin la casilla marcada no hay selector');
+await director.locator('#group-custom-color').check();
+await director.waitForSelector('#group-color');
 await director.evaluate(() => {
     const input = document.getElementById('group-color');
     input.value = '#7c3aed';
@@ -121,7 +125,7 @@ await director.waitForTimeout(300);
 await director.locator('button[type="submit"]', { hasText: 'Guardar' }).first().click();
 await director.waitForTimeout(1200);
 await hideToolbar(director);
-expect(await director.locator('button[data-live-action-param="resetGroupColor"]').isVisible(), 'debe verse el botón para volver al color por defecto');
+expect(await director.locator('#group-custom-color').isChecked(), 'la casilla debe seguir marcada tras guardar');
 const card = director.locator('div.overflow-hidden', { has: director.locator('#group-color') }).last();
 await card.screenshot({ path: `${root}/centro/centro-oferta-color.png` });
 

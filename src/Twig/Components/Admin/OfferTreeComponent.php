@@ -14,6 +14,7 @@ use App\Repository\GroupRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\GroupColorPalette;
 use App\Service\GroupTeacherRemover;
 use App\Service\TenantContext;
 use Doctrine\Common\Collections\Collection;
@@ -68,9 +69,13 @@ class OfferTreeComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $editDetails = '';
 
-    /** Color personalizado del grupo seleccionado (#rrggbb); vacío si usa el calculado. */
+    /** Color personalizado del grupo seleccionado (#rrggbb); vacío mientras no se haya tocado el selector. */
     #[LiveProp(writable: true)]
     public string $editColor = '';
+
+    /** Si el grupo seleccionado usa un color personalizado (casilla «Color personalizado»); si no, usa el calculado. */
+    #[LiveProp(writable: true)]
+    public bool $customColor = false;
 
     /** @var array<string, string> */
     #[LiveProp]
@@ -93,6 +98,7 @@ class OfferTreeComponent extends AbstractController
         private readonly TeacherRepository $teachers,
         private readonly SanctionTaskRepository $sanctionTasks,
         private readonly TenantContext $tenantContext,
+        private readonly GroupColorPalette $colorPalette,
     ) {}
 
     public function mount(EducationalCentre $centre): void
@@ -220,6 +226,7 @@ class OfferTreeComponent extends AbstractController
         $selected = $this->getSelected();
         if ($selected === null) {
             $this->editName = $this->editDetails = $this->editColor = '';
+            $this->customColor = false;
 
             return;
         }
@@ -228,6 +235,7 @@ class OfferTreeComponent extends AbstractController
         $this->editName    = $entity->getName();
         $this->editDetails = $entity->getDetails() ?? '';
         $this->editColor   = $entity instanceof Group ? ($entity->getColor() ?? '') : '';
+        $this->customColor = $entity instanceof Group && $entity->getColor() !== null;
     }
 
     // ── Add actions ──────────────────────────────────────────────────────────
@@ -294,7 +302,7 @@ class OfferTreeComponent extends AbstractController
 
         $entity = $selected['entity'];
 
-        if ($entity instanceof Group && $this->editColor !== '' && preg_match('/^#[0-9a-f]{6}$/i', $this->editColor) !== 1) {
+        if ($entity instanceof Group && $this->customColor && $this->editColor !== '' && preg_match('/^#[0-9a-f]{6}$/i', $this->editColor) !== 1) {
             $this->errors = ['color' => $this->t('group.error.color_invalid')];
 
             return;
@@ -304,30 +312,15 @@ class OfferTreeComponent extends AbstractController
         $entity->setName($name);
         $entity->setDetails($details !== '' ? $details : null);
         if ($entity instanceof Group) {
-            $entity->setColor($this->editColor !== '' ? $this->editColor : null);
+            // Sin la casilla marcada el grupo usa el color calculado; marcada y sin tocar el selector, parte del calculado.
+            $custom = $this->editColor !== '' ? strtolower($this->editColor) : $this->colorPalette->defaultHex($entity->getId()->toRfc4122());
+            $entity->setColor($this->customColor ? $custom : null);
+            $this->editColor = $this->customColor ? $custom : '';
         }
 
         $this->em->flush();
         $this->errors = [];
         $this->flashSuccess($this->t($selected['type'] . '.flash.saved'));
-    }
-
-    /** Quita el color personalizado del grupo seleccionado: vuelve a usar el calculado. */
-    #[LiveAction]
-    public function resetGroupColor(): void
-    {
-        $this->requireWritableCentre();
-        $group = $this->getSelectedGroup();
-        if ($group === null) {
-            return;
-        }
-
-        $group->setColor(null);
-        $this->em->flush();
-
-        $this->editColor = '';
-        $this->errors    = [];
-        $this->flashSuccess($this->t('group.flash.color_reset'));
     }
 
     #[LiveAction]

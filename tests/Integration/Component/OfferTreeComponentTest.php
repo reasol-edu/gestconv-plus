@@ -34,11 +34,45 @@ class OfferTreeComponentTest extends ControllerTestCase
 
         $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
             ->call('selectGroup', ['id' => $group->getId()->toRfc4122()])
+            ->set('customColor', true)
             ->set('editColor', '#AA11BB')
             ->call('saveDetail');
 
         $this->em->clear();
         self::assertSame('#aa11bb', $this->em->find(Group::class, $group->getId())?->getColor());
+    }
+
+    public function testTheColorPickerOnlyShowsWithTheCustomColorCheckboxAndStartsFromTheComputedColor(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $component = $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
+            ->call('selectGroup', ['id' => $group->getId()->toRfc4122()]);
+        $crawler = $component->render()->crawler();
+        self::assertCount(1, $crawler->filter('#group-custom-color'));
+        self::assertCount(0, $crawler->filter('#group-color'), 'sin la casilla, no hay selector');
+        self::assertCount(0, $crawler->filter('#group-custom-color[checked]'));
+
+        $crawler = $component->set('customColor', true)->render()->crawler();
+        self::assertCount(1, $crawler->filter('#group-color'));
+        $default = self::getContainer()->get(\App\Service\GroupColorPalette::class)->defaultHex($group->getId()->toRfc4122());
+        self::assertSame($default, $crawler->filter('#group-color')->attr('value'), 'parte del color calculado');
+    }
+
+    public function testCheckingCustomColorWithoutTouchingThePickerStoresTheComputedColorAsStartingPoint(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
+            ->call('selectGroup', ['id' => $group->getId()->toRfc4122()])
+            ->set('customColor', true)
+            ->call('saveDetail');
+
+        $this->em->clear();
+        $default = self::getContainer()->get(\App\Service\GroupColorPalette::class)->defaultHex($group->getId()->toRfc4122());
+        self::assertSame($default, $this->em->find(Group::class, $group->getId())?->getColor());
     }
 
     public function testSaveDetailWithoutTouchingTheColorKeepsTheComputedOne(): void
@@ -61,6 +95,7 @@ class OfferTreeComponentTest extends ControllerTestCase
 
         $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
             ->call('selectGroup', ['id' => $group->getId()->toRfc4122()])
+            ->set('customColor', true)
             ->set('editColor', 'red;background:url(x)')
             ->call('saveDetail');
 
@@ -68,7 +103,7 @@ class OfferTreeComponentTest extends ControllerTestCase
         self::assertNull($this->em->find(Group::class, $group->getId())?->getColor());
     }
 
-    public function testResetGroupColorGoesBackToTheComputedColor(): void
+    public function testUncheckingCustomColorGoesBackToTheComputedColor(): void
     {
         [$admin, $centre, , , $group] = $this->makeScenario();
         $group->setColor('#123456');
@@ -77,9 +112,11 @@ class OfferTreeComponentTest extends ControllerTestCase
 
         $component = $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
             ->call('selectGroup', ['id' => $group->getId()->toRfc4122()]);
-        self::assertStringContainsString('#123456', $component->render()->toString());
+        $crawler = $component->render()->crawler();
+        self::assertCount(1, $crawler->filter('#group-custom-color[checked]'), 'un grupo con color propio llega con la casilla marcada');
+        self::assertSame('#123456', $crawler->filter('#group-color')->attr('value'));
 
-        $component->call('resetGroupColor');
+        $component->set('customColor', false)->call('saveDetail');
 
         $this->em->clear();
         self::assertNull($this->em->find(Group::class, $group->getId())?->getColor());

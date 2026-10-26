@@ -313,27 +313,25 @@
 
                                     {# Color del grupo: el personalizado o, si no tiene, el calculado a partir de su id #}
                                     {% set default_color = group_default_color(sel_group) %}
-                                    {% set has_custom_color = editColor != '' or sel_group.color is not null %}
                                     <div class="border-t border-gray-100 pt-4 sm:col-span-3">
-                                        <label class="mb-1 block text-xs font-medium text-gray-600" for="group-color">{{ 'group.field.color'|trans({}, 'admin') }}</label>
+                                        <p class="mb-1 block text-xs font-medium text-gray-600">{{ 'group.field.color'|trans({}, 'admin') }}</p>
                                         <div class="flex flex-wrap items-center gap-3">
-                                            <input id="group-color" type="color"
-                                                   data-model="norender|editColor"
-                                                   value="{{ editColor != '' ? editColor : (sel_group.color ?? default_color) }}"
-                                                   class="h-9 w-14 cursor-pointer rounded-lg border border-gray-200 bg-white p-1">
+                                            <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+                                                <input id="group-custom-color" type="checkbox" data-model="customColor"
+                                                       {{ customColor ? 'checked' : '' }}
+                                                       class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                                                {{ 'group.color.custom'|trans({}, 'admin') }}
+                                            </label>
+                                            {# El selector solo se ofrece con la casilla marcada y parte del color calculado para que se modifique. #}
+                                            {% if customColor %}
+                                                <input id="group-color" type="color"
+                                                       data-model="norender|editColor"
+                                                       value="{{ editColor != '' ? editColor : default_color }}"
+                                                       class="h-9 w-14 cursor-pointer rounded-lg border border-gray-200 bg-white p-1">
+                                            {% endif %}
                                             <twig:GroupChip :group="sel_group" />
-                                            <span class="text-xs text-gray-500">
-                                                {% if has_custom_color %}
-                                                    {{ 'group.color.custom'|trans({}, 'admin') }}
-                                                {% else %}
-                                                    {{ 'group.color.default'|trans({'%color%': default_color}, 'admin') }}
-                                                {% endif %}
-                                            </span>
-                                            {% if has_custom_color %}
-                                                <button type="button" data-action="live#action" data-live-action-param="resetGroupColor"
-                                                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                                                    {{ ux_icon('heroicons:arrow-uturn-left', {class: 'h-3.5 w-3.5'}) }}{{ 'group.color.reset'|trans({'%color%': default_color}, 'admin') }}
-                                                </button>
+                                            {% if not customColor %}
+                                                <span class="text-xs text-gray-500">{{ 'group.color.default'|trans({'%color%': default_color}, 'admin') }}</span>
                                             {% endif %}
                                         </div>
                                         <p class="mt-1 text-xs text-gray-500">{{ 'group.color.help'|trans({}, 'admin') }}</p>

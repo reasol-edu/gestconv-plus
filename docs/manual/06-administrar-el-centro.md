@@ -60,12 +60,13 @@ tablón, así como el nombre del grupo en los listados de partes, sanciones, not
 - Sin hacer nada, cada grupo usa un **color por defecto** que la aplicación calcula a partir del
   propio grupo, de modo que siempre es el mismo y los distintos grupos se distinguen entre sí. El
   formulario del grupo muestra ese color y su código (por ejemplo, `#3b82f6`).
-- Para **personalizarlo**, elige otro en el selector de color del formulario y pulsa **Guardar**.
+- Para **personalizarlo**, marca la casilla **Color personalizado**: aparece el selector de color,
+  que parte del color calculado para que lo modifiques. Elige el que quieras y pulsa **Guardar**.
   Un punto de color junto al nombre del grupo en la columna de grupos muestra el que tiene.
-- Para **volver al color por defecto**, pulsa **Volver al color por defecto**: se elimina el color
+- Para **volver al color por defecto**, desmarca la casilla y pulsa **Guardar**: se elimina el color
   personalizado y el grupo recupera el calculado.
 
-![Formulario de un grupo con su color personalizado y el botón para volver al color por defecto](img/centro/centro-oferta-color.png)
+![Formulario de un grupo con la casilla «Color personalizado» marcada y su selector de color](img/centro/centro-oferta-color.png)
 
 Si el centro no tiene un curso académico activo, la sección muestra un aviso y no permite
 gestionar la oferta formativa. El paso a paso completo está en
