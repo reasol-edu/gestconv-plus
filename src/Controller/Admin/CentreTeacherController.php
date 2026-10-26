@@ -258,6 +258,7 @@ class CentreTeacherController extends AbstractController
             '%profiles%'   => $copied['profiles'],
             '%tutorships%' => $copied['tutorships'],
             '%subjects%'   => $copied['subjects'],
+            '%guards%'     => $copied['guards'],
         ], 'admin'));
     }
 
@@ -500,6 +501,46 @@ class CentreTeacherController extends AbstractController
         return $this->render('admin/centre_teacher/subjects.html.twig', [
             'centre'  => $centre,
             'teacher' => $teacher,
+        ]);
+    }
+
+    /**
+     * «Sustituir»: el docente (ya del curso) hereda una copia de los perfiles, tutorías, materias y guardias de otro
+     * docente del curso al que sustituye.
+     */
+    #[Route('/{teacherId}/sustituir', name: 'app_centre_teachers_replace', methods: ['GET', 'POST'])]
+    public function replace(string $centreId, string $teacherId, Request $request): Response
+    {
+        $centre  = $this->requireCentreWithActiveYear($centreId);
+        $this->denyIfViewingPastYear($centre);
+        $teacher = $this->teachers->findById($teacherId);
+
+        $year = $centre->getActiveAcademicYear();
+        if ($teacher === null || $year === null || !$year->getTeachers()->contains($teacher)) {
+            throw $this->createNotFoundException();
+        }
+
+        $error = null;
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('replace_centre_teacher_' . $teacherId, $request->request->getString('_token'))) {
+                throw $this->createAccessDeniedException();
+            }
+
+            $replaced = $this->findReplacedTeacher($year, trim($request->request->getString('replaces')));
+            if ($replaced === null || $replaced === $teacher) {
+                $error = $this->t('centre_teachers.replace.error.required');
+            } else {
+                $this->copyFromReplaced($year, $teacher, $replaced);
+                $this->em->flush();
+
+                return $this->redirectToRoute('app_centre_teachers_index', ['centreId' => $centre->getId()]);
+            }
+        }
+
+        return $this->render('admin/centre_teacher/replace.html.twig', [
+            'centre'  => $centre,
+            'teacher' => $teacher,
+            'error'   => $error,
         ]);
     }
 

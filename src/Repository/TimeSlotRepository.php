@@ -97,6 +97,25 @@ class TimeSlotRepository extends ServiceEntityRepository
     }
 
     /**
+     * Los tramos del curso en los que el docente tiene guardia.
+     *
+     * @return list<TimeSlot>
+     */
+    public function findGuardedByTeacherInYear(Teacher $teacher, AcademicYear $year): array
+    {
+        /** @var list<TimeSlot> $result */
+        $result = $this->createQueryBuilder('t')
+            ->where('t.academicYear = :year')
+            ->andWhere(':teacher MEMBER OF t.guards')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('teacher', $teacher->getId(), 'uuid')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
      * Whether the teacher guards at least one time slot of the given centre/year. Uses MEMBER OF
      * (translated to an EXISTS subquery) instead of touching the EXTRA_LAZY guards collection, to
      * avoid triggering a per-call query.

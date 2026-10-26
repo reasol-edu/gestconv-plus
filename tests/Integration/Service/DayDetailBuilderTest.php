@@ -62,6 +62,31 @@ class DayDetailBuilderTest extends RepositoryTestCase
         self::assertCount(0, $report->timeSlots[0]->activities, 'ni sus tareas');
     }
 
+    public function testATeacherWithACoveredAbsenceIsNotListedAsOnGuardThatDay(): void
+    {
+        $world = $this->makeWorld('guard-substitute');
+        $other = $this->makeTeacher('otro-guardia');
+        $slot  = $this->makeSlot($world, 'Tramo 1', '08:00', '09:00');
+        $slot->addGuard($world['teacher']);
+        $slot->addGuard($other);
+        $absence = $this->makeAbsence($world, new \DateTimeImmutable('2026-03-10'));
+        $this->flush();
+
+        $names = static fn (array $guards): array => array_map(static fn (\App\Entity\Teacher $t): string => $t->getUsername(), $guards);
+        $both  = $names($this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-10'))->timeSlots[0]->guards);
+        self::assertCount(2, $both, 'ausente sin sustituto/a: sigue figurando');
+
+        $absence->setHasSubstitute(true);
+        $this->flush();
+
+        $report = $this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-10'));
+        self::assertSame([$other->getUsername()], $names($report->timeSlots[0]->guards));
+        // Otro día en que no está ausente, sí figura.
+        $slot->setDayOfWeek(((int) (new \DateTimeImmutable('2026-03-11'))->format('N')) - 1);
+        $this->flush();
+        self::assertCount(2, $this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-11'))->timeSlots[0]->guards);
+    }
+
     public function testBuildIncludesAbsenceOnlyForAdmin(): void
     {
         $world = $this->makeWorld('absences');

@@ -93,6 +93,37 @@ class AbsenceRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /**
+     * Quién tiene un día una ausencia cubierta por docente sustituto/a. Esas personas no hacen su guardia ese día.
+     *
+     * @return array<string, true> ids (RFC 4122) de los docentes
+     */
+    public function findSubstitutedTeacherIdsOn(AcademicYear $year, \DateTimeImmutable $date): array
+    {
+        // Se selecciona t.id (no IDENTITY): así el id llega ya como Uuid en cualquier plataforma.
+        /** @var list<array{id: mixed}> $rows */
+        $rows = $this->createQueryBuilder('a')
+            ->select('t.id AS id')
+            ->join('a.teacher', 't')
+            ->where('a.academicYear = :year')
+            ->andWhere('a.hasSubstitute = true')
+            ->andWhere('a.startDate <= :date')
+            ->andWhere('a.endDate >= :date')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('date', $date, Types::DATE_IMMUTABLE)
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            if ($row['id'] instanceof \Symfony\Component\Uid\Uuid) {
+                $result[$row['id']->toRfc4122()] = true;
+            }
+        }
+
+        return $result;
+    }
+
     /** @return Absence[] */
     public function findByTeacherAndYearOrderedByStartDate(Teacher $teacher, AcademicYear $year): array
     {

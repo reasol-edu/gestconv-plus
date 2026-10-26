@@ -659,7 +659,8 @@ sancionado**.
 Para cada tramo horario se muestran, una detrás de otra:
 
 - **Profesorado de guardia** — el nombre completo de cada docente asignado a ese tramo, o un aviso
-  si no hay ninguno. Quien administra el centro ve además, junto al título del tramo, un botón para
+  si no hay ninguno. No figura quien ese día tiene una [ausencia con docente
+  sustituto/a](#registrar-una-ausencia). Quien administra el centro ve además, junto al título del tramo, un botón para
   modificar sus datos (nombre, horario y día, y la propia asignación de docentes de guardia), que
   abre el editor de [tramos horarios](06-administrar-el-centro.md#tramos-horarios) con ese tramo ya
   seleccionado.

@@ -17,11 +17,11 @@
 
     <div class="px-6 py-4 border-b border-gray-100">
         <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'guards.on_duty_title'|trans({}, 'admin') }}</h3>
-        {% if item.timeSlot.guards is empty %}
+        {% if item.guards is empty %}
             <p class="text-sm text-gray-400">{{ 'guards.on_duty_empty'|trans({}, 'admin') }}</p>
         {% else %}
             <p class="text-sm text-gray-700">
-                {% for guard in item.timeSlot.guards %}{{ guard.name.full() }}{{ not loop.last ? ', ' : '' }}{% endfor %}
+                {% for guard in item.guards %}{{ guard.name.full() }}{{ not loop.last ? ', ' : '' }}{% endfor %}
             </p>
         {% endif %}
     </div>

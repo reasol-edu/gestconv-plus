@@ -97,6 +97,12 @@
                                         {{ ux_icon('heroicons:book-open', {class: 'h-3.5 w-3.5'}) }}
                                         {{ 'centre_teachers.action.edit_subjects'|trans({}, 'admin') }}
                                     </a>
+                                    <a href="{{ path('app_centre_teachers_replace', {centreId: centre.id, teacherId: teacher.id}) }}"
+                                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium
+                                              text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                        {{ ux_icon('heroicons:arrows-right-left', {class: 'h-3.5 w-3.5'}) }}
+                                        {{ 'centre_teachers.action.replace'|trans({}, 'admin') }}
+                                    </a>
                                     <form method="post"
                                           action="{{ path('app_centre_teachers_remove', {centreId: centre.id, teacherId: teacher.id}) }}"
                                           class="js-confirm-form"

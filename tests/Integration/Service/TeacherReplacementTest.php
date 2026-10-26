@@ -36,20 +36,28 @@ class TeacherReplacementTest extends RepositoryTestCase
         $groupA->addTeacher($old, 'Matemáticas');
         $groupA->addTeacher($old, 'Tutoría');
         $groupB->addTeacher($old, 'Física');
+        $slot  = (new \App\Entity\TimeSlot())->setName('1ª')->setDayOfWeek(0)->setAcademicYear($year)
+            ->setStartTime(new \DateTimeImmutable('08:00'))->setEndTime(new \DateTimeImmutable('09:00'));
+        $slot2 = (new \App\Entity\TimeSlot())->setName('2ª')->setDayOfWeek(0)->setAcademicYear($year)
+            ->setStartTime(new \DateTimeImmutable('09:00'))->setEndTime(new \DateTimeImmutable('10:00'));
+        $this->persist($slot, $slot2);
+        $slot->addGuard($old);
         $this->flush();
 
         /** @var TeacherReplacement $service */
         $service = self::getContainer()->get(TeacherReplacement::class);
 
-        self::assertSame(['profiles' => 4, 'tutorships' => 1, 'subjects' => 3], $service->copyAssignments($old, $new, $year));
+        self::assertSame(['profiles' => 4, 'tutorships' => 1, 'subjects' => 3, 'guards' => 1], $service->copyAssignments($old, $new, $year));
         $this->flush();
+        self::assertTrue($slot->getGuards()->contains($new), 'guardia copiada');
+        self::assertFalse($slot2->getGuards()->contains($new), 'solo donde el sustituido tenía guardia');
         self::assertTrue($centre->getAdmins()->contains($new));
         self::assertTrue($centre->getActivityCoordinators()->contains($new));
         self::assertTrue($groupA->getTutors()->contains($new));
         self::assertTrue($groupB->hasTeacherSubject($new, 'Física'));
 
         // Repetirlo no duplica nada; y a uno mismo no se copia nada.
-        self::assertSame(['profiles' => 0, 'tutorships' => 0, 'subjects' => 0], $service->copyAssignments($old, $new, $year));
-        self::assertSame(['profiles' => 0, 'tutorships' => 0, 'subjects' => 0], $service->copyAssignments($old, $old, $year));
+        self::assertSame(['profiles' => 0, 'tutorships' => 0, 'subjects' => 0, 'guards' => 0], $service->copyAssignments($old, $new, $year));
+        self::assertSame(['profiles' => 0, 'tutorships' => 0, 'subjects' => 0, 'guards' => 0], $service->copyAssignments($old, $old, $year));
     }
 }

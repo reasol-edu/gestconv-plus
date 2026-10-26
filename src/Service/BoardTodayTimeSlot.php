@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Activity;
 use App\Entity\SchoolEvent;
+use App\Entity\Teacher;
 use App\Entity\TimeSlot;
 
 final readonly class BoardTodayTimeSlot
@@ -13,12 +14,29 @@ final readonly class BoardTodayTimeSlot
     /**
      * @param list<Activity>    $activities
      * @param list<SchoolEvent> $events     eventos del día que coinciden con el tramo
+     * @param list<Teacher>     $guards     profesorado de guardia ese día: el del tramo menos quien tiene una ausencia con docente sustituto/a
      */
     public function __construct(
         public TimeSlot $timeSlot,
         public array $activities,
         public array $events = [],
+        public array $guards = [],
     ) {}
+
+    /**
+     * El profesorado de guardia de un tramo un día concreto, sin quien tiene entonces una ausencia cubierta por sustituto/a.
+     *
+     * @param array<string, true> $substituted ids (RFC 4122) de los docentes con ausencia cubierta ese día
+     *
+     * @return list<Teacher>
+     */
+    public static function guardsOn(TimeSlot $slot, array $substituted): array
+    {
+        return array_values(array_filter(
+            $slot->getGuards()->toArray(),
+            static fn (Teacher $guard): bool => !isset($substituted[$guard->getId()->toRfc4122()]),
+        ));
+    }
 
     /**
      * Los eventos que caen dentro de un tramo: los que se solapan con él (empiezan antes de que acabe

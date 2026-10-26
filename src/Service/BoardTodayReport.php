@@ -68,8 +68,8 @@ final readonly class BoardTodayReport
                 $rows[] = new BoardAbsenceRow($teacher, null);
             }
 
-            if ($rows !== [] || !$entry->timeSlot->getGuards()->isEmpty()) {
-                $slots[] = new BoardAbsenceSlot($entry->timeSlot, $rows);
+            if ($rows !== [] || $entry->guards !== []) {
+                $slots[] = new BoardAbsenceSlot($entry->timeSlot, $rows, $entry->guards);
             }
         }
 

@@ -61,12 +61,14 @@ class BoardTodayBuilder
             $activitiesBySlot[$activity->getTimeSlot()->getId()->toRfc4122()][] = $activity;
         }
 
-        $timeSlots = [];
+        $substituted = $this->absences->findSubstitutedTeacherIdsOn($year, $date);
+        $timeSlots   = [];
         foreach ($slots as $slot) {
             $timeSlots[] = new BoardTodayTimeSlot(
                 $slot,
                 $activitiesBySlot[$slot->getId()->toRfc4122()] ?? [],
                 BoardTodayTimeSlot::eventsDuring($slot, $events),
+                BoardTodayTimeSlot::guardsOn($slot, $substituted),
             );
         }
 

@@ -626,7 +626,8 @@ el centro**, no solo de sus propios grupos:
   entran, si se rellena su correo (columna «Cuenta Google/Microsoft») y si se
   retira del curso a quienes ya no figuran y no tienen ninguna vinculación.
 - Un docente nuevo puede **sustituir a otro** (también al darlo de alta a
-  mano): hereda una copia de sus perfiles, tutorías y materias.
+  mano, o con el botón **Sustituir** del listado): hereda una copia de sus
+  perfiles, tutorías, materias y guardias.
 - A partir de la oferta formativa se crean los **grupos** del curso (por
   ejemplo, 2º ESO A, 1º Bachillerato B…).
 - Los tutores y docentes se asignan directamente desde el panel de edición

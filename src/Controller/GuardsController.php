@@ -85,7 +85,7 @@ class GuardsController extends AbstractController
 
         $slots = [];
         foreach ($report->timeSlots as $item) {
-            if (!$isAdmin && !$item->timeSlot->getGuards()->contains($user)) {
+            if (!$isAdmin && !in_array($user, $item->guards, true)) {
                 continue;
             }
 
@@ -107,6 +107,7 @@ class GuardsController extends AbstractController
 
             $slots[] = [
                 'timeSlot'       => $item->timeSlot,
+                'guards'         => $item->guards,
                 'rows'           => $rows,
                 'hasAttachments' => $hasAttachments,
                 'events'         => $visibleEventIds === null

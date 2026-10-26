@@ -109,11 +109,11 @@
                             <span class="text-sm font-semibold text-gray-800">{{ entry.timeSlot.name }}</span>
                             <span class="text-xs text-gray-400 tabular-nums">{{ entry.timeSlot.startTime|date('format.time'|trans) }}–{{ entry.timeSlot.endTime|date('format.time'|trans) }}</span>
                         </div>
-                        {% if entry.timeSlot.guards is empty %}
+                        {% if entry.guards is empty %}
                             <p class="text-xs text-gray-400">{{ 'day.no_guards'|trans({}, 'calendar') }}</p>
                         {% else %}
                             <p class="text-xs text-gray-600">
-                                {% for guard in entry.timeSlot.guards %}{{ guard.name.full() }}{% if not loop.last %}, {% endif %}{% endfor %}
+                                {% for guard in entry.guards %}{{ guard.name.full() }}{% if not loop.last %}, {% endif %}{% endfor %}
                             </p>
                         {% endif %}
                         {% include 'calendar/_slot_events.html.twig' with {events: entry.events} only %}

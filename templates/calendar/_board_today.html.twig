@@ -77,8 +77,8 @@
                                 <span class="text-lg font-bold text-forest-700 dark:text-forest-200">{{ entry.timeSlot.name }}</span>
                                 <span class="text-xs tabular-nums text-gray-500 dark:text-forest-300">
                                     {{ entry.timeSlot.startTime|date('format.time'|trans) }}–{{ entry.timeSlot.endTime|date('format.time'|trans) }}
-                                    {% if entry.timeSlot.guards is not empty %}
-                                        · {{ 'board_guard_label'|trans({}, 'calendar') }}: {% for guard in entry.timeSlot.guards %}{{ guard.name.full() }}{% if not loop.last %}, {% endif %}{% endfor %}
+                                    {% if entry.guards is not empty %}
+                                        · {{ 'board_guard_label'|trans({}, 'calendar') }}: {% for guard in entry.guards %}{{ guard.name.full() }}{% if not loop.last %}, {% endif %}{% endfor %}
                                     {% endif %}
                                 </span>
                             </div>

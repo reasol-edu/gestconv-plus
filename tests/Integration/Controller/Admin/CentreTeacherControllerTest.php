@@ -140,6 +140,82 @@ class CentreTeacherControllerTest extends ControllerTestCase
         self::assertTrue($groupNow->hasTeacherSubject($newAgain, 'Lengua'));
     }
 
+    public function testReplaceActionCopiesEverythingFromAnotherTeacherOfTheYear(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $old = $this->makeTeacher('sustituido.act');
+        $new = $this->makeTeacher('sustituto.act');
+        $course = (new \App\Entity\Course())->setName('1º ESO')->setAcademicYear($year);
+        $group  = (new \App\Entity\Group())->setName('1ºC')->setCourse($course);
+        $slot   = (new \App\Entity\TimeSlot())->setName('3ª')->setDayOfWeek(1)->setAcademicYear($year)
+            ->setStartTime(new \DateTimeImmutable('10:00'))->setEndTime(new \DateTimeImmutable('11:00'));
+        $this->persist($admin, $centre, $year, $old, $new, $course, $group, $slot);
+        $centre->setActiveAcademicYear($year);
+        $year->addTeacher($old);
+        $year->addTeacher($new);
+        $group->addTutor($old);
+        $group->addTeacher($old, 'Biología');
+        $slot->addGuard($old);
+        $centre->addCommitteeMember($old);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        // El listado ofrece «Sustituir» en cada docente.
+        $crawler = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso');
+        self::assertSelectorExists('a[href="/centro/' . $centreId . '/docentes-curso/' . $new->getId()->toRfc4122() . '/sustituir"]');
+
+        $crawler = $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/' . $new->getId()->toRfc4122() . '/sustituir');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('select[name="replaces"]');
+        $token = $crawler->filter('form [name="_token"]')->first()->attr('value');
+
+        // Sin elegir a nadie (o a sí mismo) no se hace nada.
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/' . $new->getId()->toRfc4122() . '/sustituir', [
+            '_token' => $token, 'replaces' => $new->getId()->toRfc4122(),
+        ]);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Elige un docente del curso distinto');
+
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/' . $new->getId()->toRfc4122() . '/sustituir', [
+            '_token' => $token, 'replaces' => $old->getId()->toRfc4122(),
+        ]);
+        self::assertResponseRedirects();
+
+        $this->em->clear();
+        $newAgain = $this->em->getRepository(\App\Entity\Teacher::class)->findOneBy(['username' => 'sustituto.act']);
+        $centreNow = $this->em->find(\App\Entity\EducationalCentre::class, $centre->getId());
+        $groupNow  = $this->em->find(\App\Entity\Group::class, $group->getId());
+        $slotNow   = $this->em->find(\App\Entity\TimeSlot::class, $slot->getId());
+        self::assertTrue($centreNow->getCommitteeMembers()->contains($newAgain));
+        self::assertTrue($groupNow->getTutors()->contains($newAgain));
+        self::assertTrue($groupNow->hasTeacherSubject($newAgain, 'Biología'));
+        self::assertTrue($slotNow->getGuards()->contains($newAgain));
+    }
+
+    public function testReplaceActionRejectsATeacherOutsideTheYearAndABadToken(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        $outsider = $this->makeTeacher('fuera.act');
+        $new      = $this->makeTeacher('dentro.act');
+        $this->persist($admin, $centre, $year, $outsider, $new);
+        $centre->setActiveAcademicYear($year);
+        $year->addTeacher($new);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        // Un docente que no es del curso no se puede sustituir desde aquí…
+        $this->client->request('GET', '/centro/' . $centreId . '/docentes-curso/' . $outsider->getId()->toRfc4122() . '/sustituir');
+        self::assertResponseStatusCodeSame(404);
+
+        // …y el token ha de ser válido.
+        $this->client->request('POST', '/centro/' . $centreId . '/docentes-curso/' . $new->getId()->toRfc4122() . '/sustituir', [
+            '_token' => 'invalido', 'replaces' => $outsider->getId()->toRfc4122(),
+        ]);
+        self::assertResponseStatusCodeSame(403);
+    }
+
     public function testAddUnknownUsernameCarriesTheReplacedTeacherToTheRegisterForm(): void
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();

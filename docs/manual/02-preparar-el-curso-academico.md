@@ -61,8 +61,8 @@ La vista previa ofrece:
   a otro del curso —una baja, una sustitución—, búscalo en la lista con autocompletar (escribe al
   menos 2 letras). Al importar, el nuevo **hereda una copia de todo lo que tenía el sustituido**:
   sus perfiles del centro (administración, comisión de convivencia, orientación y coordinación de
-  actividades), sus tutorías y sus materias en cada grupo. El sustituido conserva lo suyo hasta que
-  se lo quites; no se copian las guardias ni la condición de administrador de la plataforma.
+  actividades), sus tutorías, sus materias en cada grupo y sus guardias. El sustituido conserva lo
+  suyo hasta que se lo quites; no se copia la condición de administrador de la plataforma.
 - Solo se aplica lo que está marcado al pulsar **Importar la selección**.
 
 ![Panel de docentes que se retirarían del curso al activar la opción de retirada](img/centro/centro-docentes-importar-retirar.png)
@@ -70,7 +70,11 @@ La vista previa ofrece:
 También se puede añadir un docente de forma manual, uno a uno, desde el mismo apartado — útil
 para altas puntuales durante el curso. Tanto al añadir un docente que ya existe como al registrar
 uno nuevo se puede indicar **a quién sustituye** (con el mismo buscador): hereda entonces sus
-perfiles, tutorías y materias, igual que en la importación.
+perfiles, tutorías, materias y guardias, igual que en la importación.
+
+Y para un docente que **ya está en el listado** (por ejemplo, el que llega después a cubrir una
+baja), cada fila del listado tiene el botón **Sustituir**: elige con el buscador a qué docente del
+curso sustituye y se le copia toda su información, sin quitarle lo que ya tuviera.
 
 ![Listado de docentes del centro tras la importación](img/centro/centro-docentes.png)
 
