@@ -35,14 +35,20 @@ class BoardTodayBuilder
         private readonly TranslatorInterface $translator,
     ) {}
 
-    public function build(AcademicYear $year, \DateTimeImmutable $date): BoardTodayReport
+    /**
+     * @param int|null $eventsDaysAhead si se indica, el informe trae también las actividades de hoy y de los
+     *                                  próximos días (panel de actividades del tablón)
+     */
+    public function build(AcademicYear $year, \DateTimeImmutable $date, ?int $eventsDaysAhead = null): BoardTodayReport
     {
-        $events = $this->features->isEnabledForCentre(Feature::Events, $year->getEducationalCentre())
-            ? $this->events->findAllForAcademicYearAndDate($year, $date)
+        $eventsEnabled = $this->features->isEnabledForCentre(Feature::Events, $year->getEducationalCentre());
+        $events        = $eventsEnabled ? $this->events->findAllForAcademicYearAndDate($year, $date) : [];
+        $upcoming      = $eventsEnabled && $eventsDaysAhead !== null
+            ? $this->events->findAllForAcademicYearBetween($year, $date, $date->modify('+' . max(0, $eventsDaysAhead) . ' days'))
             : [];
 
         if ($this->nonWorkingDayChecker->isNonWorkingDay($year, $date)) {
-            return new BoardTodayReport($date, [], [], [], $this->nonWorkingDayLabel($year, $date), $events);
+            return new BoardTodayReport($date, [], [], [], $this->nonWorkingDayLabel($year, $date), $events, $upcoming);
         }
 
         $dayOfWeek = ((int) $date->format('N')) - 1;
@@ -69,6 +75,8 @@ class BoardTodayBuilder
                 $sanction->getStudent(),
                 $sanction->getGroup(),
                 $sanction->getCalendarLabel() ?? $this->truncate(trim(strip_tags($sanction->getDetails()))),
+                $sanction->getEffectiveFrom(),
+                $sanction->getEffectiveTo(),
             ),
             $this->sanctions->findActiveOn($year, $date),
         );
@@ -79,6 +87,7 @@ class BoardTodayBuilder
             $this->absences->findTeachersAbsentOn($year, $date),
             $sanctionedStudents,
             events: $events,
+            upcomingEvents: $upcoming,
         );
     }
 

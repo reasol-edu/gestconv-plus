@@ -39,13 +39,13 @@ settings.key.email_notifications.label: 'Activar notificaciones automáticas'
 settings.key.email_notifications.description: 'Activa o desactiva todos los correos automáticos de la aplicación.'
 
 settings.key.board_today_seconds.label: 'Duración de la pantalla "Hoy"'
-settings.key.board_today_seconds.description: 'Segundos que se muestra la pantalla "Hoy" (fecha, tramos horarios con profesorado de guardia y actividades, y ausencias del día) antes de pasar a la siguiente pantalla (0-3600). Un valor de 0 omite esta pantalla.'
+settings.key.board_today_seconds.description: 'Segundos que se muestra la pantalla "Hoy" (alumnado sancionado, profesorado ausente por tramos y próximas actividades) antes de pasar a la siguiente pantalla (0-3600). Un valor de 0 omite esta pantalla.'
 
-settings.key.board_current_week_seconds.label: 'Duración de la semana actual'
-settings.key.board_current_week_seconds.description: 'Segundos que se muestra la semana actual antes de pasar a la siguiente pantalla (0-3600). Un valor de 0 omite esta pantalla.'
+settings.key.board_upcoming_seconds.label: 'Duración de la pantalla "Próximos días"'
+settings.key.board_upcoming_seconds.description: 'Segundos que se muestra la pantalla "Próximos días" (sanciones, ausencias y actividades de las 5 jornadas lectivas siguientes al día actual) antes de volver a la primera pantalla (0-3600). Un valor de 0 omite esta pantalla.'
 
-settings.key.board_next_week_seconds.label: 'Duración de la semana siguiente'
-settings.key.board_next_week_seconds.description: 'Segundos que se muestra la semana siguiente antes de volver a la primera pantalla (0-3600). Un valor de 0 omite esta pantalla.'
+settings.key.board_events_days_ahead.label: 'Días de antelación de las actividades en el tablón'
+settings.key.board_events_days_ahead.description: 'Cuántos días por delante de hoy, como máximo, enumera el panel de actividades de la pantalla "Hoy" del tablón (0-90). Con 0 solo se muestran las actividades de hoy.'
 
 settings.key.board_theme.label: 'Tema del modo tablón'
 settings.key.board_theme.description: 'Combinación de colores del modo tablón: claro, oscuro, o según la preferencia del navegador o sistema operativo del dispositivo que lo muestra.'

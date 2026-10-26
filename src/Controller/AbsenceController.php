@@ -340,7 +340,7 @@ class AbsenceController extends AbstractController
         $availableTimeSlots = $this->timeSlots->findByAcademicYearOrdered($year);
 
         $errors   = [];
-        $formData = ['date' => $absence->getStartDate()->format('Y-m-d'), 'time_slot_id' => '', 'description' => '', 'subject_ids' => []];
+        $formData = ['date' => $absence->getStartDate()->format('Y-m-d'), 'time_slot_id' => '', 'description' => '', 'classroom' => '', 'subject_ids' => []];
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_activity_' . $id, $request->request->getString('_token'))) {
@@ -357,7 +357,8 @@ class AbsenceController extends AbstractController
                     $activity->setAbsence($absence)
                              ->setDate($result['date'])
                              ->setTimeSlot($result['timeSlot'])
-                             ->setDescription($result['description']);
+                             ->setDescription($result['description'])
+                             ->setClassroom($result['classroom']);
 
                     foreach ($result['subjects'] as $subject) {
                         $activity->addSubject($subject);
@@ -419,6 +420,7 @@ class AbsenceController extends AbstractController
             'date'         => $activity->getDate()->format('Y-m-d'),
             'time_slot_id' => $activity->getTimeSlot()->getId()->toRfc4122(),
             'description'  => $activity->getDescription(),
+            'classroom'    => $activity->getClassroom() ?? '',
             'subject_ids'  => array_map(
                 static fn ($subject) => $subject->getId()->toRfc4122(),
                 $activity->getSubjects()->toArray(),
@@ -441,7 +443,8 @@ class AbsenceController extends AbstractController
                 if (empty($errors) && $result['date'] !== null && $result['timeSlot'] !== null) {
                     $activity->setDate($result['date'])
                              ->setTimeSlot($result['timeSlot'])
-                             ->setDescription($result['description']);
+                             ->setDescription($result['description'])
+                             ->setClassroom($result['classroom']);
 
                     foreach ($activity->getSubjects()->toArray() as $subject) {
                         $activity->removeSubject($subject);
@@ -545,7 +548,7 @@ class AbsenceController extends AbstractController
     }
 
     /**
-     * @return array{errors: array<string,string>, formData: array<string,mixed>, date: ?\DateTimeImmutable, timeSlot: ?\App\Entity\TimeSlot, description: string, subjects: list<\App\Entity\GroupTeacher>}
+     * @return array{errors: array<string,string>, formData: array<string,mixed>, date: ?\DateTimeImmutable, timeSlot: ?\App\Entity\TimeSlot, description: string, classroom: ?string, subjects: list<\App\Entity\GroupTeacher>}
      */
     private function parseActivityFields(Request $request, Absence $absence, Teacher $owner, AcademicYear $year): array
     {
@@ -554,12 +557,14 @@ class AbsenceController extends AbstractController
         $dateRaw       = trim($request->request->getString('date'));
         $timeSlotId    = trim($request->request->getString('time_slot_id'));
         $description   = trim($request->request->getString('description'));
+        $classroom     = mb_substr(trim($request->request->getString('classroom')), 0, 100);
         $subjectIdsRaw = $request->request->all('subjects');
 
         $formData = [
             'date'         => $dateRaw,
             'time_slot_id' => $timeSlotId,
             'description'  => $description,
+            'classroom'    => $classroom,
             'subject_ids'  => array_values(array_filter($subjectIdsRaw, 'is_string')),
         ];
 
@@ -603,6 +608,7 @@ class AbsenceController extends AbstractController
             'date'        => $date,
             'timeSlot'    => $timeSlot,
             'description' => $description,
+            'classroom'   => $classroom !== '' ? $classroom : null,
             'subjects'    => $subjects,
         ];
     }

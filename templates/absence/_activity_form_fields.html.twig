@@ -71,6 +71,15 @@
     </div>
 
     <div>
+        <twig:Form:Field
+            id="classroom" name="classroom" type="text"
+            label="{{ 'activity.field.classroom'|trans({}, 'admin') }}"
+            value="{{ formData.classroom ?? '' }}"
+            maxlength="100" />
+        <p class="mt-1 text-xs text-gray-400">{{ 'activity.field.classroom_help'|trans({}, 'admin') }}</p>
+    </div>
+
+    <div>
         <twig:Form:RichEditor
             id="description"
             name="description"

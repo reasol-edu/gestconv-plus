@@ -13,5 +13,7 @@ final readonly class BoardTodaySanction
         public Student $student,
         public Group $group,
         public string $label,
+        public ?\DateTimeImmutable $from = null,
+        public ?\DateTimeImmutable $to = null,
     ) {}
 }

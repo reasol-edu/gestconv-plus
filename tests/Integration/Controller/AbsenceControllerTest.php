@@ -472,6 +472,31 @@ class AbsenceControllerTest extends ControllerTestCase
         self::assertCount(0, $activities[0]->getSubjects());
     }
 
+    public function testActivityNewPostStoresTheOptionalClassroom(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence  = $this->makeAbsence($teacher, $year);
+        $timeSlot = $this->makeTimeSlot($year, dayOfWeek: (int) $this->futureDate(31)->format('N') - 1);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva');
+        self::assertSelectorExists('input[name="classroom"]');
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/actividades/nueva', [
+            '_token'       => $token,
+            'date'         => $this->futureDateString(31),
+            'time_slot_id' => $timeSlot->getId()->toRfc4122(),
+            'description'  => '<p>Con aula.</p>',
+            'classroom'    => '  Aula 8  ',
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $activities = $this->em->getRepository(Activity::class)->findAll();
+        self::assertSame('Aula 8', $activities[0]->getClassroom());
+    }
+
     public function testActivityNewShowsAbsenceOwnersSubjectsWhenAdminActsOnTheirBehalf(): void
     {
         [$admin, $centre, $year] = $this->makeScenario();

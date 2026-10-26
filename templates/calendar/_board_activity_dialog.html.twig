@@ -1,0 +1,49 @@
+{# Ventana con la tarea que dejó un docente ausente en un tramo: grupos, descripción y adjuntos descargables desde el tablón. #}
+<dialog data-dialog-target="dialog"
+        class="m-auto w-full max-w-lg rounded-2xl border border-gray-200 p-0 backdrop:bg-black/50 dark:bg-forest-900 dark:text-white dark:border-white/10">
+    <div class="p-6">
+        <div class="flex items-start justify-between gap-4 mb-4">
+            <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ activity.absence.teacher.name.full() }}</p>
+                <p class="text-xs text-gray-500 dark:text-forest-300 mt-0.5">
+                    {{ activity.timeSlot.name }} · {{ activity.timeSlot.startTime|date('format.time'|trans) }}–{{ activity.timeSlot.endTime|date('format.time'|trans) }}
+                    {% if activity.classroom is not empty %}· {{ 'board_classroom'|trans({'%room%': activity.classroom}, 'calendar') }}{% endif %}
+                </p>
+            </div>
+            <button type="button"
+                    data-action="dialog#close"
+                    title="{{ 'board_today_close_activity'|trans({}, 'calendar') }}"
+                    aria-label="{{ 'board_today_close_activity'|trans({}, 'calendar') }}"
+                    class="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                {{ ux_icon('heroicons:x-mark', {class: 'h-5 w-5'}) }}
+            </button>
+        </div>
+
+        {% if activity.subjects is not empty %}
+            <div class="flex flex-wrap gap-1.5 mb-3">
+                {% for subject in activity.subjects %}
+                    <span class="inline-flex items-center rounded-full bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-0.5 text-xs font-medium dark:bg-forest-800 dark:text-forest-100 dark:border-forest-700">
+                        {{ subject.subject }} <twig:GroupChip :group="subject.group" class="ml-1" />
+                    </span>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="prose prose-sm max-w-none text-gray-700 dark:text-forest-100 dark:prose-invert">{{ activity.description|sanitize_html('app.rich_text') }}</div>
+
+        {% if activity.attachments is not empty %}
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-white/10 flex flex-wrap gap-2">
+                {% for attachment in activity.attachments %}
+                    <a href="{{ path('app_absences_attachment_download', {id: activity.absence.id, activityId: activity.id, attachmentId: attachment.id}) }}"
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                              hover:border-forest-300 hover:text-forest-700 hover:bg-forest-50 transition-colors
+                              dark:bg-white/5 dark:border-white/10 dark:text-forest-100 dark:hover:bg-white/10">
+                        {{ ux_icon('heroicons:paper-clip', {class: 'h-3.5 w-3.5 shrink-0'}) }}
+                        {{ attachment.filename }}
+                        <span class="text-gray-400 dark:text-forest-400">({{ attachment.size|file_size }})</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</dialog>

@@ -1,0 +1,164 @@
+{# Pantalla «Hoy» del tablón: alumnado sancionado y profesorado ausente (50 % cada panel) y, debajo, las actividades próximas. #}
+{% set showAbsences = feature_enabled('absences') %}
+{% set showEvents   = feature_enabled('events') %}
+{% set panel   = 'rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden flex flex-col min-h-0 dark:border-white/10 dark:bg-white/5' %}
+{% set heading = 'shrink-0 px-5 py-3 bg-forest-700 text-white dark:bg-forest-800' %}
+
+<div class="flex-1 min-h-0 flex flex-col gap-4 p-4"
+     data-controller="current-time-slot"
+     data-current-time-slot-current-class="bg-amber-50 border-amber-300 ring-2 ring-amber-300 dark:bg-amber-900/20 dark:border-amber-500/40 dark:ring-amber-500/40">
+
+    {% if report.nonWorkingDayLabel is not null %}
+        <p class="shrink-0 text-center text-sm text-gray-500 dark:text-forest-300">{{ 'board_today_non_working'|trans({'%label%': report.nonWorkingDayLabel}, 'calendar') }}</p>
+    {% endif %}
+
+    {% if report.nonWorkingDayLabel is null %}
+    <div class="grid flex-1 min-h-0 gap-4 {{ showAbsences ? 'grid-cols-2' : 'grid-cols-1' }}">
+
+        {# ── Alumnado sancionado ─────────────────────────────────────────────── #}
+        <section class="{{ panel }}">
+            <header class="{{ heading }}">
+                <h3 class="text-xl font-semibold leading-tight">{{ 'board_today_sanctioned_title'|trans({}, 'calendar') }}</h3>
+                <p class="text-xs text-white/70">{{ 'board_today_sanctioned_subtitle'|trans({}, 'calendar') }}</p>
+            </header>
+            <div class="flex-1 min-h-0 overflow-hidden" data-controller="board-column">
+                {% if report.sanctionedStudents is empty %}
+                    <p class="px-5 py-4 text-sm text-gray-400 dark:text-forest-400">{{ 'board_today_no_sanctions'|trans({}, 'calendar') }}</p>
+                {% else %}
+                    <ul class="divide-y divide-gray-100 dark:divide-white/10">
+                        {% for sanction in report.sanctionedStudents %}
+                            <li class="px-5 py-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <p class="text-sm font-bold uppercase tracking-tight">{{ sanction.student.name.full() }}</p>
+                                    <twig:GroupChip :group="sanction.group" class="shrink-0" />
+                                </div>
+                                {% if sanction.from is not null %}
+                                    <p class="mt-0.5 text-xs text-gray-500 dark:text-forest-300">
+                                        {{ 'board_sanction_period'|trans({}, 'calendar') }}:
+                                        <span class="font-semibold text-gray-700 dark:text-forest-100">{{ sanction.from|date('format.date'|trans) }}{% if sanction.to is not null %} – {{ sanction.to|date('format.date'|trans) }}{% endif %}</span>
+                                    </p>
+                                {% endif %}
+                                {% if sanction.label is not empty %}
+                                    <p class="mt-0.5 text-xs text-gray-600 dark:text-forest-200">{{ sanction.label }}</p>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </section>
+
+        {# ── Profesorado ausente, por tramos ─────────────────────────────────── #}
+        {% if showAbsences %}
+        <section class="{{ panel }}">
+            <header class="{{ heading }}">
+                <h3 class="text-xl font-semibold leading-tight">{{ 'board_today_absent_title'|trans({}, 'calendar') }}</h3>
+                <p class="text-xs text-white/70">{{ 'board_today_absent_subtitle'|trans({}, 'calendar') }}</p>
+            </header>
+            <div class="flex-1 min-h-0 overflow-hidden" data-controller="board-column">
+                {% set absenceSlots = report.absenceSlots %}
+                {% if report.absentTeachers is empty %}
+                    <p class="px-5 py-3 text-sm text-gray-400 dark:text-forest-400">{{ 'board_today_no_absences'|trans({}, 'calendar') }}</p>
+                {% endif %}
+                {% if absenceSlots is empty and report.absentTeachers is not empty %}
+                    {# Sin tramos horarios configurados: solo se puede listar a quién falta. #}
+                    <ul class="divide-y divide-gray-100 dark:divide-white/10">
+                        {% for teacher in report.absentTeachers %}
+                            <li class="px-5 py-2 text-sm font-semibold">{{ teacher.name.full() }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    {% for entry in absenceSlots %}
+                        <div class="border-b border-gray-100 border-l-4 border-l-forest-600 dark:border-white/10 transition-colors"
+                             data-current-time-slot-target="slot"
+                             data-start="{{ entry.timeSlot.startTime|date('format.time'|trans) }}"
+                             data-end="{{ entry.timeSlot.endTime|date('format.time'|trans) }}">
+                            <div class="flex items-baseline justify-between gap-3 bg-gray-50 px-4 py-1.5 dark:bg-white/10">
+                                <span class="text-lg font-bold text-forest-700 dark:text-forest-200">{{ entry.timeSlot.name }}</span>
+                                <span class="text-xs tabular-nums text-gray-500 dark:text-forest-300">
+                                    {{ entry.timeSlot.startTime|date('format.time'|trans) }}–{{ entry.timeSlot.endTime|date('format.time'|trans) }}
+                                    {% if entry.timeSlot.guards is not empty %}
+                                        · {{ 'board_guard_label'|trans({}, 'calendar') }}: {% for guard in entry.timeSlot.guards %}{{ guard.name.full() }}{% if not loop.last %}, {% endif %}{% endfor %}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <ul>
+                                {% for row in entry.rows %}
+                                    {% set activity = row.activity %}
+                                    <li class="flex items-start justify-between gap-3 px-4 py-2" {% if activity %}data-controller="dialog"{% endif %}>
+                                        <p class="flex items-start gap-1.5 text-sm font-semibold">
+                                            {% if activity %}
+                                                <button type="button"
+                                                        data-action="dialog#open"
+                                                        class="mt-0.5 shrink-0 text-forest-600 hover:text-forest-800 dark:text-forest-300"
+                                                        title="{{ 'board_today_view_activity'|trans({}, 'calendar') }}"
+                                                        aria-label="{{ 'board_today_view_activity'|trans({}, 'calendar') }}">
+                                                    {{ ux_icon('heroicons:information-circle', {class: 'h-4 w-4'}) }}
+                                                </button>
+                                            {% endif %}
+                                            <span>
+                                                {{ row.teacher.name.full() }}
+                                                {% if activity and activity.subjects is not empty %}
+                                                    <span class="block text-xs font-medium text-sky-700 dark:text-sky-300">{% for subject in activity.subjects %}{{ subject.subject }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+                                                {% endif %}
+                                            </span>
+                                        </p>
+                                        {% if activity %}
+                                            <p class="flex shrink-0 flex-wrap items-center justify-end gap-1.5 text-xs text-gray-500 dark:text-forest-300">
+                                                {% for subject in activity.subjects %}<twig:GroupChip :group="subject.group" />{% endfor %}
+                                                {% if activity.classroom is not empty %}<span class="font-medium">{{ 'board_classroom'|trans({'%room%': activity.classroom}, 'calendar') }}</span>{% endif %}
+                                            </p>
+                                            {% include 'calendar/_board_activity_dialog.html.twig' with {activity: activity} only %}
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# ── Actividades: hoy y los próximos días ────────────────────────────── #}
+    {% if showEvents %}
+    <section class="{{ panel }} {{ report.nonWorkingDayLabel is null ? 'max-h-[34%] shrink-0' : 'flex-1' }}">
+        <header class="shrink-0 flex items-baseline justify-between gap-3 px-5 py-2.5 bg-gray-100 dark:bg-white/10">
+            <h3 class="flex items-center gap-2 text-lg font-bold text-forest-700 dark:text-forest-200">
+                {{ ux_icon('heroicons:megaphone', {class: 'h-5 w-5'}) }}
+                {{ 'board_activities_title'|trans({}, 'calendar') }}
+            </h3>
+            <span class="text-xs text-gray-500 dark:text-forest-300">
+                {{ (eventsDaysAhead > 0 ? 'board_activities_range' : 'board_activities_range_today')|trans({'%days%': eventsDaysAhead}, 'calendar') }}
+            </span>
+        </header>
+        <div class="flex-1 min-h-0 overflow-hidden" data-controller="board-column">
+            {% if report.upcomingEvents is empty %}
+                <p class="px-5 py-4 text-sm text-gray-400 dark:text-forest-400">{{ 'board_activities_none'|trans({}, 'calendar') }}</p>
+            {% else %}
+                <ul class="divide-y divide-gray-100 dark:divide-white/10">
+                    {% for event in report.upcomingEvents %}
+                        <li class="px-5 py-2.5">
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <twig:EventTypeBadge :type="event.type" class="text-sm" />
+                                <span class="text-lg font-bold leading-tight">{{ event.name }}</span>
+                                <span class="inline-flex items-center gap-1 text-sm font-bold">
+                                    {{ ux_icon('heroicons:calendar-days', {class: 'h-4 w-4 shrink-0 text-gray-400'}) }}
+                                    {% if event.date.format('Y-m-d') == report.date.format('Y-m-d') %}{{ 'board_activities_today'|trans({}, 'calendar') }}{% else %}{{ event.date|date('format.date'|trans) }}{% endif %}
+                                </span>
+                                <span class="inline-flex items-center gap-1 text-sm tabular-nums text-gray-500 dark:text-forest-300">
+                                    {{ ux_icon('heroicons:clock', {class: 'h-4 w-4 shrink-0'}) }}
+                                    {{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }}
+                                </span>
+                            </div>
+                            {% include 'components/_event_meta.html.twig' with {event: event, class: 'mt-1'} only %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+</div>

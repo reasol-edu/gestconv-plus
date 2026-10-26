@@ -68,6 +68,24 @@ class SchoolEventRepository extends ServiceEntityRepository
             ->getResult());
     }
 
+    /**
+     * Las actividades del curso entre dos fechas (ambas incluidas), por orden cronológico.
+     *
+     * @return list<SchoolEvent>
+     */
+    public function findAllForAcademicYearBetween(AcademicYear $year, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        return $this->preloadGroups($year, $this->baseQueryBuilder($year)
+            ->andWhere('se.date >= :from')
+            ->andWhere('se.date <= :to')
+            ->orderBy('se.date', 'ASC')
+            ->addOrderBy('se.startTime', 'ASC')
+            ->setParameter('from', $from, 'date_immutable')
+            ->setParameter('to', $to, 'date_immutable')
+            ->getQuery()
+            ->getResult());
+    }
+
     /** @return list<SchoolEvent> */
     public function findVisibleForTeacherAndDate(Teacher $viewer, AcademicYear $year, \DateTimeImmutable $date): array
     {

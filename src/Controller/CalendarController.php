@@ -14,7 +14,7 @@ use App\Security\Voter\EducationalCentreVoter;
 use App\Service\AppSettings;
 use App\Service\BoardTodayBuilder;
 use App\Service\BoardTodayReport;
-use App\Service\CalendarBoardBuilder;
+use App\Service\BoardUpcomingBuilder;
 use App\Service\DayDetailBuilder;
 use App\Service\KioskMode;
 use App\Service\NonWorkingDayChecker;
@@ -31,8 +31,6 @@ class CalendarController extends AbstractController
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly AppSettings $appSettings,
-        private readonly NonWorkingDayChecker $nonWorkingDayChecker,
-        private readonly TranslatorInterface $translator,
         private readonly ClockInterface $clock,
     ) {}
 
@@ -91,7 +89,7 @@ class CalendarController extends AbstractController
     #[Route('/calendario/tablon', name: 'app_calendar_board')]
     public function board(
         SanctionRepository $sanctionRepository,
-        CalendarBoardBuilder $boardBuilder,
+        BoardUpcomingBuilder $boardUpcomingBuilder,
         BoardTodayBuilder $boardTodayBuilder,
         KioskMode $kioskMode,
         #[CurrentCentre] EducationalCentre $centre,
@@ -109,19 +107,14 @@ class CalendarController extends AbstractController
         // sesión del navegador: solo se podrá salir cerrando sesión.
         $kioskMode->activate();
 
-        $todaySeconds   = $this->appSettings->getInt('board.today_seconds');
-        $currentSeconds = $this->appSettings->getInt('board.current_week_seconds');
-        $nextSeconds    = $this->appSettings->getInt('board.next_week_seconds');
-        $theme          = $this->appSettings->get('board.theme');
+        $todaySeconds    = $this->appSettings->getInt('board.today_seconds');
+        $upcomingSeconds = $this->appSettings->getInt('board.upcoming_seconds');
+        $eventsDaysAhead = $this->appSettings->getInt('board.events_days_ahead');
+        $theme           = $this->appSettings->get('board.theme');
 
         $todayReport = $academicYear !== null
-            ? $boardTodayBuilder->build($academicYear, $today)
+            ? $boardTodayBuilder->build($academicYear, $today, $eventsDaysAhead)
             : new BoardTodayReport($today, [], [], []);
-
-        $nextWeekStart  = $today->modify('+7 days');
-        $nonWorkingDays = $academicYear !== null
-            ? $this->nonWorkingDaysMap($academicYear, [...$this->weekdaysOf($today), ...$this->weekdaysOf($nextWeekStart)])
-            : [];
 
         // Un valor de 0 en la duración de una pantalla la omite. Si todas
         // las pantallas están omitidas, se muestra solo "Hoy" sin rotación.
@@ -129,43 +122,25 @@ class CalendarController extends AbstractController
         if ($todaySeconds > 0) {
             $screens[] = ['type' => 'today', 'label' => 'board_today', 'seconds' => $todaySeconds, 'report' => $todayReport];
         }
-        if ($currentSeconds > 0) {
-            $screens[] = ['type' => 'week', 'label' => 'board_this_week', 'seconds' => $currentSeconds, 'days' => $boardBuilder->build($items, $this->weekdaysOf($today))];
-        }
-        if ($nextSeconds > 0) {
-            $screens[] = ['type' => 'week', 'label' => 'board_next_week', 'seconds' => $nextSeconds, 'days' => $boardBuilder->build($items, $this->weekdaysOf($nextWeekStart))];
+        if ($upcomingSeconds > 0) {
+            $screens[] = [
+                'type'    => 'upcoming',
+                'label'   => 'board_upcoming',
+                'seconds' => $upcomingSeconds,
+                'days'    => $academicYear !== null ? $boardUpcomingBuilder->build($academicYear, $today, $items) : [],
+            ];
         }
         if ($screens === []) {
             $screens[] = ['type' => 'today', 'label' => 'board_today', 'seconds' => 0, 'report' => $todayReport];
         }
 
         return $this->render('calendar/board.html.twig', [
-            'screens'        => $screens,
-            'today'          => $today,
-            'theme'          => $theme,
-            'centreName'     => $centre->getName(),
-            'nonWorkingDays' => $nonWorkingDays,
+            'screens'         => $screens,
+            'today'           => $today,
+            'theme'           => $theme,
+            'centreName'      => $centre->getName(),
+            'eventsDaysAhead' => $eventsDaysAhead,
         ]);
-    }
-
-    /**
-     * @param list<\DateTimeImmutable> $days
-     *
-     * @return array<string, string>
-     */
-    private function nonWorkingDaysMap(AcademicYear $academicYear, array $days): array
-    {
-        $map = [];
-        foreach ($days as $day) {
-            if (!$this->nonWorkingDayChecker->isNonWorkingDay($academicYear, $day)) {
-                continue;
-            }
-
-            $map[$day->format('Y-m-d')] = $this->nonWorkingDayChecker->descriptionFor($academicYear, $day)
-                ?? $this->translator->trans('board_day_non_working', [], 'calendar');
-        }
-
-        return $map;
     }
 
     /**
@@ -195,19 +170,6 @@ class CalendarController extends AbstractController
         }
 
         return $items;
-    }
-
-    /**
-     * @return list<\DateTimeImmutable>
-     */
-    private function weekdaysOf(\DateTimeImmutable $reference): array
-    {
-        $monday = $reference->modify('monday this week');
-
-        return array_map(
-            static fn (int $offset): \DateTimeImmutable => $monday->modify("+{$offset} days"),
-            range(0, 4),
-        );
     }
 
     private function parseDate(string $value): ?\DateTimeImmutable

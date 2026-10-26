@@ -34,6 +34,10 @@ class Activity
     #[ORM\Column(type: Types::TEXT)]
     private string $description;
 
+    /** Aula donde el alumnado espera la actividad (dato opcional que se muestra en el tablón). */
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $classroom = null;
+
     /** @var Collection<int, GroupTeacher> */
     #[ORM\ManyToMany(targetEntity: GroupTeacher::class)]
     #[ORM\JoinTable(name: 'activity_group_teacher')]
@@ -98,6 +102,18 @@ class Activity
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getClassroom(): ?string
+    {
+        return $this->classroom;
+    }
+
+    public function setClassroom(?string $classroom): static
+    {
+        $this->classroom = $classroom;
 
         return $this;
     }
