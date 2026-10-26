@@ -560,7 +560,7 @@ el centro**, no solo de sus propios grupos:
 
 ## Actividades de centro
 
-- Se gestionan desde la pestaña **Actividades** de la sección Calendario:
+- Se gestionan desde la entrada **Actividades** del menú lateral:
   listado paginado con búsqueda y filtros por grupo y por tipo. Quién puede
   publicarlas es un ajuste: **equipo directivo** (por defecto) o **todos**
   (cada docente solo gestiona las suyas). La **coordinación de actividades**,

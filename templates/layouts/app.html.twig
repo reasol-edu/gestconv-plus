@@ -146,6 +146,11 @@
             {% endif %}
             {{ _self.nav_item('calendar'|trans({}, 'navigation'), path('app_calendar'), 'heroicons:calendar-days', current_route, 'app_calendar') }}
 
+            {# Actividades — quien puede publicarlas (con el interruptor de actividades activado) #}
+            {% if active_centre and is_granted('educational_centre.publish_events', active_centre) %}
+                {{ _self.nav_item('events'|trans({}, 'navigation'), path('app_events_index'), 'heroicons:megaphone', current_route, 'app_events') }}
+            {% endif %}
+
             {# ── Convivencia: partes, notas, sanciones y su seguimiento ── #}
             {% if active_centre %}
                 {{ _self.nav_heading('section.conduct'|trans({}, 'navigation')) }}

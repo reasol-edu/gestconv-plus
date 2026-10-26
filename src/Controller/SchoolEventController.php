@@ -41,6 +41,14 @@ class SchoolEventController extends AbstractController
         private readonly ActivityLogService $activityLog,
     ) {}
 
+    #[Route('', name: 'app_events_index', methods: ['GET'])]
+    public function index(#[CurrentCentre] EducationalCentre $centre): Response
+    {
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
+
+        return $this->render('school_event/index.html.twig', ['centre' => $centre]);
+    }
+
     #[Route('/nuevo', name: 'app_events_new', methods: ['GET', 'POST'])]
     public function new(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
@@ -87,7 +95,7 @@ class SchoolEventController extends AbstractController
 
                 $this->addFlash('success', $this->t('school_event.flash.created'));
 
-                return $this->redirectToRoute('app_calendar', ['tab' => 'events']);
+                return $this->redirectToRoute('app_events_index');
             }
         }
 
@@ -156,7 +164,7 @@ class SchoolEventController extends AbstractController
 
                 $this->addFlash('success', $this->t('school_event.flash.saved'));
 
-                return $this->redirectToRoute('app_calendar', ['tab' => 'events']);
+                return $this->redirectToRoute('app_events_index');
             }
         }
 
@@ -194,7 +202,7 @@ class SchoolEventController extends AbstractController
 
         $this->addFlash('success', $this->t('school_event.flash.deleted'));
 
-        return $this->redirectToRoute('app_calendar', ['tab' => 'events']);
+        return $this->redirectToRoute('app_events_index');
     }
 
     /**

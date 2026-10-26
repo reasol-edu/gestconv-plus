@@ -64,8 +64,8 @@ salida, una jornada de puertas abiertas, una reunión de tutoría — que se mue
 la vista de día, las guardias, el modo tablón y el panel de inicio de quien deba verla. (Hasta la
 versión 1.12 se llamaban «eventos».)
 
-Quienes pueden publicar actividades las gestionan desde la pestaña **Actividades**, junto a
-**Calendario**, dentro de la misma sección del menú lateral: un listado paginado con búsqueda por
+Quienes pueden publicar actividades las gestionan desde la entrada **Actividades** del menú
+lateral, justo debajo de **Calendario**: un listado paginado con búsqueda por
 nombre o descripción y filtros por grupo y por tipo, y un botón **Añadir actividad** (también
 disponible desde la vista de detalle de un día, con la fecha ya rellenada).
 

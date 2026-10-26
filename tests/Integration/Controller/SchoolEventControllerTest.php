@@ -81,7 +81,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         ]);
 
         self::assertResponseRedirects();
-        self::assertStringContainsString('tab=events', (string) $this->client->getResponse()->headers->get('Location'));
+        self::assertStringEndsWith('/actividades', (string) $this->client->getResponse()->headers->get('Location'));
 
         $this->em->clear();
         $events = $this->em->getRepository(SchoolEvent::class)->findAll();
@@ -352,9 +352,12 @@ class SchoolEventControllerTest extends ControllerTestCase
         $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tipos-actividad');
         self::assertResponseStatusCodeSame(404);
 
-        $crawler = $this->client->request('GET', '/calendario?tab=events');
+        $this->client->request('GET', '/actividades');
+        self::assertResponseStatusCodeSame(404);
+
+        $crawler = $this->client->request('GET', '/calendario');
         self::assertResponseIsSuccessful();
-        self::assertCount(0, $crawler->filter('a[href*="tab=events"]'), 'sin pestaña de actividades');
+        self::assertCount(0, $crawler->filter('nav a[href="/actividades"]'), 'sin entrada de actividades en el menú');
     }
 
     public function testNewPostGeneralEventKeepsItsAssociatedGroups(): void
@@ -552,7 +555,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
-    public function testTheCalendarOffersTheEventsTabOnlyToWhoCanPublish(): void
+    public function testTheMenuOffersActivitiesToWhoCanPublish(): void
     {
         $this->definePublishScope('all');
         [$teacher, $centre] = $this->makeMemberScenario();
@@ -560,7 +563,10 @@ class SchoolEventControllerTest extends ControllerTestCase
 
         $crawler = $this->client->request('GET', '/calendario');
 
-        self::assertCount(1, $crawler->filter('a[href*="tab=events"]'));
+        self::assertGreaterThan(0, $crawler->filter('nav a[href="/actividades"]')->count());
+
+        $this->client->request('GET', '/actividades');
+        self::assertResponseIsSuccessful();
     }
 
     public function testNewPostWithInvalidUrlRendersFormAgain(): void

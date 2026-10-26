@@ -224,9 +224,9 @@ class CalendarControllerTest extends ControllerTestCase
         self::assertStringNotContainsString('Sin fechas asociadas', (string) $this->client->getResponse()->getContent());
     }
 
-    // ── Pestañas ─────────────────────────────────────────────────────────────
+    // ── Sin pestañas: las actividades tienen su propia entrada del menú ──────
 
-    public function testShowsCalendarAndEventsTabsToAdmin(): void
+    public function testCalendarHasNoTabsAndMenuOffersActivitiesToAdmin(): void
     {
         $centre = $this->makeCentre('46000060');
         $admin  = $this->makeAdmin('calendar.tabs.admin');
@@ -236,11 +236,11 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $content = (string) $this->client->getResponse()->getContent();
-        self::assertStringContainsString('tab=calendar', $content);
-        self::assertStringContainsString('tab=events', $content);
+        self::assertStringNotContainsString('tab=', $content);
+        self::assertStringContainsString('href="/actividades"', $content);
     }
 
-    public function testHidesTabsFromNonAdmin(): void
+    public function testMenuHidesActivitiesFromNonAdmin(): void
     {
         $centre  = $this->makeCentre('46000061');
         $teacher = (new Teacher(new PersonName('Plain', 'Teacher')))->setUsername('calendar.tabs.noadmin');
@@ -251,7 +251,7 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         $content = (string) $this->client->getResponse()->getContent();
-        self::assertStringNotContainsString('tab=events', $content);
+        self::assertStringNotContainsString('href="/actividades"', $content);
     }
 
     public function testNonAdminDoesNotSeeAbsencesInUnifiedCalendar(): void

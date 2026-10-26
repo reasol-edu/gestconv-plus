@@ -1,6 +1,7 @@
 dashboard: 'Inicio'
 settings: 'Ajustes'
 calendar: 'Calendario'
+events: 'Actividades'
 reports: 'Informes'
 incident_reports: 'Partes'
 daily_notes: 'Notas'

@@ -536,7 +536,7 @@ Qué incluye cada una:
   se envían los recordatorios y el enlace público para el alumno deja de abrirse. Las sanciones y
   las tareas ya creadas no se borran.
 - **Actividades de centro**: la publicación y gestión de
-  [actividades](05-calendario-y-tablon.md#actividades-de-centro), su pestaña del calendario, sus
+  [actividades](05-calendario-y-tablon.md#actividades-de-centro), su entrada del menú lateral, sus
   avisos en el panel de inicio, la vista de día, las guardias y el tablón, el catálogo de tipos de
   actividad y el perfil de coordinación de actividades. Se desactiva de una vez, entera.
 
