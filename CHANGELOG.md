@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] - 2026-10-26
+
+### Added
+
+- **Actividades de centro** (los antiguos «eventos»): cada actividad tiene ahora un **tipo** obligatorio de un catálogo editable por centro (*Complementaria*, *Extraescolar* y *Otros* por defecto, cada uno con su color), y datos opcionales: lugar, departamento organizador, coordinador/a y profesorado acompañante. El listado se puede filtrar por tipo y los distintivos de tipo se ven en el calendario, la vista de día, las guardias, el panel de inicio y el tablón. Las actividades que ya existían pasan a ser *Complementaria*.
+- **Interruptor de Actividades**: un ajuste global y de centro («Actividades de centro», en Secciones de la aplicación) las activa o desactiva de golpe, con el catálogo de tipos, el perfil de coordinación y sus direcciones. Viene activado.
+- **Perfil «Coordinación de actividades»** (Centro educativo › Perfiles): gestiona todas las actividades del centro como un administrador.
+- **Aula en las ausencias**: las tareas que un docente deja al ausentarse admiten un aula opcional, que se muestra en el tablón.
+- **Ajuste de antelación en el tablón** («Días de antelación de las actividades en el tablón», 15 por defecto).
+
+### Changed
+
+- **Modo tablón rediseñado en paneles**: la pantalla «Hoy» reparte al 50 % el alumnado sancionado y el profesorado ausente por tramos horarios (quien no dejó tareas aparece en todos los tramos) y lista debajo las actividades de hoy y de los próximos días. «Esta semana» y «Semana que viene» se sustituyen por **«Próximos días»**: las 5 jornadas lectivas siguientes al día actual. La duración de «Esta semana» se conserva como la de «Próximos días» y el ajuste de «Semana que viene» desaparece.
+- **Quién gestiona las actividades**: con el ajuste «Todos», un docente solo lista, modifica y elimina las que ha publicado él (antes gestionaba todas las que veía), y siempre ve las suyas en su calendario aunque las restrinja a grupos en los que no imparte. Las anteriores a esta versión no tienen autor: solo las gestionan la dirección y la coordinación.
+- **Direcciones**: `/eventos` pasa a `/actividades` (las antiguas redirigen) y el ajuste «Quién puede publicar eventos» pasa a llamarse «…actividades».
+- **Color de grupo**: el color personalizado se activa con la casilla «Color personalizado», que muestra el selector partiendo del color calculado; desmarcarla vuelve al calculado (ya no hay botón de reinicio).
+
+### Fixed
+
+- Editar una actividad ya no pierde a la coordinación ni al profesorado acompañante que dejó de pertenecer al curso.
+- El enlace «Editar» de la vista de día solo se ofrece a quien puede modificar esa actividad.
+
 ## [1.12.1] - 2026-10-26
 
 ### Changed
