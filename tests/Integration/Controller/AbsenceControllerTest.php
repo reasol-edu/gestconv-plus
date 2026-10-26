@@ -387,6 +387,35 @@ class AbsenceControllerTest extends ControllerTestCase
 
     // ── activities ───────────────────────────────────────────────────────────
 
+    public function testAbsenceCanBeMarkedWithASubstituteAndThenRefusesActivities(): void
+    {
+        [$teacher, $centre, $year] = $this->makeScenario();
+        $absence = $this->makeAbsence($teacher, $year);
+        $this->loginAs($teacher, $centre);
+
+        // El formulario de edición ofrece la casilla y la guarda.
+        $crawler = $this->client->request('GET', '/ausencias/' . $absence->getId()->toRfc4122() . '/editar');
+        self::assertSelectorExists('input[name="has_substitute"]');
+        $token = $crawler->filter('form[action$="/editar"] [name="_token"]')->attr('value');
+        $this->client->request('POST', '/ausencias/' . $absence->getId()->toRfc4122() . '/editar', [
+            '_token'         => $token,
+            'start_date'     => $absence->getStartDate()->format('Y-m-d'),
+            'end_date'       => $absence->getEndDate()->format('Y-m-d'),
+            'has_substitute' => '1',
+        ]);
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $saved = $this->em->getRepository(Absence::class)->findAll()[0];
+        self::assertTrue($saved->hasSubstitute());
+
+        // La ficha avisa y no ofrece «Nueva actividad»; la dirección tampoco puede crearlas por URL.
+        $crawler = $this->client->request('GET', '/ausencias/' . $saved->getId()->toRfc4122());
+        self::assertSelectorTextContains('body', 'Con sustituto/a');
+        self::assertCount(0, $crawler->filter('a[href$="/actividades/nueva"]'));
+        $this->client->request('GET', '/ausencias/' . $saved->getId()->toRfc4122() . '/actividades/nueva');
+        self::assertResponseRedirects('/ausencias/' . $saved->getId()->toRfc4122());
+    }
+
     public function testActivityNewGetRendersFormWithSubjectsAndTimeSlots(): void
     {
         [$teacher, $centre, $year] = $this->makeScenario();

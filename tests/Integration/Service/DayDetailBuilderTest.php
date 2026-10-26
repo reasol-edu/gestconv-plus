@@ -43,6 +43,25 @@ class DayDetailBuilderTest extends RepositoryTestCase
         self::assertSame($world['student']->getId()->toRfc4122(), $report->sanctionedStudents[0]->student->getId()->toRfc4122());
     }
 
+    public function testAnAbsenceWithASubstituteIsNotShownInTheDay(): void
+    {
+        $world   = $this->makeWorld('substitute');
+        $absence = $this->makeAbsence($world, new \DateTimeImmutable('2026-03-10'));
+        $slot    = $this->makeSlot($world, 'Tramo 1', '08:00', '09:00');
+        $this->persist((new \App\Entity\Activity())->setAbsence($absence)->setDate(new \DateTimeImmutable('2026-03-10'))
+            ->setTimeSlot($slot)->setDescription('<p>Tarea</p>'));
+
+        $report = $this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-10'));
+        self::assertCount(1, $report->absentTeachers, 'sin sustituto/a se muestra');
+
+        $absence->setHasSubstitute(true);
+        $this->flush();
+        $report = $this->builder->build($world['year'], null, true, new \DateTimeImmutable('2026-03-10'));
+
+        self::assertCount(0, $report->absentTeachers);
+        self::assertCount(0, $report->timeSlots[0]->activities, 'ni sus tareas');
+    }
+
     public function testBuildIncludesAbsenceOnlyForAdmin(): void
     {
         $world = $this->makeWorld('absences');

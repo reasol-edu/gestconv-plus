@@ -133,7 +133,7 @@ class AbsenceController extends AbstractController
 
         $today            = $this->clock->now()->format('Y-m-d');
         $errors           = [];
-        $formData         = ['start_date' => $today, 'end_date' => $today, 'teacher_id' => $isAdmin ? '' : $user->getId()->toRfc4122()];
+        $formData         = ['start_date' => $today, 'end_date' => $today, 'teacher_id' => $isAdmin ? '' : $user->getId()->toRfc4122(), 'has_substitute' => false];
         $selectedTeacher  = null;
 
         if ($request->isMethod('POST')) {
@@ -144,7 +144,8 @@ class AbsenceController extends AbstractController
             $startDateRaw = trim($request->request->getString('start_date'));
             $endDateRaw   = trim($request->request->getString('end_date'));
             $teacherIdRaw = $isAdmin ? trim($request->request->getString('teacher_id')) : $user->getId()->toRfc4122();
-            $formData     = ['start_date' => $startDateRaw, 'end_date' => $endDateRaw, 'teacher_id' => $teacherIdRaw];
+            $hasSubstitute = $request->request->getBoolean('has_substitute');
+            $formData     = ['start_date' => $startDateRaw, 'end_date' => $endDateRaw, 'teacher_id' => $teacherIdRaw, 'has_substitute' => $hasSubstitute];
 
             $startDate = self::parseDate($startDateRaw);
             $endDate   = self::parseDate($endDateRaw);
@@ -176,7 +177,8 @@ class AbsenceController extends AbstractController
                 $absence->setTeacher($targetTeacher)
                         ->setAcademicYear($year)
                         ->setStartDate($startDate)
-                        ->setEndDate($endDate);
+                        ->setEndDate($endDate)
+                        ->setHasSubstitute($hasSubstitute);
 
                 $this->em->persist($absence);
                 $this->em->flush();
@@ -234,6 +236,7 @@ class AbsenceController extends AbstractController
         $formData = [
             'start_date' => $absence->getStartDate()->format('Y-m-d'),
             'end_date'   => $absence->getEndDate()->format('Y-m-d'),
+            'has_substitute' => $absence->hasSubstitute(),
         ];
 
         if ($request->isMethod('POST')) {
@@ -241,9 +244,10 @@ class AbsenceController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $startDateRaw = trim($request->request->getString('start_date'));
-            $endDateRaw   = trim($request->request->getString('end_date'));
-            $formData     = ['start_date' => $startDateRaw, 'end_date' => $endDateRaw];
+            $startDateRaw  = trim($request->request->getString('start_date'));
+            $endDateRaw    = trim($request->request->getString('end_date'));
+            $hasSubstitute = $request->request->getBoolean('has_substitute');
+            $formData      = ['start_date' => $startDateRaw, 'end_date' => $endDateRaw, 'has_substitute' => $hasSubstitute];
 
             $startDate = self::parseDate($startDateRaw);
             $endDate   = self::parseDate($endDateRaw);
@@ -273,7 +277,7 @@ class AbsenceController extends AbstractController
             }
 
             if (empty($errors) && $startDate instanceof \DateTimeImmutable && $endDate instanceof \DateTimeImmutable) {
-                $absence->setStartDate($startDate)->setEndDate($endDate);
+                $absence->setStartDate($startDate)->setEndDate($endDate)->setHasSubstitute($hasSubstitute);
                 $this->em->flush();
 
                 $this->activityLog->log('absence.updated', [
@@ -332,6 +336,13 @@ class AbsenceController extends AbstractController
 
         $this->denyAccessUnlessGranted(AbsenceVoter::EDIT, $absence);
         $this->denyIfViewingPastYear($centre);
+
+        // Con docente sustituto/a la ausencia está cubierta: no se piden tareas.
+        if ($absence->hasSubstitute()) {
+            $this->addFlash('error', $this->t('activity.error.has_substitute'));
+
+            return $this->redirectToRoute('app_absences_show', ['id' => $id]);
+        }
 
         $owner = $absence->getTeacher();
 

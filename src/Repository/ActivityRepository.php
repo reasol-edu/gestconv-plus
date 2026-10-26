@@ -32,7 +32,11 @@ class ActivityRepository extends ServiceEntityRepository
         return $result instanceof Activity ? $result : null;
     }
 
-    /** @return Activity[] */
+    /**
+     * Las tareas de las ausencias de un día; las de ausencias con docente sustituto/a no cuentan.
+     *
+     * @return Activity[]
+     */
     public function findByAcademicYearAndDate(AcademicYear $year, \DateTimeImmutable $date): array
     {
         return $this->createQueryBuilder('act')
@@ -42,6 +46,7 @@ class ActivityRepository extends ServiceEntityRepository
             ->leftJoin('act.subjects', 's')
             ->addSelect('s')
             ->where('ab.academicYear = :year')
+            ->andWhere('ab.hasSubstitute = false')
             ->andWhere('act.date = :date')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('date', $date, Types::DATE_IMMUTABLE)

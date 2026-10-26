@@ -21,7 +21,8 @@ quien la consulta:
 - **Ausencias del profesorado** (solo administradores de centro, ver
   [Ausencias](03-el-trabajo-diario.md#ausencias)): se colorean en ámbar con el icono de un docente
   y muestran únicamente el nombre de quien está ausente, sin grupo ni descripción. El resto del
-  profesorado no las ve en su calendario.
+  profesorado no las ve en su calendario. Las ausencias marcadas con **docente sustituto/a** no
+  aparecen (ni en el calendario, ni en la vista de día, las guardias o el tablón).
 - **Actividades de centro** (ver más abajo): se colorean con el color del primer grupo asociado si
   están restringidas a grupos, o en azul con el icono de un megáfono si son generales, y muestran
   la hora seguida del nombre de la actividad.

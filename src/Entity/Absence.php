@@ -39,9 +39,28 @@ class Absence
     #[ORM\OrderBy(['date' => 'ASC'])]
     private Collection $activities;
 
+    /**
+     * Existe docente sustituto/a: la ausencia queda cubierta, así que no se muestra en el calendario, el tablón ni las
+     * guardias y no se piden actividades; solo aparece en el listado de ausencias de quien puede verlas.
+     */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $hasSubstitute = false;
+
     public function __construct()
     {
         $this->activities = new ArrayCollection();
+    }
+
+    public function hasSubstitute(): bool
+    {
+        return $this->hasSubstitute;
+    }
+
+    public function setHasSubstitute(bool $hasSubstitute): static
+    {
+        $this->hasSubstitute = $hasSubstitute;
+
+        return $this;
     }
 
     public function getId(): Uuid

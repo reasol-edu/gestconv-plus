@@ -33,7 +33,11 @@ class AbsenceRepository extends ServiceEntityRepository
         return $result instanceof Absence ? $result : null;
     }
 
-    /** @return list<Absence> */
+    /**
+     * Las ausencias del curso para el calendario. Las que tienen docente sustituto/a no se muestran.
+     *
+     * @return list<Absence>
+     */
     public function findWithDatesForAcademicYear(AcademicYear $year): array
     {
         /** @var list<Absence> $result */
@@ -41,6 +45,7 @@ class AbsenceRepository extends ServiceEntityRepository
             ->addSelect('t')
             ->join('a.teacher', 't')
             ->where('a.academicYear = :year')
+            ->andWhere('a.hasSubstitute = false')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('a.startDate', 'ASC')
             ->getQuery()
@@ -49,7 +54,11 @@ class AbsenceRepository extends ServiceEntityRepository
         return $result;
     }
 
-    /** @return list<Teacher> */
+    /**
+     * El profesorado ausente un día, sin las ausencias que tienen docente sustituto/a (están cubiertas).
+     *
+     * @return list<Teacher>
+     */
     public function findTeachersAbsentOn(AcademicYear $year, \DateTimeImmutable $date): array
     {
         $em = $this->getEntityManager();
@@ -58,6 +67,7 @@ class AbsenceRepository extends ServiceEntityRepository
         $teacherIds = $this->createQueryBuilder('a')
             ->select('IDENTITY(a.teacher)')
             ->where('a.academicYear = :year')
+            ->andWhere('a.hasSubstitute = false')
             ->andWhere('a.startDate <= :date')
             ->andWhere('a.endDate >= :date')
             ->setParameter('year', $year->getId(), 'uuid')

@@ -69,6 +69,9 @@
                                     <a href="{{ path('app_absences_show', {id: absence.id}) }}" class="font-medium text-forest-700 hover:text-forest-900 transition-colors">
                                         {{ absence.startDate|date('format.date'|trans) }}
                                     </a>
+                                    {% if absence.hasSubstitute %}
+                                        <span class="ml-1 inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700">{{ 'absence.badge.has_substitute'|trans({}, 'admin') }}</span>
+                                    {% endif %}
                                 </td>
                                 <td class="px-6 py-3.5 text-gray-700">{{ absence.endDate|date('format.date'|trans) }}</td>
                                 <td class="px-6 py-3.5 text-gray-700">{{ absence.activities|length }}</td>

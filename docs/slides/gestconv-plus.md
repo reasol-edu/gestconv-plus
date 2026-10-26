@@ -269,6 +269,9 @@ El parte pasa a **"Notificado"** y queda en el historial.
   administración del centro, que puede registrar, editar o eliminar la
   ausencia de cualquier docente en cualquier momento desde la pestaña
   **Ausencias del centro**.
+- Si hay **docente sustituto/a**, se marca en la ausencia: deja de mostrarse
+  en calendario, guardias y tablón y no se piden actividades; solo sale en el
+  listado de ausencias.
 
 ---
 

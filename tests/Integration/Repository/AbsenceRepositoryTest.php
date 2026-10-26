@@ -68,6 +68,26 @@ class AbsenceRepositoryTest extends RepositoryTestCase
         self::assertSame($inside->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
+    public function testAbsencesWithASubstituteAreOnlyInTheListing(): void
+    {
+        $year    = $this->makeYear();
+        $covered = $this->makeAbsence($year, $this->makeTeacher('covered'), '2026-01-10', '2026-01-12');
+        $covered->setHasSubstitute(true);
+        $open = $this->makeAbsence($year, $this->makeTeacher('open'), '2026-01-10', '2026-01-12');
+        $this->flush();
+
+        // El listado de ausencias las trae todas; el calendario y «quién falta hoy» no traen las cubiertas.
+        self::assertCount(2, $this->repo->createFilteredQuery($year)->getResult());
+        self::assertSame(
+            [$open->getId()->toRfc4122()],
+            array_map(static fn (Absence $a): string => $a->getId()->toRfc4122(), $this->repo->findWithDatesForAcademicYear($year)),
+        );
+        self::assertSame(
+            [$open->getTeacher()->getId()->toRfc4122()],
+            array_map(static fn (Teacher $t): string => $t->getId()->toRfc4122(), $this->repo->findTeachersAbsentOn($year, new \DateTimeImmutable('2026-01-11'))),
+        );
+    }
+
     public function testCreateFilteredQueryIgnoresInvalidDates(): void
     {
         $year = $this->makeYear();

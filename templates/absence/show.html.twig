@@ -19,6 +19,11 @@
             <p class="mt-1 text-sm text-gray-500">
                 {{ absence.teacher.name.lastName }}, {{ absence.teacher.name.firstName }}
             </p>
+            {% if absence.hasSubstitute %}
+                <p class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700">
+                    {{ ux_icon('heroicons:user-plus', {class: 'h-3.5 w-3.5'}) }}{{ 'absence.badge.has_substitute'|trans({}, 'admin') }}
+                </p>
+            {% endif %}
             {% if not is_granted('absence.edit', absence) and absence.endDate < date() %}
                 <p class="mt-1 text-xs text-gray-400">{{ 'absence.locked_past_end_date'|trans({}, 'admin') }}</p>
             {% endif %}
@@ -51,7 +56,7 @@
     <div>
         <div class="flex items-center justify-between gap-4 mb-3">
             <h2 class="text-base font-semibold text-gray-900">{{ 'activity.title'|trans({}, 'admin') }}</h2>
-            {% if is_granted('absence.edit', absence) and not is_viewing_past_year() %}
+            {% if is_granted('absence.edit', absence) and not is_viewing_past_year() and not absence.hasSubstitute %}
                 <a href="{{ path('app_absences_activity_new', {id: absence.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-3.5 py-2 text-sm font-semibold text-white
                           hover:bg-forest-700 transition-colors shadow-xs shrink-0">
@@ -61,7 +66,9 @@
             {% endif %}
         </div>
 
-        {% if absence.activities is empty %}
+        {% if absence.hasSubstitute and absence.activities is empty %}
+            <p class="text-sm text-gray-500">{{ 'activity.empty_has_substitute'|trans({}, 'admin') }}</p>
+        {% elseif absence.activities is empty %}
             <p class="text-sm text-gray-400">{{ 'activity.empty'|trans({}, 'admin') }}</p>
         {% else %}
             <ul class="space-y-3">

@@ -570,7 +570,13 @@ clase) ve directamente el listado de ausencias del centro, sin pestañas.
    ausencia (por defecto, uno mismo).
 3. Indica la **fecha de inicio** y la **fecha de fin** del periodo en el que se estará ausente.
    Ambas son obligatorias y la fecha de fin no puede ser anterior a la de inicio.
-4. Guarda: se abre el detalle de la ausencia, todavía sin actividades.
+4. Si la ausencia ya está cubierta por un **sustituto/a**, marca **Existe docente sustituto/a**
+   (se puede marcar o desmarcar también al editarla). Una ausencia con sustituto/a **no se
+   muestra** en el calendario, la vista de día, las guardias ni el tablón, y **no se piden
+   actividades** para el alumnado (el botón *Nueva actividad* desaparece); solo aparece, con la
+   etiqueta *Con sustituto/a*, en el listado de ausencias de quienes pueden verla: su docente y los
+   administradores.
+5. Guarda: se abre el detalle de la ausencia, todavía sin actividades.
 
 ### Añadir actividades
 
