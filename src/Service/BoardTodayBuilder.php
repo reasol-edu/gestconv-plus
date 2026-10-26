@@ -30,13 +30,16 @@ class BoardTodayBuilder
         private readonly AbsenceRepository $absences,
         private readonly SanctionRepository $sanctions,
         private readonly SchoolEventRepository $events,
+        private readonly FeatureToggle $features,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
         private readonly TranslatorInterface $translator,
     ) {}
 
     public function build(AcademicYear $year, \DateTimeImmutable $date): BoardTodayReport
     {
-        $events = $this->events->findAllForAcademicYearAndDate($year, $date);
+        $events = $this->features->isEnabledForCentre(Feature::Events, $year->getEducationalCentre())
+            ? $this->events->findAllForAcademicYearAndDate($year, $date)
+            : [];
 
         if ($this->nonWorkingDayChecker->isNonWorkingDay($year, $date)) {
             return new BoardTodayReport($date, [], [], [], $this->nonWorkingDayLabel($year, $date), $events);

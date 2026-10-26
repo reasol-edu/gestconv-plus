@@ -124,13 +124,14 @@
             {% for event in todayEvents %}
                 <li class="flex items-start justify-between gap-3 px-5 py-3">
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-medium text-gray-800">{{ event.name }}</p>
+                        <p class="flex items-center gap-2 text-sm font-medium text-gray-800">
+                            <twig:EventTypeBadge :type="event.type" />
+                            <span class="truncate">{{ event.name }}</span>
+                        </p>
                         {% if event.description is not empty %}
                             <p class="mt-0.5 truncate text-xs text-gray-500">{{ event.description }}</p>
                         {% endif %}
-                        {% if event.groups|length > 0 %}
-                            <p class="mt-1 flex flex-wrap gap-1">{% for group in event.groups %}<twig:GroupChip :group="group" />{% endfor %}</p>
-                        {% endif %}
+                        {% include 'components/_event_meta.html.twig' with {event: event, class: 'mt-1', compact: true} only %}
                     </div>
                     <p class="shrink-0 text-right text-xs text-gray-400 tabular-nums whitespace-nowrap">
                         {{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }}

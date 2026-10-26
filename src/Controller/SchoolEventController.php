@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Attribute\CurrentCentre;
+use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\SchoolEvent;
+use App\Entity\SchoolEventType;
 use App\Entity\Teacher;
 use App\Repository\GroupRepository;
 use App\Repository\SchoolEventRepository;
+use App\Repository\SchoolEventTypeRepository;
+use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
 use App\Service\TenantContext;
@@ -21,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/eventos')]
+#[Route('/actividades')]
 class SchoolEventController extends AbstractController
 {
     use PastYearGuardTrait;
@@ -31,6 +35,8 @@ class SchoolEventController extends AbstractController
         private readonly TenantContext $tenantContext,
         private readonly SchoolEventRepository $events,
         private readonly GroupRepository $groups,
+        private readonly SchoolEventTypeRepository $types,
+        private readonly TeacherRepository $teachers,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
     ) {}
@@ -49,20 +55,27 @@ class SchoolEventController extends AbstractController
         $errors = [];
         $values = $this->emptyValues();
         $values['date'] = trim($request->query->getString('date'));
+        // Un tipo es obligatorio: de entrada va elegido el primero del catálogo.
+        $values['type'] = ($this->types->findActiveByCentreOrdered($centre)[0] ?? null)?->getId()->toRfc4122() ?? '';
         $selectedGroupIds = [];
+        $selectedCompanionIds = [];
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_school_event', $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException();
             }
 
-            $values           = $this->valuesFromRequest($request);
-            $selectedGroupIds = $request->request->all('groups');
-            $errors           = $this->validate($values, $selectedGroupIds);
+            $values               = $this->valuesFromRequest($request);
+            $selectedGroupIds     = $request->request->all('groups');
+            $selectedCompanionIds = $request->request->all('companions');
+            $errors               = $this->validate($values, $selectedGroupIds, $centre, null);
 
             if (empty($errors)) {
-                $event = (new SchoolEvent())->setAcademicYear($year);
-                $this->applyValues($event, $values, $centre, $selectedGroupIds);
+                $author = $this->getUser();
+                $event  = (new SchoolEvent())
+                    ->setAcademicYear($year)
+                    ->setCreatedBy($author instanceof Teacher ? $author : null);
+                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds);
 
                 $this->em->persist($event);
                 $this->em->flush();
@@ -79,11 +92,14 @@ class SchoolEventController extends AbstractController
         }
 
         return $this->render('school_event/new.html.twig', [
-            'centre'           => $centre,
-            'errors'           => $errors,
-            'values'           => $values,
-            'availableGroups'  => $this->groups->findByActiveYearOfCentreOrderedByName($centre),
-            'selectedGroupIds' => $selectedGroupIds,
+            'centre'               => $centre,
+            'errors'               => $errors,
+            'values'               => $values,
+            'availableGroups'      => $this->groups->findByActiveYearOfCentreOrderedByName($centre),
+            'selectedGroupIds'     => $selectedGroupIds,
+            'availableTypes'       => $this->types->findActiveByCentreOrdered($centre),
+            'availableTeachers'    => $this->teachers->findByAcademicYearOrderedByName($year),
+            'selectedCompanionIds' => $selectedCompanionIds,
         ]);
     }
 
@@ -94,6 +110,7 @@ class SchoolEventController extends AbstractController
         $this->denyIfViewingPastYear($centre);
 
         $event = $this->findManageable($centre, $eventId);
+        $year  = $event->getAcademicYear();
 
         $errors = [];
         $values = [
@@ -104,10 +121,18 @@ class SchoolEventController extends AbstractController
             'description' => $event->getDescription() ?? '',
             'url'         => $event->getUrl() ?? '',
             'scope'       => $event->isGeneral() ? 'general' : 'restricted',
+            'type'        => $event->getType()?->getId()->toRfc4122() ?? '',
+            'organizing_department' => $event->getOrganizingDepartment() ?? '',
+            'location'    => $event->getLocation() ?? '',
+            'coordinator' => $event->getCoordinator()?->getId()->toRfc4122() ?? '',
         ];
         $selectedGroupIds = array_map(
             static fn (Group $g): string => $g->getId()->toRfc4122(),
             $event->getGroups()->toArray(),
+        );
+        $selectedCompanionIds = array_map(
+            static fn (Teacher $t): string => $t->getId()->toRfc4122(),
+            $event->getCompanions()->toArray(),
         );
 
         if ($request->isMethod('POST')) {
@@ -115,12 +140,13 @@ class SchoolEventController extends AbstractController
                 throw $this->createAccessDeniedException();
             }
 
-            $values           = $this->valuesFromRequest($request);
-            $selectedGroupIds = $request->request->all('groups');
-            $errors           = $this->validate($values, $selectedGroupIds);
+            $values               = $this->valuesFromRequest($request);
+            $selectedGroupIds     = $request->request->all('groups');
+            $selectedCompanionIds = $request->request->all('companions');
+            $errors               = $this->validate($values, $selectedGroupIds, $centre, $event);
 
             if (empty($errors)) {
-                $this->applyValues($event, $values, $centre, $selectedGroupIds);
+                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds);
                 $this->em->flush();
 
                 $this->activityLog->log('school_event.updated', [
@@ -135,12 +161,15 @@ class SchoolEventController extends AbstractController
         }
 
         return $this->render('school_event/edit.html.twig', [
-            'centre'           => $centre,
-            'event'            => $event,
-            'errors'           => $errors,
-            'values'           => $values,
-            'availableGroups'  => $this->groups->findByActiveYearOfCentreOrderedByName($centre),
-            'selectedGroupIds' => $selectedGroupIds,
+            'centre'               => $centre,
+            'event'                => $event,
+            'errors'               => $errors,
+            'values'               => $values,
+            'availableGroups'      => $this->groups->findByActiveYearOfCentreOrderedByName($centre),
+            'selectedGroupIds'     => $selectedGroupIds,
+            'availableTypes'       => $this->selectableTypes($centre, $event),
+            'availableTeachers'    => $this->teachers->findByAcademicYearOrderedByName($year),
+            'selectedCompanionIds' => $selectedCompanionIds,
         ]);
     }
 
@@ -169,9 +198,9 @@ class SchoolEventController extends AbstractController
     }
 
     /**
-     * El evento del curso visualizado que quien publica puede gestionar: la dirección y los
-     * administradores, cualquiera; el resto del profesorado (con el ajuste «Todos»), solo los que
-     * ve, es decir, los generales y los de sus grupos.
+     * La actividad del curso visualizado que quien publica puede gestionar: la dirección, los
+     * administradores y la coordinación de actividades, cualquiera; el resto del profesorado (con el
+     * ajuste «Todos»), solo las que ha publicado él.
      */
     private function findManageable(EducationalCentre $centre, string $eventId): SchoolEvent
     {
@@ -181,8 +210,8 @@ class SchoolEventController extends AbstractController
         }
 
         $user = $this->getUser();
-        if (!$this->isGranted(EducationalCentreVoter::SECTION, $centre) && $user instanceof Teacher) {
-            $event = $this->events->findVisibleByAcademicYearAndId($user, $year, $eventId);
+        if (!$this->isGranted(EducationalCentreVoter::MANAGE_ALL_EVENTS, $centre) && $user instanceof Teacher) {
+            $event = $this->events->findOwnedByAcademicYearAndId($user, $year, $eventId);
         } else {
             $event = $this->events->findByAcademicYearAndId($year, $eventId);
         }
@@ -201,6 +230,10 @@ class SchoolEventController extends AbstractController
             'description' => '',
             'url'         => '',
             'scope'       => '',
+            'type'        => '',
+            'organizing_department' => '',
+            'location'    => '',
+            'coordinator' => '',
         ];
     }
 
@@ -215,7 +248,28 @@ class SchoolEventController extends AbstractController
             'description' => trim($request->request->getString('description')),
             'url'         => trim($request->request->getString('url')),
             'scope'       => trim($request->request->getString('scope')),
+            'type'        => trim($request->request->getString('type')),
+            'organizing_department' => trim($request->request->getString('organizing_department')),
+            'location'    => trim($request->request->getString('location')),
+            'coordinator' => trim($request->request->getString('coordinator')),
         ];
+    }
+
+    /**
+     * Tipos que se pueden elegir: los activos del catálogo y, al editar, el que ya tiene la actividad
+     * aunque se haya desactivado después.
+     *
+     * @return list<SchoolEventType>
+     */
+    private function selectableTypes(EducationalCentre $centre, ?SchoolEvent $event): array
+    {
+        $types   = $this->types->findActiveByCentreOrdered($centre);
+        $current = $event?->getType();
+        if ($current !== null && !$current->isActive()) {
+            $types[] = $current;
+        }
+
+        return $types;
     }
 
     /**
@@ -224,12 +278,17 @@ class SchoolEventController extends AbstractController
      *
      * @return array<string, string>
      */
-    private function validate(array $values, array $selectedGroupIds): array
+    private function validate(array $values, array $selectedGroupIds, EducationalCentre $centre, ?SchoolEvent $event): array
     {
         $errors = [];
 
         if ($values['name'] === '') {
             $errors['name'] = $this->t('school_event.error.name_required');
+        }
+
+        $type = $this->types->findById($values['type']);
+        if ($type === null || $type->getEducationalCentre() !== $centre || (!$type->isActive() && $type !== $event?->getType())) {
+            $errors['type'] = $this->t('school_event.error.type_required');
         }
 
         if ($this->parseDate($values['date']) === null) {
@@ -259,9 +318,29 @@ class SchoolEventController extends AbstractController
     /**
      * @param array<string, string>   $values
      * @param array<array-key, mixed> $selectedGroupIds
+     * @param array<array-key, mixed> $selectedCompanionIds
      */
-    private function applyValues(SchoolEvent $event, array $values, EducationalCentre $centre, array $selectedGroupIds): void
-    {
+    private function applyValues(
+        SchoolEvent $event,
+        array $values,
+        EducationalCentre $centre,
+        AcademicYear $year,
+        array $selectedGroupIds,
+        array $selectedCompanionIds,
+    ): void {
+        // Coordinador y acompañantes han de ser docentes del curso de la actividad; lo demás se ignora.
+        $teachersById = [];
+        foreach ($this->teachers->findByAcademicYearOrderedByName($year) as $teacher) {
+            $teachersById[$teacher->getId()->toRfc4122()] = $teacher;
+        }
+        $coordinator = $teachersById[$values['coordinator']] ?? null;
+        $companions  = [];
+        foreach ($selectedCompanionIds as $teacherId) {
+            if (is_string($teacherId) && isset($teachersById[$teacherId]) && $teachersById[$teacherId] !== $coordinator) {
+                $companions[$teacherId] = $teachersById[$teacherId];
+            }
+        }
+
         $centreGroupsById = [];
         foreach ($this->groups->findByActiveYearOfCentreOrderedByName($centre) as $group) {
             $centreGroupsById[$group->getId()->toRfc4122()] = $group;
@@ -284,7 +363,18 @@ class SchoolEventController extends AbstractController
             ->setName($values['name'])
             ->setDescription($values['description'] !== '' ? $values['description'] : null)
             ->setUrl($values['url'] !== '' ? $values['url'] : null)
-            ->setGeneral($general);
+            ->setGeneral($general)
+            ->setType($this->types->findById($values['type']))
+            ->setOrganizingDepartment($values['organizing_department'] !== '' ? $values['organizing_department'] : null)
+            ->setLocation($values['location'] !== '' ? $values['location'] : null)
+            ->setCoordinator($coordinator);
+
+        foreach ($event->getCompanions()->toArray() as $teacher) {
+            $event->removeCompanion($teacher);
+        }
+        foreach ($companions as $teacher) {
+            $event->addCompanion($teacher);
+        }
 
         foreach ($event->getGroups()->toArray() as $group) {
             $event->removeGroup($group);

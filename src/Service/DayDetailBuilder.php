@@ -33,12 +33,18 @@ class DayDetailBuilder
         private readonly AbsenceRepository $absences,
         private readonly SanctionRepository $sanctions,
         private readonly SchoolEventRepository $events,
+        private readonly FeatureToggle $features,
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
         private readonly TranslatorInterface $translator,
     ) {}
 
-    public function build(AcademicYear $year, ?Teacher $viewer, bool $isAdmin, \DateTimeImmutable $date): DayDetailReport
+    /**
+     * @param bool|null $seesAllEvents si ve todas las actividades del centro y no solo las suyas (por defecto, lo mismo que
+     *                                 $isAdmin; la coordinación de actividades también las ve todas sin ser administradora)
+     */
+    public function build(AcademicYear $year, ?Teacher $viewer, bool $isAdmin, \DateTimeImmutable $date, ?bool $seesAllEvents = null): DayDetailReport
     {
+        $seesAllEvents ??= $isAdmin;
         $dayOfWeek = ((int) $date->format('N')) - 1;
 
         $slots = $this->timeSlots->findByAcademicYearAndDay($year, $dayOfWeek);
@@ -49,7 +55,9 @@ class DayDetailBuilder
             $activitiesBySlot[$activity->getTimeSlot()->getId()->toRfc4122()][] = $activity;
         }
 
-        if ($isAdmin) {
+        if (!$this->features->isEnabledForCentre(Feature::Events, $year->getEducationalCentre())) {
+            $events = [];
+        } elseif ($seesAllEvents) {
             $events = $this->events->findAllForAcademicYearAndDate($year, $date);
         } elseif ($viewer !== null) {
             $events = $this->events->findVisibleForTeacherAndDate($viewer, $year, $date);

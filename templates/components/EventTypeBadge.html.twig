@@ -1,0 +1,5 @@
+{# Distintivo del tipo de actividad, con el color del tipo (gris si no tiene). #}
+{% props type = null, class = '' %}
+{% if type %}
+<span class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold whitespace-nowrap {{ class }}" style="{{ hex_color(type.color ?? '#6b7280').style }}">{{ type.name }}</span>
+{% endif %}

@@ -15,6 +15,8 @@ use App\Repository\SanctionRepository;
 use App\Repository\SchoolEventRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\CalendarMonthGridBuilder;
+use App\Service\Feature;
+use App\Service\FeatureToggle;
 use App\Service\GroupColorPalette;
 use App\Service\NonWorkingDayChecker;
 use App\Service\TenantContext;
@@ -48,6 +50,7 @@ class CalendarComponent extends AbstractCalendarComponent
         private readonly SchoolEventRepository $eventRepository,
         private readonly CalendarMonthGridBuilder $gridBuilder,
         private readonly GroupColorPalette $colorPalette,
+        private readonly FeatureToggle $features,
     ) {
         parent::__construct($tenantContext, $translator, $nonWorkingDayChecker, $clock);
     }
@@ -147,7 +150,9 @@ class CalendarComponent extends AbstractCalendarComponent
             $items = [...$items, ...$this->absenceRepository->findWithDatesForAcademicYear($academicYear)];
         }
 
-        if ($isAdmin) {
+        if (!$this->features->isEnabledForCentre(Feature::Events, $centre)) {
+            // Actividades desactivadas: el calendario solo muestra sanciones y ausencias.
+        } elseif ($this->isGranted(EducationalCentreVoter::MANAGE_ALL_EVENTS, $centre)) {
             $items = [...$items, ...$this->eventRepository->findAllForAcademicYear($academicYear)];
         } elseif ($viewer !== null) {
             $items = [...$items, ...$this->eventRepository->findVisibleForTeacherInAcademicYear($viewer, $academicYear)];

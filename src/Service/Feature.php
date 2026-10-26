@@ -14,6 +14,7 @@ enum Feature: string
     case Absences      = 'absences';
     case DailyNotes    = 'daily_notes';
     case SanctionTasks = 'sanction_tasks';
+    case Events        = 'events';
 
     public function setting(): string
     {
@@ -32,6 +33,7 @@ enum Feature: string
             self::Absences      => ['app_absences'],
             self::DailyNotes    => ['app_daily_notes'],
             self::SanctionTasks => ['app_sanction_tasks'],
+            self::Events        => ['app_events'],
         };
     }
 
@@ -46,6 +48,7 @@ enum Feature: string
         return match ($this) {
             self::Exits         => ['app_centre_exit_reasons'],
             self::DailyNotes    => ['app_centre_daily_note_types'],
+            self::Events        => ['app_centre_school_event_types'],
             self::Absences,
             self::SanctionTasks => [],
         };
@@ -64,6 +67,7 @@ enum Feature: string
             self::Absences      => ['Admin:AbsenceListComponent'],
             self::DailyNotes    => ['DailyNoteListComponent', 'DailyNoteStudentHistoryComponent', 'DailyNoteStudentListComponent'],
             self::SanctionTasks => [],
+            self::Events        => ['SchoolEventListComponent'],
         };
     }
 }

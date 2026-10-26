@@ -131,6 +131,34 @@ class SchoolEventRepositoryTest extends RepositoryTestCase
         self::assertSame('Reunión 1ºA', $result[0]->getName());
     }
 
+    public function testCreateFilteredQueryCanListOnlyTheActivitiesOfOneAuthor(): void
+    {
+        $world = $this->makeWorld('owned');
+        $mine  = $this->makeTeacher('mine');
+        $other = $this->makeTeacher('other');
+        $this->makeEvent($world, general: true, name: 'Mía')->setCreatedBy($mine);
+        $this->makeEvent($world, general: true, name: 'De otra')->setCreatedBy($other);
+        $this->makeEvent($world, general: true, name: 'Sin autor');
+        $this->flush();
+
+        /** @var list<SchoolEvent> $result */
+        $result = $this->repository->createFilteredQuery($world['year'], onlyOwnedBy: $mine)->getResult();
+
+        self::assertSame(['Mía'], array_map(static fn (SchoolEvent $e): string => $e->getName(), $result));
+    }
+
+    public function testFindOwnedByAcademicYearAndIdOnlyFindsTheAuthorsActivities(): void
+    {
+        $world = $this->makeWorld('owned2');
+        $mine  = $this->makeTeacher('mine2');
+        $other = $this->makeTeacher('other2');
+        $event = $this->makeEvent($world, general: true, name: 'Mía')->setCreatedBy($mine);
+        $this->flush();
+
+        self::assertNotNull($this->repository->findOwnedByAcademicYearAndId($mine, $world['year'], $event->getId()->toRfc4122()));
+        self::assertNull($this->repository->findOwnedByAcademicYearAndId($other, $world['year'], $event->getId()->toRfc4122()));
+    }
+
     public function testFindByAcademicYearAndIdReturnsNullForEventOfAnotherYear(): void
     {
         $world       = $this->makeWorld('scoped');

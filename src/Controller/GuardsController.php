@@ -76,7 +76,7 @@ class GuardsController extends AbstractController
 
         // El informe del tablón trae todos los eventos; quien no es de la dirección solo ve los suyos.
         $visibleEventIds = null;
-        if (!$isAdmin) {
+        if (!$this->isGranted(EducationalCentreVoter::MANAGE_ALL_EVENTS, $centre)) {
             $visibleEventIds = array_map(
                 static fn (SchoolEvent $event): string => $event->getId()->toRfc4122(),
                 $this->events->findVisibleForTeacherAndDate($user, $year, $date),

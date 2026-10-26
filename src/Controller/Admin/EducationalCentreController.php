@@ -16,6 +16,7 @@ use App\Service\ActivityLogService;
 use App\Service\CommunicationMethodSeeder;
 use App\Service\DailyNoteTypeSeeder;
 use App\Service\ExitReasonSeeder;
+use App\Service\SchoolEventTypeSeeder;
 use App\Service\EntityChangeTracker;
 use App\Service\IncidentBehaviorSeeder;
 use App\Service\LocationOptionSeeder;
@@ -52,6 +53,7 @@ class EducationalCentreController extends AbstractController
         private readonly LocationOptionSeeder $locationOptionSeeder,
         private readonly DailyNoteTypeSeeder $dailyNoteTypeSeeder,
         private readonly ExitReasonSeeder $exitReasonSeeder,
+        private readonly SchoolEventTypeSeeder $schoolEventTypeSeeder,
         private readonly ActivityLogService $activityLog,
         private readonly EntityChangeTracker $changeTracker,
         private readonly TenantContext $tenantContext,
@@ -107,6 +109,7 @@ class EducationalCentreController extends AbstractController
                 $this->locationOptionSeeder->seedForCentre($centre);
                 $this->dailyNoteTypeSeeder->seedForCentre($centre);
                 $this->exitReasonSeeder->seedForCentre($centre);
+                $this->schoolEventTypeSeeder->seedForCentre($centre);
                 $this->em->flush();
 
                 if (!$this->tenantContext->isSelected()) {

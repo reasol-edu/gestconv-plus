@@ -26,6 +26,7 @@ final class CentreProvisioner
         private readonly LocationOptionSeeder $locationOptionSeeder,
         private readonly DailyNoteTypeSeeder $dailyNoteTypeSeeder,
         private readonly ExitReasonSeeder $exitReasonSeeder,
+        private readonly SchoolEventTypeSeeder $schoolEventTypeSeeder,
     ) {}
 
     public function provision(string $code, string $name, string $city, string $academicYearName): EducationalCentre
@@ -50,6 +51,7 @@ final class CentreProvisioner
         $this->locationOptionSeeder->seedForCentre($centre);
         $this->dailyNoteTypeSeeder->seedForCentre($centre);
         $this->exitReasonSeeder->seedForCentre($centre);
+        $this->schoolEventTypeSeeder->seedForCentre($centre);
 
         $this->em->flush();
 

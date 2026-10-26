@@ -82,6 +82,6 @@ active_sanctions_this_week: 'Esta semana'
 active_sanctions_next_week: 'Próxima semana'
 active_sanctions_week_empty: 'Ninguna sanción en vigor esta semana.'
 
-today_events_title: 'Eventos de hoy'
-today_events_empty: 'No hay eventos hoy.'
+today_events_title: 'Actividades de hoy'
+today_events_empty: 'No hay actividades hoy.'
 today_events_view_day: 'Ver día'

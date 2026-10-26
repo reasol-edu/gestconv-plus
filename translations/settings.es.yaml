@@ -29,7 +29,7 @@ settings.category.sanction_tasks.label: 'Tareas de sanción'
 settings.category.uploads.label: 'Subida de ficheros'
 settings.category.maintenance.label: 'Mantenimiento'
 settings.category.features.label: 'Secciones de la aplicación'
-settings.category.events.label: 'Eventos'
+settings.category.events.label: 'Actividades'
 
 # ── Definiciones de ajustes ───────────────────────────────────────────────────
 settings.key.page_size.label: 'Resultados por página'
@@ -304,8 +304,8 @@ settings.key.uploads_max_total_size_mb.description: 'Suma máxima de los fichero
 settings.key.maintenance_enabled.label: 'Modo mantenimiento'
 settings.key.maintenance_enabled.description: 'Con el modo mantenimiento activado, solo los administradores globales pueden usar la aplicación: el resto del profesorado, esté o no con la sesión iniciada, ve una página de mantenimiento. Los avisos por correo y las demás tareas automáticas siguen funcionando.'
 
-settings.key.events_publish_scope.label: 'Quién puede publicar eventos'
-settings.key.events_publish_scope.description: 'Quién puede crear, editar y eliminar los eventos del calendario del centro. «Equipo directivo» incluye a los administradores del centro y de la plataforma. Con «Todos», cualquier docente del centro puede publicar eventos y gestionar los que ve (los generales y los de sus grupos); no ve ni modifica los restringidos a grupos con los que no se relaciona.'
+settings.key.events_publish_scope.label: 'Quién puede publicar actividades'
+settings.key.events_publish_scope.description: 'Quién puede crear, editar y eliminar las actividades del calendario del centro. «Equipo directivo» incluye a los administradores del centro y de la plataforma. Con «Todos», cualquier docente del centro puede publicar actividades, pero solo ve en el listado, modifica y elimina las suyas; la coordinación de actividades (perfil del centro) gestiona todas, como la dirección.'
 settings.key.events_publish_scope.choice.all: 'Todos'
 settings.key.events_publish_scope.choice.management: 'Equipo directivo'
 
@@ -315,5 +315,7 @@ settings.key.features_absences.label: 'Ausencias del profesorado'
 settings.key.features_absences.description: 'Activa o desactiva la sección Ausencias (ausencias del profesorado y sus actividades para el alumnado). Desactivada, desaparece del menú, de los accesos rápidos y del calendario, y sus direcciones dejan de funcionar. Los datos ya registrados se conservan.'
 settings.key.features_daily_notes.label: 'Notas del día'
 settings.key.features_daily_notes.description: 'Activa o desactiva la sección Notas (anotaciones diarias sobre el alumnado y sus avisos al llegar al umbral de parte). Desactivada, desaparece del menú, de los accesos rápidos, de la ficha del alumno y de las alertas, y sus direcciones dejan de funcionar. Los datos ya registrados se conservan.'
+settings.key.features_events.label: 'Actividades de centro'
+settings.key.features_events.description: 'Activa o desactiva las Actividades (jornadas, salidas, charlas… con su tipo, lugar y coordinación). Desactivadas, desaparecen la pestaña del calendario, los avisos del panel de inicio, las guardias y el tablón, y los catálogos de tipos, y sus direcciones dejan de funcionar. Los datos ya registrados se conservan.'
 settings.key.features_sanction_tasks.label: 'Tareas de sanción'
 settings.key.features_sanction_tasks.description: 'Activa o desactiva las tareas de sanción: que se pidan tareas al profesorado de un grupo cuando se sanciona a un alumno. Desactivadas, las sanciones nuevas no generan tareas ni avisos, desaparecen el menú, los recordatorios y el enlace público para el alumno, y sus direcciones dejan de funcionar. Las tareas ya creadas se conservan.'

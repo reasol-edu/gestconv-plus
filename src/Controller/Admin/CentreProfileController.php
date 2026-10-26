@@ -10,6 +10,8 @@ use App\Entity\Teacher;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\Feature;
+use App\Service\FeatureToggle;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +29,7 @@ class CentreProfileController extends AbstractController
         private readonly EducationalCentreRepository $centres,
         private readonly TeacherRepository $teachers,
         private readonly TranslatorInterface $translator,
+        private readonly FeatureToggle $features,
     ) {}
 
     #[Route('', name: 'app_centre_profiles_index')]
@@ -38,6 +41,8 @@ class CentreProfileController extends AbstractController
         $selectedCommitteeMembers = $centre->getCommitteeMembers()->toArray();
         /** @var Teacher[] $selectedCounselors */
         $selectedCounselors = $centre->getCounselors()->toArray();
+        /** @var Teacher[] $selectedActivityCoordinators */
+        $selectedActivityCoordinators = $centre->getActivityCoordinators()->toArray();
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('edit_centre_profiles_' . $centreId, $request->request->getString('_token'))) {
@@ -67,6 +72,19 @@ class CentreProfileController extends AbstractController
                 }
             }
 
+            // Con las actividades desactivadas el campo no se muestra: no hay que vaciar lo que ya hubiera.
+            if ($this->features->isEnabledForCentre(Feature::Events, $centre)) {
+                foreach ($centre->getActivityCoordinators()->toArray() as $teacher) {
+                    $centre->removeActivityCoordinator($teacher);
+                }
+                foreach ($this->submittedIds($request, 'activity_coordinators') as $teacherId) {
+                    $teacher = $this->teachers->findById($teacherId);
+                    if ($teacher !== null) {
+                        $centre->addActivityCoordinator($teacher);
+                    }
+                }
+            }
+
             $this->em->flush();
 
             $this->addFlash('success', $this->t('centre_profiles.flash.saved'));
@@ -78,6 +96,7 @@ class CentreProfileController extends AbstractController
             'centre'                   => $centre,
             'selectedCommitteeMembers' => $selectedCommitteeMembers,
             'selectedCounselors'       => $selectedCounselors,
+            'selectedActivityCoordinators' => $selectedActivityCoordinators,
         ]);
     }
 

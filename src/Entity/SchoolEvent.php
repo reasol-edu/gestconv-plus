@@ -50,9 +50,117 @@ class SchoolEvent
     #[ORM\JoinTable(name: 'school_event_group')]
     private Collection $groups;
 
+    /** Tipo del catálogo del centro. Obligatorio al guardar desde el formulario (las filas antiguas lo traen por migración). */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?SchoolEventType $type = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $organizingDepartment = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $location = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Teacher $coordinator = null;
+
+    /** @var Collection<int, Teacher> */
+    #[ORM\ManyToMany(targetEntity: Teacher::class)]
+    #[ORM\JoinTable(name: 'school_event_companion')]
+    private Collection $companions;
+
+    /** Quien la publicó: un docente sin gestión solo puede ver, editar y eliminar las suyas. Null en las anteriores a este dato. */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Teacher $createdBy = null;
+
+    public function getCreatedBy(): ?Teacher
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?Teacher $createdBy): static
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
     public function __construct()
     {
-        $this->groups = new ArrayCollection();
+        $this->groups     = new ArrayCollection();
+        $this->companions = new ArrayCollection();
+    }
+
+    public function getType(): ?SchoolEventType
+    {
+        return $this->type;
+    }
+
+    public function setType(?SchoolEventType $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getOrganizingDepartment(): ?string
+    {
+        return $this->organizingDepartment;
+    }
+
+    public function setOrganizingDepartment(?string $organizingDepartment): static
+    {
+        $this->organizingDepartment = $organizingDepartment;
+
+        return $this;
+    }
+
+    public function getLocation(): ?string
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?string $location): static
+    {
+        $this->location = $location;
+
+        return $this;
+    }
+
+    public function getCoordinator(): ?Teacher
+    {
+        return $this->coordinator;
+    }
+
+    public function setCoordinator(?Teacher $coordinator): static
+    {
+        $this->coordinator = $coordinator;
+
+        return $this;
+    }
+
+    /** @return Collection<int, Teacher> */
+    public function getCompanions(): Collection
+    {
+        return $this->companions;
+    }
+
+    public function addCompanion(Teacher $teacher): static
+    {
+        if (!$this->companions->contains($teacher)) {
+            $this->companions->add($teacher);
+        }
+
+        return $this;
+    }
+
+    public function removeCompanion(Teacher $teacher): static
+    {
+        $this->companions->removeElement($teacher);
+
+        return $this;
     }
 
     public function getId(): Uuid

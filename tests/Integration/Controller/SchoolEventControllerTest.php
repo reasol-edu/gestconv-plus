@@ -11,6 +11,7 @@ use App\Entity\GlobalSettingValue;
 use App\Entity\Group;
 use App\Entity\PersonName;
 use App\Entity\SchoolEvent;
+use App\Entity\SchoolEventType;
 use App\Entity\SettingDefinition;
 use App\Entity\SettingType;
 use App\Entity\Teacher;
@@ -18,6 +19,9 @@ use App\Tests\Integration\ControllerTestCase;
 
 class SchoolEventControllerTest extends ControllerTestCase
 {
+    /** Id del tipo de actividad que crea makeScenario(). */
+    private string $typeId = '';
+
     // ── new ───────────────────────────────────────────────────────────────────
 
     public function testNewGetRendersFormToAdmin(): void
@@ -25,7 +29,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/eventos/nuevo');
+        $this->client->request('GET', '/actividades/nuevo');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -38,7 +42,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/eventos/nuevo');
+        $this->client->request('GET', '/actividades/nuevo');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -48,7 +52,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('GET', '/eventos/nuevo?date=2026-09-15');
+        $this->client->request('GET', '/actividades/nuevo?date=2026-09-15');
 
         self::assertResponseIsSuccessful();
         self::assertSame('2026-09-15', $this->client->getCrawler()->filter('#date')->attr('value'));
@@ -59,10 +63,10 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'      => $token,
             'date'        => '2026-09-15',
             'start_time'  => '09:00',
@@ -71,6 +75,9 @@ class SchoolEventControllerTest extends ControllerTestCase
             'description' => 'Presentación a nuevas familias',
             'url'         => 'https://example.org/jornada',
             'scope'       => 'general',
+            'type'        => $this->typeId,
+            'location'    => 'Salón de actos',
+            'organizing_department' => 'Orientación',
         ]);
 
         self::assertResponseRedirects();
@@ -83,6 +90,9 @@ class SchoolEventControllerTest extends ControllerTestCase
         self::assertTrue($events[0]->isGeneral());
         self::assertSame('https://example.org/jornada', $events[0]->getUrl());
         self::assertCount(0, $events[0]->getGroups());
+        self::assertSame($this->typeId, $events[0]->getType()?->getId()->toRfc4122());
+        self::assertSame('Salón de actos', $events[0]->getLocation());
+        self::assertSame('Orientación', $events[0]->getOrganizingDepartment());
     }
 
     public function testNewPostCreatesRestrictedEventWithGroups(): void
@@ -90,16 +100,17 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre, $group] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'     => $token,
             'date'       => '2026-09-15',
             'start_time' => '09:00',
             'end_time'   => '10:00',
             'name'       => 'Reunión de tutoría',
             'scope'      => 'restricted',
+            'type'       => $this->typeId,
             'groups'     => [$group->getId()->toRfc4122()],
         ]);
 
@@ -118,13 +129,14 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'     => 'token-invalido',
             'date'       => '2026-09-15',
             'start_time' => '09:00',
             'end_time'   => '10:00',
             'name'       => 'Evento',
             'scope'      => 'general',
+            'type'       => $this->typeId,
         ]);
 
         self::assertResponseStatusCodeSame(403);
@@ -135,16 +147,17 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'     => $token,
             'date'       => '2026-09-15',
             'start_time' => '09:00',
             'end_time'   => '10:00',
             'name'       => '',
             'scope'      => 'general',
+            'type'       => $this->typeId,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -157,16 +170,17 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'     => $token,
             'date'       => '2026-09-15',
             'start_time' => '11:00',
             'end_time'   => '10:00',
             'name'       => 'Evento',
             'scope'      => 'general',
+            'type'       => $this->typeId,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -179,15 +193,16 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'     => $token,
             'date'       => '2026-09-15',
             'start_time' => '09:00',
             'end_time'   => '10:00',
             'name'       => 'Evento',
+            'type'       => $this->typeId,
         ]);
 
         self::assertResponseRedirects();
@@ -197,21 +212,132 @@ class SchoolEventControllerTest extends ControllerTestCase
         self::assertTrue($events[0]->isGeneral(), 'sin grupos, el evento es general sin elegir nada');
     }
 
+    public function testNewPostWithoutTypeRendersFormAgain(): void
+    {
+        [$admin, $centre] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/actividades/nuevo', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Sin tipo',
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Elige un tipo de actividad');
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(SchoolEvent::class)->findAll());
+    }
+
+    public function testNewPostWithATypeOfAnotherCentreIsRejected(): void
+    {
+        [$admin, $centre] = $this->makeScenario();
+        $other            = (new EducationalCentre())->setCode('99999999')->setName('Otro centro')->setCity('Jaén');
+        $foreignType      = (new SchoolEventType())->setEducationalCentre($other)->setName('Ajena');
+        $this->persist($other, $foreignType);
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/actividades/nuevo', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Tipo ajeno',
+            'type'       => $foreignType->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseIsSuccessful();
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(SchoolEvent::class)->findAll());
+    }
+
+    public function testNewPostStoresCoordinatorAndCompanionsOfTheYear(): void
+    {
+        [$admin, $centre, , $year] = $this->makeScenario();
+        $coordinator = $this->makeTeacher('coordina.' . uniqid('', false));
+        $companion   = $this->makeTeacher('acompana.' . uniqid('', false));
+        $outsider    = $this->makeTeacher('ajeno.' . uniqid('', false));
+        $coordinator->addAcademicYear($year);
+        $companion->addAcademicYear($year);
+        $this->persist($coordinator, $companion, $outsider);
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/actividades/nuevo', [
+            '_token'      => $token,
+            'date'        => '2026-09-15',
+            'start_time'  => '09:00',
+            'end_time'    => '10:00',
+            'name'        => 'Visita',
+            'type'        => $this->typeId,
+            'coordinator' => $coordinator->getId()->toRfc4122(),
+            // El coordinador y quien no es del curso no entran como acompañantes.
+            'companions'  => [$companion->getId()->toRfc4122(), $coordinator->getId()->toRfc4122(), $outsider->getId()->toRfc4122()],
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $event = $this->em->getRepository(SchoolEvent::class)->findAll()[0];
+        self::assertSame($coordinator->getId()->toRfc4122(), $event->getCoordinator()?->getId()->toRfc4122());
+        self::assertCount(1, $event->getCompanions());
+        self::assertSame($companion->getId()->toRfc4122(), $event->getCompanions()->first()->getId()->toRfc4122());
+    }
+
+    public function testTheOldEventsAddressRedirectsToActivities(): void
+    {
+        [$admin, $centre] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/eventos/nuevo?date=2026-09-15');
+
+        self::assertResponseRedirects('/actividades/nuevo?date=2026-09-15', 301);
+    }
+
+    public function testEverythingIsClosedWhenTheActivitiesAreDisabled(): void
+    {
+        [$admin, $centre] = $this->makeScenario();
+        $definition = (new SettingDefinition())->setKey('features.events')->setType(SettingType::Boolean)
+            ->setDefaultValue('true')->setGlobalScope(true)->setCentreScope(true);
+        $this->persist($definition, (new GlobalSettingValue())->setDefinition($definition)->setValue('false'));
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/actividades/nuevo');
+        self::assertResponseStatusCodeSame(404);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/tipos-actividad');
+        self::assertResponseStatusCodeSame(404);
+
+        $crawler = $this->client->request('GET', '/calendario?tab=events');
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('a[href*="tab=events"]'), 'sin pestaña de actividades');
+    }
+
     public function testNewPostGeneralEventKeepsItsAssociatedGroups(): void
     {
         [$admin, $centre, $group] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'     => $token,
             'date'       => '2026-09-15',
             'start_time' => '09:00',
             'end_time'   => '10:00',
             'name'       => 'Excursión de 1ºA',
             'scope'      => 'general',
+            'type'       => $this->typeId,
             'groups'     => [$group->getId()->toRfc4122()],
         ]);
 
@@ -227,10 +353,10 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre, $group] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'     => $token,
             'date'       => '2026-09-15',
             'start_time' => '09:00',
@@ -270,7 +396,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$teacher, $centre] = $this->makeMemberScenario();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/eventos/nuevo');
+        $this->client->request('GET', '/actividades/nuevo');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -281,7 +407,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$teacher, $centre] = $this->makeMemberScenario();
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/eventos/nuevo');
+        $this->client->request('GET', '/actividades/nuevo');
 
         self::assertResponseIsSuccessful();
     }
@@ -294,32 +420,99 @@ class SchoolEventControllerTest extends ControllerTestCase
         $this->persist($stranger);
         $this->loginAs($stranger, $centre);
 
-        $this->client->request('GET', '/eventos/nuevo');
+        $this->client->request('GET', '/actividades/nuevo');
 
         self::assertResponseStatusCodeSame(403);
     }
 
-    public function testATeacherPublishingCannotTouchARestrictedEventOfOtherGroups(): void
+    public function testATeacherPublishingCannotTouchAnActivityOfSomeoneElse(): void
     {
         $this->definePublishScope('all');
-        [$teacher, $centre, $group, $year] = $this->makeMemberScenario();
-        $event = $this->makeEvent($year, 'Reunión ajena')->setGeneral(false)->addGroup($group);
+        [$teacher, $centre, , $year] = $this->makeMemberScenario();
+        $other = $this->makeTeacher('teacher.other.' . uniqid('', false));
+        $this->persist($other);
+        $event = $this->makeEvent($year, 'Reunión ajena')->setCreatedBy($other);
         $this->persist($event);
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/eventos/' . $event->getId()->toRfc4122() . '/editar');
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
+        self::assertResponseStatusCodeSame(404);
+
+        $this->client->request('POST', '/actividades/' . $event->getId()->toRfc4122() . '/eliminar', ['_token' => 'da-igual']);
+        self::assertResponseStatusCodeSame(404);
+        $this->em->clear();
+        self::assertCount(1, $this->em->getRepository(SchoolEvent::class)->findAll());
+    }
+
+    public function testActivitiesWithoutAuthorAreOnlyForManagement(): void
+    {
+        $this->definePublishScope('all');
+        [$teacher, $centre, , $year] = $this->makeMemberScenario();
+        $event = $this->makeEvent($year, 'Anterior al dato de autoría');
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
 
         self::assertResponseStatusCodeSame(404);
     }
 
-    public function testATeacherPublishingCanEditAGeneralEvent(): void
+    public function testAnActivityCoordinatorManagesEveryActivityLikeAnAdmin(): void
+    {
+        // Aunque el ajuste solo permita publicar a la dirección.
+        $this->definePublishScope('management');
+        [$teacher, $centre, , $year] = $this->makeMemberScenario();
+        $centre->addActivityCoordinator($teacher);
+        $other = $this->makeTeacher('teacher.author.' . uniqid('', false));
+        $this->persist($other);
+        $event = $this->makeEvent($year, 'De otra persona')->setCreatedBy($other);
+        $this->persist($event);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/actividades/nuevo');
+        self::assertResponseIsSuccessful();
+
+        $crawler = $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
+        self::assertResponseIsSuccessful();
+        $token = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/actividades/' . $event->getId()->toRfc4122() . '/eliminar', ['_token' => $token]);
+        self::assertResponseRedirects();
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(SchoolEvent::class)->findAll());
+    }
+
+    public function testTheAuthorIsRecordedWhenPublishing(): void
+    {
+        $this->definePublishScope('all');
+        [$teacher, $centre] = $this->makeMemberScenario();
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+        $this->client->request('POST', '/actividades/nuevo', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Mía',
+            'type'       => $this->typeId,
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $event = $this->em->getRepository(SchoolEvent::class)->findAll()[0];
+        self::assertSame($teacher->getId()->toRfc4122(), $event->getCreatedBy()?->getId()->toRfc4122());
+    }
+
+    public function testATeacherPublishingCanEditTheirOwnActivity(): void
     {
         $this->definePublishScope('all');
         [$teacher, $centre, , $year] = $this->makeMemberScenario();
-        $event = $this->makeEvent($year, 'Claustro');
+        $event = $this->makeEvent($year, 'Claustro')->setCreatedBy($teacher);
+        $this->persist($event);
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/eventos/' . $event->getId()->toRfc4122() . '/editar');
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
 
         self::assertResponseIsSuccessful();
     }
@@ -340,16 +533,17 @@ class SchoolEventControllerTest extends ControllerTestCase
         [$admin, $centre] = $this->makeScenario();
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/nuevo');
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/eventos/nuevo', [
+        $this->client->request('POST', '/actividades/nuevo', [
             '_token'     => $token,
             'date'       => '2026-09-15',
             'start_time' => '09:00',
             'end_time'   => '10:00',
             'name'       => 'Evento',
             'scope'      => 'general',
+            'type'       => $this->typeId,
             'url'        => 'no-es-una-url',
         ]);
 
@@ -366,16 +560,17 @@ class SchoolEventControllerTest extends ControllerTestCase
         $event = $this->makeEvent($year, 'Nombre original');
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/' . $event->getId()->toRfc4122() . '/editar');
+        $crawler = $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
         $token   = $crawler->filter('form:not([action]) [name="_token"]')->attr('value');
 
-        $this->client->request('POST', '/eventos/' . $event->getId()->toRfc4122() . '/editar', [
+        $this->client->request('POST', '/actividades/' . $event->getId()->toRfc4122() . '/editar', [
             '_token'     => $token,
             'date'       => '2026-09-20',
             'start_time' => '11:00',
             'end_time'   => '12:00',
             'name'       => 'Nombre actualizado',
             'scope'      => 'restricted',
+            'type'       => $this->typeId,
             'groups'     => [$group->getId()->toRfc4122()],
         ]);
 
@@ -396,7 +591,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher, $centre);
 
-        $this->client->request('GET', '/eventos/' . $event->getId()->toRfc4122() . '/editar');
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -409,10 +604,10 @@ class SchoolEventControllerTest extends ControllerTestCase
         $event = $this->makeEvent($year, 'Evento a eliminar');
         $this->loginAs($admin, $centre);
 
-        $crawler = $this->client->request('GET', '/eventos/' . $event->getId()->toRfc4122() . '/editar');
+        $crawler = $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
         $token   = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->attr('value');
 
-        $this->client->request('POST', '/eventos/' . $event->getId()->toRfc4122() . '/eliminar', [
+        $this->client->request('POST', '/actividades/' . $event->getId()->toRfc4122() . '/eliminar', [
             '_token' => $token,
         ]);
 
@@ -427,7 +622,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         $event = $this->makeEvent($year, 'Evento protegido');
         $this->loginAs($admin, $centre);
 
-        $this->client->request('POST', '/eventos/' . $event->getId()->toRfc4122() . '/eliminar', [
+        $this->client->request('POST', '/actividades/' . $event->getId()->toRfc4122() . '/eliminar', [
             '_token' => 'token-invalido',
         ]);
 
@@ -448,8 +643,11 @@ class SchoolEventControllerTest extends ControllerTestCase
         $course = (new Course())->setName('DAW')->setAcademicYear($year);
         $group  = (new Group())->setName('1ºA')->setCourse($course);
 
+        $type   = (new SchoolEventType())->setEducationalCentre($centre)->setName('Complementaria')->setColor('#dc2626');
+
         $centre->setActiveAcademicYear($year);
-        $this->persist($admin, $centre, $year, $course, $group);
+        $this->persist($admin, $centre, $year, $course, $group, $type);
+        $this->typeId = $type->getId()->toRfc4122();
 
         return [$admin, $centre, $group, $year];
     }

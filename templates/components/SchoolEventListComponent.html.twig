@@ -3,7 +3,7 @@
     centreId: centre.id.toRfc4122,
     active: this.hasActiveFilters,
     key: 'school-event-filters',
-    defaults: {search: '', groupId: ''},
+    defaults: {search: '', groupId: '', typeId: ''},
 })) }}>
     {% if centre.activeAcademicYear is null %}
         <div class="px-6 py-16 text-center">
@@ -29,6 +29,23 @@
                               text-gray-900 placeholder-gray-400 focus:border-forest-500 focus:outline-none
                               focus:ring-3 focus:ring-forest-500/20 transition-colors">
             </div>
+
+            {% set availableTypes = this.availableTypes %}
+            {% if availableTypes is not empty %}
+                <select data-model="norender|typeId"
+                        data-action="change->live#action"
+                        data-live-action-param="resetPage"
+                        class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
+                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20
+                               transition-colors shrink-0">
+                    <option value="">{{ 'school_event.filter.all_types'|trans({}, 'admin') }}</option>
+                    {% for type in availableTypes %}
+                        <option value="{{ type.id.toRfc4122 }}" {{ typeId == type.id.toRfc4122 ? 'selected' : '' }}>
+                            {{ type.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            {% endif %}
 
             {% set availableGroups = this.availableGroups %}
             {% if availableGroups is not empty %}
@@ -83,8 +100,12 @@
                                 {{ event.startTime|date('H:i') }}–{{ event.endTime|date('H:i') }}
                             </td>
                             <td data-label="{{ 'school_event.col.name'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
-                                <a href="{{ path('app_events_edit', {eventId: event.id.toRfc4122}) }}"
-                                   class="font-medium text-gray-900 hover:text-forest-700 transition-colors">{{ event.name }}</a>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <twig:EventTypeBadge :type="event.type" />
+                                    <a href="{{ path('app_events_edit', {eventId: event.id.toRfc4122}) }}"
+                                       class="font-medium text-gray-900 hover:text-forest-700 transition-colors">{{ event.name }}</a>
+                                </div>
+                                {% include 'components/_event_meta.html.twig' with {event: event, class: 'mt-1', compact: true} only %}
                             </td>
                             <td data-label="{{ 'school_event.col.scope'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
                                 <div class="flex flex-wrap gap-1">
@@ -92,10 +113,11 @@
                                         <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
                                             {{ 'school_event.scope.general'|trans({}, 'admin') }}
                                         </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                                            {{ 'school_event.scope.restricted'|trans({}, 'admin') }}
+                                        </span>
                                     {% endif %}
-                                    {% for group in event.groups %}
-                                        <twig:GroupChip :group="group" />
-                                    {% endfor %}
                                 </div>
                             </td>
                             <td class="px-6 py-4">

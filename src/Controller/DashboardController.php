@@ -15,8 +15,11 @@ use App\Repository\SanctionTaskRepository;
 use App\Repository\SchoolEventRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
+use App\Security\Voter\EducationalCentreVoter;
 use App\Security\Voter\SanctionVoter;
 use App\Service\AppSettingsInterface;
+use App\Service\Feature;
+use App\Service\FeatureToggle;
 use App\Service\PendingNotificationQueue;
 use App\Service\TeacherYearRoles;
 use App\Service\TenantContext;
@@ -41,6 +44,7 @@ class DashboardController extends AbstractController
         private readonly PendingNotificationQueue $pendingNotificationQueue,
         private readonly AppSettingsInterface $settings,
         private readonly ClockInterface $clock,
+        private readonly FeatureToggle $features,
     ) {}
 
     #[Route('/', name: 'app_dashboard')]
@@ -119,9 +123,12 @@ class DashboardController extends AbstractController
             ? $this->sanctionRepository->findActiveForTeacherInDateRange($centre, $viewer, $year, $nextMonday, $nextSunday)
             : [];
 
-        $todayEvents = $hasFullAccess
-            ? $this->schoolEventRepository->findAllForAcademicYearAndDate($year, $today)
-            : $this->schoolEventRepository->findVisibleForTeacherAndDate($viewer, $year, $today);
+        $todayEvents = match (true) {
+            !$this->features->isEnabledForCentre(Feature::Events, $centre) => [],
+            $hasFullAccess,
+            $this->isGranted(EducationalCentreVoter::MANAGE_ALL_EVENTS, $centre) => $this->schoolEventRepository->findAllForAcademicYearAndDate($year, $today),
+            default => $this->schoolEventRepository->findVisibleForTeacherAndDate($viewer, $year, $today),
+        };
 
         $autoPrescribeDays = $this->settings->getForCentre('notifications.report_auto_prescribe_days', $centre);
         $warningDays       = $this->settings->getForTeacherInCentre('notifications.report_prescription_warning_days', $viewer, $centre);

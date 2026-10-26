@@ -116,6 +116,33 @@ class CentreProfileControllerTest extends ControllerTestCase
         self::assertTrue($updated->getCounselors()->contains($refetchedCounselor));
     }
 
+    public function testSavePostAssignsTheActivityCoordinatorProfile(): void
+    {
+        [$cadmin, $centre] = $this->makeScenario();
+        $coordinator = $this->makeTeacher('activity.coordinator');
+        $this->persist($coordinator);
+        $this->loginAs($cadmin);
+
+        $centreId = $centre->getId()->toRfc4122();
+        $crawler  = $this->client->request('GET', '/centro/' . $centreId . '/perfiles');
+        self::assertSelectorExists('select[name="activity_coordinators[]"]');
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/centro/' . $centreId . '/perfiles', [
+            '_token'               => $token,
+            'activity_coordinators' => [$coordinator->getId()->toRfc4122()],
+        ]);
+
+        self::assertResponseRedirects('/centro/' . $centreId . '/perfiles');
+        $this->em->clear();
+        $updated = $this->em->find(EducationalCentre::class, $centre->getId());
+        self::assertNotNull($updated);
+        self::assertSame(
+            [$coordinator->getId()->toRfc4122()],
+            $updated->getActivityCoordinators()->map(static fn (Teacher $t): string => $t->getId()->toRfc4122())->getValues(),
+        );
+    }
+
     public function testSavePostRemovesTeachersNotResubmitted(): void
     {
         [$cadmin, $centre] = $this->makeScenario();

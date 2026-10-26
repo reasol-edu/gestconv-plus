@@ -346,11 +346,11 @@ class CalendarControllerTest extends ControllerTestCase
 
         $this->loginAs($admin, $world['centre']);
         $this->client->request('GET', '/calendario/dia/2026-03-10');
-        self::assertSelectorExists('a[href="/eventos/nuevo?date=2026-03-10"]');
+        self::assertSelectorExists('a[href="/actividades/nuevo?date=2026-03-10"]');
 
         $this->loginAs($teacher, $world['centre']);
         $this->client->request('GET', '/calendario/dia/2026-03-10');
-        self::assertSelectorNotExists('a[href="/eventos/nuevo?date=2026-03-10"]');
+        self::assertSelectorNotExists('a[href="/actividades/nuevo?date=2026-03-10"]');
     }
 
     public function testDayViewHidesAbsencesFromNonAdmin(): void

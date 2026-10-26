@@ -52,11 +52,45 @@ class EducationalCentre
     #[ORM\JoinTable(name: 'educational_centre_counselors')]
     private Collection $counselors;
 
+    /**
+     * Coordinación de actividades: gestiona todas las actividades del centro como un administrador.
+     *
+     * @var Collection<int, Teacher>
+     */
+    #[ORM\ManyToMany(targetEntity: Teacher::class)]
+    #[ORM\JoinTable(name: 'educational_centre_activity_coordinators')]
+    private Collection $activityCoordinators;
+
     public function __construct()
     {
         $this->admins = new ArrayCollection();
         $this->committeeMembers = new ArrayCollection();
         $this->counselors = new ArrayCollection();
+        $this->activityCoordinators = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Teacher>
+     */
+    public function getActivityCoordinators(): Collection
+    {
+        return $this->activityCoordinators;
+    }
+
+    public function addActivityCoordinator(Teacher $teacher): static
+    {
+        if (!$this->activityCoordinators->contains($teacher)) {
+            $this->activityCoordinators->add($teacher);
+        }
+
+        return $this;
+    }
+
+    public function removeActivityCoordinator(Teacher $teacher): static
+    {
+        $this->activityCoordinators->removeElement($teacher);
+
+        return $this;
     }
 
     public function getId(): Uuid

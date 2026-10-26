@@ -52,6 +52,24 @@ class SchoolEventListComponentTest extends ControllerTestCase
         self::assertStringNotContainsString('Reunión 1ºB', $text);
     }
 
+    public function testAnActivityCoordinatorListsEveryActivity(): void
+    {
+        [$centre, $year, , $admin] = $this->makeScenario('coordinator');
+        $teacher = (new Teacher(new \App\Entity\PersonName('Test', 'Docente')))->setUsername('docente.coordina');
+        $year->addTeacher($teacher);
+        $this->persist($teacher);
+        $centre->addActivityCoordinator($teacher);
+        $this->makeEvent($year, 'Mi charla', general: true)->setCreatedBy($teacher);
+        $this->makeEvent($year, 'Charla de otra persona', general: true)->setCreatedBy($admin);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $text = $this->createLiveComponent('SchoolEventListComponent', ['centre' => $centre], $this->client)->render()->crawler()->filter('tbody')->text();
+
+        self::assertStringContainsString('Mi charla', $text);
+        self::assertStringContainsString('Charla de otra persona', $text);
+    }
+
     public function testEmptyStateShownWhenNoEvents(): void
     {
         [$centre, , , $admin] = $this->makeScenario('empty');
@@ -59,7 +77,7 @@ class SchoolEventListComponentTest extends ControllerTestCase
 
         $render = $this->createLiveComponent('SchoolEventListComponent', ['centre' => $centre], $this->client)->render();
 
-        self::assertStringContainsString('No hay eventos registrados', $render->crawler()->text());
+        self::assertStringContainsString('No hay actividades registradas', $render->crawler()->text());
     }
 
     public function testListsGeneralAndRestrictedEventsWithScopeBadges(): void

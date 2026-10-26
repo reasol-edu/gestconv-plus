@@ -1,0 +1,30 @@
+{# Datos de una actividad en una línea de etiquetas: lugar, organiza, coordina, acompañan y grupos (con su color). #}
+{% set compact = compact|default(false) %}
+<div class="flex flex-wrap items-center gap-1.5 {{ class|default('') }}">
+    {% if event.location is not empty %}
+        <span class="inline-flex items-center gap-1 text-xs text-gray-500">
+            {{ ux_icon('heroicons:map-pin', {class: 'h-3.5 w-3.5 shrink-0'}) }}{{ event.location }}
+        </span>
+    {% endif %}
+    {% if event.organizingDepartment is not empty %}
+        <span class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+            {{ ux_icon('heroicons:building-office', {class: 'h-3.5 w-3.5 shrink-0'}) }}{{ 'school_event.meta.organizes'|trans({'%name%': event.organizingDepartment}, 'admin') }}
+        </span>
+    {% endif %}
+    {% if event.coordinator is not null %}
+        <span class="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-0.5 text-xs text-sky-700">
+            {{ ux_icon('heroicons:user', {class: 'h-3.5 w-3.5 shrink-0'}) }}{{ 'school_event.meta.coordinates'|trans({'%name%': event.coordinator.name.full()}, 'admin') }}
+        </span>
+    {% endif %}
+    {% if event.companions|length > 0 and not compact %}
+        <span class="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-0.5 text-xs text-sky-700">
+            {{ ux_icon('heroicons:users', {class: 'h-3.5 w-3.5 shrink-0'}) }}{{ 'school_event.meta.companions'|trans({'%names%': event.companions|map(t => t.name.full())|join(', ')}, 'admin') }}
+        </span>
+    {% endif %}
+    {% if event.groups|length > 0 %}
+        <span class="inline-flex flex-wrap items-center gap-1 text-xs text-gray-500">
+            {{ ux_icon('heroicons:user-group', {class: 'h-3.5 w-3.5 shrink-0'}) }}{{ 'school_event.meta.directed_to'|trans({}, 'admin') }}
+            {% for group in event.groups %}<twig:GroupChip :group="group" />{% endfor %}
+        </span>
+    {% endif %}
+</div>

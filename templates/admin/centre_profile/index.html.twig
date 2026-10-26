@@ -61,6 +61,27 @@
                 </select>
             </div>
 
+            {% if feature_enabled_for('events', centre) %}
+            <div class="px-6 py-5 border-b border-gray-100">
+                <label class="block text-sm font-medium text-gray-700 mb-0.5">
+                    {{ 'centre_profiles.activity_coordinators.label'|trans({}, 'admin') }}
+                </label>
+                <p class="text-xs text-gray-400 mb-2">{{ 'centre_profiles.activity_coordinators.help'|trans({}, 'admin') }}</p>
+                <select name="activity_coordinators[]" multiple
+                        data-controller="symfony--ux-autocomplete--autocomplete"
+                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
+                        data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
+                        data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
+                        data-symfony--ux-autocomplete--autocomplete-preload-value="false"
+                        data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
+                        class="w-full">
+                    {% for teacher in selectedActivityCoordinators %}
+                        <option value="{{ teacher.id }}" selected>{{ teacher.name.lastName }}, {{ teacher.name.firstName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
             <div class="px-6 py-4 bg-gray-50 flex justify-end">
                 <button type="submit"
                         class="rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white

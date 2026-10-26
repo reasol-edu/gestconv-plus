@@ -7,10 +7,12 @@ namespace App\Twig\Components;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\SchoolEvent;
+use App\Entity\SchoolEventType;
 use App\Entity\Teacher;
 use App\Pagination\Paginator;
 use App\Repository\GroupRepository;
 use App\Repository\SchoolEventRepository;
+use App\Repository\SchoolEventTypeRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\AppSettings;
 use App\Service\TenantContext;
@@ -34,8 +36,12 @@ class SchoolEventListComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $groupId = '';
 
+    #[LiveProp(writable: true)]
+    public string $typeId = '';
+
     public function __construct(
         private readonly SchoolEventRepository $events,
+        private readonly SchoolEventTypeRepository $types,
         private readonly GroupRepository $groups,
         private readonly AppSettings $appSettings,
         private readonly TenantContext $tenantContext,
@@ -56,6 +62,12 @@ class SchoolEventListComponent extends AbstractController
         );
     }
 
+    /** @return list<SchoolEventType> */
+    public function getAvailableTypes(): array
+    {
+        return $this->types->findByCentreOrdered($this->centre);
+    }
+
     /** @return Paginator<SchoolEvent> */
     public function getPagination(): Paginator
     {
@@ -64,17 +76,17 @@ class SchoolEventListComponent extends AbstractController
             return Paginator::fromQuery($this->events->findNoneQuery(), 1, $this->appSettings->getInt('page.size'));
         }
 
-        // Quien publica sin ser de la dirección solo ve en el listado los eventos que ve en el calendario.
+        // Quien publica sin gestionar todas las actividades (dirección, administradores o coordinación) solo lista las suyas.
         $user    = $this->getUser();
-        $viewer  = !$this->isGranted(EducationalCentreVoter::SECTION, $this->centre) && $user instanceof Teacher ? $user : null;
+        $viewer  = !$this->isGranted(EducationalCentreVoter::MANAGE_ALL_EVENTS, $this->centre) && $user instanceof Teacher ? $user : null;
 
         return $this->paginate(
-            $this->events->createFilteredQuery($year, trim($this->search), trim($this->groupId), $viewer),
+            $this->events->createFilteredQuery($year, trim($this->search), trim($this->groupId), $viewer, trim($this->typeId)),
         );
     }
 
     public function hasActiveFilters(): bool
     {
-        return $this->search !== '' || $this->groupId !== '';
+        return $this->search !== '' || $this->groupId !== '' || $this->typeId !== '';
     }
 }

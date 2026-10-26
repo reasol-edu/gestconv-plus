@@ -1,0 +1,7 @@
+types:
+    - name: 'Complementaria'
+      color: '#dc2626'
+    - name: 'Extraescolar'
+      color: '#2563eb'
+    - name: 'Otros'
+      color: '#6b7280'

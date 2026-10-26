@@ -62,6 +62,8 @@
                 :error="errors.url ?? null" />
         </div>
 
+        {% include 'school_event/_details_fields.html.twig' %}
+
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
             <h2 class="text-base font-semibold text-gray-900">{{ 'school_event.field.groups'|trans({}, 'admin') }}</h2>
 
@@ -131,6 +133,7 @@
 {% endblock %}
 
 {% block javascripts %}{{ parent() }}
+{% include 'school_event/_teacher_selects.html.twig' %}
 {% if availableGroups is not empty %}
 <script type="module">
 import TomSelect from 'tom-select';

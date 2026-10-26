@@ -21,6 +21,8 @@ final class GroupColorExtension extends AbstractExtension
         return [
             new TwigFunction('group_color', $this->palette->forGroup(...)),
             new TwigFunction('group_default_color', fn (Group $group): string => $this->palette->defaultHex($group->getId()->toRfc4122())),
+            // Los mismos fondo/borde/texto derivados de un color base cualquiera (p. ej. el de un tipo de actividad).
+            new TwigFunction('hex_color', $this->palette->fromHex(...)),
         ];
     }
 }

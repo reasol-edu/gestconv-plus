@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\AcademicYear;
 use App\Entity\SchoolEvent;
+use App\Entity\SchoolEventType;
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
@@ -43,12 +44,14 @@ class SchoolEventRepository extends ServiceEntityRepository
         return $result instanceof SchoolEvent ? $result : null;
     }
 
-    /** Como findByAcademicYearAndId(), pero solo si el docente puede ver el evento (general o de sus grupos). */
-    public function findVisibleByAcademicYearAndId(Teacher $viewer, AcademicYear $year, string $id): ?SchoolEvent
+    /** Como findByAcademicYearAndId(), pero solo si la actividad la publicó el docente. */
+    public function findOwnedByAcademicYearAndId(Teacher $owner, AcademicYear $year, string $id): ?SchoolEvent
     {
-        $result = $this->visibleForTeacherQueryBuilder($viewer, $year)
+        $result = $this->baseQueryBuilder($year)
             ->andWhere('se.id = :id')
+            ->andWhere('se.createdBy = :owner')
             ->setParameter('id', $id, 'uuid')
+            ->setParameter('owner', $owner->getId(), 'uuid')
             ->getQuery()
             ->getOneOrNullResult();
 
@@ -99,29 +102,59 @@ class SchoolEventRepository extends ServiceEntityRepository
     private function preloadGroups(AcademicYear $year, array $events): array
     {
         if (\count($events) > 1) {
-            $this->createQueryBuilder('se')
-                ->select('se', 'pg')
-                ->leftJoin('se.groups', 'pg')
-                ->where('se.academicYear = :year')
-                ->setParameter('year', $year->getId(), 'uuid')
-                ->getQuery()
-                ->getResult();
+            // Una consulta por colección (juntarlas en una multiplicaría las filas): grupos y acompañantes.
+            foreach (['groups' => 'pg', 'companions' => 'pc'] as $association => $alias) {
+                $this->createQueryBuilder('se')
+                    ->select('se', $alias)
+                    ->leftJoin('se.' . $association, $alias)
+                    ->where('se.academicYear = :year')
+                    ->setParameter('year', $year->getId(), 'uuid')
+                    ->getQuery()
+                    ->getResult();
+            }
         }
 
         return $events;
     }
 
-    /** @return Query<null, SchoolEvent> */
-    public function createFilteredQuery(AcademicYear $year, string $search = '', string $groupId = '', ?Teacher $onlyVisibleTo = null): Query
+    /** Cuántas actividades tienen este tipo (un tipo en uso no se puede eliminar). */
+    public function countByType(SchoolEventType $type): int
     {
-        $qb = ($onlyVisibleTo !== null ? $this->visibleForTeacherQueryBuilder($onlyVisibleTo, $year) : $this->baseQueryBuilder($year))
+        return (int) $this->createQueryBuilder('se')
+            ->select('COUNT(se.id)')
+            ->where('se.type = :type')
+            ->setParameter('type', $type->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /** @return Query<null, SchoolEvent> */
+    public function createFilteredQuery(
+        AcademicYear $year,
+        string $search = '',
+        string $groupId = '',
+        ?Teacher $onlyOwnedBy = null,
+        string $typeId = '',
+    ): Query {
+        $qb = $this->baseQueryBuilder($year)
             ->orderBy('se.date', 'DESC')
             ->addOrderBy('se.startTime', 'ASC');
+
+        // Un docente sin gestión de actividades solo lista las que ha publicado él.
+        if ($onlyOwnedBy !== null) {
+            $qb->andWhere('se.createdBy = :owner')
+                ->setParameter('owner', $onlyOwnedBy->getId(), 'uuid');
+        }
 
         if ($groupId !== '') {
             $qb->join('se.groups', 'fg')
                 ->andWhere('fg.id = :groupId')
                 ->setParameter('groupId', $groupId, 'uuid');
+        }
+
+        if ($typeId !== '') {
+            $qb->andWhere('se.type = :typeId')
+                ->setParameter('typeId', $typeId, 'uuid');
         }
 
         if ($search !== '') {
@@ -138,8 +171,12 @@ class SchoolEventRepository extends ServiceEntityRepository
 
     private function baseQueryBuilder(AcademicYear $year): QueryBuilder
     {
+        // Tipo y coordinador son a uno: se traen en la misma consulta para no hacer una por actividad.
         return $this->createQueryBuilder('se')
             ->distinct()
+            ->addSelect('ty', 'co')
+            ->leftJoin('se.type', 'ty')
+            ->leftJoin('se.coordinator', 'co')
             ->where('se.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid');
     }

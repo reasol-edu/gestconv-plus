@@ -69,7 +69,13 @@ class CalendarController extends AbstractController
         $user    = $this->getUser();
         $viewer  = $user instanceof Teacher ? $user : null;
 
-        $report = $dayDetailBuilder->build($academicYear, $viewer, $isAdmin, $parsedDate);
+        $report = $dayDetailBuilder->build(
+            $academicYear,
+            $viewer,
+            $isAdmin,
+            $parsedDate,
+            $this->isGranted(EducationalCentreVoter::MANAGE_ALL_EVENTS, $centre),
+        );
 
         return $this->render('calendar/day.html.twig', [
             'centre'   => $centre,

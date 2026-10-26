@@ -47,7 +47,8 @@
         </div>
     {% endif %}
 
-    {# ── Eventos ──────────────────────────────────────────────────────────── #}
+    {# ── Actividades ──────────────────────────────────────────────────────── #}
+    {% if feature_enabled('events') %}
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs">
         <div class="px-6 py-4 border-b border-gray-100 rounded-t-2xl">
             <h2 class="text-base font-semibold text-gray-900">{{ 'day.section.events'|trans({}, 'calendar') }}</h2>
@@ -60,11 +61,13 @@
                     <li class="px-6 py-3">
                         <div class="flex items-start justify-between gap-3">
                             <div>
+                                <twig:EventTypeBadge :type="event.type" class="mr-1" />
                                 <span class="text-sm font-medium text-gray-900">{{ event.name }}</span>
                                 <span class="text-xs text-gray-400 tabular-nums ml-1">{{ event.startTime|date('format.time'|trans) }}–{{ event.endTime|date('format.time'|trans) }}</span>
                                 {% if event.description is not empty %}
                                     <p class="text-xs text-gray-500 mt-0.5">{{ event.description }}</p>
                                 {% endif %}
+                                {% include 'components/_event_meta.html.twig' with {event: event, class: 'mt-1.5'} only %}
                                 {% if event.url is not empty %}
                                     <a href="{{ event.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs text-forest-600 hover:text-forest-700 mt-1">
                                         {{ ux_icon('heroicons:link', {class: 'h-3 w-3'}) }}
@@ -83,9 +86,6 @@
                                         {{ 'school_event.scope.general'|trans({}, 'admin') }}
                                     </span>
                                 {% endif %}
-                                {% for group in event.groups %}
-                                    <twig:GroupChip :group="group" />
-                                {% endfor %}
                             </div>
                         </div>
                     </li>
@@ -93,6 +93,7 @@
             </ul>
         {% endif %}
     </div>
+    {% endif %}
 
     {# ── Tramos horarios y guardias ──────────────────────────────────────── #}
     {% if report.timeSlots is not empty %}
