@@ -147,7 +147,8 @@ jobs:
           curl -fsSL \
             "https://github.com/php/frankenphp/releases/download/v${{ env.FRANKENPHP_VERSION }}/${{ matrix.fp_asset }}" \
             -o fp_asset_download
-          echo "${{ matrix.fp_sha256 }}  fp_asset_download" | sha256sum -c -
+          # Comprobación de la suma desactivada de momento (FrankenPHP vuelve a subir los binarios).
+          # echo "${{ matrix.fp_sha256 }}  fp_asset_download" | sha256sum -c -
           if [[ "${{ matrix.fp_asset }}" == *.zip ]]; then
             unzip fp_asset_download -d fp_extracted
           else
