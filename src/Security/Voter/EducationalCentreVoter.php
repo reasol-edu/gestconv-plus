@@ -9,6 +9,7 @@ use App\Entity\Teacher;
 use App\Service\AppSettingsInterface;
 use App\Service\Feature;
 use App\Service\FeatureToggle;
+use App\Service\ResourceBookingAccess;
 use App\Service\TeacherYearRoles;
 use App\Service\TenantContextInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -37,16 +38,23 @@ final class EducationalCentreVoter extends Voter
      */
     public const MANAGE_ALL_EVENTS = 'educational_centre.manage_all_events';
 
+    /**
+     * Access to the resource bookings section: the centre's teachers of the viewed year, its management, and the
+     * managers of any resource category; never with the Bookings feature off. Subject: EducationalCentre
+     */
+    public const BOOKINGS = 'educational_centre.bookings';
+
     public function __construct(
         private readonly AppSettingsInterface $settings,
         private readonly TeacherYearRoles $roles,
         private readonly TenantContextInterface $tenant,
         private readonly FeatureToggle $features,
+        private readonly ResourceBookingAccess $bookingAccess,
     ) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::SECTION, self::PUBLISH_EVENTS, self::MANAGE_ALL_EVENTS], true) && $subject instanceof EducationalCentre;
+        return in_array($attribute, [self::SECTION, self::PUBLISH_EVENTS, self::MANAGE_ALL_EVENTS, self::BOOKINGS], true) && $subject instanceof EducationalCentre;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
@@ -61,6 +69,20 @@ final class EducationalCentreVoter extends Voter
 
         if ($attribute === self::SECTION) {
             return $isManagement;
+        }
+
+        if ($attribute === self::BOOKINGS) {
+            if (!$this->features->isEnabledForCentre(Feature::Bookings, $subject)) {
+                return false;
+            }
+
+            if ($this->bookingAccess->hasManagerRole($user, $subject)) {
+                return true;
+            }
+
+            $year = $this->tenant->getViewYear($subject);
+
+            return $year !== null && $this->roles->belongsToYear($user, $year);
         }
 
         // Con las actividades desactivadas en el centro nadie las publica ni las gestiona, ni siquiera la dirección.
