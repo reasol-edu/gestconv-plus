@@ -247,8 +247,18 @@ final class TmpSeedShotsCommand extends Command
             foreach ($groups as $g) {
                 $event->addGroup($g);
             }
+            // La excursión lleva alumnado asociado de sus dos grupos (ficha e informe PDF de la actividad).
+            if ($name === 'Excursión a la Sierra de Aracena') {
+                foreach ([...array_slice($this->students($groupA), 0, 5), ...array_slice($this->students($groupB), 0, 3)] as $student) {
+                    $event->addStudent($student);
+                }
+            }
             $this->em->persist($event);
         }
+        // Una actividad en borrador: solo aparece en el listado de gestión.
+        $this->em->persist((new SchoolEvent())->setAcademicYear($this->year)->setName('Jornada de puertas abiertas')->setDate(new \DateTimeImmutable('2026-11-12'))
+            ->setStartTime(new \DateTimeImmutable('2000-01-01 17:00'))->setEndTime(new \DateTimeImmutable('2000-01-01 19:00'))->setGeneral(true)
+            ->setType($types['Otros'] ?? null)->setLocation('Salón de actos')->setCoordinator($carmen)->setCreatedBy($carmen)->setDraft(true));
 
         // ── Registro de actividad: una entrada de cada forma que muestra la lista legible
         $admin = $this->teacher('admin');

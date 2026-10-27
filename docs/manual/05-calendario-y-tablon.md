@@ -111,7 +111,8 @@ Cada actividad tiene:
   vez. Una actividad puede estar asociada a grupos aunque la vea todo el centro.
 - **Estudiantes asociados** (opcionales), que aparecen al elegir algún grupo y se eligen entre los
   estudiantes de esos grupos. Si después se quita un grupo, se descartan sus estudiantes. De momento
-  esta información solo se guarda en la actividad: no se muestra en el calendario ni en el tablón.
+  esta información solo se ve en la [ficha de la actividad y en su informe PDF](#informe-de-una-actividad):
+  no se muestra en el calendario, el tablón ni el resto de pantallas.
 - **Visibilidad**, que solo aparece al elegir al menos un grupo:
     - **General** — la ve todo el profesorado del centro, imparta o no clase a los grupos
       asociados; los grupos se muestran como información.
@@ -123,14 +124,17 @@ Cada actividad tiene:
   para mostrarla en ningún sitio —calendario, tablón, panel de inicio, guardias— hasta que se publique;
   solo aparece, marcada como «Borrador», en el listado de actividades de quienes la gestionan.
 
+![Listado de actividades: la «Jornada de puertas abiertas» está en borrador y lleva su etiqueta](img/calendario/actividad-listado.png)
+
 Si no se elige ningún grupo, la actividad es **general** automáticamente y el formulario no muestra
 ninguna opción de visibilidad:
 
 ![Formulario de una actividad sin grupos asociados: no hay opciones de visibilidad](img/calendario/actividad-formulario-sin-grupos.png)
 
-En cuanto se elige un grupo aparecen las dos opciones, cada una con su explicación:
+En cuanto se elige un grupo aparecen el campo de estudiantes y las dos opciones de visibilidad, cada
+una con su explicación (la captura incluye también el estado de la actividad):
 
-![Formulario de una actividad con un grupo asociado: aparecen las opciones «General» y «Restringida a grupos»](img/calendario/actividad-formulario.png)
+![Formulario de una actividad con un grupo asociado: estado, estudiantes y las opciones «General» y «Restringida a grupos»](img/calendario/actividad-formulario.png)
 
 ### Informe de una actividad {#informe-de-una-actividad}
 
@@ -139,10 +143,14 @@ y el alumnado asociado separado por grupos. Desde ahí se genera un **informe en
 información. Pueden hacerlo quien registró la actividad, la coordinación de actividades, el equipo
 directivo y los administradores (los mismos que pueden editarla).
 
+![Ficha de una actividad con el alumnado por grupos y las casillas del informe](img/calendario/actividad-ficha.png)
+
 Antes de generarlo hay una casilla por cada grupo con alumnado asociado, todas marcadas por defecto:
 los grupos marcados muestran además el **listado de nombres**; los desmarcados solo indican **cuántos
 estudiantes** hay (ese número sale siempre). Si la actividad no tiene alumnado asociado, el informe
 solo recoge sus datos y los grupos.
+
+![Primera página del informe: datos de la actividad, recuento por grupo y listado de los estudiantes de 1º ESO A (1º ESO B solo con el recuento)](img/calendario/actividad-informe.png)
 
 El aspecto del informe (encabezado, pie, margen superior y plantilla de fondo) se configura en los
 [ajustes del centro](07-administrar-la-plataforma.md#personalizacion-de-informes), igual que el de los

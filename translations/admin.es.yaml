@@ -936,7 +936,7 @@ school_event.field.groups_placeholder: 'Busca y selecciona uno o varios grupos�
 school_event.field.groups_no_results: 'Sin resultados'
 school_event.field.students: 'Estudiantes asociados (opcional)'
 school_event.field.students_placeholder: 'Busca y selecciona uno o varios estudiantes…'
-school_event.field.students_help: 'Estudiantes de los grupos elegidos que participan en la actividad. Si quitas un grupo, se descartan los suyos. De momento solo se guardan: no se muestran en el calendario ni en el tablón.'
+school_event.field.students_help: 'Estudiantes de los grupos elegidos que participan en la actividad. Si quitas un grupo, se descartan los suyos. De momento solo se ven en la ficha de la actividad y en su informe PDF.'
 school_event.scope.general: 'General'
 school_event.scope.general_help: 'La ve todo el profesorado del centro, imparta o no clase a los grupos asociados. Los grupos se indican como información.'
 school_event.scope.restricted: 'Restringida a grupos'

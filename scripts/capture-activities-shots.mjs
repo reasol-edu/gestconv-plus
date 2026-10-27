@@ -1,7 +1,7 @@
 /**
  * Captura las pantallas de las actividades de centro, los colores de grupo y el modo tablón para el manual:
  *  · calendario/actividad-formulario-sin-grupos.png — formulario de actividad sin grupos: no hay nada que elegir
- *  · calendario/actividad-formulario.png            — con un grupo elegido aparecen «General» y «Restringida a grupos»
+ *  · calendario/actividad-formulario.png            — estado (publicada o borrador) y, con un grupo elegido, la visibilidad y los estudiantes
  *  · centro/centro-oferta-color.png                 — color de un grupo (personalizado, con el botón para volver al calculado)
  *  · centro/centro-tipos-actividad.png              — catálogo de tipos de actividad
  *  · centro/centro-perfiles.png                     — perfiles, con la coordinación de actividades
@@ -84,15 +84,17 @@ await admin.evaluate(() => {
     select.tomselect.setValue(option.value);
 });
 expect(await admin.locator('[data-event-scope-target="scopeBlock"]').isHidden(), 'sin grupos no debe verse la visibilidad');
-await shootCards(admin, 2, 2, `${root}/calendario/actividad-formulario-sin-grupos.png`);
+await shootCards(admin, 3, 3, `${root}/calendario/actividad-formulario-sin-grupos.png`);
 
-await admin.locator('.ts-wrapper').last().click();
+// Hay otro Tom Select (estudiantes) más abajo: se elige el del campo de grupos por su vecindad.
+await admin.locator('#groups ~ .ts-wrapper').click();
 await admin.locator('.ts-dropdown .option', { hasText: '1ºESO A' }).first().click();
 await admin.keyboard.press('Escape');
 await admin.waitForTimeout(200);
 expect(await admin.locator('[data-event-scope-target="scopeBlock"]').isVisible(), 'con un grupo debe verse la visibilidad');
 await admin.locator('input[name="scope"][value="general"]').check();
-await shootCards(admin, 1, 2, `${root}/calendario/actividad-formulario.png`);
+expect(await admin.locator('#students-field').isVisible(), 'con un grupo debe verse el campo de estudiantes');
+await shootCards(admin, 2, 3, `${root}/calendario/actividad-formulario.png`);
 
 await admin.click('button[type="submit"]');
 await admin.waitForLoadState('networkidle');
