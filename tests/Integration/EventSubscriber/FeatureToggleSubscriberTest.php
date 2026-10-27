@@ -65,6 +65,7 @@ final class FeatureToggleSubscriberTest extends ControllerTestCase
         yield 'notas'             => [Feature::DailyNotes, '/notas'];
         yield 'tareas de sanción' => [Feature::SanctionTasks, '/tareas-de-sancion'];
         yield 'actividades'       => [Feature::Events, '/actividades/nuevo'];
+        yield 'reservas'          => [Feature::Bookings, '/reservas'];
     }
 
     #[DataProvider('sections')]
@@ -150,6 +151,7 @@ final class FeatureToggleSubscriberTest extends ControllerTestCase
     {
         yield 'motivos de salida' => [Feature::Exits, 'motivos-salida'];
         yield 'tipos de nota'     => [Feature::DailyNotes, 'tipos-notas'];
+        yield 'recursos'          => [Feature::Bookings, 'recursos'];
     }
 
     #[DataProvider('catalogs')]

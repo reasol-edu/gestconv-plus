@@ -10,6 +10,7 @@ use App\Entity\Teacher;
 use App\Repository\DailyNoteRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
+use App\Repository\ResourceBookingRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Repository\SchoolEventRepository;
@@ -21,6 +22,7 @@ use App\Service\AppSettingsInterface;
 use App\Service\Feature;
 use App\Service\FeatureToggle;
 use App\Service\PendingNotificationQueue;
+use App\Service\ResourceBookingAccess;
 use App\Service\TeacherYearRoles;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -45,6 +47,8 @@ class DashboardController extends AbstractController
         private readonly AppSettingsInterface $settings,
         private readonly ClockInterface $clock,
         private readonly FeatureToggle $features,
+        private readonly ResourceBookingRepository $resourceBookings,
+        private readonly ResourceBookingAccess $bookingAccess,
     ) {}
 
     #[Route('/', name: 'app_dashboard')]
@@ -80,6 +84,7 @@ class DashboardController extends AbstractController
                 'canSeeNoteThresholds'              => false,
                 'noteThresholdCount'                => 0,
                 'todayEvents'                       => [],
+                'pendingBookingsCount'              => 0,
                 'today'                             => $this->clock->now()->format('Y-m-d'),
             ]);
         }
@@ -129,6 +134,15 @@ class DashboardController extends AbstractController
             $this->isGranted(EducationalCentreVoter::MANAGE_ALL_EVENTS, $centre) => $this->schoolEventRepository->findAllForAcademicYearAndDate($year, $today),
             default => $this->schoolEventRepository->findVisibleForTeacherAndDate($viewer, $year, $today),
         };
+
+        // Solicitudes de reserva que le toca validar: todas a la dirección, las de sus categorías a un responsable.
+        $pendingBookingsCount = 0;
+        if ($this->features->isEnabledForCentre(Feature::Bookings, $centre) && $this->bookingAccess->hasManagerRole($viewer, $centre)) {
+            $pendingBookingsCount = count($this->resourceBookings->findPendingForCategories(
+                $year,
+                $this->bookingAccess->isManagement($viewer, $centre) ? null : $this->bookingAccess->managedCategories($viewer, $centre),
+            ));
+        }
 
         $autoPrescribeDays = $this->settings->getForCentre('notifications.report_auto_prescribe_days', $centre);
         $warningDays       = $this->settings->getForTeacherInCentre('notifications.report_prescription_warning_days', $viewer, $centre);
@@ -190,6 +204,7 @@ class DashboardController extends AbstractController
             'canSeeNoteThresholds'              => $canSeeNoteThresholds,
             'noteThresholdCount'                => $noteThresholdCount,
             'todayEvents'                       => $todayEvents,
+            'pendingBookingsCount'              => $pendingBookingsCount,
             'today'                             => $today->format('Y-m-d'),
         ]);
     }

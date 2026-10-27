@@ -8,6 +8,7 @@ use App\Attribute\CurrentCentre;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\ResourceBooking;
+use App\Entity\ResourceBookingStatus;
 use App\Entity\SharedResource;
 use App\Entity\Teacher;
 use App\Entity\TimeSlot;
@@ -102,7 +103,7 @@ class ResourceBookingController extends AbstractController
     // ── Listado ───────────────────────────────────────────────────────────────
 
     #[Route('/listado', name: 'app_bookings_list', methods: ['GET'])]
-    public function list(#[CurrentCentre] EducationalCentre $centre): Response
+    public function list(Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
         $this->denyAccessUnlessGranted(EducationalCentreVoter::BOOKINGS, $centre);
         $year = $this->requireYear($centre);
@@ -113,9 +114,15 @@ class ResourceBookingController extends AbstractController
             $this->bookings->markResolutionsSeen($user, $year);
         }
 
+        // Los accesos del panel de inicio y la campana llegan con el listado ya filtrado (?scope=managed&status=pending&from=all).
+        $status = $request->query->getString('status');
+
         return $this->render('resource_booking/list.html.twig', [
             'centre'  => $centre,
             'canBook' => $this->canBookAnything($centre),
+            'scope'   => $request->query->getString('scope') === 'managed' ? 'managed' : 'mine',
+            'status'  => ResourceBookingStatus::tryFrom($status) !== null ? $status : '',
+            'from'    => $request->query->getString('from') === 'all' ? '' : $this->planner->today()->format('Y-m-d'),
         ]);
     }
 
@@ -188,6 +195,12 @@ class ResourceBookingController extends AbstractController
     {
         $this->denyAccessUnlessGranted(EducationalCentreVoter::BOOKINGS, $centre);
         $booking = $this->requireBooking($id, $centre);
+
+        // Ver la reserva cuya resolución se avisaba en la campana la da por leída.
+        $user = $this->getUser();
+        if ($user instanceof Teacher && !$booking->isResolutionSeen() && $booking->getTeacher()->getId()->equals($user->getId())) {
+            $this->bookings->markResolutionsSeen($user, $booking->getAcademicYear(), $booking);
+        }
 
         return $this->render('resource_booking/show.html.twig', [
             'centre'      => $centre,

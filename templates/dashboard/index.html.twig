@@ -51,7 +51,8 @@
         {# Dos bloques con los mismos títulos y el mismo orden que el menú lateral. Se reparten solos en columnas: dos baldosas compactas por fila en el móvil y tantas tarjetas anchas como quepan (mínimo 17 rem, todas del mismo ancho en los dos bloques) en pantallas mayores. #}
         {% set grid_classes = 'grid grid-cols-2 gap-2.5 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] sm:gap-3' %}
         <div id="quick-actions" class="space-y-5">
-            {% if feature_enabled('exits') or hasGuardsAccess or (can_register_absence and feature_enabled('absences')) %}
+            {% set can_book = is_granted('educational_centre.bookings', active_centre) %}
+            {% if feature_enabled('exits') or hasGuardsAccess or (can_register_absence and feature_enabled('absences')) or can_book %}
             <section aria-labelledby="quick-daily-title">
                 <h2 id="quick-daily-title" class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'quick_actions.daily'|trans({}, 'dashboard') }}</h2>
                 <div class="{{ grid_classes }}">
@@ -63,6 +64,19 @@
                     {% endif %}
                     {% if can_register_absence and feature_enabled('absences') %}
                         {% include 'dashboard/_quick_action.html.twig' with {url: path('app_absences_new'), icon: 'heroicons:user-minus', label: 'quick_action_new_absence'|trans({}, 'dashboard'), help: (is_centre_admin() ? 'quick_action_new_absence_help_admin' : 'quick_action_new_absence_help_self')|trans({}, 'dashboard'), tone: 'blue'} only %}
+                    {% endif %}
+                    {% if can_book %}
+                        {% include 'dashboard/_quick_action.html.twig' with {url: path('app_bookings_new'), icon: 'heroicons:rectangle-stack', label: 'quick_action_booking'|trans({}, 'dashboard'), help: 'quick_action_booking_help'|trans({}, 'dashboard'), tone: 'blue'} only %}
+                        {% if pendingBookingsCount > 0 %}
+                            {% include 'dashboard/_quick_action.html.twig' with {
+                                url: path('app_bookings_list', {scope: 'managed', status: 'pending', from: 'all'}),
+                                icon: 'heroicons:clock',
+                                label: 'quick_action_bookings_pending'|trans({}, 'dashboard'),
+                                help: 'quick_action_bookings_pending_help'|trans({}, 'dashboard'),
+                                tone: 'amber',
+                                badge: pendingBookingsCount
+                            } only %}
+                        {% endif %}
                     {% endif %}
                 </div>
             </section>

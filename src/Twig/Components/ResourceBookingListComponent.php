@@ -80,12 +80,14 @@ class ResourceBookingListComponent extends AbstractController
         private readonly TenantContext $tenantContext,
     ) {}
 
-    public function mount(EducationalCentre $centre): void
+    public function mount(EducationalCentre $centre, string $scope = self::SCOPE_MINE, string $status = '', ?string $dateFrom = null): void
     {
         $this->denyAccessUnlessGranted(EducationalCentreVoter::BOOKINGS, $centre);
         $this->centre = $centre;
+        $this->scope  = $scope;
+        $this->status = $status;
         // Lo ya pasado no interesa de entrada: se ven las reservas desde hoy (vaciando la fecha se ve todo).
-        $this->dateFrom = $this->planner->today()->format('Y-m-d');
+        $this->dateFrom = $dateFrom ?? $this->planner->today()->format('Y-m-d');
     }
 
     /** Puede ver las reservas de otros: es dirección o responsable de alguna categoría. */

@@ -230,9 +230,13 @@ class ResourceBookingRepository extends ServiceEntityRepository
         return $this->preload($result);
     }
 
-    public function markResolutionsSeen(Teacher $teacher, AcademicYear $year): void
+    /**
+     * Da por vistas las resoluciones (aprobada o rechazada) de las reservas del docente: todas las del curso o,
+     * con `$only`, solo la de esa reserva.
+     */
+    public function markResolutionsSeen(Teacher $teacher, AcademicYear $year, ?ResourceBooking $only = null): void
     {
-        $this->getEntityManager()->createQueryBuilder()
+        $qb = $this->getEntityManager()->createQueryBuilder()
             ->update(ResourceBooking::class, 'b')
             ->set('b.resolutionSeen', ':seen')
             ->where('b.teacher = :teacher')
@@ -240,9 +244,13 @@ class ResourceBookingRepository extends ServiceEntityRepository
             ->andWhere('b.resolutionSeen = false')
             ->setParameter('seen', true)
             ->setParameter('teacher', $teacher->getId(), 'uuid')
-            ->setParameter('year', $year->getId(), 'uuid')
-            ->getQuery()
-            ->execute();
+            ->setParameter('year', $year->getId(), 'uuid');
+
+        if ($only !== null) {
+            $qb->andWhere('b.id = :only')->setParameter('only', $only->getId(), 'uuid');
+        }
+
+        $qb->getQuery()->execute();
     }
 
     public function countByResource(SharedResource $resource): int

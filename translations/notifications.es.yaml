@@ -10,7 +10,12 @@ bell:
         sanction: 'Sanciones pendientes'
         task: 'Tareas de sanción'
         note_threshold: 'Notas que dan lugar a parte'
+        booking_validation: 'Reservas por validar'
+        booking_resolved: 'Respuesta a tus reservas'
     item:
+        booking_validation: '%teacher% solicita reservar «%resource%»'
+        booking_approved: 'Tu reserva de «%resource%» se ha aprobado'
+        booking_rejected: 'Tu reserva de «%resource%» se ha rechazado'
         prescription_report: 'Parte de %student% a punto de prescribir'
         prescription_sanction: 'Sanción de %student% a punto de prescribir'
         report: 'Parte de %student% pendiente de notificar'

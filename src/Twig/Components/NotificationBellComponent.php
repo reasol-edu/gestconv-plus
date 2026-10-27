@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Twig\Components;
 
 use App\Entity\IncidentReport;
+use App\Entity\ResourceBooking;
 use App\Entity\Sanction;
 use App\Entity\SanctionTask;
 use App\Entity\Teacher;
 use App\Repository\DailyNoteRepository;
+use App\Repository\ResourceBookingRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Service\Feature;
 use App\Service\FeatureToggle;
 use App\Service\PendingNotificationQueue;
+use App\Service\ResourceBookingAccess;
 use App\Service\TenantContext;
 use App\Service\UpcomingPrescriptions;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,9 +37,9 @@ class NotificationBellComponent extends AbstractController
     public const MAX_PER_SECTION = 4;
 
     /** Orden de las secciones, de más a menos urgente. */
-    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold'];
+    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold', 'booking_validation', 'booking_resolved'];
 
-    /** @var array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>|null */
+    /** @var array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>|null */
     private ?array $grouped = null;
 
     public function __construct(
@@ -46,12 +49,14 @@ class NotificationBellComponent extends AbstractController
         private readonly DailyNoteRepository $dailyNoteRepository,
         private readonly UpcomingPrescriptions $upcomingPrescriptions,
         private readonly FeatureToggle $features,
+        private readonly ResourceBookingRepository $resourceBookings,
+        private readonly ResourceBookingAccess $bookingAccess,
     ) {}
 
     /**
      * Elementos pendientes por sección (sin truncar), solo las que tienen alguno.
      *
-     * @return array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>
+     * @return array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>
      */
     private function grouped(): array
     {
@@ -121,6 +126,19 @@ class NotificationBellComponent extends AbstractController
             }
         }
 
+        // Reservas: solicitudes que le toca validar y respuestas a las suyas que aún no ha visto.
+        if ($this->features->isEnabledForCentre(Feature::Bookings, $centre)) {
+            if ($this->bookingAccess->hasManagerRole($user, $centre)) {
+                $categories = $this->bookingAccess->isManagement($user, $centre) ? null : $this->bookingAccess->managedCategories($user, $centre);
+                foreach ($this->resourceBookings->findPendingForCategories($year, $categories) as $booking) {
+                    $sections['booking_validation'][] = ['type' => 'booking_validation', 'entity' => $booking, 'date' => $booking->getDate(), 'daysLeft' => null];
+                }
+            }
+            foreach ($this->resourceBookings->findUnseenResolutionsFor($user, $year) as $booking) {
+                $sections['booking_resolved'][] = ['type' => 'booking_' . $booking->getStatus()->value, 'entity' => $booking, 'date' => $booking->getDate(), 'daysLeft' => null];
+            }
+        }
+
         foreach ($sections as $key => $items) {
             if ($key !== 'prescription') {
                 usort($items, static fn (array $a, array $b): int => $a['date'] <=> $b['date']);
@@ -139,7 +157,7 @@ class NotificationBellComponent extends AbstractController
     /**
      * Secciones a pintar, en orden de prioridad, con sus primeros elementos y cuántos quedan fuera.
      *
-     * @return list<array{key: string, total: int, hidden: int, items: list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>}>
+     * @return list<array{key: string, total: int, hidden: int, items: list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>}>
      */
     public function getSections(): array
     {

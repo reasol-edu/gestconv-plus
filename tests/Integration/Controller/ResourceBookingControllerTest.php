@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Controller;
 
+use App\Entity\AcademicYear;
 use App\Entity\GlobalSettingValue;
+use App\Entity\Group;
 use App\Entity\NonWorkingDay;
+use App\Entity\PersonName;
 use App\Entity\ResourceBooking;
 use App\Entity\ResourceBookingStatus;
 use App\Entity\SettingDefinition;
 use App\Entity\SettingType;
+use App\Entity\SharedResource;
 use App\Entity\Teacher;
+use App\Entity\TimeSlot;
 use App\Tests\Integration\ControllerTestCase;
 use App\Tests\Integration\ResourceBookingScenarioTrait;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
@@ -665,6 +670,49 @@ class ResourceBookingControllerTest extends ControllerTestCase
 
         $this->em->clear();
         self::assertTrue($this->em->getRepository(ResourceBooking::class)->find($booking->getId())?->isResolutionSeen());
+    }
+
+    // ── consultas ─────────────────────────────────────────────────────────────
+
+    public function testCalendarAndListQueryCountsDoNotGrowWithTheNumberOfBookings(): void
+    {
+        $w = $this->makeBookingWorld();
+        $this->makeBooking($w['year'], $w['resource'], $w['owner'], '2026-09-15', [$w['slots'][1][0]])->setGroups([$w['group']]);
+        $this->flush();
+        $this->loginAs($w['admin'], $w['centre']);
+
+        $urls = ['/reservas?date=2026-09-14', '/reservas?view=month&date=2026-09-01', '/reservas/listado'];
+        $yearId     = $w['year']->getId();
+        $resourceId = $w['resource']->getId();
+        $groupId    = $w['group']->getId();
+        $slotIds    = array_map(static fn (array $day): array => array_map(static fn ($slot) => $slot->getId(), $day), $w['slots']);
+
+        $withOne = [];
+        foreach ($urls as $url) {
+            $withOne[$url] = $this->countQueries($url);
+        }
+
+        // countQueries() vacía el mapa de identidad: se vuelve a leer lo que hace falta.
+        $year     = $this->em->find(AcademicYear::class, $yearId);
+        $resource = $this->em->find(SharedResource::class, $resourceId);
+        $group    = $this->em->find(Group::class, $groupId);
+        self::assertNotNull($year);
+        self::assertNotNull($resource);
+        self::assertNotNull($group);
+        for ($i = 0; $i < 6; ++$i) {
+            $teacher = (new Teacher(new PersonName('Extra', 'Docente ' . $i)))->setUsername('extra.' . $i . uniqid('', false));
+            $year->addTeacher($teacher);
+            $this->persist($teacher);
+            $day   = $i % 4 + 1;
+            $slots = array_map(fn ($id) => $this->em->find(TimeSlot::class, $id), $slotIds[$day]);
+            self::assertNotContains(null, $slots);
+            $this->makeBooking($year, $resource, $teacher, '2026-09-' . (15 + $i % 4), $slots)->setGroups([$group]);
+        }
+        $this->flush();
+
+        foreach ($urls as $url) {
+            self::assertLessThanOrEqual($withOne[$url], $this->countQueries($url), $url);
+        }
     }
 
     // ── utilidades ────────────────────────────────────────────────────────────
