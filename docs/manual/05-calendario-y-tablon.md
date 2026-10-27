@@ -119,6 +119,10 @@ Cada actividad tiene:
       los grupos asociados (y la dirección, la coordinación y los administradores). Quien la
       publica la ve siempre en su propio calendario, aunque no imparta en esos grupos.
 
+- **Estado**: *Publicada* (por defecto) o *Borrador*. Una actividad en borrador no se tiene en cuenta
+  para mostrarla en ningún sitio —calendario, tablón, panel de inicio, guardias— hasta que se publique;
+  solo aparece, marcada como «Borrador», en el listado de actividades de quienes la gestionan.
+
 Si no se elige ningún grupo, la actividad es **general** automáticamente y el formulario no muestra
 ninguna opción de visibilidad:
 
@@ -127,6 +131,22 @@ ninguna opción de visibilidad:
 En cuanto se elige un grupo aparecen las dos opciones, cada una con su explicación:
 
 ![Formulario de una actividad con un grupo asociado: aparecen las opciones «General» y «Restringida a grupos»](img/calendario/actividad-formulario.png)
+
+### Informe de una actividad {#informe-de-una-actividad}
+
+Al pulsar el nombre de una actividad en el listado (o **Detalles**) se abre su ficha, con todos sus datos
+y el alumnado asociado separado por grupos. Desde ahí se genera un **informe en PDF** con esa
+información. Pueden hacerlo quien registró la actividad, la coordinación de actividades, el equipo
+directivo y los administradores (los mismos que pueden editarla).
+
+Antes de generarlo hay una casilla por cada grupo con alumnado asociado, todas marcadas por defecto:
+los grupos marcados muestran además el **listado de nombres**; los desmarcados solo indican **cuántos
+estudiantes** hay (ese número sale siempre). Si la actividad no tiene alumnado asociado, el informe
+solo recoge sus datos y los grupos.
+
+El aspecto del informe (encabezado, pie, margen superior y plantilla de fondo) se configura en los
+[ajustes del centro](07-administrar-la-plataforma.md#personalizacion-de-informes), igual que el de los
+demás informes.
 
 ## Modo tablón
 

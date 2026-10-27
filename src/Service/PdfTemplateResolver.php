@@ -17,7 +17,7 @@ final class PdfTemplateResolver
         private readonly AppSettingsInterface $settings,
     ) {}
 
-    /** @param 'incident'|'sanction'|'group_stats'|'guard_duty' $reportType */
+    /** @param 'incident'|'sanction'|'group_stats'|'guard_duty'|'school_event' $reportType */
     public function resolve(string $reportType, string $orientation, EducationalCentre $centre): ?ResolvedSettingFile
     {
         $specific = $this->settings->getFileForCentre("reports.{$reportType}_pdf_template", $centre);

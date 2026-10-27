@@ -1,0 +1,109 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ event.name }} · {{ 'school_event.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+                {% include 'components/_breadcrumb_home.html.twig' %}
+                <a href="{{ path('app_events_index') }}" class="hover:text-forest-600 transition-colors">{{ 'school_event.title'|trans({}, 'admin') }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <h1 class="text-2xl font-bold text-gray-900">{{ event.name }}</h1>
+                {% if event.draft %}
+                    <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">{{ 'school_event.badge.draft'|trans({}, 'admin') }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <a href="{{ path('app_events_edit', {eventId: event.id.toRfc4122}) }}"
+           class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                  hover:bg-gray-50 transition-colors shadow-xs">
+            {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}
+            {{ 'school_event.action.edit'|trans({}, 'admin') }}
+        </a>
+    </div>
+
+    {% if event.draft %}
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {{ 'school_event.show.draft_notice'|trans({}, 'admin') }}
+        </div>
+    {% endif %}
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+        <div class="flex flex-wrap items-center gap-2">
+            <twig:EventTypeBadge :type="event.type" />
+            <span class="text-sm text-gray-700">{{ event.date|date('format.date'|trans) }}</span>
+            <span class="text-sm text-gray-500 tabular-nums">{{ event.startTime|date('H:i') }}–{{ event.endTime|date('H:i') }}</span>
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ event.general ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-600' }}">
+                {{ (event.general ? 'school_event.scope.general' : 'school_event.scope.restricted')|trans({}, 'admin') }}
+            </span>
+        </div>
+
+        {% include 'components/_event_meta.html.twig' with {event: event, class: '', compact: false} only %}
+
+        {% if event.url is not empty %}
+            <p class="text-sm"><a href="{{ event.url }}" target="_blank" rel="noopener noreferrer" class="text-forest-700 hover:underline break-all">{{ event.url }}</a></p>
+        {% endif %}
+
+        {% if event.description is not empty %}
+            <p class="text-sm text-gray-700 whitespace-pre-line">{{ event.description }}</p>
+        {% endif %}
+    </div>
+
+    {% if rosters is not empty %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'school_event.show.students'|trans({}, 'admin') }}</h2>
+            <dl class="space-y-3">
+                {% for roster in rosters %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-700">
+                            {{ roster.group.name }} <span class="text-gray-400 font-normal">({{ roster.count }})</span>
+                        </dt>
+                        <dd class="mt-0.5 text-sm text-gray-600">
+                            {{ roster.students|map(s => s.name.lastName ~ ', ' ~ s.name.firstName)|join(' · ') }}
+                        </dd>
+                    </div>
+                {% endfor %}
+            </dl>
+        </div>
+    {% endif %}
+
+    <form method="get" action="{{ path('app_events_report', {eventId: event.id.toRfc4122}) }}" target="_blank"
+          class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        <input type="hidden" name="options" value="1">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'school_event.report.title'|trans({}, 'admin') }}</h2>
+            <p class="mt-0.5 text-xs text-gray-500">{{ 'school_event.report.help'|trans({}, 'admin') }}</p>
+        </div>
+
+        {% if rosters is not empty %}
+            <fieldset class="px-6 py-4">
+                <legend class="text-sm font-medium text-gray-700 mb-2">{{ 'school_event.report.list_students'|trans({}, 'admin') }}</legend>
+                <div class="space-y-1.5">
+                    {% for roster in rosters %}
+                        <label class="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer">
+                            <input type="checkbox" name="groups[]" value="{{ roster.group.id.toRfc4122 }}" checked
+                                   class="h-4 w-4 shrink-0 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                            <span>{{ roster.group.name }} <span class="text-gray-400">({{ roster.count }})</span></span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <p class="mt-2 text-xs text-gray-500">{{ 'school_event.report.count_always'|trans({}, 'admin') }}</p>
+            </fieldset>
+        {% endif %}
+
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:document-text', {class: 'h-4 w-4'}) }}
+                {{ 'school_event.report.submit'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

@@ -97,6 +97,38 @@ class SchoolEventRepositoryTest extends RepositoryTestCase
 
     // ── Listado paginado / filtros ───────────────────────────────────────────
 
+    public function testDraftsAreLeftOutOfEveryDisplayQuery(): void
+    {
+        $world  = $this->makeWorld('drafts');
+        $viewer = $this->makeTeacher('viewer-drafts');
+        $date   = new \DateTimeImmutable('2026-03-10');
+        $this->makeEvent($world, general: true, name: 'Publicada', date: $date);
+        $this->makeEvent($world, general: true, name: 'Borrador', date: $date)->setDraft(true);
+        $this->flush();
+
+        $names = static fn (array $events): array => array_map(static fn (SchoolEvent $e): string => $e->getName(), $events);
+
+        self::assertSame(['Publicada'], $names($this->repository->findAllForAcademicYearAndDate($world['year'], $date)));
+        self::assertSame(['Publicada'], $names($this->repository->findVisibleForTeacherAndDate($viewer, $world['year'], $date)));
+        self::assertSame(['Publicada'], $names($this->repository->findAllForAcademicYearBetween($world['year'], $date, $date)));
+        self::assertSame(['Publicada'], $names($this->repository->findAllForAcademicYear($world['year'])));
+        self::assertSame(['Publicada'], $names($this->repository->findVisibleForTeacherInAcademicYear($viewer, $world['year'])));
+    }
+
+    public function testDraftsStillShowUpWhenManagingActivities(): void
+    {
+        $world = $this->makeWorld('drafts2');
+        $mine  = $this->makeTeacher('mine-drafts2');
+        $draft = $this->makeEvent($world, general: true, name: 'Borrador')->setDraft(true)->setCreatedBy($mine);
+        $this->flush();
+
+        /** @var list<SchoolEvent> $listed */
+        $listed = $this->repository->createFilteredQuery($world['year'])->getResult();
+        self::assertSame(['Borrador'], array_map(static fn (SchoolEvent $e): string => $e->getName(), $listed));
+        self::assertNotNull($this->repository->findOwnedByAcademicYearAndId($mine, $world['year'], $draft->getId()->toRfc4122()));
+        self::assertNotNull($this->repository->findByAcademicYearAndId($world['year'], $draft->getId()->toRfc4122()));
+    }
+
     public function testCreateFilteredQuerySearchesNameAndDescription(): void
     {
         $world = $this->makeWorld('search');

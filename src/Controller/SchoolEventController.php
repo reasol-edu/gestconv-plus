@@ -19,6 +19,10 @@ use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
+use App\Service\AppSettingsInterface;
+use App\Service\PdfHeaderBuilder;
+use App\Service\PdfRenderer;
+use App\Service\SchoolEventRosterBuilder;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -42,6 +46,10 @@ class SchoolEventController extends AbstractController
         private readonly StudentRepository $students,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
+        private readonly AppSettingsInterface $settings,
+        private readonly PdfRenderer $pdfRenderer,
+        private readonly PdfHeaderBuilder $pdfHeaderBuilder,
+        private readonly SchoolEventRosterBuilder $rosterBuilder,
     ) {}
 
     #[Route('', name: 'app_events_index', methods: ['GET'])]
@@ -140,6 +148,7 @@ class SchoolEventController extends AbstractController
             'organizing_department' => $event->getOrganizingDepartment() ?? '',
             'location'    => $event->getLocation() ?? '',
             'coordinator' => $event->getCoordinator()?->getId()->toRfc4122() ?? '',
+            'draft'       => $event->isDraft() ? '1' : '0',
         ];
         $selectedGroupIds = array_map(
             static fn (Group $g): string => $g->getId()->toRfc4122(),
@@ -193,6 +202,68 @@ class SchoolEventController extends AbstractController
             'studentOptions'       => $this->studentOptions($centre),
             'selectedStudentIds'   => $selectedStudentIds,
         ]);
+    }
+
+    #[Route('/{eventId}', name: 'app_events_show', requirements: ['eventId' => '[0-9a-fA-F-]{36}'], methods: ['GET'])]
+    public function show(string $eventId, #[CurrentCentre] EducationalCentre $centre): Response
+    {
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
+
+        $event = $this->findManageable($centre, $eventId);
+
+        return $this->render('school_event/show.html.twig', [
+            'centre'  => $centre,
+            'event'   => $event,
+            'rosters' => $this->rosterBuilder->build($event),
+        ]);
+    }
+
+    /**
+     * Informe PDF de la actividad. Con `options=1` solo desglosa el alumnado de los grupos marcados en `groups[]`
+     * (el número de estudiantes de cada grupo sale siempre); sin ese parámetro, lista a todos.
+     */
+    #[Route('/{eventId}/informe', name: 'app_events_report', requirements: ['eventId' => '[0-9a-fA-F-]{36}'], methods: ['GET'])]
+    public function report(string $eventId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
+    {
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
+
+        $event   = $this->findManageable($centre, $eventId);
+        $rosters = $this->rosterBuilder->build($event);
+
+        $listed = [];
+        foreach ($rosters as $roster) {
+            $listed[$roster->group->getId()->toRfc4122()] = true;
+        }
+        if ($request->query->getBoolean('options')) {
+            $chosen = array_flip(array_filter($request->query->all('groups'), 'is_string'));
+            $listed = array_intersect_key($listed, $chosen);
+        }
+
+        $title        = $this->t('pdf.school_event.title');
+        $placeholders = [
+            'title'         => $title,
+            'event_name'    => $event->getName(),
+            'event_date'    => $event->getDate()->format('d/m/Y'),
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $event->getAcademicYear()->getName(),
+        ];
+
+        return $this->pdfRenderer->render(
+            'pdf/school_event.html.twig',
+            [
+                'centre'     => $centre,
+                'event'      => $event,
+                'rosters'    => $rosters,
+                'listed'     => $listed,
+                'footerHtml' => $this->pdfHeaderBuilder->buildFooter('school_event', $centre, $placeholders),
+            ],
+            $title . ' — ' . $event->getName(),
+            sprintf('actividad-%s.pdf', substr($event->getId()->toRfc4122(), 0, 8)),
+            header: $this->pdfHeaderBuilder->build('school_event', $centre, $placeholders),
+            draftWatermark: $event->isDraft() && $this->settings->getForCentre('reports.draft_watermark_enabled', $centre) === true,
+            centre: $centre,
+            reportType: 'school_event',
+        );
     }
 
     #[Route('/{eventId}/eliminar', name: 'app_events_delete', methods: ['POST'])]
@@ -256,6 +327,7 @@ class SchoolEventController extends AbstractController
             'organizing_department' => '',
             'location'    => '',
             'coordinator' => '',
+            'draft'       => '0',
         ];
     }
 
@@ -274,6 +346,7 @@ class SchoolEventController extends AbstractController
             'organizing_department' => trim($request->request->getString('organizing_department')),
             'location'    => trim($request->request->getString('location')),
             'coordinator' => trim($request->request->getString('coordinator')),
+            'draft'       => $request->request->getString('draft') === '1' ? '1' : '0',
         ];
     }
 
@@ -418,7 +491,8 @@ class SchoolEventController extends AbstractController
             ->setType($this->types->findById($values['type']))
             ->setOrganizingDepartment($values['organizing_department'] !== '' ? $values['organizing_department'] : null)
             ->setLocation($values['location'] !== '' ? $values['location'] : null)
-            ->setCoordinator($coordinator);
+            ->setCoordinator($coordinator)
+            ->setDraft($values['draft'] === '1');
 
         foreach ($event->getCompanions()->toArray() as $teacher) {
             $event->removeCompanion($teacher);

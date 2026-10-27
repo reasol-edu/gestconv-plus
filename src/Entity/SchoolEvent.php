@@ -45,6 +45,10 @@ class SchoolEvent
     #[ORM\Column]
     private bool $general = false;
 
+    /** En borrador no se tiene en cuenta para mostrarla en ningún sitio (calendario, tablón, panel…); solo se ve al gestionarla. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $draft = false;
+
     /** @var Collection<int, Group> */
     #[ORM\ManyToMany(targetEntity: Group::class)]
     #[ORM\JoinTable(name: 'school_event_group')]
@@ -293,6 +297,18 @@ class SchoolEvent
     public function setGeneral(bool $general): static
     {
         $this->general = $general;
+
+        return $this;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->draft;
+    }
+
+    public function setDraft(bool $draft): static
+    {
+        $this->draft = $draft;
 
         return $this;
     }

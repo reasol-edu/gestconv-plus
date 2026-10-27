@@ -47,7 +47,7 @@ class SchoolEventRepository extends ServiceEntityRepository
     /** Como findByAcademicYearAndId(), pero solo si la actividad la publicó el docente. */
     public function findOwnedByAcademicYearAndId(Teacher $owner, AcademicYear $year, string $id): ?SchoolEvent
     {
-        $result = $this->baseQueryBuilder($year)
+        $result = $this->baseQueryBuilder($year, includeDrafts: true)
             ->andWhere('se.id = :id')
             ->andWhere('se.createdBy = :owner')
             ->setParameter('id', $id, 'uuid')
@@ -154,7 +154,7 @@ class SchoolEventRepository extends ServiceEntityRepository
         ?Teacher $onlyOwnedBy = null,
         string $typeId = '',
     ): Query {
-        $qb = $this->baseQueryBuilder($year)
+        $qb = $this->baseQueryBuilder($year, includeDrafts: true)
             ->orderBy('se.date', 'DESC')
             ->addOrderBy('se.startTime', 'ASC');
 
@@ -187,16 +187,26 @@ class SchoolEventRepository extends ServiceEntityRepository
         return $qb->getQuery();
     }
 
-    private function baseQueryBuilder(AcademicYear $year): QueryBuilder
+    /**
+     * @param bool $includeDrafts Las actividades en borrador solo cuentan al gestionarlas (listado de gestión,
+     *                            edición); en cualquier pantalla que las muestre, no existen.
+     */
+    private function baseQueryBuilder(AcademicYear $year, bool $includeDrafts = false): QueryBuilder
     {
         // Tipo y coordinador son a uno: se traen en la misma consulta para no hacer una por actividad.
-        return $this->createQueryBuilder('se')
+        $qb = $this->createQueryBuilder('se')
             ->distinct()
             ->addSelect('ty', 'co')
             ->leftJoin('se.type', 'ty')
             ->leftJoin('se.coordinator', 'co')
             ->where('se.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid');
+
+        if (!$includeDrafts) {
+            $qb->andWhere('se.draft = false');
+        }
+
+        return $qb;
     }
 
     private function visibleForTeacherQueryBuilder(Teacher $viewer, AcademicYear $year): QueryBuilder

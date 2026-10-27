@@ -328,6 +328,10 @@ booleano anterior.
 | Encabezado izquierdo (profesorado de guardia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (profesorado de guardia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (profesorado de guardia) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Encabezado izquierdo (informe de actividad) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (informe de actividad) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (informe de actividad) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Pie de contenido (informe de actividad) | Global, centro | Texto enriquecido | 0-5000 caracteres | `En {city} a {current_day} de {current_month_name} de {current_year}` |
 | Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
 Los ajustes de **encabezado** controlan el contenido que se repite en cada página de los PDF de
@@ -339,15 +343,19 @@ zonas —izquierda y derecha, en la misma línea— que se editan con un editor 
 milímetros, a qué altura empieza el cuerpo del documento en cada página: conviene aumentarlo si
 el encabezado personalizado ocupa más líneas que el original.
 
-Los ajustes de **pie de contenido** (uno para partes y otro para sanciones, sin equivalente en
-estadísticas por grupo ni en profesorado de guardia) añaden un bloque de texto enriquecido al
+Los ajustes de **pie de contenido** (uno para partes, otro para sanciones y otro para actividades,
+sin equivalente en estadísticas por grupo ni en profesorado de guardia) añaden un bloque de texto enriquecido al
 final del documento, una sola vez. Por defecto muestran la fecha y localidad de generación del
 PDF (por ejemplo, «En Sevilla a 10 de julio de 2026»); se pueden sustituir por cualquier otro
 texto o vaciar por completo.
 
 La **marca de agua de borrador**, cuando está activada, superpone el texto «BORRADOR» en diagonal
 sobre el PDF de un parte o una sanción mientras no se haya notificado a la familia; desaparece en
-cuanto se registra la notificación.
+cuanto se registra la notificación. También se aplica al informe de una [actividad](05-calendario-y-tablon.md#informe-de-una-actividad)
+mientras esté en borrador.
+
+En los encabezados y pies del informe de actividad hay además dos marcadores propios: `{event_name}`
+(nombre de la actividad) y `{event_date}` (su fecha).
 
 ![Ajustes de personalización de informes](img/ajustes/ajustes-informes.png)
 
@@ -383,6 +391,7 @@ texto enriquecido de la categoría.
 | Plantilla PDF de informe de sanciones | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de estadísticas por grupo | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de profesorado de guardia | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF de informe de actividad | Centro | Fichero PDF | Sin plantilla |
 
 Además del encabezado, el pie y el margen, cada centro puede subir un **PDF de una sola página**
 que se usa como fondo de cada página de sus informes — por ejemplo, un membrete oficial ya
@@ -390,9 +399,9 @@ maquetado. Solo tiene ámbito de centro, sin equivalente global: es un elemento 
 cada centro educativo, no un valor de texto que tenga sentido compartir entre centros.
 
 Las dos primeras filas son las plantillas **generales**, una por orientación (vertical y
-apaisada); las cuatro siguientes permiten sustituir, solo para ese tipo de informe en concreto,
+apaisada); las siguientes permiten sustituir, solo para ese tipo de informe en concreto,
 la plantilla general de su orientación. Si un tipo de informe no tiene plantilla propia, se usa la
-general de la orientación que necesita (vertical para partes, sanciones y estadísticas por grupo;
+general de la orientación que necesita (vertical para partes, sanciones, estadísticas por grupo y actividades;
 apaisada para profesorado de guardia); si tampoco hay ninguna general, el informe se genera sin
 fondo, igual que antes de existir este ajuste.
 

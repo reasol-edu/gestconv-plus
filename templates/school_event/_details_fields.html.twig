@@ -57,3 +57,23 @@
         <p class="mt-1.5 text-xs text-gray-500">{{ 'school_event.field.companions_help'|trans({}, 'admin') }}</p>
     </div>
 </div>
+
+<div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-3">
+    <h2 class="text-base font-semibold text-gray-900">{{ 'school_event.section.status'|trans({}, 'admin') }}</h2>
+    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <twig:Form:RadioCard
+            name="draft"
+            value="0"
+            label="{{ 'school_event.status.published'|trans({}, 'admin') }}"
+            help="{{ 'school_event.status.published_help'|trans({}, 'admin') }}"
+            :checked="values.draft != '1'" />
+
+        <twig:Form:RadioCard
+            name="draft"
+            value="1"
+            tone="gray"
+            label="{{ 'school_event.status.draft'|trans({}, 'admin') }}"
+            help="{{ 'school_event.status.draft_help'|trans({}, 'admin') }}"
+            :checked="values.draft == '1'" />
+    </div>
+</div>

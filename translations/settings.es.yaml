@@ -238,6 +238,21 @@ settings.key.reports_group_stats_pdf_template.description: 'Sustituye, solo para
 settings.key.reports_guard_duty_pdf_template.label: 'Plantilla PDF de profesorado de guardia'
 settings.key.reports_guard_duty_pdf_template.description: 'Sustituye, solo para el PDF de profesorado de guardia, a la plantilla general apaisada. Si no se sube ninguna, se usa la plantilla general apaisada (si la hay).'
 
+settings.key.reports_school_event_header_left.label: 'Encabezado de informe de actividad (izquierda)'
+settings.key.reports_school_event_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de una actividad. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_school_event_header_right.label: 'Encabezado de informe de actividad (derecha)'
+settings.key.reports_school_event_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_school_event_header_margin.label: 'Margen para encabezado de informe de actividad'
+settings.key.reports_school_event_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
+
+settings.key.reports_school_event_footer.label: 'Pie de contenido de informe de actividad'
+settings.key.reports_school_event_footer.description: 'Texto que se añade al final del contenido del PDF de una actividad, una sola vez (no se repite en cada página). Admite marcadores de sustitución (consulta la lista completa con el icono de información). Si no se personaliza, se usa por defecto «En {city} a {current_day} de {current_month_name} de {current_year}».'
+
+settings.key.reports_school_event_pdf_template.label: 'Plantilla PDF de informe de actividad'
+settings.key.reports_school_event_pdf_template.description: 'Sustituye, solo para el PDF de una actividad, a la plantilla general vertical. Si no se sube ninguna, se usa la plantilla general vertical (si la hay).'
+
 settings.key.absences_attachment_retention_days.label: 'Retención de adjuntos de actividades'
 settings.key.absences_attachment_retention_days.description: 'Días transcurridos desde la fecha de una actividad a partir de los cuales una tarea programada semanal elimina automáticamente sus ficheros adjuntos (no la actividad ni su descripción). Un valor de 0 desactiva esta eliminación automática.'
 
@@ -255,6 +270,9 @@ settings.placeholder_help.scope.all: 'Todos'
 settings.placeholder_help.scope.reports_only: 'Solo partes'
 settings.placeholder_help.scope.reports_and_sanctions: 'Partes y sanciones'
 settings.placeholder_help.scope.group_stats_only: 'Solo estadísticas por grupo'
+settings.placeholder_help.scope.school_event_only: 'Solo actividades'
+settings.placeholder_help.marker.event_name: 'Nombre de la actividad'
+settings.placeholder_help.marker.event_date: 'Fecha de la actividad (dd/mm/aaaa)'
 
 settings.placeholder_help.marker.title: 'Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo»)'
 settings.placeholder_help.marker.report_nr: 'Número del parte'

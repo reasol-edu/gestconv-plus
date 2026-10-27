@@ -743,6 +743,125 @@ class SchoolEventControllerTest extends ControllerTestCase
         self::assertSame('Ana', $saved->getStudents()->first()->getName()->getFirstName());
     }
 
+    public function testNewPostCanSaveTheActivityAsADraft(): void
+    {
+        [$admin, $centre] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
+        self::assertSelectorExists('input[name="draft"][value="1"]');
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/actividades/nuevo', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Por confirmar',
+            'type'       => $this->typeId,
+            'draft'      => '1',
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        self::assertTrue($this->em->getRepository(SchoolEvent::class)->findAll()[0]->isDraft());
+    }
+
+    public function testActivitiesArePublishedByDefault(): void
+    {
+        [$admin, $centre] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+        $this->client->request('POST', '/actividades/nuevo', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Normal',
+            'type'       => $this->typeId,
+        ]);
+
+        $this->em->clear();
+        self::assertFalse($this->em->getRepository(SchoolEvent::class)->findAll()[0]->isDraft());
+    }
+
+    public function testTheDetailsPageListsTheStudentsByGroupAndOffersTheReport(): void
+    {
+        [$admin, $centre, $group, $year] = $this->makeScenario();
+        $ana = $this->makeStudent('Ana', $group);
+        $this->persist($ana);
+        $event = $this->makeEvent($year, 'Excursión')->addGroup($group)->addStudent($ana)->setDraft(true);
+        $this->persist($event);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Excursión');
+        self::assertSelectorTextContains('body', 'borrador');
+        self::assertSelectorTextContains('body', 'Test, Ana');
+        self::assertSelectorExists('form[action$="/informe"] input[name="groups[]"][checked]');
+    }
+
+    public function testTheReportIsAPdfWithOrWithoutTheStudentLists(): void
+    {
+        [$admin, $centre, $group, $year] = $this->makeScenario();
+        $ana = $this->makeStudent('Ana', $group);
+        $this->persist($ana);
+        $event = $this->makeEvent($year, 'Excursión')->addGroup($group)->addStudent($ana);
+        $this->persist($event);
+        $this->loginAs($admin, $centre);
+        $url = '/actividades/' . $event->getId()->toRfc4122() . '/informe';
+
+        foreach ([$url, $url . '?options=1&groups[]=' . $group->getId()->toRfc4122(), $url . '?options=1'] as $address) {
+            $this->client->request('GET', $address);
+            self::assertResponseIsSuccessful();
+            self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+            self::assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+        }
+    }
+
+    public function testTheReportOfAnActivityWithoutStudentsOrGroupsStillWorks(): void
+    {
+        [$admin, $centre, , $year] = $this->makeScenario();
+        $event = $this->makeEvent($year, 'Claustro');
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/informe');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+    }
+
+    public function testATeacherCannotOpenTheDetailsOrTheReportOfSomeoneElsesActivity(): void
+    {
+        $this->definePublishScope('all');
+        [$teacher, $centre, , $year] = $this->makeMemberScenario();
+        $event = $this->makeEvent($year, 'Ajena');
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122());
+        self::assertResponseStatusCodeSame(404);
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/informe');
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testAnAuthorCanGenerateTheReportOfTheirOwnActivity(): void
+    {
+        $this->definePublishScope('all');
+        [$teacher, $centre, , $year] = $this->makeMemberScenario();
+        $event = $this->makeEvent($year, 'Mía')->setCreatedBy($teacher);
+        $this->persist($event);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/informe');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+    }
+
     private function makeStudent(string $firstName, Group $group): Student
     {
         $student = (new Student(new PersonName($firstName, 'Test')))->setStudentId('NIE' . uniqid('', false));

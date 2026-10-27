@@ -102,8 +102,11 @@
                             <td data-label="{{ 'school_event.col.name'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <twig:EventTypeBadge :type="event.type" />
-                                    <a href="{{ path('app_events_edit', {eventId: event.id.toRfc4122}) }}"
+                                    <a href="{{ path('app_events_show', {eventId: event.id.toRfc4122}) }}"
                                        class="font-medium text-gray-900 hover:text-forest-700 transition-colors">{{ event.name }}</a>
+                                    {% if event.draft %}
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">{{ 'school_event.badge.draft'|trans({}, 'admin') }}</span>
+                                    {% endif %}
                                 </div>
                                 {% include 'components/_event_meta.html.twig' with {event: event, class: 'mt-1', compact: true} only %}
                             </td>
@@ -122,6 +125,12 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ path('app_events_show', {eventId: event.id.toRfc4122}) }}"
+                                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium
+                                              text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                        {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
+                                        {{ 'school_event.action.details'|trans({}, 'admin') }}
+                                    </a>
                                     <a href="{{ path('app_events_edit', {eventId: event.id.toRfc4122}) }}"
                                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium
                                               text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">

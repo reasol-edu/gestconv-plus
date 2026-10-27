@@ -1,0 +1,111 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+    <p class="section-title">
+        {{ 'pdf.school_event.title'|trans({}, 'admin') }}{% if event.draft %} · {{ 'school_event.badge.draft'|trans({}, 'admin') }}{% endif %}
+    </p>
+
+    <p style="font-size:14pt;font-weight:bold;color:#111827;margin-bottom:6px;">{{ event.name }}</p>
+
+    <table class="data-table">
+        <tbody>
+            <tr>
+                <td style="width:28%;"><strong>{{ 'school_event.field.type'|trans({}, 'admin') }}</strong></td>
+                <td>{{ event.type is not null ? event.type.name : '—' }}</td>
+            </tr>
+            <tr>
+                <td><strong>{{ 'school_event.field.date'|trans({}, 'admin') }}</strong></td>
+                <td>{{ event.date|date('format.date'|trans) }}</td>
+            </tr>
+            <tr>
+                <td><strong>{{ 'pdf.school_event.schedule'|trans({}, 'admin') }}</strong></td>
+                <td>{{ event.startTime|date('format.time'|trans) }} – {{ event.endTime|date('format.time'|trans) }}</td>
+            </tr>
+            {% if event.location is not empty %}
+                <tr>
+                    <td><strong>{{ 'pdf.school_event.location'|trans({}, 'admin') }}</strong></td>
+                    <td>{{ event.location }}</td>
+                </tr>
+            {% endif %}
+            {% if event.organizingDepartment is not empty %}
+                <tr>
+                    <td><strong>{{ 'pdf.school_event.department'|trans({}, 'admin') }}</strong></td>
+                    <td>{{ event.organizingDepartment }}</td>
+                </tr>
+            {% endif %}
+            {% if event.coordinator is not null %}
+                <tr>
+                    <td><strong>{{ 'pdf.school_event.coordinator'|trans({}, 'admin') }}</strong></td>
+                    <td>{{ event.coordinator.name.full() }}</td>
+                </tr>
+            {% endif %}
+            {% if event.companions|length > 0 %}
+                <tr>
+                    <td><strong>{{ 'pdf.school_event.companions'|trans({}, 'admin') }}</strong></td>
+                    <td>{{ event.companions|map(t => t.name.full())|join(', ') }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <td><strong>{{ 'school_event.col.scope'|trans({}, 'admin') }}</strong></td>
+                <td>{{ (event.general ? 'school_event.scope.general' : 'school_event.scope.restricted')|trans({}, 'admin') }}</td>
+            </tr>
+            {% if event.url is not empty %}
+                <tr>
+                    <td><strong>{{ 'pdf.school_event.url'|trans({}, 'admin') }}</strong></td>
+                    <td>{{ event.url }}</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% if event.description is not empty %}
+        <p class="subsection-title">{{ 'school_event.field.description'|trans({}, 'admin') }}</p>
+        <p>{{ event.description|nl2br }}</p>
+    {% endif %}
+
+    {% if event.groups|length > 0 %}
+        <p class="section-title">{{ 'pdf.school_event.groups'|trans({}, 'admin') }}</p>
+
+        {% set counts = {} %}
+        {% for roster in rosters %}
+            {% set counts = counts|merge({(roster.group.id.toRfc4122): roster.count}) %}
+        {% endfor %}
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'pdf.school_event.group'|trans({}, 'admin') }}</th>
+                    {% if rosters is not empty %}<th style="width:25%;">{{ 'pdf.school_event.student_count'|trans({}, 'admin') }}</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in event.groups|sort((a, b) => a.name <=> b.name) %}
+                    <tr>
+                        <td>{{ group.name }}</td>
+                        {% if rosters is not empty %}<td>{{ counts[group.id.toRfc4122] ?? 0 }}</td>{% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% for roster in rosters %}
+            {% if listed[roster.group.id.toRfc4122] is defined %}
+                <p class="subsection-title">{{ 'pdf.school_event.students_of'|trans({'%group%': roster.group.name, '%count%': roster.count}, 'admin') }}</p>
+                <table class="data-table">
+                    <tbody>
+                        {% for student in roster.students %}
+                            <tr>
+                                <td style="width:8%;">{{ loop.index }}</td>
+                                <td>{{ student.name.lastName }}, {{ student.name.firstName }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if footerHtml %}
+        <div class="prose-block">{{ footerHtml|raw }}</div>
+    {% endif %}
+{% endblock %}
