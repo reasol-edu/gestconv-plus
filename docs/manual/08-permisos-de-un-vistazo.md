@@ -163,7 +163,8 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Gestionar días no lectivos, con importación desde iCal y CSV de Séneca | — | ✓ | ✓ |
 | Gestionar perfiles (comisión, orientación y coordinación de actividades) | — | ✓ | ✓ |
 | Gestionar el catálogo de tipos de [actividad](05-calendario-y-tablon.md#actividades-de-centro) | — | ✓ | ✓ |
-| Activar o desactivar [secciones](07-administrar-la-plataforma.md#secciones-de-la-aplicacion) (Salidas, Ausencias, Notas, tareas de sanción, Actividades) en el centro, salvo que el valor global esté bloqueado | — | ✓ | ✓ |
+| Gestionar el catálogo de [recursos compartidos](06-administrar-el-centro.md#recursos-compartidos) (categorías, responsables y recursos) | — | ✓ | ✓ |
+| Activar o desactivar [secciones](07-administrar-la-plataforma.md#secciones-de-la-aplicacion) (Salidas, Ausencias, Notas, tareas de sanción, Actividades, Reservas) en el centro, salvo que el valor global esté bloqueado | — | ✓ | ✓ |
 
 ### Actividades de centro
 
@@ -172,6 +173,18 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Ver las actividades en el calendario | Las generales y las de sus grupos | Todas | Todas | Todas |
 | [Publicar](05-calendario-y-tablon.md#quien-puede-publicar-actividades) | Solo con el ajuste «Todos» | ✓ | ✓ | ✓ |
 | Listar, modificar y eliminar | Solo las que ha publicado, con el ajuste «Todos» | Todas | Todas | Todas |
+
+### Reservas de recursos
+
+| Acción | Docente | Responsable de la categoría | Admin de centro | Admin global |
+|---|:---:|:---:|:---:|:---:|
+| Ver el calendario y las reservas de todo el centro | ✓ | ✓ | ✓ | ✓ |
+| [Reservar](03-el-trabajo-diario.md#reservas) | ✓, salvo en las categorías restringidas | ✓ | ✓ | ✓ |
+| Reservar a nombre de otro docente | — | En los recursos de su categoría | ✓ | ✓ |
+| Reservar en el pasado o sin límite de antelación | — | ✓ | ✓ | ✓ |
+| Editar y eliminar | Solo las suyas | Las de los recursos de su categoría | Todas | Todas |
+| Aprobar o rechazar las reservas pendientes | — | Las de su categoría | Todas | Todas |
+| Recibir el aviso de una solicitud pendiente | — | Las de su categoría | Si la categoría no tiene responsables | — |
 
 ## Administración global
 

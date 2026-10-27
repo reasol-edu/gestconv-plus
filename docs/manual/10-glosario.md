@@ -78,6 +78,15 @@ Perfil especial de centro. Sus miembros ven, modifican y eliminan todas las acti
 **Actividad de centro**
 Aviso puntual con fecha, horario y tipo (complementaria, extraescolar u otros) que se muestra en el calendario, las guardias, el panel de inicio y el modo tablón. Puede indicar lugar, departamento organizador, coordinación y grupos destinatarios. Hasta la versión 1.12 se llamaba *evento*.
 
+**Recurso compartido**
+Dependencia o material del centro que el profesorado puede reservar por tramos horarios (un aula de informática, el salón de actos, un carro de portátiles…). Se organiza en categorías y lo define la dirección en Centro educativo › Recursos compartidos.
+
+**Responsable de categoría**
+Docente que gestiona las reservas de todos los recursos de una categoría —las edita, las elimina y, si la categoría lo exige, las valida— y puede reservar aunque esté restringida.
+
+**Reserva**
+Uso de un recurso compartido un día, en uno o varios tramos horarios, a nombre de un docente. Puede repetirse cada semana (serie) y, en las categorías con validación, nace *pendiente* hasta que un responsable la aprueba o la rechaza; mientras tanto ocupa el tramo.
+
 **Tutor/a de grupo**
 Docente responsable de un grupo. Puede consultar todos los partes del grupo además de los propios.
 

@@ -17,7 +17,7 @@ puede usar (un grupo sin ninguna entrada visible no aparece):
 
 - **Inicio**, suelto arriba.
 - **Día a día** — lo que se usa en mitad de la clase, también desde el móvil: **Salidas**,
-  **Guardias**, **Ausencias** y **Calendario**.
+  **Guardias**, **Ausencias**, **Reservas** y **Calendario**.
 - **Convivencia** — **Partes**, **Notas**, **Sanciones**, **Tareas de sanción**,
   **Notificaciones** y **Mi tutoría**. Es el recorrido completo de un incidente: se registra, se
   sanciona si procede, se cumplen las tareas y se informa a la familia.
@@ -685,6 +685,113 @@ archivo ZIP:
   descarga los adjuntos de **todas** las tareas de esa sanción, en carpetas separadas por materia.
 
 ![Alumnado sancionado con el desplegable de una tarea abierto](img/guardias/guardias-alumnado-sancionado.png)
+
+## Reservas {#reservas}
+
+La sección **Reservas** del menú lateral (grupo **Día a día**) sirve para reservar los **recursos
+compartidos** del centro —aulas de informática, el salón de actos, carros de portátiles…— por tramos
+horarios, sin tener que ir preguntando quién los tiene. Los recursos y sus categorías los define el
+equipo directivo (ver [Recursos compartidos](06-administrar-el-centro.md#recursos-compartidos)).
+Cualquier docente del curso visualizado puede reservar, salvo en las categorías que el centro
+restringe a sus responsables. La sección tiene dos pestañas, **Calendario** y **Listado**, y un botón
+**Reservar** siempre a mano.
+
+### El calendario
+
+![Calendario semanal de reservas con los tramos en filas y los días en columnas](img/reservas/reservas-calendario.png)
+
+Muestra todas las reservas del centro, para que se vea de un vistazo qué está libre:
+
+- **Vista semanal** (por defecto): los tramos horarios en filas y los días en columnas. Cada reserva
+  es una etiqueta con el recurso, el docente y los grupos, del color de su categoría. Las
+  **pendientes de validar** llevan el borde discontinuo y la marca *Pendiente*. Los días no lectivos
+  se sombrean. El **+** de la cabecera de cada día abre el formulario con esa fecha.
+- **Vista mensual**: una celda por día con sus reservas (las que no caben se resumen en «+N más», que
+  lleva a esa semana).
+- Las flechas y **Hoy** navegan por semanas o meses; **Semana / Mes** cambia de vista sin perder la
+  fecha.
+- Los **filtros** (categoría, recurso, docente y grupo) se aplican al elegirlos y se combinan entre
+  sí; **Quitar filtros** los limpia. Las reservas rechazadas no se muestran porque no ocupan el
+  recurso.
+
+Pulsar una reserva abre su ficha, con todos los datos y las acciones que te correspondan.
+
+![Vista mensual del calendario de reservas](img/reservas/reservas-calendario-mes.png)
+
+### Hacer una reserva
+
+El botón **Reservar** abre el formulario:
+
+![Formulario de una reserva con el recurso, la fecha, los tramos horarios, los grupos y la periodicidad](img/reservas/reservas-nueva.png)
+
+- **Recurso** (obligatorio): los recursos que puedes reservar, agrupados por categoría.
+- **Docente que reserva**: solo lo ven la dirección y los responsables de categorías, que pueden
+  reservar **a nombre de otro docente**. El resto reserva siempre a su nombre.
+- **Fecha** (obligatoria) y **tramos horarios** (al menos uno): al elegir la fecha solo se ofrecen
+  los tramos de ese día de la semana, y se pueden marcar varios.
+- **Grupos** asociados y **descripción**: opcionales. Los grupos se muestran como etiquetas de color
+  en el calendario y en los listados.
+- **Repetir cada semana**: marca la casilla e indica la fecha final. Se reserva el mismo día de la
+  semana y los mismos tramos desde la fecha elegida hasta esa (como mucho 60 semanas).
+
+Un recurso admite **una sola reserva por día y tramo**: si alguno de los tramos ya está ocupado, el
+formulario lo rechaza. Las reservas **pendientes de validar ocupan el tramo** igual que las
+aprobadas; solo lo libera una reserva rechazada o eliminada. Tampoco se puede reservar en un día no
+lectivo, en una fecha pasada ni con más antelación de la permitida (ver
+[Ajustes de Reservas](07-administrar-la-plataforma.md#reservas)); la dirección y los responsables de
+la categoría no tienen esos límites de fecha.
+
+#### Periodicidad: previsualizar y elegir
+
+Con **Repetir cada semana** el formulario no guarda nada todavía: abre una **previsualización** con
+todas las fechas de la periodicidad.
+
+![Previsualización de una reserva periódica con las fechas libres y las ocupadas](img/reservas/reservas-previsualizacion.png)
+
+Cada fecha indica si está **libre** o por qué no se puede (**ocupada** —con el nombre de quien la
+tiene—, **día no lectivo**, **fecha pasada** o **fuera de la antelación máxima**). Las libres vienen
+marcadas y puedes desmarcar las que no quieras; las demás se omiten. **Crear reservas** guarda solo
+las marcadas, que quedan unidas como una **serie**.
+
+### Validación de las reservas
+
+Algunas categorías exigen que un responsable **valide** las reservas del profesorado. En ellas, tu
+reserva nace **pendiente**: ocupa el tramo, pero un responsable debe aprobarla o rechazarla. Recibes
+un aviso (en la campana, en el correo o en el resumen diario, según tu preferencia) cuando se
+resuelve, y si la rechazan verás el **motivo** que haya escrito. Las reservas de la dirección y de
+los responsables de la categoría nacen ya aprobadas.
+
+Si cambias el recurso, la fecha o los tramos de una reserva aprobada en una categoría con validación,
+vuelve a quedar pendiente. Corregir una reserva **rechazada** la presenta de nuevo.
+
+Quien valida ve en la **campana** y en el **panel de inicio** (tarjeta **Reservas por validar**) las
+solicitudes que le tocan, y las resuelve desde la ficha de la reserva o con el botón **Aprobar** del
+listado. Las series se pueden aprobar o rechazar enteras.
+
+### Editar y eliminar
+
+Desde la ficha de una reserva, **Editar** abre el mismo formulario y **Eliminar** la borra (con
+confirmación). Cada docente gestiona **las suyas**; los **responsables** de una categoría gestionan
+todas las de sus recursos y la **dirección** (administradores del centro y de la plataforma), todas.
+
+Si la reserva forma parte de una serie, el formulario ofrece **Solo esta reserva** o **Toda la
+serie** (esta y las siguientes que no han pasado: cambian el recurso, los tramos, el docente, los
+grupos y la descripción, pero cada fecha se mantiene; las ya pasadas conservan su historial). La
+ficha tiene igualmente **Eliminar** y **Eliminar la serie**.
+
+### El listado
+
+La pestaña **Listado** muestra las reservas en una tabla paginada. De entrada salen **tus reservas a
+partir de hoy**; vaciando la fecha **Desde** se ven también las pasadas. Los filtros son la fecha
+(**Desde** / **Hasta**), la categoría, el recurso, el grupo y el estado (pendiente, aprobada o
+rechazada).
+
+![Listado de reservas con los filtros y las acciones de cada fila](img/reservas/reservas-listado.png)
+
+Quien es responsable de alguna categoría, o administra el centro, ve además el selector **Ver**:
+**Mis reservas** o **Todas las que gestiono** (todas las del centro para la dirección; las de sus
+categorías para un responsable), con el filtro **Docente** y las acciones de validar, editar y
+eliminar sobre las de otros.
 
 ## Tareas de sanción
 

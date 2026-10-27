@@ -162,7 +162,7 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
 Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón, Actividades,
-Notificaciones a familias, Avisos por correo, Personalización de informes, Plantillas de informes,
+Reservas, Notificaciones a familias, Avisos por correo, Personalización de informes, Plantillas de informes,
 Ausencias, Tareas de sanción y Subida de ficheros.
 
 ### Visualización
@@ -197,6 +197,17 @@ Decide quién puede crear, editar y eliminar las
 dirección y los administradores (valor por defecto) o cualquier docente del centro, que entonces
 solo gestiona las que ha publicado él. La coordinación de actividades, un perfil del centro,
 gestiona todas en cualquier caso.
+
+### Reservas {#reservas}
+
+| Ajuste | Ámbito | Tipo | Rango | Por defecto |
+|---|---|---|---|---|
+| Antelación máxima de las reservas (días) | Global, centro | Entero | 0-365 | 0 (sin límite) |
+
+Cuántos días por delante de hoy, como máximo, puede [reservar](03-el-trabajo-diario.md#reservas) un
+docente un recurso compartido. Cada categoría de recursos puede fijar su propio límite
+([Recursos compartidos](06-administrar-el-centro.md#recursos-compartidos)), que sustituye a este; la
+dirección y los responsables de la categoría no tienen límite.
 
 ### Modo tablón
 
@@ -507,6 +518,7 @@ Mientras está activado:
 | Notas del día | Global, centro | Activado / Desactivado | Activado |
 | Tareas de sanción | Global, centro | Activado / Desactivado | Activado |
 | Actividades de centro | Global, centro | Activado / Desactivado | Activado |
+| Reservas de recursos | Global, centro | Activado / Desactivado | Activado |
 
 Permiten que un centro (o toda la plataforma) no use una parte de la aplicación. Todas vienen
 **activadas**, así que nada cambia hasta que alguien las desactiva. Siguen las reglas de cualquier
@@ -539,6 +551,10 @@ Qué incluye cada una:
   [actividades](05-calendario-y-tablon.md#actividades-de-centro), su entrada del menú lateral, sus
   avisos en el panel de inicio, la vista de día, las guardias y el tablón, el catálogo de tipos de
   actividad y el perfil de coordinación de actividades. Se desactiva de una vez, entera.
+- **Reservas de recursos**: la sección [Reservas](03-el-trabajo-diario.md#reservas) (calendario y
+  listado), sus avisos en la campana y en el panel de inicio, y el catálogo de
+  [recursos compartidos](06-administrar-el-centro.md#recursos-compartidos) del centro. Los recursos y
+  las reservas ya registrados se conservan.
 
 ## Copias de seguridad
 

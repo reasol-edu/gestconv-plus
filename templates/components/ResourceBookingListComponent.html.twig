@@ -101,40 +101,37 @@
             <table class="table-cards w-full text-sm">
                 <thead>
                     <tr class="border-b border-gray-100 bg-gray-50">
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.date'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.time_slot'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.resource'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.teacher'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.groups'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.status'|trans({}, 'admin') }}</th>
-                        <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.actions'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.when'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.resource'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.teacher'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.groups'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.status'|trans({}, 'admin') }}</th>
+                        <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'booking.col.actions'|trans({}, 'admin') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for booking in pagination.items %}
                         <tr class="hover:bg-gray-50 transition-colors {{ booking.rejected ? 'opacity-60' : '' }}">
-                            <td data-label="{{ 'booking.col.date'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 text-gray-700 whitespace-nowrap">
-                                {{ ('weekday.' ~ booking.date|date('N'))|trans({}, 'calendar') }} {{ booking.date|date('format.date'|trans) }}
-                            </td>
-                            <td data-label="{{ 'booking.col.time_slot'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 text-gray-600">
+                            <td data-label="{{ 'booking.col.when'|trans({}, 'admin')|e('html_attr') }}" class="px-4 py-4 whitespace-nowrap">
+                                <span class="block font-medium text-gray-800">{{ ('weekday.' ~ booking.date|date('N'))|trans({}, 'calendar') }} {{ booking.date|date('format.date'|trans) }}</span>
                                 {% for slot in booking.timeSlotsOrdered %}
-                                    <span class="block whitespace-nowrap">{{ slot.name }} <span class="text-xs tabular-nums text-gray-400">{{ slot.startTime|date('H:i') }}–{{ slot.endTime|date('H:i') }}</span></span>
+                                    <span class="block text-xs text-gray-500">{{ slot.name }} <span class="tabular-nums text-gray-400">{{ slot.startTime|date('H:i') }}–{{ slot.endTime|date('H:i') }}</span></span>
                                 {% endfor %}
                             </td>
-                            <td data-label="{{ 'booking.col.resource'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
+                            <td data-label="{{ 'booking.col.resource'|trans({}, 'admin')|e('html_attr') }}" class="px-4 py-4">
                                 <a href="{{ path('app_bookings_show', {id: booking.id}) }}" class="font-medium text-gray-900 hover:text-forest-700 transition-colors">{{ booking.resource.name }}</a>
                                 <div class="mt-1"><twig:EventTypeBadge :type="booking.resource.category" /></div>
                             </td>
-                            <td data-label="{{ 'booking.col.teacher'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 text-gray-700">{{ booking.teacher.name.full() }}</td>
-                            <td data-label="{{ 'booking.col.groups'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
+                            <td data-label="{{ 'booking.col.teacher'|trans({}, 'admin')|e('html_attr') }}" class="px-4 py-4 text-gray-700">{{ booking.teacher.name.full() }}</td>
+                            <td data-label="{{ 'booking.col.groups'|trans({}, 'admin')|e('html_attr') }}" class="px-4 py-4">
                                 <div class="flex flex-wrap gap-1">
                                     {% for group in booking.groups %}<twig:GroupChip :group="group" />{% endfor %}
                                 </div>
                             </td>
-                            <td data-label="{{ 'booking.col.status'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
+                            <td data-label="{{ 'booking.col.status'|trans({}, 'admin')|e('html_attr') }}" class="px-4 py-4">
                                 {% include 'resource_booking/_status_badge.html.twig' with {booking: booking} only %}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-4">
                                 <div class="flex items-center justify-end gap-2">
                                     {% if booking.pending and is_granted('resource_booking.manage', booking) %}
                                         <form method="post" action="{{ path('app_bookings_approve', {id: booking.id}) }}">
@@ -147,21 +144,23 @@
                                         </form>
                                     {% endif %}
                                     <a href="{{ path('app_bookings_show', {id: booking.id}) }}"
-                                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
-                                        {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}{{ 'booking.action.view'|trans({}, 'admin') }}
+                                       title="{{ 'booking.action.view'|trans({}, 'admin') }}" aria-label="{{ 'booking.action.view'|trans({}, 'admin') }}"
+                                       class="inline-flex items-center rounded-lg border border-gray-200 px-2 py-1.5 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                        {{ ux_icon('heroicons:eye', {class: 'h-3.5 w-3.5'}) }}
                                     </a>
                                     {% if is_granted('resource_booking.edit', booking) %}
                                         <a href="{{ path('app_bookings_edit', {id: booking.id}) }}"
-                                           class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
-                                            {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}{{ 'booking.action.edit'|trans({}, 'admin') }}
+                                           title="{{ 'booking.action.edit'|trans({}, 'admin') }}" aria-label="{{ 'booking.action.edit'|trans({}, 'admin') }}"
+                                           class="inline-flex items-center rounded-lg border border-gray-200 px-2 py-1.5 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                            {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
                                         </a>
                                         <form method="post" action="{{ path('app_bookings_delete', {id: booking.id}) }}" class="js-confirm-form"
                                               data-confirm="{{ 'booking.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_booking_' ~ booking.id) }}">
                                             <input type="hidden" name="back" value="list">
                                             <button type="submit"
-                                                    class="js-confirm-trigger inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
-                                                    aria-label="{{ 'booking.action.delete'|trans({}, 'admin') }}">
+                                                    class="js-confirm-trigger inline-flex items-center rounded-lg border border-red-200 px-2 py-1.5 text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
+                                                    title="{{ 'booking.action.delete'|trans({}, 'admin') }}" aria-label="{{ 'booking.action.delete'|trans({}, 'admin') }}">
                                                 {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}
                                             </button>
                                         </form>

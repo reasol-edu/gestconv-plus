@@ -20,9 +20,13 @@ use App\Entity\GroupTeacher;
 use App\Entity\IncidentBehavior;
 use App\Entity\IncidentReport;
 use App\Entity\LocationOption;
+use App\Entity\ResourceBooking;
+use App\Entity\ResourceBookingStatus;
+use App\Entity\ResourceCategory;
 use App\Entity\Sanction;
 use App\Entity\SanctionMeasure;
 use App\Entity\SchoolEvent;
+use App\Entity\SharedResource;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Entity\TimeSlot;
@@ -33,6 +37,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * TEMPORAL — datos de demostración para las capturas del manual, las fichas y la presentación
@@ -262,10 +267,85 @@ final class TmpSeedShotsCommand extends Command
             $this->em->persist(new ActivityLog($today->modify('-1 day')->setTime(18, 30 + $minute++), '192.168.1.' . (20 + $minute), $action, $user, null, $this->year, $data));
         }
 
+        $this->seedBookings($centre, $today, $slots, [
+            'roberto' => $roberto, 'beatriz' => $beatriz, 'carmen' => $carmen, 'pedro' => $pedro, 'maria' => $maria, 'rafael' => $rafael,
+        ], ['A' => $groupA, 'B' => $groupB, 'Bac' => $groupBac, 'Daw' => $groupDaw]);
+
         $this->em->flush();
         $output->writeln('Datos de demostración sembrados.');
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Reservas de recursos compartidos: dos categorías (una con validación), sus recursos y reservas en la semana de «hoy»
+     * y en las siguientes, con una serie semanal y varias solicitudes pendientes. Los tramos del lunes ya existen; se crean
+     * los de martes a viernes con los mismos nombres y horas.
+     *
+     * @param list<TimeSlot>         $mondaySlots
+     * @param array<string, Teacher> $t
+     * @param array<string, Group>   $g
+     */
+    private function seedBookings(EducationalCentre $centre, \DateTimeImmutable $today, array $mondaySlots, array $t, array $g): void
+    {
+        $byDay = [0 => $mondaySlots];
+        foreach ([1, 2, 3, 4] as $day) {
+            foreach ([['1ª hora', '08:15', '09:15'], ['2ª hora', '09:15', '10:15'], ['3ª hora', '10:15', '11:15']] as [$name, $from, $to]) {
+                $slot = (new TimeSlot())->setAcademicYear($this->year)->setName($name)->setDayOfWeek($day)
+                    ->setStartTime(new \DateTimeImmutable("2000-01-01 $from"))->setEndTime(new \DateTimeImmutable("2000-01-01 $to"));
+                $this->em->persist($slot);
+                $byDay[$day][] = $slot;
+            }
+        }
+
+        $dependencias = (new ResourceCategory())->setEducationalCentre($centre)->setName('Dependencias')->setColor('#2563eb')->addManager($t['rafael']);
+        $carros       = (new ResourceCategory())->setEducationalCentre($centre)->setName('Carros de portátiles')->setColor('#16a34a')
+            ->setRequiresApproval(true)->setMaxAdvanceDays(30)->addManager($t['beatriz']);
+        $this->em->persist($dependencias);
+        $this->em->persist($carros);
+        $res = [];
+        foreach ([
+            ['inf1', $dependencias, 'Aula de informática 1', 'Planta 2'],
+            ['inf2', $dependencias, 'Aula de informática 2', 'Planta 2'],
+            ['salon', $dependencias, 'Salón de actos', 'Planta baja'],
+            ['carro1', $carros, 'Carro de portátiles 1', 'Conserjería'],
+            ['carro2', $carros, 'Carro de portátiles 2', 'Conserjería'],
+        ] as [$key, $category, $name, $location]) {
+            $res[$key] = (new SharedResource())->setCategory($category)->setName($name)->setLocation($location);
+            $this->em->persist($res[$key]);
+        }
+        $this->em->flush();
+
+        $book = function (string $resource, string $who, int $dayOffset, array $slotIdx, array $groups, string $description = '', ResourceBookingStatus $status = ResourceBookingStatus::Approved, ?Uuid $series = null) use ($res, $t, $today, $byDay): void {
+            $date = $today->modify("+$dayOffset days");
+            $day  = (int) $date->format('N') - 1;
+            $booking = (new ResourceBooking())->setAcademicYear($this->year)->setResource($res[$resource])->setTeacher($t[$who])->setDate($date)
+                ->setTimeSlots(array_map(static fn (int $i): TimeSlot => $byDay[$day][$i], $slotIdx))->setGroups($groups)
+                ->setDescription($description !== '' ? $description : null)->setStatus($status)->setSeriesId($series);
+            $this->em->persist($booking);
+        };
+
+        // Semana de «hoy» (lunes)
+        $book('inf1', 'roberto', 0, [0, 1], [$g['A']], 'Práctica de hojas de cálculo');
+        $book('carro1', 'pedro', 0, [2], [$g['Bac']], 'Comentario de texto en línea', ResourceBookingStatus::Pending);
+        $book('salon', 'rafael', 1, [1, 2], [], 'Charla de orientación académica');
+        $book('inf2', 'beatriz', 1, [0], [$g['B']]);
+        $book('inf1', 'carmen', 2, [1], [$g['Daw']], 'Instalación de entornos de desarrollo');
+        $book('carro2', 'roberto', 2, [0], [$g['A']]);
+        $book('inf1', 'pedro', 3, [0, 1], [$g['Bac']]);
+        $book('carro1', 'maria', 3, [2], [$g['B']], 'Evaluación inicial', ResourceBookingStatus::Pending);
+        $book('salon', 'carmen', 4, [0, 1, 2], [], 'Jornada de convivencia');
+        // Serie semanal de los lunes
+        $series = Uuid::v7();
+        foreach ([0, 7, 14, 21] as $offset) {
+            $book('inf2', 'roberto', $offset, [1], [$g['A']], 'Taller de programación', ResourceBookingStatus::Approved, $series);
+        }
+        // Semanas siguientes
+        $book('carro2', 'beatriz', 8, [0], [$g['B']], '', ResourceBookingStatus::Pending);
+        $book('salon', 'rafael', 10, [1, 2], [], 'Reunión con familias');
+        $book('inf1', 'pedro', 9, [2], [$g['Bac']]);
+        $book('inf1', 'carmen', 16, [0, 1], [$g['Daw']]);
+        $book('carro1', 'pedro', 17, [1], [$g['A']]);
     }
 
     private function teacher(string $username): Teacher

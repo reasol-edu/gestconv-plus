@@ -243,6 +243,39 @@ que ya tiene actividades no se puede eliminar (aparece un aviso); desactívalo e
 de ofrecerse en las actividades nuevas sin afectar a las existentes. Esta tarjeta solo aparece si las
 Actividades están activadas.
 
+### Recursos compartidos {#recursos-compartidos}
+
+**Centro educativo › Recursos compartidos** define lo que el profesorado puede
+[reservar](03-el-trabajo-diario.md#reservas): dependencias, carros de portátiles, el salón de
+actos… Se organiza en dos niveles: **categorías** y, dentro de cada una, **recursos**.
+
+![Administración de los recursos compartidos por categorías](img/centro/centro-recursos.png)
+
+Cada categoría es una tarjeta con sus recursos. Se crea una nueva con su nombre y color al pie de la
+página y, al guardarla, se abre su formulario para indicar:
+
+- **Responsables**: uno o varios docentes del curso, elegidos en un buscador. Gestionan (editan,
+  eliminan y, si la categoría lo pide, validan) las reservas de **todos** los recursos de la
+  categoría, y pueden reservar aunque esté restringida. Sin responsables, solo la dirección las
+  gestiona.
+- **Quién puede reservar**: *Todo el profesorado* (por defecto) o *Solo responsables y dirección*; en
+  este caso el resto ve las reservas en el calendario, pero no puede hacerlas.
+- **Validación de las reservas**: *Se aprueban solas* (por defecto) o *Las valida un responsable*.
+  En ese caso la reserva de un docente queda **pendiente** y ocupa el tramo hasta que un responsable
+  la aprueba o la rechaza; las de los responsables y la dirección nacen aprobadas.
+- **Antelación máxima (días)**: cuántos días por delante de hoy se puede reservar. Vacío, se aplica
+  el ajuste del centro [Antelación máxima de las reservas](07-administrar-la-plataforma.md#reservas);
+  0 es «sin límite». La dirección y los responsables no tienen límite.
+- **Disponibilidad**: una categoría inactiva no admite reservas nuevas, pero conserva las existentes.
+- **Color**: el de las etiquetas de sus reservas en el calendario y los listados.
+
+![Formulario de una categoría de recursos con sus responsables y sus reglas de reserva](img/centro/centro-recursos-categoria.png)
+
+Cada **recurso** tiene nombre, **ubicación** y **descripción** opcionales, y puede cambiarse de
+categoría o desactivarse (no admite reservas nuevas, pero conserva las existentes). Un recurso con
+reservas, o una categoría con algún recurso reservado, no se puede eliminar (aparece un aviso):
+desactívalo en su lugar. Esta tarjeta solo aparece si las **Reservas** están activadas.
+
 ### Copiar catálogos entre centros
 
 Los siete catálogos incluyen botones **Exportar configuración** e **Importar configuración**
@@ -278,8 +311,8 @@ el día a día:
 - **Plantillas de informes** — un PDF propio como fondo de cada página de los informes, general
   o por tipo de informe (ver
   [Plantillas de informes](07-administrar-la-plataforma.md#plantillas-de-informes)).
-- **Secciones de la aplicación** — activar o desactivar Salidas, Ausencias, Notas y tareas de
-  sanción en este centro (ver
+- **Secciones de la aplicación** — activar o desactivar Salidas, Ausencias, Notas, tareas de
+  sanción, Actividades y Reservas en este centro (ver
   [Secciones de la aplicación](07-administrar-la-plataforma.md#secciones-de-la-aplicacion)).
 
 La referencia completa de todos los ajustes, con sus rangos y valores por defecto, está en

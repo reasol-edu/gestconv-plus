@@ -29,6 +29,8 @@ parte que pasa demasiado tiempo sin comunicarse acaba prescribiendo.
 - **Orientador/a** — consulta todos los partes y sanciones del centro, sin poder editarlos.
 - **Coordinación de actividades** — gestiona todas las actividades de centro (calendario y tablón)
   como si fuera administradora.
+- **Responsable de una categoría de recursos** — gestiona las reservas de los recursos compartidos
+  (aulas, carros de portátiles…) de su categoría y, si se le pide, las valida.
 - **Administración del centro** — configura el centro y tiene acceso completo a sus datos. Este
   papel corresponde, normalmente, al **equipo directivo**.
 - **Administración de la plataforma** — mantiene el servidor y puede gestionar todos los centros

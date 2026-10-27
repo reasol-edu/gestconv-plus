@@ -580,6 +580,27 @@ el centro**, no solo de sus propios grupos:
 
 ---
 
+## Reservas de recursos
+
+![bg right:40% fit](../manual/img/reservas/reservas-calendario.png)
+
+- La dirección define en **Centro educativo › Recursos compartidos** las
+  **categorías** (dependencias, carros de portátiles…) y sus recursos. Cada
+  categoría tiene **responsables**, que gestionan las reservas de sus
+  recursos, y reglas propias: restringida, con **validación**, antelación
+  máxima.
+- La sección **Reservas** muestra un **calendario semanal o mensual** con
+  filtros por categoría, recurso, docente y grupo, y un **listado** paginado
+  de tus reservas (los responsables y la dirección ven también las ajenas).
+- **Reservar**: recurso, fecha, tramos, grupos y descripción, con
+  **periodicidad semanal** y previsualización de las fechas libres.
+- Un recurso solo admite una reserva por día y tramo. Con validación, la
+  reserva queda **pendiente** —y ocupa el tramo— hasta que un responsable la
+  aprueba o la rechaza, con aviso en la campana, el inicio y el correo.
+- Se pueden **activar o desactivar** de golpe, global o por centro.
+
+---
+
 ## Modo tablón
 
 ![bg right:40% fit](../manual/img/calendario/calendario-tablon.png)

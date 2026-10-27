@@ -5,7 +5,8 @@ Material **temporal** para regenerar las capturas del manual, de las fichas y de
 
 - `TmpSeedShotsCommand.php` — comando `tmp:seed-shots`: partes (graves y no, notificados y pendientes),
   sanciones (pendiente, vigente con tareas, antigua con seguimiento), notas, tramos con guardias, ausencias con
-  actividad y adjunto, eventos y entradas del registro de actividad, todo fechado alrededor de «hoy» (lunes
+  actividad y adjunto, eventos, categorías de recursos compartidos con sus reservas (y tramos de martes a viernes)
+  y entradas del registro de actividad, todo fechado alrededor de «hoy» (lunes
   2026-10-05). **Cópialo a `src/Command/` para usarlo y bórralo después**: allí rompe PHPStan (regla que prohíbe
   `getRepository()`/`find()` fuera de los repositorios) y no debe commitearse.
 - `TmpSeedExitsCommand.php` — comando `tmp:seed-exits`: salidas del aula (propias, ajenas con más de 10, 20
