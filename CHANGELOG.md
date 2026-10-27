@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.2] - 2026-10-27
+
+### Security
+
+- Los binarios descargables pasan a **FrankenPHP 1.13.4**, una versión de seguridad que corrige siete vulnerabilidades, entre ellas una de gravedad alta que podía tumbar el proceso con una sola petición sin autenticar (solo afectaba al modo worker, que esta aplicación no usa), e incluye una biblioteca Brotli parcheada (CVE-2026-111497) y el compilador de Go actualizado en Windows y macOS. Mantiene el mismo PHP 8.5.12, y la compilación sigue publicando los cuatro binarios (Linux x86_64 y ARM64, Mac Apple Silicon y Windows). La imagen Docker se reconstruye sobre la última imagen base de FrankenPHP, así que no requiere cambios.
+
 ## [1.16.1] - 2026-10-27
 
 ### Fixed
