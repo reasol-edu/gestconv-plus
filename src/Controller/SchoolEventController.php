@@ -10,10 +10,12 @@ use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\SchoolEvent;
 use App\Entity\SchoolEventType;
+use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\GroupRepository;
 use App\Repository\SchoolEventRepository;
 use App\Repository\SchoolEventTypeRepository;
+use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
@@ -37,6 +39,7 @@ class SchoolEventController extends AbstractController
         private readonly GroupRepository $groups,
         private readonly SchoolEventTypeRepository $types,
         private readonly TeacherRepository $teachers,
+        private readonly StudentRepository $students,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
     ) {}
@@ -67,6 +70,7 @@ class SchoolEventController extends AbstractController
         $values['type'] = ($this->types->findActiveByCentreOrdered($centre)[0] ?? null)?->getId()->toRfc4122() ?? '';
         $selectedGroupIds = [];
         $selectedCompanionIds = [];
+        $selectedStudentIds = [];
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_school_event', $request->request->getString('_token'))) {
@@ -76,6 +80,7 @@ class SchoolEventController extends AbstractController
             $values               = $this->valuesFromRequest($request);
             $selectedGroupIds     = $request->request->all('groups');
             $selectedCompanionIds = $request->request->all('companions');
+            $selectedStudentIds   = $request->request->all('students');
             $errors               = $this->validate($values, $selectedGroupIds, $centre, null);
 
             if (empty($errors)) {
@@ -83,7 +88,7 @@ class SchoolEventController extends AbstractController
                 $event  = (new SchoolEvent())
                     ->setAcademicYear($year)
                     ->setCreatedBy($author instanceof Teacher ? $author : null);
-                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds);
+                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds, $selectedStudentIds);
 
                 $this->em->persist($event);
                 $this->em->flush();
@@ -108,6 +113,8 @@ class SchoolEventController extends AbstractController
             'availableTypes'       => $this->types->findActiveByCentreOrdered($centre),
             'availableTeachers'    => $this->teachers->findByAcademicYearOrderedByName($year),
             'selectedCompanionIds' => $selectedCompanionIds,
+            'studentOptions'       => $this->studentOptions($centre),
+            'selectedStudentIds'   => $selectedStudentIds,
         ]);
     }
 
@@ -142,6 +149,10 @@ class SchoolEventController extends AbstractController
             static fn (Teacher $t): string => $t->getId()->toRfc4122(),
             $event->getCompanions()->toArray(),
         );
+        $selectedStudentIds = array_map(
+            static fn (Student $s): string => $s->getId()->toRfc4122(),
+            $event->getStudents()->toArray(),
+        );
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('edit_school_event_' . $eventId, $request->request->getString('_token'))) {
@@ -151,10 +162,11 @@ class SchoolEventController extends AbstractController
             $values               = $this->valuesFromRequest($request);
             $selectedGroupIds     = $request->request->all('groups');
             $selectedCompanionIds = $request->request->all('companions');
+            $selectedStudentIds   = $request->request->all('students');
             $errors               = $this->validate($values, $selectedGroupIds, $centre, $event);
 
             if (empty($errors)) {
-                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds);
+                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds, $selectedStudentIds);
                 $this->em->flush();
 
                 $this->activityLog->log('school_event.updated', [
@@ -178,6 +190,8 @@ class SchoolEventController extends AbstractController
             'availableTypes'       => $this->selectableTypes($centre, $event),
             'availableTeachers'    => $this->selectableTeachers($year, $event),
             'selectedCompanionIds' => $selectedCompanionIds,
+            'studentOptions'       => $this->studentOptions($centre),
+            'selectedStudentIds'   => $selectedStudentIds,
         ]);
     }
 
@@ -354,6 +368,7 @@ class SchoolEventController extends AbstractController
      * @param array<string, string>   $values
      * @param array<array-key, mixed> $selectedGroupIds
      * @param array<array-key, mixed> $selectedCompanionIds
+     * @param array<array-key, mixed> $selectedStudentIds
      */
     private function applyValues(
         SchoolEvent $event,
@@ -362,6 +377,7 @@ class SchoolEventController extends AbstractController
         AcademicYear $year,
         array $selectedGroupIds,
         array $selectedCompanionIds,
+        array $selectedStudentIds,
     ): void {
         // Coordinador y acompañantes han de ser docentes del curso de la actividad (o quienes ya lo eran al guardarla); lo demás se ignora.
         $teachersById = [];
@@ -418,6 +434,49 @@ class SchoolEventController extends AbstractController
         foreach ($selected as $group) {
             $event->addGroup($group);
         }
+
+        // Los estudiantes han de pertenecer a alguno de los grupos elegidos: al quitar un grupo dejan de valer los suyos.
+        $students = [];
+        foreach ($this->students->findByGroupsOrdered(array_values($selected)) as $student) {
+            $students[$student->getId()->toRfc4122()] = $student;
+        }
+        foreach ($event->getStudents()->toArray() as $student) {
+            $event->removeStudent($student);
+        }
+        foreach ($selectedStudentIds as $studentId) {
+            if (is_string($studentId) && isset($students[$studentId])) {
+                $event->addStudent($students[$studentId]);
+            }
+        }
+    }
+
+    /**
+     * Estudiantes que se pueden elegir (los de los grupos del curso activo del centro), con los grupos en que están
+     * para que el formulario solo ofrezca los de los grupos marcados.
+     *
+     * @return list<array{id: string, name: string, groups: list<string>}>
+     */
+    private function studentOptions(EducationalCentre $centre): array
+    {
+        $groups = array_values($this->groups->findByActiveYearOfCentreOrderedByName($centre));
+        $allowed = [];
+        foreach ($groups as $group) {
+            $allowed[$group->getId()->toRfc4122()] = true;
+        }
+
+        $options = [];
+        foreach ($this->students->findByGroupsOrdered($groups) as $student) {
+            $options[] = [
+                'id'     => $student->getId()->toRfc4122(),
+                'name'   => $student->getName()->full(),
+                'groups' => array_values(array_filter(
+                    array_map(static fn (Group $g): string => $g->getId()->toRfc4122(), $student->getGroups()->toArray()),
+                    static fn (string $id): bool => isset($allowed[$id]),
+                )),
+            ];
+        }
+
+        return $options;
     }
 
     private function parseDate(string $value): ?\DateTimeImmutable

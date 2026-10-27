@@ -109,6 +109,9 @@ Cada actividad tiene:
 - **Profesorado acompañante** (opcional): uno o varios docentes del curso, además de quien coordina.
 - **Grupos asociados** (opcionales), elegidos en un desplegable de búsqueda que admite varios a la
   vez. Una actividad puede estar asociada a grupos aunque la vea todo el centro.
+- **Estudiantes asociados** (opcionales), que aparecen al elegir algún grupo y se eligen entre los
+  estudiantes de esos grupos. Si después se quita un grupo, se descartan sus estudiantes. De momento
+  esta información solo se guarda en la actividad: no se muestra en el calendario ni en el tablón.
 - **Visibilidad**, que solo aparece al elegir al menos un grupo:
     - **General** — la ve todo el profesorado del centro, imparta o no clase a los grupos
       asociados; los grupos se muestran como información.

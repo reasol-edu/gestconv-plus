@@ -70,6 +70,16 @@ class SchoolEvent
     #[ORM\JoinTable(name: 'school_event_companion')]
     private Collection $companions;
 
+    /**
+     * Estudiantes que participan, opcionalmente, de entre los de los grupos asignados. Solo se guarda: de momento
+     * no se muestra en ninguna pantalla.
+     *
+     * @var Collection<int, Student>
+     */
+    #[ORM\ManyToMany(targetEntity: Student::class)]
+    #[ORM\JoinTable(name: 'school_event_student')]
+    private Collection $students;
+
     /** Quien la publicó: un docente sin gestión solo puede ver, editar y eliminar las suyas. Null en las anteriores a este dato. */
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
@@ -91,6 +101,29 @@ class SchoolEvent
     {
         $this->groups     = new ArrayCollection();
         $this->companions = new ArrayCollection();
+        $this->students   = new ArrayCollection();
+    }
+
+    /** @return Collection<int, Student> */
+    public function getStudents(): Collection
+    {
+        return $this->students;
+    }
+
+    public function addStudent(Student $student): static
+    {
+        if (!$this->students->contains($student)) {
+            $this->students->add($student);
+        }
+
+        return $this;
+    }
+
+    public function removeStudent(Student $student): static
+    {
+        $this->students->removeElement($student);
+
+        return $this;
     }
 
     public function getType(): ?SchoolEventType

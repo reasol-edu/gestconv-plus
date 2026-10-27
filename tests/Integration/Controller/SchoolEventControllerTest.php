@@ -14,6 +14,7 @@ use App\Entity\SchoolEvent;
 use App\Entity\SchoolEventType;
 use App\Entity\SettingDefinition;
 use App\Entity\SettingType;
+use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
 
@@ -675,6 +676,81 @@ class SchoolEventControllerTest extends ControllerTestCase
     // ── helpers ──────────────────────────────────────────────────────────────
 
     /** @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: AcademicYear} */
+    public function testNewPostStoresOnlyStudentsOfTheChosenGroups(): void
+    {
+        [$admin, $centre, $group, $year] = $this->makeScenario();
+        $otherGroup = (new Group())->setName('1ºB')->setCourse($group->getCourse());
+        $inGroup    = $this->makeStudent('Ana', $group);
+        $inOther    = $this->makeStudent('Beatriz', $otherGroup);
+        $this->persist($otherGroup, $inGroup, $inOther);
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
+        self::assertSelectorExists('#students[data-options]');
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/actividades/nuevo', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Visita',
+            'scope'      => 'restricted',
+            'type'       => $this->typeId,
+            'groups'     => [$group->getId()->toRfc4122()],
+            'students'   => [$inGroup->getId()->toRfc4122(), $inOther->getId()->toRfc4122(), 'no-es-un-id'],
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $event = $this->em->getRepository(SchoolEvent::class)->findAll()[0];
+        self::assertCount(1, $event->getStudents());
+        self::assertSame('Ana', $event->getStudents()->first()->getName()->getFirstName());
+    }
+
+    public function testEditingKeepsTheStudentsAndDropsTheOnesOfARemovedGroup(): void
+    {
+        [$admin, $centre, $group, $year] = $this->makeScenario();
+        $otherGroup = (new Group())->setName('1ºB')->setCourse($group->getCourse());
+        $ana        = $this->makeStudent('Ana', $group);
+        $beatriz    = $this->makeStudent('Beatriz', $otherGroup);
+        $this->persist($otherGroup, $ana, $beatriz);
+        $event = $this->makeEvent($year, 'Excursión')->addGroup($group)->addGroup($otherGroup)->addStudent($ana)->addStudent($beatriz);
+        $this->persist($event);
+        $this->loginAs($admin, $centre);
+        $eventId = $event->getId()->toRfc4122();
+
+        $crawler = $this->client->request('GET', '/actividades/' . $eventId . '/editar');
+        self::assertCount(2, $crawler->filter('#students option[selected]'));
+        $token = $crawler->filter('form.space-y-6 [name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/actividades/' . $eventId . '/editar', [
+            '_token'     => $token,
+            'date'       => '2026-09-15',
+            'start_time' => '09:00',
+            'end_time'   => '10:00',
+            'name'       => 'Excursión',
+            'scope'      => 'restricted',
+            'type'       => $this->typeId,
+            'groups'     => [$group->getId()->toRfc4122()],
+            'students'   => [$ana->getId()->toRfc4122(), $beatriz->getId()->toRfc4122()],
+        ]);
+
+        self::assertResponseRedirects();
+        $this->em->clear();
+        $saved = $this->em->getRepository(SchoolEvent::class)->find($event->getId());
+        self::assertCount(1, $saved->getStudents());
+        self::assertSame('Ana', $saved->getStudents()->first()->getName()->getFirstName());
+    }
+
+    private function makeStudent(string $firstName, Group $group): Student
+    {
+        $student = (new Student(new PersonName($firstName, 'Test')))->setStudentId('NIE' . uniqid('', false));
+        $student->addGroup($group);
+
+        return $student;
+    }
+
     private function makeScenario(): array
     {
         $suffix = uniqid('', false);

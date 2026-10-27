@@ -160,6 +160,41 @@ class StudentRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /**
+     * Estudiantes de cualquiera de los grupos, ordenados por apellidos y nombre. Cada uno trae cargados solo los
+     * grupos de la lista a los que pertenece (para saber en cuáles aparece sin una consulta por estudiante).
+     *
+     * @param list<Group> $groups
+     *
+     * @return list<Student>
+     */
+    public function findByGroupsOrdered(array $groups): array
+    {
+        if ($groups === []) {
+            return [];
+        }
+
+        // Cada UUID se enlaza por separado con el tipo 'uuid' (un IN con el array entero pierde la conversión).
+        $qb           = $this->createQueryBuilder('s')
+            ->addSelect('g')
+            ->join('s.groups', 'g');
+        $placeholders = [];
+        foreach ($groups as $i => $group) {
+            $placeholders[] = ":group{$i}";
+            $qb->setParameter("group{$i}", $group->getId(), 'uuid');
+        }
+
+        /** @var list<Student> $result */
+        $result = $qb
+            ->where('g IN (' . implode(', ', $placeholders) . ')')
+            ->orderBy('s.name.lastName', 'ASC')
+            ->addOrderBy('s.name.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
     public function findById(string $id): ?Student
     {
         $result = $this->createQueryBuilder('s')
