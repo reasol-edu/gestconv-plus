@@ -44,6 +44,15 @@ emails.sanction_task_assigned.subject: '{1} Tienes una tarea de sanción pendien
 emails.sanction_task_assigned.intro: '{1} Se te ha asignado una tarea de sanción de %student% (grupo %group%). Deja constancia del trabajo asignado o indica que no procede:|]1,Inf[ Se te han asignado %count% tareas de sanción de %student% (grupo %group%), una por cada materia tuya en el grupo. Deja constancia del trabajo asignado o indica que no procede:'
 
 
+emails.booking_requested.subject: '{1} Reserva pendiente de validar: %resource%|]1,Inf[ %count% reservas pendientes de validar: %resource%'
+emails.booking_requested.intro: '{1} %requester% solicita reservar «%resource%». Aprueba o rechaza la solicitud:|]1,Inf[ %requester% solicita %count% reservas de «%resource%». Aprueba o rechaza las solicitudes:'
+emails.booking_approved.subject: '{1} Reserva aprobada: %resource%|]1,Inf[ %count% reservas aprobadas: %resource%'
+emails.booking_approved.intro: '{1} %resolver% ha aprobado tu reserva de «%resource%»:|]1,Inf[ %resolver% ha aprobado tus %count% reservas de «%resource%»:'
+emails.booking_rejected.subject: '{1} Reserva rechazada: %resource%|]1,Inf[ %count% reservas rechazadas: %resource%'
+emails.booking_rejected.intro: '{1} %resolver% ha rechazado tu reserva de «%resource%»:|]1,Inf[ %resolver% ha rechazado tus %count% reservas de «%resource%»:'
+emails.booking.reason: 'Motivo:'
+emails.booking.cta: 'Ver las reservas'
+
 emails.daily_note_threshold.subject: 'Nota que implica registro de parte: %student%'
 emails.daily_note_threshold.intro: '%student% (grupo %group%) ha alcanzado o superado las %count% ocurrencias activas del tipo de nota «%type%», que deben dar lugar a un parte de convivencia. Estas son las notas activas de ese tipo:'
 
@@ -56,6 +65,7 @@ emails.digest.section.reports: 'Partes de convivencia'
 emails.digest.section.sanctions: 'Sanciones'
 emails.digest.section.tasks: 'Tareas de sanción'
 emails.digest.section.notes: 'Notas diarias'
+emails.digest.section.bookings: 'Reservas de recursos'
 emails.digest.line.report_created: 'Parte nº %number% de %student% (grupo %group%) registrado por %actor%.'
 emails.digest.line.report_notified: 'Parte nº %number% de %student% (grupo %group%): %actor% lo ha comunicado a la familia.'
 emails.digest.line.report_modified: 'Parte nº %number% de %student% (grupo %group%) modificado por %actor%.'
@@ -71,6 +81,9 @@ emails.digest.line.sanction_auto_prescribed: 'Sanción de %student% (grupo %grou
 emails.digest.line.sanction_prescription_warning: '{0} Sanción de %student% (grupo %group%), sin notificar: prescribe hoy|{1} Sanción de %student% (grupo %group%), sin notificar: prescribe mañana|]1,Inf[ Sanción de %student% (grupo %group%), sin notificar: prescribe en %count% días'
 emails.digest.line.sanction_task_assigned: 'Tarea de sanción de %student% (grupo %group%): %subject%. Deja constancia del trabajo asignado o indica que no procede.'
 emails.digest.line.sanction_task_reminder: '{0} Tarea de sanción pendiente de cumplimentar (%subject%) de %student%: la sanción empieza hoy|{1} Tarea de sanción pendiente de cumplimentar (%subject%) de %student%: la sanción empieza mañana|]1,Inf[ Tarea de sanción pendiente de cumplimentar (%subject%) de %student%: la sanción empieza en %count% días'
+emails.digest.line.booking_requested: '{1} %requester% solicita reservar «%resource%»: pendiente de tu validación.|]1,Inf[ %requester% solicita %count% reservas de «%resource%»: pendientes de tu validación.'
+emails.digest.line.booking_approved: '{1} %resolver% ha aprobado tu reserva de «%resource%».|]1,Inf[ %resolver% ha aprobado tus %count% reservas de «%resource%».'
+emails.digest.line.booking_rejected: '{1} %resolver% ha rechazado tu reserva de «%resource%».|]1,Inf[ %resolver% ha rechazado tus %count% reservas de «%resource%».'
 emails.digest.line.daily_note_threshold: '%student% (grupo %group%) ha alcanzado las %count% ocurrencias activas de «%type%»: debe registrarse un parte de convivencia.'
 
 emails.password_reset.subject: 'Restablece tu contraseña'

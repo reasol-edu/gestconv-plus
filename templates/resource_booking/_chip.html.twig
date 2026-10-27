@@ -1,0 +1,22 @@
+{#
+   Una reserva en el calendario: recurso, docente y grupos, con el color de la categoría. Las pendientes de validar
+   llevan borde discontinuo y la etiqueta «Pendiente». Variables: booking, compact (opcional: sin grupos).
+#}
+{% set color = booking.resource.category.color ?? '#6b7280' %}
+<a href="{{ path('app_bookings_show', {id: booking.id}) }}"
+   class="block rounded-lg border px-2 py-1 text-xs leading-snug hover:shadow-sm transition-shadow {{ booking.pending ? 'border-dashed' : '' }}"
+   style="{{ hex_color(color).style }}"
+   title="{{ booking.resource.name }} · {{ booking.teacher.name.full() }}{{ booking.pending ? ' · ' ~ 'booking.status.pending'|trans({}, 'admin') : '' }}">
+    <span class="block font-semibold truncate">{{ booking.resource.name }}</span>
+    <span class="block truncate opacity-80">{{ booking.teacher.name.full() }}</span>
+    {% if not (compact ?? false) and booking.groups|length > 0 %}
+        <span class="mt-0.5 flex flex-wrap gap-1">
+            {% for group in booking.groups %}<twig:GroupChip :group="group" />{% endfor %}
+        </span>
+    {% endif %}
+    {% if booking.pending %}
+        <span class="mt-0.5 inline-flex items-center gap-1 font-medium">
+            {{ ux_icon('heroicons:clock', {class: 'h-3 w-3'}) }}{{ 'booking.status.pending'|trans({}, 'admin') }}
+        </span>
+    {% endif %}
+</a>

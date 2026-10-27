@@ -1,0 +1,43 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'booking.new'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_bookings_index') }}" class="hover:text-forest-600 transition-colors">{{ 'booking.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'booking.new'|trans({}, 'admin') }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'booking.new'|trans({}, 'admin') }}</h1>
+    </div>
+
+    <form method="post" class="space-y-6" data-controller="booking-form form-submit unsaved-changes">
+        <input type="hidden" name="_token" value="{{ csrf_token('new_resource_booking') }}">
+
+        {% include 'resource_booking/_form_fields.html.twig' with {mode: 'new', hasSiblings: false} %}
+
+        <div class="flex items-center justify-end gap-3">
+            <a href="{{ path('app_bookings_index') }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors">
+                {{ 'booking.cancel'|trans({}, 'admin') }}
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                {{ 'booking.save_new'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+{% include 'resource_booking/_form_scripts.html.twig' %}
+{% endblock %}

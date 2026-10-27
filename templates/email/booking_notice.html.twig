@@ -1,0 +1,29 @@
+{% extends 'email/_layout.html.twig' %}
+
+{% block content %}
+<p style="margin: 0 0 16px;">
+    {{ 'emails.greeting'|trans({'%name%': teacher.name.firstName}, 'emails') }}
+</p>
+<p style="margin: 0 0 16px;">
+    {{ (transPrefix ~ '.intro')|trans(params, 'emails') }}
+</p>
+<ul style="margin: 0 0 24px; padding-left: 0; list-style: none; color: #374151; font-size: 13px;">
+    {% for row in rows %}
+    <li style="margin: 0 0 8px; padding: 10px 16px; background-color: #f9fafb; border-left: 3px solid #677dae;">
+        <strong>{{ row.date|date('format.date'|trans) }}</strong> · {{ row.slots }}
+    </li>
+    {% endfor %}
+</ul>
+{% if reason %}
+<p style="margin: 0 0 24px; color: #374151; font-size: 13px;">
+    <strong>{{ 'emails.booking.reason'|trans({}, 'emails') }}</strong> {{ reason }}
+</p>
+{% endif %}
+<p style="margin: 0 0 24px; text-align: center;">
+    <a href="{{ bookingsUrl }}"
+       style="display: inline-block; background-color: #677dae; color: #ffffff; font-size: 14px;
+              font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none;">
+        {{ 'emails.booking.cta'|trans({}, 'emails') }}
+    </a>
+</p>
+{% endblock %}

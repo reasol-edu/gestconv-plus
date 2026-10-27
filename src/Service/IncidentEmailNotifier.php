@@ -11,10 +11,12 @@ use App\Entity\EmailDigestItem;
 use App\Entity\EmailNotificationLog;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
+use App\Entity\ResourceBooking;
 use App\Entity\Sanction;
 use App\Entity\SanctionTask;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Entity\TimeSlot;
 use App\Repository\CommunicationRepository;
 use App\Repository\IncidentReportObservationRepository;
 use App\Repository\SanctionObservationRepository;
@@ -375,6 +377,62 @@ final class IncidentEmailNotifier
         }
     }
 
+    /**
+     * Avisa a un responsable de una categoría de recursos (o a la dirección) de que hay reservas pendientes de validar:
+     * un solo aviso por destinatario aunque sean varias fechas de una serie.
+     *
+     * @param non-empty-list<ResourceBooking> $bookings reservas del mismo recurso y docente
+     */
+    public function bookingsRequested(Teacher $recipient, array $bookings, Teacher $requester): void
+    {
+        $first  = $bookings[0];
+        $centre = $first->getResource()->getCategory()->getEducationalCentre();
+
+        $this->dispatch($centre, $recipient, 'booking_requested', [
+            '%requester%' => $this->fullName($requester),
+            '%resource%'  => $first->getResource()->getName(),
+            '%count%'     => count($bookings),
+        ], 'email/booking_notice.html.twig', $this->bookingContext($bookings, null));
+    }
+
+    /**
+     * Avisa al docente de que su solicitud de reserva se ha aprobado o rechazado (una sola vez para toda una serie).
+     *
+     * @param non-empty-list<ResourceBooking> $bookings
+     */
+    public function bookingsResolved(Teacher $recipient, array $bookings, Teacher $resolver, bool $approved): void
+    {
+        $first  = $bookings[0];
+        $centre = $first->getResource()->getCategory()->getEducationalCentre();
+
+        $this->dispatch($centre, $recipient, $approved ? 'booking_approved' : 'booking_rejected', [
+            '%resolver%' => $this->fullName($resolver),
+            '%resource%' => $first->getResource()->getName(),
+            '%count%'    => count($bookings),
+        ], 'email/booking_notice.html.twig', $this->bookingContext($bookings, $approved ? null : $first->getRejectionReason()));
+    }
+
+    /**
+     * @param list<ResourceBooking> $bookings
+     * @return array<string, mixed>
+     */
+    private function bookingContext(array $bookings, ?string $reason): array
+    {
+        $rows = [];
+        foreach ($bookings as $booking) {
+            $rows[] = [
+                'date'  => $booking->getDate(),
+                'slots' => implode(', ', array_map(static fn (TimeSlot $slot): string => $slot->getName(), $booking->getTimeSlotsOrdered())),
+            ];
+        }
+
+        return [
+            'rows'        => $rows,
+            'reason'      => $reason,
+            'bookingsUrl' => $this->urlGenerator->generate('app_bookings_list', [], UrlGeneratorInterface::ABSOLUTE_URL),
+        ];
+    }
+
     private function notifyReportEvent(IncidentReport $report, string $event, Teacher $actor, bool $withLink = true): void
     {
         $centre = $this->centreForGroup($report->getGroup());
@@ -527,7 +585,7 @@ final class IncidentEmailNotifier
 
         // Recipients who chose the daily digest get this event as a line of their next digest instead.
         if ($this->usesDigest($centre, $teacher)) {
-            $url = $context['reportUrl'] ?? $context['sanctionUrl'] ?? $context['studentUrl'] ?? null;
+            $url = $context['reportUrl'] ?? $context['sanctionUrl'] ?? $context['studentUrl'] ?? $context['bookingsUrl'] ?? null;
             $this->queueDigestItem($centre, $teacher, $eventKey, $params, is_string($url) ? $url : null);
 
             return;

@@ -1,0 +1,95 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'booking.preview.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set freeCount = 0 %}
+{% for check in checks %}{% if check.free %}{% set freeCount = freeCount + 1 %}{% endif %}{% endfor %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_bookings_index') }}" class="hover:text-forest-600 transition-colors">{{ 'booking.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'booking.preview.title'|trans({}, 'admin') }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'booking.preview.title'|trans({}, 'admin') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 max-w-2xl">{{ 'booking.preview.intro'|trans({}, 'admin') }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5 text-sm space-y-1.5">
+        <p><span class="text-gray-500">{{ 'booking.field.resource'|trans({}, 'admin') }}:</span> <strong>{{ input.resource.name }}</strong> <twig:EventTypeBadge :type="input.resource.category" /></p>
+        <p><span class="text-gray-500">{{ 'booking.field.teacher'|trans({}, 'admin') }}:</span> {{ input.teacher.name.full() }}</p>
+        <p><span class="text-gray-500">{{ 'booking.field.slots'|trans({}, 'admin') }}:</span>
+            {% for slot in input.slots %}{{ slot.name }} ({{ slot.startTime|date('H:i') }}–{{ slot.endTime|date('H:i') }}){{ not loop.last ? ', ' : '' }}{% endfor %}
+        </p>
+        {% if input.groups is not empty %}
+            <p class="flex flex-wrap items-center gap-1.5"><span class="text-gray-500">{{ 'booking.field.groups'|trans({}, 'admin') }}:</span>
+                {% for group in input.groups %}<twig:GroupChip :group="group" />{% endfor %}
+            </p>
+        {% endif %}
+        {% if status.value == 'pending' %}
+            <p class="mt-2 rounded-lg bg-sky-50 px-3 py-2 text-sky-800">{{ 'booking.preview.pending_note'|trans({}, 'admin') }}</p>
+        {% endif %}
+    </div>
+
+    <form method="post" action="{{ path('app_bookings_new') }}" class="space-y-6" data-controller="form-submit">
+        <input type="hidden" name="_token" value="{{ csrf_token('new_resource_booking') }}">
+        <input type="hidden" name="confirmed" value="1">
+        {% for name, value in carry %}
+            {% if value is iterable %}
+                {% for item in value %}<input type="hidden" name="{{ name }}[]" value="{{ item }}">{% endfor %}
+            {% else %}
+                <input type="hidden" name="{{ name }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+            <ul class="divide-y divide-gray-100">
+                {% for check in checks %}
+                    <li class="flex items-center gap-3 px-5 py-3 {{ not check.free ? 'bg-gray-50' : '' }}">
+                        <input type="checkbox" name="dates[]" value="{{ check.date|date('Y-m-d') }}" id="date-{{ loop.index }}"
+                               {{ check.free ? 'checked' : 'disabled' }}
+                               class="rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <label for="date-{{ loop.index }}" class="flex-1 text-sm {{ check.free ? 'text-gray-800' : 'text-gray-400' }}">
+                            {{ ('weekday.' ~ check.date|date('N'))|trans({}, 'calendar') }} {{ check.date|date('format.date'|trans) }}
+                        </label>
+                        {% if check.free %}
+                            <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                                {{ ux_icon('heroicons:check', {class: 'h-3 w-3'}) }}{{ 'booking.preview.free'|trans({}, 'admin') }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                                {{ ('booking.problem.' ~ check.problem)|trans({'%teacher%': check.conflict ? check.conflict.teacher.name.full() : ''}, 'admin') }}
+                            </span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if capped %}
+            <p class="text-sm text-gray-500">{{ 'booking.preview.capped'|trans({'%max%': 60}, 'admin') }}</p>
+        {% endif %}
+
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <p class="text-sm text-gray-600">{{ 'booking.preview.summary'|trans({'%free%': freeCount, '%total%': checks|length}, 'admin') }}</p>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="history.back()"
+                        class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                               hover:bg-gray-50 transition-colors">
+                    {{ 'booking.preview.back'|trans({}, 'admin') }}
+                </button>
+                <button type="submit" {{ freeCount == 0 ? 'disabled' : '' }}
+                        class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                               hover:bg-forest-700 transition-colors shadow-xs disabled:opacity-60">
+                    {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                    {{ 'booking.preview.confirm'|trans({}, 'admin') }}
+                </button>
+            </div>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

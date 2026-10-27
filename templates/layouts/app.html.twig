@@ -138,6 +138,11 @@
                 {% if feature_enabled('absences') and (is_centre_admin() or belongs_to_view_year()) %}
                     {{ _self.nav_item('absences'|trans({}, 'navigation'), path('app_absences_index'), 'heroicons:user-minus', current_route, 'app_absences') }}
                 {% endif %}
+
+                {# Reservas de recursos compartidos — profesorado del curso visualizado, responsables y dirección #}
+                {% if is_granted('educational_centre.bookings', active_centre) %}
+                    {{ _self.nav_item('bookings'|trans({}, 'navigation'), path('app_bookings_index'), 'heroicons:rectangle-stack', current_route, 'app_bookings') }}
+                {% endif %}
             {% endif %}
 
             {# Calendario — sin centro activo también se muestra, así que va fuera del bloque anterior #}

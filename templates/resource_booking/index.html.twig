@@ -1,0 +1,210 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'booking.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set filterQuery = {category: filters.categoryId, resource: filters.resourceId, teacher: filters.teacherId, group: filters.groupId}|filter(v => v != '') %}
+{% set shortDays = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'] %}
+<div class="px-6 py-8 max-w-7xl mx-auto space-y-6">
+
+    {% include 'resource_booking/_header.html.twig' with {active: 'calendar', canBook: canBook} only %}
+
+    {# ── Barra: navegación, vista y filtros ───────────────────────────── #}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+            <a href="{{ path('app_bookings_index', filterQuery|merge({view: view, date: prevDate|date('Y-m-d')})) }}"
+               class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+               aria-label="{{ (view == 'month' ? 'prev_month' : 'booking.week_prev')|trans({}, view == 'month' ? 'calendar' : 'admin') }}">
+                {{ ux_icon('heroicons:chevron-left', {class: 'h-4 w-4'}) }}
+            </a>
+            <a href="{{ path('app_bookings_index', filterQuery|merge({view: view})) }}"
+               class="inline-flex h-9 items-center rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                {{ 'today'|trans({}, 'calendar') }}
+            </a>
+            <a href="{{ path('app_bookings_index', filterQuery|merge({view: view, date: nextDate|date('Y-m-d')})) }}"
+               class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+               aria-label="{{ (view == 'month' ? 'next_month' : 'booking.week_next')|trans({}, view == 'month' ? 'calendar' : 'admin') }}">
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
+            </a>
+            <h2 class="ml-2 text-lg font-semibold text-gray-900">
+                {% if view == 'month' %}
+                    {{ ('month.' ~ data.first|date('n'))|trans({}, 'calendar') }} {{ data.first|date('Y') }}
+                {% else %}
+                    {{ 'booking.week_of'|trans({
+                        '%from%': data.from|date('format.date'|trans),
+                        '%to%': data.to|date('format.date'|trans),
+                    }, 'admin') }}
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="inline-flex rounded-lg border border-gray-200 bg-white p-0.5 text-sm" role="group" aria-label="{{ 'booking.view.aria'|trans({}, 'admin') }}">
+            {% for option in ['week', 'month'] %}
+                <a href="{{ path('app_bookings_index', filterQuery|merge({view: option, date: anchor|date('Y-m-d')})) }}"
+                   {% if view == option %}aria-current="true"{% endif %}
+                   class="rounded-md px-3 py-1.5 font-medium transition-colors {{ view == option ? 'bg-forest-600 text-white' : 'text-gray-600 hover:bg-gray-50' }}">
+                    {{ ('booking.view.' ~ option)|trans({}, 'admin') }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <form method="get" action="{{ path('app_bookings_index') }}" data-controller="auto-submit"
+          class="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-xs">
+        <input type="hidden" name="view" value="{{ view }}">
+        <input type="hidden" name="date" value="{{ anchor|date('Y-m-d') }}">
+        {% set selectClass = 'rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors' %}
+
+        <select name="category" data-action="change->auto-submit#submit" class="{{ selectClass }}" aria-label="{{ 'booking.filter.category'|trans({}, 'admin') }}">
+            <option value="">{{ 'booking.filter.all_categories'|trans({}, 'admin') }}</option>
+            {% for category in filterOptions.categories %}
+                <option value="{{ category.id.toRfc4122 }}" {{ filters.categoryId == category.id.toRfc4122 ? 'selected' : '' }}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="resource" data-action="change->auto-submit#submit" class="{{ selectClass }}" aria-label="{{ 'booking.filter.resource'|trans({}, 'admin') }}">
+            <option value="">{{ 'booking.filter.all_resources'|trans({}, 'admin') }}</option>
+            {% for resource in filterOptions.resources %}
+                <option value="{{ resource.id.toRfc4122 }}" {{ filters.resourceId == resource.id.toRfc4122 ? 'selected' : '' }}>{{ resource.name }} ({{ resource.category.name }})</option>
+            {% endfor %}
+        </select>
+
+        <select name="teacher" data-action="change->auto-submit#submit" class="{{ selectClass }}" aria-label="{{ 'booking.filter.teacher'|trans({}, 'admin') }}">
+            <option value="">{{ 'booking.filter.all_teachers'|trans({}, 'admin') }}</option>
+            {% for teacher in filterOptions.teachers %}
+                <option value="{{ teacher.id.toRfc4122 }}" {{ filters.teacherId == teacher.id.toRfc4122 ? 'selected' : '' }}>{{ teacher.name.full() }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="group" data-action="change->auto-submit#submit" class="{{ selectClass }}" aria-label="{{ 'booking.filter.group'|trans({}, 'admin') }}">
+            <option value="">{{ 'booking.filter.all_groups'|trans({}, 'admin') }}</option>
+            {% for group in filterOptions.groups %}
+                <option value="{{ group.id.toRfc4122 }}" {{ filters.groupId == group.id.toRfc4122 ? 'selected' : '' }}>{{ group.name }}</option>
+            {% endfor %}
+        </select>
+
+        {% if hasFilters %}
+            <a href="{{ path('app_bookings_index', {view: view, date: anchor|date('Y-m-d')}) }}"
+               class="inline-flex items-center gap-1.5 text-sm font-medium text-forest-700 hover:text-forest-800 transition-colors">
+                {{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}
+                {{ 'booking.filter.clear'|trans({}, 'admin') }}
+            </a>
+        {% endif %}
+        <noscript><button type="submit" class="rounded-lg border border-gray-200 px-3 py-2 text-sm">{{ 'booking.filter.apply'|trans({}, 'admin') }}</button></noscript>
+    </form>
+
+    {% if filterOptions.categories is not empty %}
+        <ul class="flex flex-wrap items-center gap-2 text-xs" aria-label="{{ 'booking.legend'|trans({}, 'admin') }}">
+            {% for category in filterOptions.categories %}
+                {% if category.active %}<li><twig:EventTypeBadge :type="category" /></li>{% endif %}
+            {% endfor %}
+            <li class="inline-flex items-center gap-1 rounded-md border border-dashed border-gray-400 px-2 py-0.5 font-medium text-gray-600">
+                {{ ux_icon('heroicons:clock', {class: 'h-3 w-3'}) }}{{ 'booking.status.pending'|trans({}, 'admin') }}
+            </li>
+        </ul>
+    {% endif %}
+
+    {# ── Vista semanal ────────────────────────────────────────────────── #}
+    {% if view == 'week' %}
+        {% if data.rows is empty %}
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-16 text-center">
+                {{ ux_icon('heroicons:clock', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+                <p class="text-sm text-gray-500">{{ 'booking.no_time_slots'|trans({}, 'admin') }}</p>
+            </div>
+        {% else %}
+            <div class="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-xs">
+                <table class="w-full min-w-[760px] table-fixed border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th scope="col" class="w-28 bg-gray-50 px-3 py-2.5"><span class="sr-only">{{ 'booking.col.time_slot'|trans({}, 'admin') }}</span></th>
+                            {% for day in data.days %}
+                                <th scope="col" class="border-l border-gray-200 px-3 py-2.5 text-left font-semibold
+                                                       {{ day.isToday ? 'bg-forest-50 text-forest-800' : (day.nonWorking ? 'bg-gray-50 text-gray-400' : 'bg-gray-50 text-gray-700') }}">
+                                    <span class="flex items-center justify-between gap-2">
+                                        <a href="{{ path('app_calendar_day', {date: day.date|date('Y-m-d')}) }}" class="hover:underline">
+                                            {{ shortDays[day.date|date('N') - 1]|trans({}, 'calendar') }} {{ day.date|date('j') }}
+                                        </a>
+                                        {% if canBook and not day.nonWorking %}
+                                            <a href="{{ path('app_bookings_new', {date: day.date|date('Y-m-d')}) }}"
+                                               class="rounded p-0.5 text-gray-400 hover:bg-white hover:text-forest-700 transition-colors"
+                                               aria-label="{{ 'booking.add_on'|trans({'%date%': day.date|date('format.date'|trans)}, 'admin') }}">
+                                                {{ ux_icon('heroicons:plus', {class: 'h-3.5 w-3.5'}) }}
+                                            </a>
+                                        {% endif %}
+                                    </span>
+                                    {% if day.nonWorkingLabel %}<span class="block text-xs font-normal">{{ day.nonWorkingLabel }}</span>{% endif %}
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data.rows %}
+                            <tr class="border-b border-gray-100 last:border-b-0">
+                                <th scope="row" class="bg-gray-50 px-3 py-2 text-left align-top text-xs font-medium text-gray-600">
+                                    {{ row.label }}
+                                    <span class="block font-normal tabular-nums text-gray-400">{{ row.start|date('H:i') }}–{{ row.end|date('H:i') }}</span>
+                                </th>
+                                {% for day in data.days %}
+                                    {% set list = row.cells[day.date|date('Y-m-d')] ?? [] %}
+                                    <td class="border-l border-gray-100 p-1.5 align-top {{ day.isToday ? 'bg-forest-50/40' : (day.nonWorking ? 'bg-gray-50/70' : '') }}">
+                                        <div class="space-y-1.5">
+                                            {% for booking in list %}
+                                                {% include 'resource_booking/_chip.html.twig' with {booking: booking} only %}
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if data.total == 0 %}
+                <p class="text-center text-sm text-gray-500">{{ (hasFilters ? 'booking.empty_filtered' : 'booking.empty_week')|trans({}, 'admin') }}</p>
+            {% endif %}
+        {% endif %}
+
+    {# ── Vista mensual ────────────────────────────────────────────────── #}
+    {% else %}
+        <div class="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-xs">
+            <div class="min-w-[760px]">
+                <div class="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {% for name in shortDays %}
+                        <div class="px-3 py-2 {{ not loop.first ? 'border-l border-gray-200' : '' }}">{{ name|trans({}, 'calendar') }}</div>
+                    {% endfor %}
+                </div>
+                {% for week in data.weeks %}
+                    <div class="grid grid-cols-7 border-b border-gray-100 last:border-b-0">
+                        {% for day in week %}
+                            <div class="min-h-28 p-1.5 {{ not loop.first ? 'border-l border-gray-100' : '' }}
+                                        {{ not day.inMonth ? 'bg-gray-50/70 text-gray-400' : (day.nonWorking ? 'bg-gray-50/70' : '') }}
+                                        {{ day.isToday ? 'ring-2 ring-inset ring-forest-500' : '' }}">
+                                <div class="mb-1 flex items-center justify-between text-xs">
+                                    <a href="{{ path('app_bookings_index', filterQuery|merge({view: 'week', date: day.date|date('Y-m-d')})) }}"
+                                       class="font-semibold hover:underline {{ day.isToday ? 'text-forest-700' : '' }}">{{ day.date|date('j') }}</a>
+                                    {% if day.nonWorkingLabel %}<span class="truncate pl-1 font-normal text-gray-400" title="{{ day.nonWorkingLabel }}">{{ day.nonWorkingLabel }}</span>{% endif %}
+                                </div>
+                                <div class="space-y-1">
+                                    {% for booking in day.bookings %}
+                                        {% include 'resource_booking/_chip.html.twig' with {booking: booking, compact: true} only %}
+                                    {% endfor %}
+                                    {% if day.hidden > 0 %}
+                                        <a href="{{ path('app_bookings_index', filterQuery|merge({view: 'week', date: day.date|date('Y-m-d')})) }}"
+                                           class="block px-1 text-xs font-medium text-forest-700 hover:underline">
+                                            {{ 'booking.more'|trans({'%count%': day.hidden}, 'admin') }}
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if data.total == 0 %}
+            <p class="text-center text-sm text-gray-500">{{ (hasFilters ? 'booking.empty_filtered' : 'booking.empty_month')|trans({}, 'admin') }}</p>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}

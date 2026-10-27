@@ -35,10 +35,10 @@ class ResourceCatalogController extends AbstractController
     use TranslatorTrait;
 
     /** @var list<string> */
-    private const CATEGORY_LOGGED_FIELDS = ['name', 'color', 'active', 'restricted', 'requiresApproval', 'maxAdvanceDays'];
+    private const LOGGED_CATEGORY_FIELDS = ['name', 'color', 'active', 'restricted', 'requiresApproval', 'maxAdvanceDays'];
 
     /** @var list<string> */
-    private const RESOURCE_LOGGED_FIELDS = ['name', 'description', 'location', 'active'];
+    private const LOGGED_RESOURCE_FIELDS = ['name', 'description', 'location', 'active'];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -118,7 +118,7 @@ class ResourceCatalogController extends AbstractController
                 return $this->redirectToRoute('app_centre_resources_category_edit', ['centreId' => $centreId, 'id' => $id]);
             }
 
-            $before = $this->changeTracker->snapshot($category, self::CATEGORY_LOGGED_FIELDS);
+            $before = $this->changeTracker->snapshot($category, self::LOGGED_CATEGORY_FIELDS);
 
             $advance = trim($request->request->getString('max_advance_days'));
             $category
@@ -147,7 +147,7 @@ class ResourceCatalogController extends AbstractController
 
             $this->em->flush();
 
-            $changes = $this->changeTracker->diff($before, $category, self::CATEGORY_LOGGED_FIELDS);
+            $changes = $this->changeTracker->diff($before, $category, self::LOGGED_CATEGORY_FIELDS);
             $this->activityLog->log('resource_category.updated', [
                 'entityId' => $id,
                 'changes'  => $changes,
@@ -238,7 +238,7 @@ class ResourceCatalogController extends AbstractController
                 return $this->redirectToRoute('app_centre_resources_resource_edit', ['centreId' => $centreId, 'id' => $id]);
             }
 
-            $before = $this->changeTracker->snapshot($resource, self::RESOURCE_LOGGED_FIELDS);
+            $before = $this->changeTracker->snapshot($resource, self::LOGGED_RESOURCE_FIELDS);
 
             // Se puede cambiar de categoría, pero solo a otra del mismo centro.
             $newCategory = $this->categories->findByIdAndCentre($request->request->getString('category'), $centre);
@@ -253,7 +253,7 @@ class ResourceCatalogController extends AbstractController
             }
             $this->em->flush();
 
-            $changes = $this->changeTracker->diff($before, $resource, self::RESOURCE_LOGGED_FIELDS);
+            $changes = $this->changeTracker->diff($before, $resource, self::LOGGED_RESOURCE_FIELDS);
             $this->activityLog->log('shared_resource.updated', ['entityId' => $id, 'changes' => $changes]);
             $this->addFlash('success', $this->t('resource_catalog.flash.resource_updated'));
 

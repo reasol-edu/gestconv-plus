@@ -1,0 +1,15 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'booking.tabs.list'|trans({}, 'admin') }} · {{ 'booking.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-7xl mx-auto space-y-6">
+
+    {% include 'resource_booking/_header.html.twig' with {active: 'list', canBook: canBook} only %}
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        <twig:ResourceBookingListComponent :centre="centre" />
+    </div>
+
+</div>
+{% endblock %}

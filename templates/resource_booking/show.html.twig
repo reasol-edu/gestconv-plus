@@ -1,0 +1,156 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ booking.resource.name }} · {{ 'booking.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set canEdit = is_granted('resource_booking.edit', booking) %}
+{% set canManage = is_granted('resource_booking.manage', booking) %}
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_bookings_index', {date: booking.date|date('Y-m-d')}) }}" class="hover:text-forest-600 transition-colors">{{ 'booking.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl font-bold text-gray-900">{{ booking.resource.name }}</h1>
+            {% include 'resource_booking/_status_badge.html.twig' with {booking: booking} only %}
+        </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6">
+        <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 text-sm">
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'booking.field.resource'|trans({}, 'admin') }}</dt>
+                <dd class="mt-1 flex flex-wrap items-center gap-2">
+                    <span class="font-medium text-gray-900">{{ booking.resource.name }}</span>
+                    <twig:EventTypeBadge :type="booking.resource.category" />
+                    {% if booking.resource.location %}<span class="text-gray-500">· {{ booking.resource.location }}</span>{% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'booking.field.teacher'|trans({}, 'admin') }}</dt>
+                <dd class="mt-1 text-gray-900">{{ booking.teacher.name.full() }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'booking.field.date'|trans({}, 'admin') }}</dt>
+                <dd class="mt-1 text-gray-900">{{ ('weekday.' ~ booking.date|date('N'))|trans({}, 'calendar') }} {{ booking.date|date('format.date'|trans) }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'booking.field.slots'|trans({}, 'admin') }}</dt>
+                <dd class="mt-1 text-gray-900">
+                    {% for slot in booking.timeSlotsOrdered %}
+                        <span class="block">{{ slot.name }} <span class="text-xs tabular-nums text-gray-400">{{ slot.startTime|date('H:i') }}–{{ slot.endTime|date('H:i') }}</span></span>
+                    {% endfor %}
+                </dd>
+            </div>
+            {% if booking.groups|length > 0 %}
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'booking.field.groups'|trans({}, 'admin') }}</dt>
+                    <dd class="mt-1 flex flex-wrap gap-1.5">
+                        {% for group in booking.groups %}<twig:GroupChip :group="group" />{% endfor %}
+                    </dd>
+                </div>
+            {% endif %}
+            {% if booking.description %}
+                <div class="sm:col-span-2">
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'booking.field.description'|trans({}, 'admin') }}</dt>
+                    <dd class="mt-1 whitespace-pre-line text-gray-900">{{ booking.description }}</dd>
+                </div>
+            {% endif %}
+        </dl>
+
+        {% if booking.seriesId %}
+            <p class="mt-5 flex items-center gap-2 text-xs text-gray-500">
+                {{ ux_icon('heroicons:arrow-path', {class: 'h-4 w-4'}) }}
+                {{ (hasSiblings ? 'booking.part_of_series' : 'booking.was_series')|trans({}, 'admin') }}
+            </p>
+        {% endif %}
+
+        {% if booking.rejected %}
+            <p class="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                {{ 'booking.rejected_notice'|trans({}, 'admin') }}
+                {% if booking.rejectionReason %}<span class="block mt-1"><strong>{{ 'booking.rejection_reason'|trans({}, 'admin') }}</strong> {{ booking.rejectionReason }}</span>{% endif %}
+            </p>
+        {% elseif booking.pending %}
+            <p class="mt-5 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">{{ 'booking.pending_notice'|trans({}, 'admin') }}</p>
+        {% endif %}
+    </div>
+
+    {# ── Validación: solo quien gestiona la categoría ──────────────────── #}
+    {% if canManage and booking.pending %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'booking.validate.title'|trans({}, 'admin') }}</h2>
+            <div class="flex flex-wrap items-center gap-2">
+                <form method="post" action="{{ path('app_bookings_approve', {id: booking.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('resolve_resource_booking_' ~ booking.id) }}">
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}{{ 'booking.validate.approve'|trans({}, 'admin') }}
+                    </button>
+                </form>
+                {% if hasSiblings %}
+                    <form method="post" action="{{ path('app_bookings_approve', {id: booking.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('resolve_resource_booking_' ~ booking.id) }}">
+                        <input type="hidden" name="scope" value="series">
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-xl border border-forest-200 bg-white px-4 py-2 text-sm font-semibold text-forest-700 hover:bg-forest-50 transition-colors">
+                            {{ 'booking.validate.approve_series'|trans({}, 'admin') }}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            <form method="post" action="{{ path('app_bookings_reject', {id: booking.id}) }}" class="space-y-3 border-t border-gray-100 pt-4">
+                <input type="hidden" name="_token" value="{{ csrf_token('resolve_resource_booking_' ~ booking.id) }}">
+                <label for="reason" class="block text-sm font-medium text-gray-700">{{ 'booking.validate.reason'|trans({}, 'admin') }}</label>
+                <textarea id="reason" name="reason" rows="2" maxlength="500"
+                          class="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900
+                                 focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors"></textarea>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                        {{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}{{ 'booking.validate.reject'|trans({}, 'admin') }}
+                    </button>
+                    {% if hasSiblings %}
+                        <button type="submit" name="scope" value="series" class="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                            {{ 'booking.validate.reject_series'|trans({}, 'admin') }}
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endif %}
+
+    {# ── Acciones sobre la reserva ─────────────────────────────────────── #}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <a href="{{ path('app_bookings_index', {date: booking.date|date('Y-m-d')}) }}"
+           class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            {{ ux_icon('heroicons:arrow-left', {class: 'h-4 w-4'}) }}{{ 'booking.back'|trans({}, 'admin') }}
+        </a>
+        {% if canEdit %}
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ path('app_bookings_edit', {id: booking.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4'}) }}{{ 'booking.action.edit'|trans({}, 'admin') }}
+                </a>
+                <form method="post" action="{{ path('app_bookings_delete', {id: booking.id}) }}" class="js-confirm-form"
+                      data-confirm="{{ 'booking.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_booking_' ~ booking.id) }}">
+                    <button type="submit" class="js-confirm-trigger inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                        {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}{{ 'booking.action.delete'|trans({}, 'admin') }}
+                    </button>
+                </form>
+                {% if hasSiblings %}
+                    <form method="post" action="{{ path('app_bookings_delete', {id: booking.id}) }}" class="js-confirm-form"
+                          data-confirm="{{ 'booking.delete_series_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_booking_' ~ booking.id) }}">
+                        <input type="hidden" name="scope" value="series">
+                        <button type="submit" class="js-confirm-trigger inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                            {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}{{ 'booking.action.delete_series'|trans({}, 'admin') }}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
