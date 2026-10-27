@@ -17,9 +17,14 @@ use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
+use App\Service\ResourceCatalogExporter;
+use App\Service\ResourceCatalogImporter;
 use App\Service\SchoolEventTypeColor;
+use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -50,6 +55,9 @@ class ResourceCatalogController extends AbstractController
         private readonly ResourceBookingRepository $bookings,
         private readonly TeacherRepository $teachers,
         private readonly EntityChangeTracker $changeTracker,
+        private readonly ResourceCatalogExporter $exporter,
+        private readonly ResourceCatalogImporter $importer,
+        private readonly UploadLimits $uploadLimits,
     ) {}
 
     #[Route('', name: 'app_centre_resources_index')]
@@ -67,6 +75,61 @@ class ResourceCatalogController extends AbstractController
             'categories'          => $this->categories->findByCentreOrdered($centre),
             'resourcesByCategory' => $resourcesByCategory,
         ]);
+    }
+
+    #[Route('/export', name: 'app_centre_resources_export', methods: ['GET'])]
+    public function export(string $centreId): JsonResponse
+    {
+        $centre = $this->requireCentre($centreId);
+
+        $json = json_encode($this->exporter->export($centre), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return new JsonResponse($json, Response::HTTP_OK, [
+            'Content-Disposition' => 'attachment; filename="recursos-compartidos-' . $centre->getCode() . '.json"',
+        ], true);
+    }
+
+    #[Route('/import', name: 'app_centre_resources_import')]
+    public function import(string $centreId, Request $request): Response
+    {
+        $centre = $this->requireCentre($centreId);
+
+        if (!$request->isMethod('POST')) {
+            return $this->render('admin/resource_catalog/import.html.twig', ['centre' => $centre]);
+        }
+
+        $this->checkCsrf($request, 'import_resource_catalog');
+
+        $file    = $request->files->get('json');
+        $problem = $this->uploadLimits->fileProblem($file);
+        if ($problem !== null) {
+            $this->addFlash('error', $problem);
+
+            return $this->render('admin/resource_catalog/import.html.twig', ['centre' => $centre]);
+        }
+
+        if (!$file instanceof UploadedFile || !$file->isValid()) {
+            $this->addFlash('error', $this->t('resource_catalog.import.error.no_file'));
+
+            return $this->render('admin/resource_catalog/import.html.twig', ['centre' => $centre]);
+        }
+
+        $decoded = json_decode((string) file_get_contents($file->getPathname()), true);
+        if (!is_array($decoded)) {
+            $this->addFlash('error', $this->t('resource_catalog.import.error.invalid_json'));
+
+            return $this->render('admin/resource_catalog/import.html.twig', ['centre' => $centre]);
+        }
+
+        /** @var array<string, mixed> $decoded */
+        $stats = $this->importer->import($decoded, $centre, $request->request->has('replace_existing'));
+
+        $this->addFlash('success', $this->translator->trans('resource_catalog.import.flash.summary', [
+            '%categories%' => $stats['categories'],
+            '%resources%'  => $stats['resources'],
+        ], 'admin'));
+
+        return $this->redirectToRoute('app_centre_resources_index', ['centreId' => $centreId]);
     }
 
     #[Route('/categorias/nueva', name: 'app_centre_resources_category_create', methods: ['POST'])]

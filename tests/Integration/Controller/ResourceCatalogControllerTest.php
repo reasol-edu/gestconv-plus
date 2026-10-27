@@ -11,6 +11,7 @@ use App\Entity\SettingType;
 use App\Entity\SharedResource;
 use App\Tests\Integration\ControllerTestCase;
 use App\Tests\Integration\ResourceBookingScenarioTrait;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ResourceCatalogControllerTest extends ControllerTestCase
 {
@@ -202,6 +203,130 @@ class ResourceCatalogControllerTest extends ControllerTestCase
         $this->em->clear();
         self::assertNull($this->em->getRepository(ResourceCategory::class)->find($w['category']->getId()));
         self::assertNull($this->em->getRepository(SharedResource::class)->find($w['resource']->getId()));
+    }
+
+    public function testExportListsCategoriesWithManagersAndResources(): void
+    {
+        $w = $this->makeBookingWorld();
+        $this->loginAs($w['admin'], $w['centre']);
+
+        $this->client->request('GET', $this->url($w['centre']->getId()->toRfc4122()) . '/export');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('attachment', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+        self::assertSame('Dependencias', $data['categories'][0]['name']);
+        self::assertSame([$w['manager']->getUsername()], $data['categories'][0]['managers']);
+        self::assertSame('Aula de informática', $data['categories'][0]['resources'][0]['name']);
+        self::assertSame('Planta 2', $data['categories'][0]['resources'][0]['location']);
+    }
+
+    public function testImportCreatesAndUpdatesByNameAndResolvesManagers(): void
+    {
+        $w = $this->makeBookingWorld();
+        $this->loginAs($w['admin'], $w['centre']);
+        $centreId = $w['centre']->getId()->toRfc4122();
+
+        $this->importJson($centreId, [
+            'categories' => [
+                [
+                    'name'              => 'dependencias',
+                    'color'             => '#16a34a',
+                    'restricted'        => true,
+                    'requires_approval' => true,
+                    'max_advance_days'  => 30,
+                    'managers'          => [$w['other']->getUsername(), 'no.existe'],
+                    'resources'         => [
+                        ['name' => 'AULA DE INFORMÁTICA', 'location' => 'Planta 3'],
+                        ['name' => 'Biblioteca', 'description' => 'Sala de lectura'],
+                    ],
+                ],
+                ['name' => 'Carros de portátiles', 'active' => false, 'resources' => [['name' => 'Carro 1']]],
+            ],
+        ]);
+
+        self::assertResponseRedirects($this->url($centreId));
+        $this->em->clear();
+        $categories = $this->em->getRepository(ResourceCategory::class)->findBy([], ['name' => 'ASC']);
+        self::assertCount(2, $categories);
+        [$carros, $dependencias] = $categories;
+        self::assertSame('Dependencias', $dependencias->getName(), 'se empareja por nombre sin distinguir mayúsculas');
+        self::assertTrue($dependencias->isRestricted());
+        self::assertTrue($dependencias->requiresApproval());
+        self::assertSame(30, $dependencias->getMaxAdvanceDays());
+        self::assertCount(1, $dependencias->getManagers());
+        self::assertSame($w['other']->getUsername(), $dependencias->getManagers()->first()->getUsername());
+        self::assertFalse($carros->isActive());
+
+        $resources = $this->em->getRepository(SharedResource::class)->findAll();
+        self::assertCount(3, $resources);
+        $names = array_map(static fn (SharedResource $r): string => $r->getName(), $resources);
+        self::assertContains('Aula de informática', $names);
+        self::assertNotContains('AULA DE INFORMÁTICA', $names);
+    }
+
+    public function testImportReplacingEmptiesTheCatalogFirst(): void
+    {
+        $w = $this->makeBookingWorld();
+        $this->loginAs($w['admin'], $w['centre']);
+        $centreId = $w['centre']->getId()->toRfc4122();
+
+        $this->importJson($centreId, ['categories' => [['name' => 'Talleres', 'resources' => []]]], replace: true);
+
+        $this->em->clear();
+        $categories = $this->em->getRepository(ResourceCategory::class)->findAll();
+        self::assertCount(1, $categories);
+        self::assertSame('Talleres', $categories[0]->getName());
+        self::assertCount(0, $this->em->getRepository(SharedResource::class)->findAll());
+    }
+
+    public function testImportRejectsInvalidJson(): void
+    {
+        $w = $this->makeBookingWorld();
+        $this->loginAs($w['admin'], $w['centre']);
+        $centreId = $w['centre']->getId()->toRfc4122();
+
+        $this->importRaw($centreId, 'esto no es json');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'no es un JSON válido');
+        $this->em->clear();
+        self::assertCount(1, $this->em->getRepository(ResourceCategory::class)->findAll());
+    }
+
+    public function testImportAndExportAreDeniedToNonAdmins(): void
+    {
+        $w = $this->makeBookingWorld();
+        $this->loginAs($w['manager'], $w['centre']);
+        $centreId = $w['centre']->getId()->toRfc4122();
+
+        $this->client->request('GET', $this->url($centreId) . '/export');
+        self::assertResponseStatusCodeSame(403);
+
+        $this->client->request('GET', $this->url($centreId) . '/import');
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function importJson(string $centreId, array $data, bool $replace = false): void
+    {
+        $this->importRaw($centreId, (string) json_encode($data), $replace);
+    }
+
+    private function importRaw(string $centreId, string $content, bool $replace = false): void
+    {
+        $crawler = $this->client->request('GET', $this->url($centreId) . '/import');
+        $token   = $crawler->filter('form [name="_token"]')->attr('value');
+
+        $path = tempnam(sys_get_temp_dir(), 'gestconv_resources_');
+        file_put_contents($path, $content);
+
+        $this->client->request(
+            'POST',
+            $this->url($centreId) . '/import',
+            ['_token' => $token] + ($replace ? ['replace_existing' => '1'] : []),
+            ['json' => new UploadedFile($path, 'recursos.json', 'application/json', null, true)],
+        );
     }
 
     public function testTheCatalogIsNotFoundWhenTheSectionIsOff(): void

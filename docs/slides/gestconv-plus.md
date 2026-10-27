@@ -588,7 +588,8 @@ el centro**, no solo de sus propios grupos:
   **categorías** (dependencias, carros de portátiles…) y sus recursos. Cada
   categoría tiene **responsables**, que gestionan las reservas de sus
   recursos, y reglas propias: restringida, con **validación**, antelación
-  máxima.
+  máxima. El catálogo se **exporta e importa en JSON** para copiarlo a otro
+  centro.
 - La sección **Reservas** muestra un **calendario semanal o mensual** con
   filtros por categoría, recurso, docente y grupo, y un **listado** paginado
   de tus reservas (los responsables y la dirección ven también las ajenas).

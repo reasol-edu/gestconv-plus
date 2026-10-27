@@ -5,14 +5,30 @@
 {% block content %}
 <div class="px-6 py-8 max-w-5xl mx-auto space-y-6">
 
-    <div>
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
-            {% include 'components/_breadcrumb_home.html.twig' %}
-            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
-            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+                {% include 'components/_breadcrumb_home.html.twig' %}
+                <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ 'resource_catalog.title'|trans({}, 'admin') }}</h1>
+            <p class="mt-1 text-sm text-gray-500 max-w-3xl">{{ 'resource_catalog.intro'|trans({}, 'admin') }}</p>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">{{ 'resource_catalog.title'|trans({}, 'admin') }}</h1>
-        <p class="mt-1 text-sm text-gray-500 max-w-3xl">{{ 'resource_catalog.intro'|trans({}, 'admin') }}</p>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ path('app_centre_resources_import', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
+                {{ 'resource_catalog.import.button'|trans({}, 'admin') }}
+            </a>
+            <a href="{{ path('app_centre_resources_export', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-4 w-4'}) }}
+                {{ 'resource_catalog.export.button'|trans({}, 'admin') }}
+            </a>
+        </div>
     </div>
 
     {% if categories is empty %}

@@ -1197,6 +1197,18 @@ resource_catalog.flash.category_in_use: 'No se puede eliminar: algún recurso de
 resource_catalog.flash.resource_created: 'Recurso añadido.'
 resource_catalog.flash.resource_updated: 'Recurso actualizado.'
 resource_catalog.flash.resource_deleted: 'Recurso eliminado.'
+resource_catalog.export.button: 'Exportar configuración'
+resource_catalog.import.button: 'Importar configuración'
+resource_catalog.import.title: 'Importar recursos compartidos'
+resource_catalog.import.choose_file: 'Seleccionar fichero'
+resource_catalog.import.no_file_chosen: 'Ningún fichero seleccionado'
+resource_catalog.import.cancel: 'Cancelar'
+resource_catalog.import.submit: 'Importar'
+resource_catalog.import.option.replace: 'Vaciar el catálogo existente antes de importar'
+resource_catalog.import.option.replace_help: 'Elimina las categorías y los recursos actuales del centro antes de incorporar los del fichero. Lo que ya tenga reservas no se elimina aunque se marque esta opción. Los responsables se buscan por usuario entre los docentes del curso activo. Esta acción no se puede deshacer.'
+resource_catalog.import.flash.summary: '%categories% categoría(s) y %resources% recurso(s) creados; las coincidencias por nombre se han actualizado.'
+resource_catalog.import.error.no_file: 'No se ha seleccionado ningún fichero.'
+resource_catalog.import.error.invalid_json: 'El fichero no es un JSON válido. Usa un fichero exportado desde esta misma sección con el botón «Exportar configuración».'
 resource_catalog.flash.resource_in_use: 'No se puede eliminar: el recurso tiene reservas. Desactívalo en su lugar.'
 
 # Métodos de comunicación

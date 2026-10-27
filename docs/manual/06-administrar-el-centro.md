@@ -276,9 +276,16 @@ categoría o desactivarse (no admite reservas nuevas, pero conserva las existent
 reservas, o una categoría con algún recurso reservado, no se puede eliminar (aparece un aviso):
 desactívalo en su lugar. Esta tarjeta solo aparece si las **Reservas** están activadas.
 
-### Copiar catálogos entre centros
+Como los demás catálogos, este tiene **Exportar configuración** e **Importar configuración** (ver
+[Copiar catálogos entre centros](#copiar-catalogos-entre-centros)). El fichero incluye las categorías con
+sus reglas, los **usuarios** de sus responsables y sus recursos. Al importar, los responsables se
+buscan por usuario entre los docentes del curso activo del centro de destino y los que no estén
+allí se omiten. Si se marca **vaciar el catálogo existente**, se conservan las categorías y los
+recursos que ya tienen reservas.
 
-Los siete catálogos incluyen botones **Exportar configuración** e **Importar configuración**
+### Copiar catálogos entre centros {#copiar-catalogos-entre-centros}
+
+Los siete catálogos, y también el de recursos compartidos, incluyen botones **Exportar configuración** e **Importar configuración**
 para copiar la configuración de un centro a otro: la exportación descarga un fichero con los elementos y sus
 categorías, y la importación lo vuelve a cargar, creando lo que no exista y actualizando el resto
 por nombre (sin distinguir mayúsculas). Al importar se puede marcar la opción de **vaciar el
