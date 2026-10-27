@@ -1,0 +1,183 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'resource_catalog.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-5xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'resource_catalog.title'|trans({}, 'admin') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 max-w-3xl">{{ 'resource_catalog.intro'|trans({}, 'admin') }}</p>
+    </div>
+
+    {% if categories is empty %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-6 py-8 text-center">
+            <p class="text-sm text-gray-400">{{ 'resource_catalog.empty'|trans({}, 'admin') }}</p>
+        </div>
+    {% endif %}
+
+    {% for category in categories %}
+        {% set resources = resourcesByCategory[category.id.toRfc4122] ?? [] %}
+        <section class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden {{ not category.active ? 'opacity-70' : '' }}"
+                 aria-labelledby="category-{{ category.id }}">
+
+            <header class="flex items-start justify-between gap-4 flex-wrap px-5 py-4 border-b border-gray-100">
+                <div class="min-w-0 space-y-1.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 id="category-{{ category.id }}" class="text-base font-semibold text-gray-900">
+                            <twig:EventTypeBadge :type="category" class="text-sm" />
+                        </h2>
+                        {% if not category.active %}
+                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">{{ 'resource_catalog.badge.inactive'|trans({}, 'admin') }}</span>
+                        {% endif %}
+                        {% if category.restricted %}
+                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                                {{ ux_icon('heroicons:lock-closed', {class: 'h-3 w-3'}) }}{{ 'resource_catalog.badge.restricted'|trans({}, 'admin') }}
+                            </span>
+                        {% endif %}
+                        {% if category.requiresApproval %}
+                            <span class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800">
+                                {{ ux_icon('heroicons:check-badge', {class: 'h-3 w-3'}) }}{{ 'resource_catalog.badge.approval'|trans({}, 'admin') }}
+                            </span>
+                        {% endif %}
+                        {% if category.maxAdvanceDays is not null %}
+                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                                {{ 'resource_catalog.badge.advance'|trans({'%days%': category.maxAdvanceDays}, 'admin') }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        {% if category.managers is empty %}
+                            {{ 'resource_catalog.no_managers'|trans({}, 'admin') }}
+                        {% else %}
+                            {{ 'resource_catalog.managers'|trans({}, 'admin') }}
+                            {% for manager in category.managers %}{{ manager.name.full() }}{{ not loop.last ? ', ' : '' }}{% endfor %}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ path('app_centre_resources_category_edit', {centreId: centre.id, id: category.id}) }}"
+                       class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                              hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                        {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
+                        {{ 'ui.edit'|trans }}
+                    </a>
+                    <form method="post" action="{{ path('app_centre_resources_category_delete', {centreId: centre.id, id: category.id}) }}"
+                          class="js-confirm-form"
+                          data-confirm="{{ 'resource_catalog.category_delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_category_' ~ category.id) }}">
+                        <button type="submit"
+                                class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium
+                                       text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
+                                aria-label="{{ 'ui.delete'|trans }}">
+                            {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}
+                        </button>
+                    </form>
+                </div>
+            </header>
+
+            {% if resources is empty %}
+                <p class="px-5 py-5 text-center text-sm text-gray-400">{{ 'resource_catalog.no_resources'|trans({}, 'admin') }}</p>
+            {% else %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <tbody class="divide-y divide-gray-100">
+                            {% for resource in resources %}
+                                <tr class="hover:bg-gray-50 transition-colors {{ not resource.active ? 'opacity-50' : '' }}">
+                                    <td class="px-5 py-3 text-gray-800">
+                                        <span class="font-medium">{{ resource.name }}</span>
+                                        {% if not resource.active %}
+                                            <span class="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">{{ 'resource_catalog.badge.inactive'|trans({}, 'admin') }}</span>
+                                        {% endif %}
+                                        {% if resource.description %}<p class="text-xs text-gray-500 mt-0.5">{{ resource.description }}</p>{% endif %}
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ resource.location }}</td>
+                                    <td class="px-4 py-3 w-32">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <a href="{{ path('app_centre_resources_resource_edit', {centreId: centre.id, id: resource.id}) }}"
+                                               class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700
+                                                      hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                                                {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}
+                                                {{ 'ui.edit'|trans }}
+                                            </a>
+                                            <form method="post" action="{{ path('app_centre_resources_resource_delete', {centreId: centre.id, id: resource.id}) }}"
+                                                  class="js-confirm-form"
+                                                  data-confirm="{{ 'resource_catalog.resource_delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_shared_resource_' ~ resource.id) }}">
+                                                <button type="submit"
+                                                        class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium
+                                                               text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
+                                                        aria-label="{{ 'ui.delete'|trans }}">
+                                                    {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
+            {# ── Nuevo recurso en la categoría ─────────────────────────────── #}
+            <div class="border-t border-gray-100 px-5 py-4 bg-gray-50/60">
+                <form method="post" action="{{ path('app_centre_resources_resource_create', {centreId: centre.id, id: category.id}) }}"
+                      class="flex flex-wrap items-end gap-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('new_shared_resource_' ~ category.id) }}">
+                    <div class="flex-1 min-w-48">
+                        <label class="block text-xs font-medium text-gray-600 mb-1" for="res-name-{{ category.id }}">{{ 'resource_catalog.resource.name'|trans({}, 'admin') }}</label>
+                        <input type="text" id="res-name-{{ category.id }}" name="name" required maxlength="200"
+                               class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900
+                                      focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                    </div>
+                    <div class="flex-1 min-w-48">
+                        <label class="block text-xs font-medium text-gray-600 mb-1" for="res-loc-{{ category.id }}">{{ 'resource_catalog.resource.location'|trans({}, 'admin') }}</label>
+                        <input type="text" id="res-loc-{{ category.id }}" name="location" maxlength="255"
+                               class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900
+                                      focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                    </div>
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 rounded-xl bg-forest-600 px-3.5 py-2 text-sm font-semibold text-white
+                                   hover:bg-forest-700 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                        {{ 'resource_catalog.resource.new'|trans({}, 'admin') }}
+                    </button>
+                </form>
+            </div>
+        </section>
+    {% endfor %}
+
+    {# ── Nueva categoría ───────────────────────────────────────────────── #}
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs px-5 py-4">
+        <h2 class="text-sm font-semibold text-gray-900 mb-3">{{ 'resource_catalog.category.new_title'|trans({}, 'admin') }}</h2>
+        <form method="post" action="{{ path('app_centre_resources_category_create', {centreId: centre.id}) }}"
+              class="flex flex-wrap items-end gap-3">
+            <input type="hidden" name="_token" value="{{ csrf_token('new_resource_category_' ~ centre.id) }}">
+            <div class="flex-1 min-w-48">
+                <label class="block text-xs font-medium text-gray-600 mb-1" for="new-category-name">{{ 'resource_catalog.category.name'|trans({}, 'admin') }}</label>
+                <input type="text" id="new-category-name" name="name" required maxlength="200"
+                       class="block w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900
+                              focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+            <div class="shrink-0">
+                <label class="block text-xs font-medium text-gray-600 mb-1" for="new-category-color">{{ 'resource_catalog.category.color'|trans({}, 'admin') }}</label>
+                <input type="color" id="new-category-color" name="color" value="#6b7280"
+                       class="block h-9 w-14 cursor-pointer rounded-lg border border-gray-200 bg-white p-1">
+            </div>
+            <button type="submit"
+                    class="inline-flex items-center gap-1.5 rounded-xl bg-forest-600 px-3.5 py-2 text-sm font-semibold text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'resource_catalog.category.new'|trans({}, 'admin') }}
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
