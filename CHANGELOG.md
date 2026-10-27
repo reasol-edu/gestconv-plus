@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0] - 2026-10-27
+
+### Added
+
+- **Reservas de recursos compartidos**: nueva sección «Reservas» (en «Día a día») para reservar dependencias, carros de portátiles y otros recursos por tramos horarios. Calendario semanal y mensual navegable con filtros por categoría, recurso, docente y grupo; reservas con grupos, descripción y **periodicidad semanal** (con previsualización de las fechas libres y ocupadas), edición y baja de «solo esta» o «toda la serie», y una pestaña con el listado paginado y filtrable de las reservas propias (la dirección y los responsables ven y gestionan también las ajenas). Un recurso solo admite una reserva por día y tramo.
+- **Catálogo de recursos compartidos** (Centro educativo › Recursos compartidos): categorías con color, **responsables** (uno o varios docentes que gestionan las reservas de su categoría), restricción a responsables y dirección, **validación** obligatoria por un responsable (la reserva pendiente ocupa el tramo hasta aprobarla o rechazarla, con motivo), antelación máxima propia y estado activo o inactivo; y recursos con ubicación y descripción. Se puede **exportar e importar** en JSON como los demás catálogos.
+- **Avisos de reservas**: las solicitudes por validar y las respuestas llegan por la campana, el panel de inicio («Reservas por validar») y el correo, que respeta el resumen diario.
+- **Ajustes de Reservas**: un interruptor global y de centro para activar o desactivar la sección, y «Antelación máxima de las reservas», que una categoría puede sustituir por la suya.
+- **Actividades en borrador**: una actividad puede guardarse como borrador y no se tiene en cuenta para mostrarla en ningún sitio (calendario, vista de día, guardias, tablón, panel de inicio) hasta que se publique; solo aparece, marcada, en el listado de quienes la gestionan.
+- **Alumnado asociado a una actividad**: desde la ficha de la actividad, una pantalla propia permite elegir, entre el alumnado de sus grupos, quiénes participan, con buscador y «Seleccionar todos» general y por grupo.
+- **Ficha e informe PDF de una actividad**: al pulsar el nombre de una actividad se abre su ficha, con todos sus datos y el alumnado por grupos. Desde ella, quien la registró, la coordinación de actividades, la dirección y los administradores generan un informe PDF; casillas por grupo (todas marcadas por defecto) permiten elegir de cuáles se listan los nombres, y el número de estudiantes de cada grupo sale siempre. Encabezado, pie, margen superior y plantilla de fondo se configuran en los ajustes del centro, con los marcadores `{event_name}` y `{event_date}`.
+
+### Fixed
+
+- Los tests de integración ya pueden crear el esquema en MariaDB/MySQL: la columna `key` de las definiciones de ajustes se entrecomilla por ser palabra reservada.
+
 ## [1.15.0] - 2026-10-26
 
 ### Changed
