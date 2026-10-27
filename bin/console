@@ -12,6 +12,19 @@ if (!is_file(dirname(__DIR__).'/vendor/autoload_runtime.php')) {
     throw new LogicException('Symfony Runtime is missing. Try running "composer require symfony/runtime".');
 }
 
+// php-cli aplica 128M por defecto y no lee el php.ini del servidor web. El precalentamiento de la caché de producción
+// compila todas las plantillas Twig en un solo proceso y con tantas pantallas se queda sin memoria (ocurre al arrancar
+// el servicio tras una actualización). Los scripts de arranque instalados en servidores antiguos no fijan el límite,
+// así que se garantiza aquí, en el código que sí se actualiza: nunca se baja un límite mayor ni se toca «sin límite».
+$memoryLimit = trim((string) ini_get('memory_limit'));
+if ($memoryLimit !== '' && $memoryLimit !== '-1') {
+    $units = ['K' => 1024, 'M' => 1024 ** 2, 'G' => 1024 ** 3];
+    $bytes = (int) $memoryLimit * ($units[strtoupper(substr($memoryLimit, -1))] ?? 1);
+    if ($bytes < 512 * 1024 ** 2) {
+        ini_set('memory_limit', '512M');
+    }
+}
+
 require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
 return function (array $context) {
