@@ -675,37 +675,78 @@ class SchoolEventControllerTest extends ControllerTestCase
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    /** @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: AcademicYear} */
-    public function testNewPostStoresOnlyStudentsOfTheChosenGroups(): void
+    public function testTheStudentsScreenListsTheStudentsOfTheActivitysGroupsOnly(): void
+    {
+        [$admin, $centre, $group, $year] = $this->makeScenario();
+        $otherGroup = (new Group())->setName('1ºB')->setCourse($group->getCourse());
+        $inGroup    = $this->makeStudent('Ana', $group);
+        $outside    = $this->makeStudent('Beatriz', $otherGroup);
+        $this->persist($otherGroup, $inGroup, $outside);
+        $event = $this->makeEvent($year, 'Visita')->addGroup($group)->addStudent($inGroup);
+        $this->persist($event);
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/alumnado');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('input[name="students[]"]'));
+        self::assertCount(1, $crawler->filter('input[name="students[]"][checked]'));
+        self::assertSelectorTextContains('body', 'Ana Test');
+    }
+
+    public function testSavingTheStudentsScreenStoresOnlyStudentsOfTheGroups(): void
     {
         [$admin, $centre, $group, $year] = $this->makeScenario();
         $otherGroup = (new Group())->setName('1ºB')->setCourse($group->getCourse());
         $inGroup    = $this->makeStudent('Ana', $group);
         $inOther    = $this->makeStudent('Beatriz', $otherGroup);
         $this->persist($otherGroup, $inGroup, $inOther);
+        $event = $this->makeEvent($year, 'Visita')->addGroup($group);
+        $this->persist($event);
         $this->loginAs($admin, $centre);
+        $eventId = $event->getId()->toRfc4122();
 
-        $crawler = $this->client->request('GET', '/actividades/nuevo');
-        self::assertSelectorExists('#students[data-options]');
-        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
-
-        $this->client->request('POST', '/actividades/nuevo', [
-            '_token'     => $token,
-            'date'       => '2026-09-15',
-            'start_time' => '09:00',
-            'end_time'   => '10:00',
-            'name'       => 'Visita',
-            'scope'      => 'restricted',
-            'type'       => $this->typeId,
-            'groups'     => [$group->getId()->toRfc4122()],
-            'students'   => [$inGroup->getId()->toRfc4122(), $inOther->getId()->toRfc4122(), 'no-es-un-id'],
+        $crawler = $this->client->request('GET', '/actividades/' . $eventId . '/alumnado');
+        $token   = $crawler->filter('[name="_token"]')->attr('value');
+        $this->client->request('POST', '/actividades/' . $eventId . '/alumnado', [
+            '_token'   => $token,
+            'students' => [$inGroup->getId()->toRfc4122(), $inOther->getId()->toRfc4122(), 'no-es-un-id'],
         ]);
 
-        self::assertResponseRedirects();
+        self::assertResponseRedirects('/actividades/' . $eventId);
         $this->em->clear();
-        $event = $this->em->getRepository(SchoolEvent::class)->findAll()[0];
-        self::assertCount(1, $event->getStudents());
-        self::assertSame('Ana', $event->getStudents()->first()->getName()->getFirstName());
+        $saved = $this->em->getRepository(SchoolEvent::class)->find($event->getId());
+        self::assertCount(1, $saved->getStudents());
+        self::assertSame('Ana', $saved->getStudents()->first()->getName()->getFirstName());
+    }
+
+    public function testSavingTheStudentsScreenWithNoneCheckedEmptiesTheSelection(): void
+    {
+        [$admin, $centre, $group, $year] = $this->makeScenario();
+        $ana = $this->makeStudent('Ana', $group);
+        $this->persist($ana);
+        $event = $this->makeEvent($year, 'Visita')->addGroup($group)->addStudent($ana);
+        $this->persist($event);
+        $this->loginAs($admin, $centre);
+        $eventId = $event->getId()->toRfc4122();
+
+        $crawler = $this->client->request('GET', '/actividades/' . $eventId . '/alumnado');
+        $this->client->request('POST', '/actividades/' . $eventId . '/alumnado', ['_token' => $crawler->filter('[name="_token"]')->attr('value')]);
+
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(SchoolEvent::class)->find($event->getId())->getStudents());
+    }
+
+    public function testTheStudentsScreenRejectsAnInvalidCsrfToken(): void
+    {
+        [$admin, $centre, $group, $year] = $this->makeScenario();
+        $event = $this->makeEvent($year, 'Visita')->addGroup($group);
+        $this->persist($event);
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('POST', '/actividades/' . $event->getId()->toRfc4122() . '/alumnado', ['_token' => 'mal']);
+
+        self::assertResponseStatusCodeSame(403);
     }
 
     public function testEditingKeepsTheStudentsAndDropsTheOnesOfARemovedGroup(): void
@@ -721,8 +762,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         $eventId = $event->getId()->toRfc4122();
 
         $crawler = $this->client->request('GET', '/actividades/' . $eventId . '/editar');
-        self::assertCount(2, $crawler->filter('#students option[selected]'));
-        $token = $crawler->filter('form.space-y-6 [name="_token"]')->attr('value');
+        $token   = $crawler->filter('form.space-y-6 [name="_token"]')->attr('value');
 
         $this->client->request('POST', '/actividades/' . $eventId . '/editar', [
             '_token'     => $token,
@@ -733,7 +773,6 @@ class SchoolEventControllerTest extends ControllerTestCase
             'scope'      => 'restricted',
             'type'       => $this->typeId,
             'groups'     => [$group->getId()->toRfc4122()],
-            'students'   => [$ana->getId()->toRfc4122(), $beatriz->getId()->toRfc4122()],
         ]);
 
         self::assertResponseRedirects();
@@ -870,6 +909,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         return $student;
     }
 
+    /** @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: AcademicYear} */
     private function makeScenario(): array
     {
         $suffix = uniqid('', false);

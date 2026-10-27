@@ -571,7 +571,8 @@ el centro**, no solo de sus propios grupos:
   **coordinador/a**, profesorado acompañante y **grupos asociados**: sin
   grupos es general; con grupos, **general** (todo el profesorado) o
   **restringida** (solo quien los imparte o tutoriza).
-- Opcionalmente, **estudiantes asociados** de entre los de sus grupos, y un
+- Opcionalmente, **estudiantes asociados** de entre los de sus grupos (pantalla
+  propia con buscador y «seleccionar todos» por curso y grupo), y un
   **estado** *Publicada* o *Borrador*: en borrador no se muestra en ningún sitio.
 - Desde su ficha se genera un **informe en PDF** con todos sus datos y el
   alumnado por grupos (el número siempre; los nombres, de los grupos que se

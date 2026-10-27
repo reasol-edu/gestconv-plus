@@ -54,9 +54,20 @@
         {% endif %}
     </div>
 
-    {% if rosters is not empty %}
+    {% if event.groups|length > 0 %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
-            <h2 class="text-base font-semibold text-gray-900">{{ 'school_event.show.students'|trans({}, 'admin') }}</h2>
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+                <h2 class="text-base font-semibold text-gray-900">{{ 'school_event.show.students'|trans({}, 'admin') }}</h2>
+                <a href="{{ path('app_events_students', {eventId: event.id.toRfc4122}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:user-plus', {class: 'h-4 w-4'}) }}
+                    {{ (rosters is empty ? 'school_event.show.choose_students' : 'school_event.show.change_students')|trans({}, 'admin') }}
+                </a>
+            </div>
+            {% if rosters is empty %}
+                <p class="text-sm text-gray-400">{{ 'school_event.show.no_students'|trans({}, 'admin') }}</p>
+            {% endif %}
             <dl class="space-y-3">
                 {% for roster in rosters %}
                     <div>

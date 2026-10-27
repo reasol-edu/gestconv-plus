@@ -109,10 +109,11 @@ Cada actividad tiene:
 - **Profesorado acompañante** (opcional): uno o varios docentes del curso, además de quien coordina.
 - **Grupos asociados** (opcionales), elegidos en un desplegable de búsqueda que admite varios a la
   vez. Una actividad puede estar asociada a grupos aunque la vea todo el centro.
-- **Estudiantes asociados** (opcionales), que aparecen al elegir algún grupo y se eligen entre los
-  estudiantes de esos grupos. Si después se quita un grupo, se descartan sus estudiantes. De momento
-  esta información solo se ve en la [ficha de la actividad y en su informe PDF](#informe-de-una-actividad):
-  no se muestra en el calendario, el tablón ni el resto de pantallas.
+- **Estudiantes asociados** (opcionales): no se eligen en este formulario sino desde la
+  [ficha de la actividad](#informe-de-una-actividad), una vez guardada. Si
+  después se quita un grupo de la actividad, se descartan sus estudiantes. De momento esta
+  información solo se ve en la ficha y en el informe PDF: no se muestra en el calendario, el tablón
+  ni el resto de pantallas.
 - **Visibilidad**, que solo aparece al elegir al menos un grupo:
     - **General** — la ve todo el profesorado del centro, imparta o no clase a los grupos
       asociados; los grupos se muestran como información.
@@ -131,17 +132,27 @@ ninguna opción de visibilidad:
 
 ![Formulario de una actividad sin grupos asociados: no hay opciones de visibilidad](img/calendario/actividad-formulario-sin-grupos.png)
 
-En cuanto se elige un grupo aparecen el campo de estudiantes y las dos opciones de visibilidad, cada
-una con su explicación (la captura incluye también el estado de la actividad):
+En cuanto se elige un grupo aparecen las dos opciones de visibilidad, cada una con su explicación (la
+captura incluye también el estado de la actividad):
 
-![Formulario de una actividad con un grupo asociado: estado, estudiantes y las opciones «General» y «Restringida a grupos»](img/calendario/actividad-formulario.png)
+![Formulario de una actividad con un grupo asociado: estado y las opciones «General» y «Restringida a grupos»](img/calendario/actividad-formulario.png)
 
-### Informe de una actividad {#informe-de-una-actividad}
+### Ficha, alumnado e informe de una actividad {#informe-de-una-actividad}
 
 Al pulsar el nombre de una actividad en el listado (o **Detalles**) se abre su ficha, con todos sus datos
-y el alumnado asociado separado por grupos. Desde ahí se genera un **informe en PDF** con esa
-información. Pueden hacerlo quien registró la actividad, la coordinación de actividades, el equipo
-directivo y los administradores (los mismos que pueden editarla).
+y el alumnado asociado separado por grupos. Desde ahí se elige el alumnado y se genera un **informe en
+PDF** con toda la información. Pueden hacerlo quien registró la actividad, la coordinación de
+actividades, el equipo directivo y los administradores (los mismos que pueden editarla).
+
+**Elegir el alumnado.** Si la actividad tiene grupos asociados, el botón **Elegir alumnado** (o
+**Cambiar alumnado**) de la ficha abre una pantalla propia con el alumnado de esos grupos, organizado
+por curso y grupo. Hay un buscador por nombre (sin distinguir mayúsculas ni tildes), un
+**Seleccionar todos** general y otro por cada grupo —que actúan solo sobre lo que muestra el
+filtro— y un contador de seleccionados. Quien está en dos grupos de la actividad aparece en ambos y
+se marca a la vez. Se guarda con **Guardar**; si no se marca a nadie, la actividad queda sin
+alumnado asociado.
+
+![Pantalla para elegir el alumnado de una actividad, agrupado por curso y grupo](img/calendario/actividad-alumnado.png)
 
 ![Ficha de una actividad con el alumnado por grupos y las casillas del informe](img/calendario/actividad-ficha.png)
 

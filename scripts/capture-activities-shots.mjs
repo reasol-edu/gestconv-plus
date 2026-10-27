@@ -1,7 +1,7 @@
 /**
  * Captura las pantallas de las actividades de centro, los colores de grupo y el modo tablón para el manual:
  *  · calendario/actividad-formulario-sin-grupos.png — formulario de actividad sin grupos: no hay nada que elegir
- *  · calendario/actividad-formulario.png            — estado (publicada o borrador) y, con un grupo elegido, la visibilidad y los estudiantes
+ *  · calendario/actividad-formulario.png            — estado (publicada o borrador) y, con un grupo elegido, las opciones de visibilidad
  *  · centro/centro-oferta-color.png                 — color de un grupo (personalizado, con el botón para volver al calculado)
  *  · centro/centro-tipos-actividad.png              — catálogo de tipos de actividad
  *  · centro/centro-perfiles.png                     — perfiles, con la coordinación de actividades
@@ -93,7 +93,6 @@ await admin.keyboard.press('Escape');
 await admin.waitForTimeout(200);
 expect(await admin.locator('[data-event-scope-target="scopeBlock"]').isVisible(), 'con un grupo debe verse la visibilidad');
 await admin.locator('input[name="scope"][value="general"]').check();
-expect(await admin.locator('#students-field').isVisible(), 'con un grupo debe verse el campo de estudiantes');
 await shootCards(admin, 2, 3, `${root}/calendario/actividad-formulario.png`);
 
 await admin.click('button[type="submit"]');

@@ -78,7 +78,6 @@ class SchoolEventController extends AbstractController
         $values['type'] = ($this->types->findActiveByCentreOrdered($centre)[0] ?? null)?->getId()->toRfc4122() ?? '';
         $selectedGroupIds = [];
         $selectedCompanionIds = [];
-        $selectedStudentIds = [];
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('new_school_event', $request->request->getString('_token'))) {
@@ -88,7 +87,6 @@ class SchoolEventController extends AbstractController
             $values               = $this->valuesFromRequest($request);
             $selectedGroupIds     = $request->request->all('groups');
             $selectedCompanionIds = $request->request->all('companions');
-            $selectedStudentIds   = $request->request->all('students');
             $errors               = $this->validate($values, $selectedGroupIds, $centre, null);
 
             if (empty($errors)) {
@@ -96,7 +94,7 @@ class SchoolEventController extends AbstractController
                 $event  = (new SchoolEvent())
                     ->setAcademicYear($year)
                     ->setCreatedBy($author instanceof Teacher ? $author : null);
-                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds, $selectedStudentIds);
+                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds);
 
                 $this->em->persist($event);
                 $this->em->flush();
@@ -121,8 +119,6 @@ class SchoolEventController extends AbstractController
             'availableTypes'       => $this->types->findActiveByCentreOrdered($centre),
             'availableTeachers'    => $this->teachers->findByAcademicYearOrderedByName($year),
             'selectedCompanionIds' => $selectedCompanionIds,
-            'studentOptions'       => $this->studentOptions($centre),
-            'selectedStudentIds'   => $selectedStudentIds,
         ]);
     }
 
@@ -158,10 +154,6 @@ class SchoolEventController extends AbstractController
             static fn (Teacher $t): string => $t->getId()->toRfc4122(),
             $event->getCompanions()->toArray(),
         );
-        $selectedStudentIds = array_map(
-            static fn (Student $s): string => $s->getId()->toRfc4122(),
-            $event->getStudents()->toArray(),
-        );
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('edit_school_event_' . $eventId, $request->request->getString('_token'))) {
@@ -171,11 +163,10 @@ class SchoolEventController extends AbstractController
             $values               = $this->valuesFromRequest($request);
             $selectedGroupIds     = $request->request->all('groups');
             $selectedCompanionIds = $request->request->all('companions');
-            $selectedStudentIds   = $request->request->all('students');
             $errors               = $this->validate($values, $selectedGroupIds, $centre, $event);
 
             if (empty($errors)) {
-                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds, $selectedStudentIds);
+                $this->applyValues($event, $values, $centre, $year, $selectedGroupIds, $selectedCompanionIds);
                 $this->em->flush();
 
                 $this->activityLog->log('school_event.updated', [
@@ -199,8 +190,6 @@ class SchoolEventController extends AbstractController
             'availableTypes'       => $this->selectableTypes($centre, $event),
             'availableTeachers'    => $this->selectableTeachers($year, $event),
             'selectedCompanionIds' => $selectedCompanionIds,
-            'studentOptions'       => $this->studentOptions($centre),
-            'selectedStudentIds'   => $selectedStudentIds,
         ]);
     }
 
@@ -215,6 +204,77 @@ class SchoolEventController extends AbstractController
             'centre'  => $centre,
             'event'   => $event,
             'rosters' => $this->rosterBuilder->build($event),
+        ]);
+    }
+
+    /**
+     * Pantalla para elegir, entre el alumnado de los grupos de la actividad, quiénes participan: agrupado por curso y
+     * grupo, con búsqueda y «seleccionar todos» global y por grupo.
+     */
+    #[Route('/{eventId}/alumnado', name: 'app_events_students', requirements: ['eventId' => '[0-9a-fA-F-]{36}'], methods: ['GET', 'POST'])]
+    public function students(string $eventId, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
+    {
+        $this->denyAccessUnlessGranted(EducationalCentreVoter::PUBLISH_EVENTS, $centre);
+        $this->denyIfViewingPastYear($centre);
+
+        $event  = $this->findManageable($centre, $eventId);
+        $groups = array_values($event->getGroups()->toArray());
+        usort($groups, static fn (Group $a, Group $b): int => strnatcasecmp($a->getCourse()->getName(), $b->getCourse()->getName())
+            ?: strnatcasecmp($a->getName(), $b->getName()));
+
+        $studentsByGroup = [];
+        $allowed         = [];
+        foreach ($this->students->findByGroupsOrdered($groups) as $student) {
+            $allowed[$student->getId()->toRfc4122()] = $student;
+            foreach ($student->getGroups() as $group) {
+                $studentsByGroup[$group->getId()->toRfc4122()][] = $student;
+            }
+        }
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('event_students_' . $eventId, $request->request->getString('_token'))) {
+                throw $this->createAccessDeniedException();
+            }
+
+            // Solo cuenta quien pertenece a alguno de los grupos de la actividad.
+            $chosen = [];
+            foreach ($request->request->all('students') as $studentId) {
+                if (is_string($studentId) && isset($allowed[$studentId])) {
+                    $chosen[$studentId] = $allowed[$studentId];
+                }
+            }
+            foreach ($event->getStudents()->toArray() as $student) {
+                if (!isset($chosen[$student->getId()->toRfc4122()])) {
+                    $event->removeStudent($student);
+                }
+            }
+            foreach ($chosen as $student) {
+                $event->addStudent($student);
+            }
+            $this->em->flush();
+
+            $this->activityLog->log('school_event.updated', [
+                'entityId' => $event->getId()->toRfc4122(),
+                'name'     => $event->getName(),
+            ]);
+            $this->addFlash('success', $this->t('school_event.flash.students_saved'));
+
+            return $this->redirectToRoute('app_events_show', ['eventId' => $eventId]);
+        }
+
+        $selectedIds = array_map(static fn (Student $s): string => $s->getId()->toRfc4122(), $event->getStudents()->toArray());
+        $courses     = [];
+        foreach ($groups as $group) {
+            $courseId = $group->getCourse()->getId()->toRfc4122();
+            $courses[$courseId]['course']   = $group->getCourse();
+            $courses[$courseId]['groups'][] = ['group' => $group, 'students' => $studentsByGroup[$group->getId()->toRfc4122()] ?? []];
+        }
+
+        return $this->render('school_event/students.html.twig', [
+            'centre'      => $centre,
+            'event'       => $event,
+            'courses'     => array_values($courses),
+            'selectedIds' => $selectedIds,
         ]);
     }
 
@@ -441,7 +501,6 @@ class SchoolEventController extends AbstractController
      * @param array<string, string>   $values
      * @param array<array-key, mixed> $selectedGroupIds
      * @param array<array-key, mixed> $selectedCompanionIds
-     * @param array<array-key, mixed> $selectedStudentIds
      */
     private function applyValues(
         SchoolEvent $event,
@@ -450,7 +509,6 @@ class SchoolEventController extends AbstractController
         AcademicYear $year,
         array $selectedGroupIds,
         array $selectedCompanionIds,
-        array $selectedStudentIds,
     ): void {
         // Coordinador y acompañantes han de ser docentes del curso de la actividad (o quienes ya lo eran al guardarla); lo demás se ignora.
         $teachersById = [];
@@ -509,48 +567,16 @@ class SchoolEventController extends AbstractController
             $event->addGroup($group);
         }
 
-        // Los estudiantes han de pertenecer a alguno de los grupos elegidos: al quitar un grupo dejan de valer los suyos.
-        $students = [];
+        // El alumnado se elige en su propia pantalla; aquí solo se descarta el de los grupos que se han quitado.
+        $keep = [];
         foreach ($this->students->findByGroupsOrdered(array_values($selected)) as $student) {
-            $students[$student->getId()->toRfc4122()] = $student;
+            $keep[$student->getId()->toRfc4122()] = true;
         }
         foreach ($event->getStudents()->toArray() as $student) {
-            $event->removeStudent($student);
-        }
-        foreach ($selectedStudentIds as $studentId) {
-            if (is_string($studentId) && isset($students[$studentId])) {
-                $event->addStudent($students[$studentId]);
+            if (!isset($keep[$student->getId()->toRfc4122()])) {
+                $event->removeStudent($student);
             }
         }
-    }
-
-    /**
-     * Estudiantes que se pueden elegir (los de los grupos del curso activo del centro), con los grupos en que están
-     * para que el formulario solo ofrezca los de los grupos marcados.
-     *
-     * @return list<array{id: string, name: string, groups: list<string>}>
-     */
-    private function studentOptions(EducationalCentre $centre): array
-    {
-        $groups = array_values($this->groups->findByActiveYearOfCentreOrderedByName($centre));
-        $allowed = [];
-        foreach ($groups as $group) {
-            $allowed[$group->getId()->toRfc4122()] = true;
-        }
-
-        $options = [];
-        foreach ($this->students->findByGroupsOrdered($groups) as $student) {
-            $options[] = [
-                'id'     => $student->getId()->toRfc4122(),
-                'name'   => $student->getName()->full(),
-                'groups' => array_values(array_filter(
-                    array_map(static fn (Group $g): string => $g->getId()->toRfc4122(), $student->getGroups()->toArray()),
-                    static fn (string $id): bool => isset($allowed[$id]),
-                )),
-            ];
-        }
-
-        return $options;
     }
 
     private function parseDate(string $value): ?\DateTimeImmutable

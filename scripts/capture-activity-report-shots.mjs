@@ -71,6 +71,13 @@ const height = await page.evaluate(() => {
 });
 await page.screenshot({ path: `${root}/calendario/actividad-ficha.png`, clip: { x: 0, y: 0, width: 1280, height } });
 
+// ── Pantalla para elegir el alumnado (la excursión ya tiene a 5 de 1º ESO A y 3 de 1º ESO B marcados) ──
+await page.setViewportSize({ width: 1280, height: 900 });
+await goto(`${baseUrl}${href}/alumnado`);
+expect(await page.locator('input[name="students[]"]:checked').count() === 8, 'deben verse marcados los 8 estudiantes asociados');
+await page.screenshot({ path: `${root}/calendario/actividad-alumnado.png`, clip: { x: 256, y: 56, width: 1024, height: 780 } });
+await goto(`${baseUrl}${href}`);
+
 // ── Informe PDF: solo se listan los nombres del primer grupo ──────────────────────────────────────────
 const firstGroup = await checkboxes.first().getAttribute('value');
 const response   = await context.request.get(`${baseUrl}${href}/informe?options=1&groups[]=${firstGroup}`);

@@ -100,9 +100,6 @@
                 </select>
                 <p class="mt-1.5 text-xs text-gray-500">{{ 'school_event.field.groups_help'|trans({}, 'admin') }}</p>
             </div>
-
-            {% include 'school_event/_students_field.html.twig' %}
-
             {# Solo con algún grupo elegido hay que decidir quién lo ve; sin grupos es general. #}
             <div data-event-scope-target="scopeBlock" class="hidden space-y-3">
                 <h3 class="text-sm font-medium text-gray-700">{{ 'school_event.field.scope'|trans({}, 'admin') }}</h3>
