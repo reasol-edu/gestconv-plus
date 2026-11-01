@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.4] - 2026-11-01
+
+### Changed
+
+- El formulario de **reserva de recursos** ya no deja elegir una fecha no lectiva (fin de semana o festivo del curso): al seleccionarla, el campo vuelve al último valor válido y se muestra un aviso, igual que en las ausencias. La fecha final de la repetición semanal no se restringe.
+
 ## [1.16.3] - 2026-11-01
 
 ### Changed
