@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.3] - 2026-11-01
+
+### Changed
+
+- En el formulario de **reserva de recursos**, el recurso y el docente que reserva se eligen ahora con un buscador (Tom Select), que filtra al escribir sin distinguir tildes, igual que el de grupos.
+
+### Fixed
+
+- El chevron de los desplegables ya no queda pegado al margen derecho: los `<select>` normales dibujan uno propio con holgura y el triángulo de los desplegables con buscador también se separa del borde.
+- En los desplegables con buscador de selección múltiple (por ejemplo, los grupos de una reserva), la casilla de cada opción tenía el texto pegado; ahora hay un pequeño espacio entre ambos.
+
 ## [1.16.2] - 2026-10-27
 
 ### Security
