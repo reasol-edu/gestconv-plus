@@ -375,6 +375,20 @@ summary:focus-visible {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Chevron separado del borde: en los desplegables de Tom Select el triángulo nativo queda a 15px y en los
+   <select> del navegador el chevron va pegado al margen; se dibuja uno propio con holgura a la derecha. */
+:root .ts-wrapper.single .ts-control:not(.rtl)::after { right: 1.125rem; }
+:root .ts-wrapper.single .ts-control { --ts-pr-caret: 2.5rem; }
+
+select:not([multiple]):not([size]):not(.ts-hidden-accessible) {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236b7280' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 1.125rem;
+    padding-right: 2.75rem;
+}
+
 /* Variante de control ajustada para selects locales (sin autocompletado remoto) */
 :root .ts-wrapper.ts-local .ts-control {
     padding: 0.5rem 0.875rem;
