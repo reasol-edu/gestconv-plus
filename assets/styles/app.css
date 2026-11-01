@@ -389,6 +389,12 @@ select:not([multiple]):not([size]):not(.ts-hidden-accessible) {
     padding-right: 2.75rem;
 }
 
+/* Plugin checkbox_options: separa la casilla del texto de la opción. */
+:root .ts-dropdown .option input[type="checkbox"] {
+    margin-right: 0.625rem;
+    vertical-align: middle;
+}
+
 /* Variante de control ajustada para selects locales (sin autocompletado remoto) */
 :root .ts-wrapper.ts-local .ts-control {
     padding: 0.5rem 0.875rem;
