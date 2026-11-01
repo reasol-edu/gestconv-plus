@@ -21,7 +21,9 @@
         {% endif %}
     </div>
 
-    <form method="post" class="space-y-6" data-controller="booking-form form-submit unsaved-changes">
+    <form method="post" class="space-y-6" data-controller="booking-form non-working-day form-submit unsaved-changes"
+          data-non-working-day-dates-value="{{ nonWorkingDayDates|default([])|json_encode }}"
+          data-non-working-day-blocked-message-value="{{ 'non_working_date.selection_reverted'|trans({}, 'admin') }}">
         <input type="hidden" name="_token" value="{{ csrf_token('edit_resource_booking_' ~ booking.id) }}">
 
         {% include 'resource_booking/_form_fields.html.twig' with {mode: 'edit'} %}

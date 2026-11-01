@@ -23,6 +23,7 @@ use App\Security\Voter\EducationalCentreVoter;
 use App\Security\Voter\ResourceBookingVoter;
 use App\Service\BookingDateCheck;
 use App\Service\BookingInput;
+use App\Service\NonWorkingDayChecker;
 use App\Service\ResourceBookingAccess;
 use App\Service\ResourceBookingCalendarBuilder;
 use App\Service\ResourceBookingFilters;
@@ -60,6 +61,7 @@ class ResourceBookingController extends AbstractController
         private readonly ResourceBookingInputReader $reader,
         private readonly ResourceBookingManager $manager,
         private readonly ResourceBookingCalendarBuilder $calendar,
+        private readonly NonWorkingDayChecker $nonWorkingDayChecker,
     ) {}
 
     // ── Calendario ────────────────────────────────────────────────────────────
@@ -432,6 +434,7 @@ class ResourceBookingController extends AbstractController
             'canPickTeacher'  => $canPickTeacher,
             'teachers'        => $canPickTeacher ? $this->teachers->findByAcademicYearOrderedByName($year) : [],
             'today'           => $this->planner->today(),
+            'nonWorkingDayDates' => $this->nonWorkingDayChecker->datesFor($year),
         ]);
     }
 
