@@ -19,7 +19,9 @@
 
     <div>
         <label for="resource" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'booking.field.resource'|trans({}, 'admin') }} <span class="text-red-500">*</span></label>
-        <select id="resource" name="resource" required class="{{ inputClass }}">
+        <select id="resource" name="resource" required class="w-full text-sm ts-local"
+                data-placeholder="{{ 'booking.field.resource_placeholder'|trans({}, 'admin')|e('html_attr') }}"
+                data-no-results="{{ 'tom_select.no_results'|trans({}, 'admin')|e('html_attr') }}">
             <option value="">{{ 'booking.field.resource_placeholder'|trans({}, 'admin') }}</option>
             {% for categoryName, list in resourcesByCategory %}
                 <optgroup label="{{ categoryName }}">
@@ -40,7 +42,8 @@
     {% if canPickTeacher %}
         <div>
             <label for="teacher" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'booking.field.teacher'|trans({}, 'admin') }}</label>
-            <select id="teacher" name="teacher" class="{{ inputClass }}">
+            <select id="teacher" name="teacher" class="w-full text-sm ts-local"
+                    data-no-results="{{ 'tom_select.no_results'|trans({}, 'admin')|e('html_attr') }}">
                 {% for teacher in teachers %}
                     <option value="{{ teacher.id.toRfc4122 }}" {{ values.teacher == teacher.id.toRfc4122 ? 'selected' : '' }}>{{ teacher.name.full() }}</option>
                 {% endfor %}
