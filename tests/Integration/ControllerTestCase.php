@@ -61,8 +61,18 @@ abstract class ControllerTestCase extends WebTestCase
             ['notifications.report_prescription_warning_days', SettingType::Integer, '7', true,  true,  true,  0,    365,  'settings.category.notifications', 40, 40, null],
             ['notifications.email_delivery',    SettingType::Choice,  'daily_digest', true, true, true, null, null, 'settings.category.email_alerts', 50, 1, 'immediate,daily_digest'],
             ['notifications.email_digest_hour', SettingType::Integer, '7',         true, true, true, 0,    23,   'settings.category.email_alerts', 50, 2, null],
-            ['notifications.email_booking_issue_reported', SettingType::Boolean, 'true', true, true, true, null, null, 'settings.category.email_alerts', 50, 150, null],
-            ['notifications.email_booking_issue_answered', SettingType::Boolean, 'true', true, true, true, null, null, 'settings.category.email_alerts', 50, 160, null],
+            // «Recibir este aviso»: un ajuste por tipo de aviso, activado por defecto, en los tres niveles.
+            ...array_map(
+                static fn (string $event, int $i): array => ['notifications.receive_' . $event, SettingType::Boolean, 'true', true, true, true, null, null, 'settings.category.email_receive', 52, ($i + 1) * 10, null],
+                $events = [
+                    'report_created', 'report_notified', 'report_modified', 'report_deleted', 'report_prescribed', 'report_auto_prescribed',
+                    'report_sanctioned', 'report_sanctionable_committee', 'sanction_notified', 'sanction_prescribed', 'sanction_auto_prescribed',
+                    'sanction_task_assigned', 'sanction_task_reminder', 'daily_note_threshold', 'report_prescription_warning',
+                    'sanction_prescription_warning', 'booking_requested', 'booking_approved', 'booking_rejected',
+                    'booking_issue_reported', 'booking_issue_received', 'booking_issue_resolved',
+                ],
+                array_keys($events),
+            ),
             ['notifications.sanction_auto_prescribe_days', SettingType::Integer, '0',  true,  true,  false, 0,    365,  'settings.category.notifications', 40, 35, null],
             ['notifications.sanction_prescription_warning_days', SettingType::Integer, '7', true,  true,  true,  0,    365,  'settings.category.notifications', 40, 45, null],
             ['notifications.email_log_enabled',                SettingType::Boolean, 'true', true, true,  false, null, null, 'settings.category.notifications', 40, 50, null],

@@ -10,14 +10,18 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version20260101000063 extends AbstractMigration
 {
-    private const array KEYS = [
-        'notifications.email_booking_issue_reported',
-        'notifications.email_booking_issue_answered',
+    /** Un ajuste «recibir este aviso» por cada tipo de aviso por correo (el mismo nombre que su evento). */
+    private const array EVENTS = [
+        'report_created', 'report_notified', 'report_modified', 'report_deleted', 'report_prescribed', 'report_auto_prescribed',
+        'report_sanctioned', 'report_sanctionable_committee', 'sanction_notified', 'sanction_prescribed', 'sanction_auto_prescribed',
+        'sanction_task_assigned', 'sanction_task_reminder', 'daily_note_threshold', 'report_prescription_warning',
+        'sanction_prescription_warning', 'booking_requested', 'booking_approved', 'booking_rejected',
+        'booking_issue_reported', 'booking_issue_received', 'booking_issue_resolved',
     ];
 
     public function getDescription(): string
     {
-        return 'Incidencias de las reservas (columnas issue_* de resource_booking) y los dos avisos por correo asociados (MySQL / MariaDB)';
+        return 'Incidencias de las reservas (columnas issue_* de resource_booking) y ajustes notifications.receive_* (recibir cada tipo de aviso, a nivel global, de centro y de docente) (MySQL / MariaDB)';
     }
 
     public function up(Schema $schema): void
@@ -41,11 +45,14 @@ final class Version20260101000063 extends AbstractMigration
         $this->addSql('CREATE INDEX idx_resource_booking_issue_by ON resource_booking (issue_responded_by_id)');
         $this->addSql('ALTER TABLE resource_booking ADD CONSTRAINT fk_resource_booking_issue_by FOREIGN KEY (issue_responded_by_id) REFERENCES teacher (id) ON DELETE SET NULL');
 
-        $this->addSql(<<<'SQL'
-            INSERT INTO setting_definition (id, `key`, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, category, category_order, position) VALUES
-                (UNHEX(REPLACE(UUID(), '-', '')), 'notifications.email_booking_issue_reported', 'boolean', 'true', 1, 1, 1, NULL, NULL, 'settings.category.email_alerts', 50, 150),
-                (UNHEX(REPLACE(UUID(), '-', '')), 'notifications.email_booking_issue_answered', 'boolean', 'true', 1, 1, 1, NULL, NULL, 'settings.category.email_alerts', 50, 160)
-        SQL);
+        $rows = [];
+        foreach (self::EVENTS as $index => $event) {
+            $rows[] = sprintf("(UNHEX(REPLACE(UUID(), '-', '')), 'notifications.receive_%s', 'boolean', 'true', 1, 1, 1, NULL, NULL, 'settings.category.email_receive', 52, %d)", $event, ($index + 1) * 10);
+        }
+        $this->addSql(
+            'INSERT INTO setting_definition (id, `key`, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, category, category_order, position) VALUES '
+            . implode(', ', $rows)
+        );
     }
 
     public function down(Schema $schema): void
@@ -55,7 +62,8 @@ final class Version20260101000063 extends AbstractMigration
             'Esta migración sólo puede ejecutarse en MySQL o MariaDB.'
         );
 
-        foreach (self::KEYS as $key) {
+        foreach (self::EVENTS as $event) {
+            $key = 'notifications.receive_' . $event;
             foreach (['global_setting_value', 'centre_setting_value', 'teacher_setting_value'] as $table) {
                 $this->addSql("DELETE FROM $table WHERE definition_id IN (SELECT id FROM setting_definition WHERE `key` = '$key')");
             }

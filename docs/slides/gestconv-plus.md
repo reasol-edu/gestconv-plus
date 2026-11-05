@@ -886,6 +886,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Los avisos por correo llegan por defecto en un **resumen diario** (un
   único correo al día por centro, a la hora que cada docente elija), no uno
   a uno; quien lo prefiera puede recibirlos de forma inmediata.
+- Cada **tipo de aviso** se puede activar o desactivar a nivel **global, de
+  centro y de docente** (Mi perfil › Ajustes), y un nivel superior puede
+  bloquear el valor para los inferiores.
 
 ---
 

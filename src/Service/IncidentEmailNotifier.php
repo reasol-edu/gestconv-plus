@@ -413,15 +413,11 @@ final class IncidentEmailNotifier
     }
 
     /**
-     * Avisa a un responsable de la categoría (o a la dirección) de una incidencia registrada en una reserva, salvo que
-     * haya desactivado este tipo de aviso en sus ajustes.
+     * Avisa a un responsable de la categoría (o a la dirección) de una incidencia registrada en una reserva.
      */
     public function bookingIssueReported(Teacher $recipient, ResourceBooking $booking, Teacher $reporter): void
     {
         $centre = $booking->getResource()->getCategory()->getEducationalCentre();
-        if (!$this->settings->getForTeacherInCentre('notifications.email_booking_issue_reported', $recipient, $centre)) {
-            return;
-        }
 
         $this->dispatch($centre, $recipient, 'booking_issue_reported', [
             '%reporter%' => $this->fullName($reporter),
@@ -432,14 +428,11 @@ final class IncidentEmailNotifier
 
     /**
      * Avisa al docente de la reserva de que su incidencia se ha marcado como recibida o solucionada, con el comentario
-     * de quien la gestiona, salvo que haya desactivado este tipo de aviso en sus ajustes.
+     * de quien la gestiona.
      */
     public function bookingIssueAnswered(Teacher $recipient, ResourceBooking $booking, Teacher $responder): void
     {
         $centre = $booking->getResource()->getCategory()->getEducationalCentre();
-        if (!$this->settings->getForTeacherInCentre('notifications.email_booking_issue_answered', $recipient, $centre)) {
-            return;
-        }
 
         $status = $booking->getIssueStatus()?->value === 'resolved' ? 'resolved' : 'received';
 
@@ -638,6 +631,10 @@ final class IncidentEmailNotifier
             return;
         }
 
+        if (!$this->receives($centre, $teacher, $eventKey)) {
+            return;
+        }
+
         // Recipients who chose the daily digest get this event as a line of their next digest instead.
         if ($this->usesDigest($centre, $teacher)) {
             $url = $context['reportUrl'] ?? $context['sanctionUrl'] ?? $context['studentUrl'] ?? $context['bookingsUrl'] ?? null;
@@ -665,6 +662,16 @@ final class IncidentEmailNotifier
         $this->send($centre, $teacher, $eventKey, $message);
     }
 
+    /**
+     * Whether this kind of notice reaches the teacher: setting "notifications.receive_<event>" (global, centre or
+     * teacher level; a higher level can lock it). Only an explicit "no" stops it, so an event without its setting
+     * is delivered as before.
+     */
+    private function receives(EducationalCentre $centre, Teacher $teacher, string $eventKey): bool
+    {
+        return $this->settings->getForTeacherInCentre('notifications.receive_' . $eventKey, $teacher, $centre) !== false;
+    }
+
     /** Whether the teacher receives the centre's notifications as one daily digest (setting "notifications.email_delivery"). */
     private function usesDigest(EducationalCentre $centre, Teacher $teacher): bool
     {
@@ -679,7 +686,7 @@ final class IncidentEmailNotifier
      */
     private function queueDigestItem(EducationalCentre $centre, Teacher $teacher, string $eventKey, array $params, ?string $url): void
     {
-        if ($teacher->getEmail() === null) {
+        if ($teacher->getEmail() === null || !$this->receives($centre, $teacher, $eventKey)) {
             return;
         }
 

@@ -64,7 +64,7 @@ class ResourceBookingIssuesTest extends ControllerTestCase
     public function testARecipientWhoDisabledThisNoticeIsNotWarned(): void
     {
         $w = $this->scenario();
-        $this->setTeacherSetting($w['manager'], 'notifications.email_booking_issue_reported', 'false');
+        $this->setTeacherSetting($w['manager'], 'notifications.receive_booking_issue_reported', 'false');
         $this->loginAs($w['owner'], $w['centre']);
 
         $this->report($w['booking'], 'El proyector no enciende');
@@ -216,7 +216,7 @@ class ResourceBookingIssuesTest extends ControllerTestCase
     {
         $w = $this->scenario();
         $this->reportAs($w, 'Fallo del proyector');
-        $this->setTeacherSetting($w['owner'], 'notifications.email_booking_issue_answered', 'false');
+        $this->setTeacherSetting($w['owner'], 'notifications.receive_booking_issue_received', 'false');
         $this->loginAs($w['manager'], $w['centre']);
 
         $this->respond($w['booking'], 'received', 'Recibido');

@@ -162,7 +162,7 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
 Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón, Actividades,
-Reservas, Notificaciones a familias, Avisos por correo, Personalización de informes, Plantillas de informes,
+Reservas, Notificaciones a familias, Avisos por correo, Avisos que se reciben, Personalización de informes, Plantillas de informes,
 Ausencias, Tareas de sanción y Subida de ficheros.
 
 ### Visualización
@@ -274,8 +274,6 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Enviar parte adjunto al correo | Sí / No | No |
 | Enviar sanción adjunta al correo | Sí / No | No |
 | Tareas de sanción asignadas | Sí / No | Sí |
-| Incidencia en una reserva (global, centro y docente) | Sí / No | Sí |
-| Respuesta a una incidencia de reserva (global, centro y docente) | Sí / No | Sí |
 | Prefijo del asunto de los correos | Texto libre (máx. 50 caracteres) | *(vacío)* |
 
 Los dos primeros controlan **cuándo** llegan los avisos: por defecto, todos juntos en un único
@@ -291,17 +289,16 @@ parte** se envía la primera vez que un estudiante alcanza o supera el umbral de
 [nota diaria](03-el-trabajo-diario.md#notas) activa; si se sigue por encima del umbral con notas
 nuevas no se repite, y el correo incluye el detalle completo de las notas activas de ese tipo. Los
 dos ajustes de adjuntar PDF al correo adjuntan el PDF del parte o de la sanción a los correos
-anteriores. Ninguno tiene ámbito de docente: se fijan a nivel global o de centro. Salvo **Tareas de
+anteriores. Estos ajustes deciden **a quién** se envía cada aviso y se fijan a nivel global o de
+centro; que cada persona **reciba o no** un aviso concreto se configura aparte, en
+[Avisos que se reciben](#avisos-que-se-reciben). Salvo **Tareas de
 sanción asignadas**, todos están desactivados o vacíos por defecto. El detalle de cada aviso está
 en [Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones).
 
-Los dos avisos de **incidencias de reservas** son la excepción a lo anterior: tienen también
-**ámbito de docente**, de modo que cada persona puede desactivarlos en sus ajustes personales. El
-primero avisa a los responsables de la categoría del recurso (o a la dirección, si no tiene
-responsables) cuando un docente [registra una incidencia](03-el-trabajo-diario.md#incidencias-de-las-reservas)
-en su reserva; el segundo, al docente, cuando la incidencia se marca como recibida o solucionada,
-con el comentario de quien la gestiona. Quien los desactiva no recibe ni el correo ni la línea del
-resumen diario, aunque la campana y el panel de inicio siguen avisando.
+Los avisos de las [incidencias de las reservas](03-el-trabajo-diario.md#incidencias-de-las-reservas)
+funcionan como el resto: se envían a los responsables de la categoría del recurso (o a la dirección,
+si no tiene responsables) cuando un docente registra una incidencia, y al docente cuando se marca
+como recibida o solucionada, con el comentario de quien la gestiona.
 
 El **prefijo del asunto** se antepone, seguido de un espacio, al asunto de todos los correos de
 esta tabla (partes, sanciones, tareas de sanción y notas diarias) — por ejemplo, con el prefijo
@@ -319,6 +316,34 @@ una tarea programada diaria (a las 6:00) envía un recordatorio a quien todavía
 pendientes cuya sanción empiece dentro de ese número de días. Un valor de 0 desactiva el
 recordatorio para ese ámbito; no afecta al correo de asignación, que se rige solo por el ajuste
 booleano anterior.
+
+### Avisos que se reciben {#avisos-que-se-reciben}
+
+Cada **tipo de aviso por correo** tiene un interruptor **Sí / No** (activado por defecto) que decide
+si el aviso llega a una persona, ya sea como correo o como línea del
+[resumen diario](06-administrar-el-centro.md#resumen-diario). Son 22 ajustes, uno por tipo, con los
+mismos nombres que en el registro de correos: parte registrado, notificado, modificado, eliminado,
+prescrito (a mano y automático), incorporado a una sanción y sancionable (comisión de convivencia);
+sanción notificada, prescrita (a mano y automática); tarea de sanción asignada y su recordatorio;
+nota que implica registro de parte; aviso de parte o sanción próximos a prescribir; reserva pendiente
+de validar, aprobada y rechazada; e incidencia de una reserva registrada, recibida y solucionada.
+
+Se pueden fijar en **los tres niveles** (ámbito global, de centro y de docente), con la misma regla
+que el resto de ajustes:
+
+- El **docente** elige los suyos en **Mi perfil › Ajustes**, en la categoría **Avisos que se
+  reciben**.
+- El **centro** puede fijar un valor para todo su profesorado. Si lo **bloquea**, ningún docente
+  puede cambiarlo.
+- La **plataforma** puede fijarlo para todos los centros y, igualmente, bloquearlo.
+- Un valor sin bloquear actúa como valor por defecto: el nivel inferior puede cambiarlo.
+
+Estos interruptores **no sustituyen** a los ajustes de [Avisos por correo](#avisos-por-correo): estos
+deciden **a quién** se envía cada aviso (por ejemplo, «al tutor/a de grupo»); aquellos, si esa persona
+lo recibe o no. Para recibir un aviso hacen falta las dos cosas. Quien desactiva un tipo no recibe
+ni el correo ni la línea del resumen diario, pero **la campana y el panel de inicio siguen
+mostrando** lo pendiente (partes por notificar, próximos a prescribir, reservas por validar,
+incidencias…): son un recuento de trabajo, no un correo.
 
 ### Personalización de informes
 

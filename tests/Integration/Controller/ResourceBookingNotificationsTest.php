@@ -189,6 +189,72 @@ class ResourceBookingNotificationsTest extends ControllerTestCase
     }
 
     /** El texto que pinta la campana para el usuario con sesión. */
+    // ── «Recibir este aviso»: global, centro y docente, con bloqueo desde arriba ──────────────────────────
+
+    public function testACentreCanTurnOffANoticeForItsWholeStaff(): void
+    {
+        $w = $this->makeBookingWorld(true);
+        $w['manager']->setEmail('manager@example.org');
+        $this->persist((new \App\Entity\CentreSettingValue())->setDefinition($this->receiveDefinition('booking_requested'))->setCentre($w['centre'])->setValue('false'));
+        $this->loginAs($w['owner'], $w['centre']);
+
+        $this->book($w, '2026-09-15', $w['slots'][1][0]->getId()->toRfc4122());
+
+        self::assertCount(0, $this->em->getRepository(EmailDigestItem::class)->findAll());
+    }
+
+    public function testATeacherCanTurnOffANoticeThatTheCentreAllows(): void
+    {
+        $w = $this->makeBookingWorld(true);
+        $w['manager']->setEmail('manager@example.org');
+        $this->persist((new TeacherSettingValue())->setDefinition($this->receiveDefinition('booking_requested'))->setTeacher($w['manager'])->setValue('false'));
+        $this->loginAs($w['owner'], $w['centre']);
+
+        $this->book($w, '2026-09-15', $w['slots'][1][0]->getId()->toRfc4122());
+
+        self::assertCount(0, $this->em->getRepository(EmailDigestItem::class)->findAll());
+    }
+
+    public function testALockedCentreValueBeatsTheTeacherChoice(): void
+    {
+        $w = $this->makeBookingWorld(true);
+        $w['manager']->setEmail('manager@example.org');
+        $definition = $this->receiveDefinition('booking_requested');
+        $this->persist(
+            (new \App\Entity\CentreSettingValue())->setDefinition($definition)->setCentre($w['centre'])->setValue('true')->setLocked(true),
+            (new TeacherSettingValue())->setDefinition($definition)->setTeacher($w['manager'])->setValue('false'),
+        );
+        $this->loginAs($w['owner'], $w['centre']);
+
+        $this->book($w, '2026-09-15', $w['slots'][1][0]->getId()->toRfc4122());
+
+        self::assertCount(1, $this->em->getRepository(EmailDigestItem::class)->findAll(), 'el centro lo bloquea activado: el docente no puede quitarlo');
+    }
+
+    public function testAGlobalOffCanBeTurnedBackOnByTheCentre(): void
+    {
+        $w = $this->makeBookingWorld(true);
+        $w['manager']->setEmail('manager@example.org');
+        $definition = $this->receiveDefinition('booking_requested');
+        $this->persist(
+            (new \App\Entity\GlobalSettingValue())->setDefinition($definition)->setValue('false'),
+            (new \App\Entity\CentreSettingValue())->setDefinition($definition)->setCentre($w['centre'])->setValue('true'),
+        );
+        $this->loginAs($w['owner'], $w['centre']);
+
+        $this->book($w, '2026-09-15', $w['slots'][1][0]->getId()->toRfc4122());
+
+        self::assertCount(1, $this->em->getRepository(EmailDigestItem::class)->findAll(), 'sin bloqueo global, el centro puede volver a activarlo');
+    }
+
+    private function receiveDefinition(string $event): SettingDefinition
+    {
+        $definition = $this->em->getRepository(SettingDefinition::class)->findOneBy(['key' => 'notifications.receive_' . $event]);
+        self::assertNotNull($definition);
+
+        return $definition;
+    }
+
     private function bellText(): string
     {
         return $this->createLiveComponent('NotificationBellComponent', [], $this->client)->render()->crawler()->text();

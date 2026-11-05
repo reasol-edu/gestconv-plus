@@ -824,8 +824,9 @@ diario, según su preferencia), y la campana le avisa hasta que abre la reserva.
 reservas por recibir»; al docente, «Respuesta a tus incidencias de reservas») y en el **panel de
 inicio**, con una tarjeta y el número de pendientes. En el listado, el filtro **Incidencias** deja
 solo las reservas con incidencia por recibir, sin solucionar o con cualquier incidencia. Cada
-persona puede dejar de recibir estos correos en sus ajustes personales (ver
-[Avisos por correo](07-administrar-la-plataforma.md#avisos-por-correo)).
+persona puede dejar de recibir estos correos en sus ajustes personales, y el centro o la plataforma
+pueden fijarlo para todos (ver
+[Avisos que se reciben](07-administrar-la-plataforma.md#avisos-que-se-reciben)).
 
 ### Editar y eliminar
 
