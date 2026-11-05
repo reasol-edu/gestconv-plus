@@ -705,7 +705,9 @@ Muestra todas las reservas del centro, para que se vea de un vistazo qué está 
 - **Vista semanal** (por defecto): los tramos horarios en filas y los días en columnas. Cada reserva
   es una etiqueta con el recurso, el docente y los grupos, del color de su categoría. Las
   **pendientes de validar** llevan el borde discontinuo y la marca *Pendiente*. Los días no lectivos
-  se sombrean. El **+** de la cabecera de cada día abre el formulario con esa fecha.
+  se sombrean. El **+** de la cabecera de cada día abre el formulario con esa fecha. En la semana
+  actual, el **tramo en curso** se resalta en ámbar (en la etiqueta de la hora y en la columna de
+  hoy) y el resaltado avanza solo con el reloj.
 - **Vista mensual**: una celda por día con sus reservas (las que no caben se resumen en «+N más», que
   lleva a esa semana).
 - Las flechas y **Hoy** navegan por semanas o meses; **Semana / Mes** cambia de vista sin perder la
@@ -716,6 +718,10 @@ Muestra todas las reservas del centro, para que se vea de un vistazo qué está 
 
 Pulsar una reserva abre su ficha, con todos los datos y las acciones que te correspondan.
 
+El calendario **se mantiene al día por sí solo**: cada 30 segundos, y al volver a la pestaña, se
+actualiza con las reservas que hayan hecho, cambiado o dado de baja otras personas, sin recargar la
+página ni perder los filtros. No hace falta pulsar nada para ver los cambios.
+
 ![Vista mensual del calendario de reservas](img/reservas/reservas-calendario-mes.png)
 
 ### Hacer una reserva
@@ -724,11 +730,14 @@ El botón **Reservar** abre el formulario:
 
 ![Formulario de una reserva con el recurso, la fecha, los tramos horarios, los grupos y la periodicidad](img/reservas/reservas-nueva.png)
 
-- **Recurso** (obligatorio): los recursos que puedes reservar, agrupados por categoría.
+- **Recurso** (obligatorio): los recursos que puedes reservar, agrupados por categoría. Es un
+  desplegable con **buscador**: escribe parte del nombre (sin importar las tildes) para filtrar.
 - **Docente que reserva**: solo lo ven la dirección y los responsables de categorías, que pueden
-  reservar **a nombre de otro docente**. El resto reserva siempre a su nombre.
+  reservar **a nombre de otro docente**. El resto reserva siempre a su nombre. También tiene
+  buscador.
 - **Fecha** (obligatoria) y **tramos horarios** (al menos uno): al elegir la fecha solo se ofrecen
-  los tramos de ese día de la semana, y se pueden marcar varios.
+  los tramos de ese día de la semana, y se pueden marcar varios. Si eliges un **día no lectivo**
+  (fin de semana o festivo), el campo vuelve a la última fecha válida y se muestra un aviso.
 - **Grupos** asociados y **descripción**: opcionales. Los grupos se muestran como etiquetas de color
   en el calendario y en los listados.
 - **Repetir cada semana**: marca la casilla e indica la fecha final. Se reserva el mismo día de la
