@@ -714,7 +714,17 @@ Muestra todas las reservas del centro, para que se vea de un vistazo qué está 
   fecha.
 - Los **filtros** (categoría, recurso, docente y grupo) se aplican al elegirlos y se combinan entre
   sí; **Quitar filtros** los limpia. Las reservas rechazadas no se muestran porque no ocupan el
-  recurso.
+  recurso. Los cuatro son desplegables con **buscador**: escribe parte del nombre (sin importar las
+  tildes) para encontrar rápido el recurso, el docente o el grupo, y el de recursos los **agrupa por
+  categoría**.
+- La **leyenda de categorías** también filtra: pulsa una de ellas para ver solo sus reservas.
+- Si hay un recurso filtrado, el **+** de cada día abre el formulario ya con ese recurso elegido.
+- La dirección y las personas con permiso de administración del centro ven, junto a **Reservar**,
+  el botón **Gestionar recursos compartidos**, que lleva directamente al catálogo (ver
+  [Recursos compartidos](06-administrar-el-centro.md#recursos-compartidos)). Está también en la
+  pestaña **Listado**.
+
+![Filtro de recursos desplegado, con el buscador y los recursos agrupados por categoría](img/reservas/reservas-filtros.png)
 
 Pulsar una reserva abre su ficha, con todos los datos y las acciones que te correspondan.
 
@@ -792,8 +802,8 @@ ficha tiene igualmente **Eliminar** y **Eliminar la serie**.
 
 La pestaña **Listado** muestra las reservas en una tabla paginada. De entrada salen **tus reservas a
 partir de hoy**; vaciando la fecha **Desde** se ven también las pasadas. Los filtros son la fecha
-(**Desde** / **Hasta**), la categoría, el recurso, el grupo y el estado (pendiente, aprobada o
-rechazada).
+(**Desde** / **Hasta**), la categoría, el recurso (agrupado por categoría), el grupo y el estado
+(pendiente, aprobada o rechazada).
 
 ![Listado de reservas con los filtros y las acciones de cada fila](img/reservas/reservas-listado.png)
 

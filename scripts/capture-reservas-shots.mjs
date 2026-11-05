@@ -1,6 +1,7 @@
 /**
  * Captura las pantallas de las reservas de recursos compartidos para el manual:
  *  · reservas/reservas-calendario.png       — calendario semanal (tramos en filas, días en columnas)
+ *  · reservas/reservas-filtros.png          — filtro de recursos desplegado, con buscador y categorías
  *  · reservas/reservas-calendario-mes.png   — vista mensual
  *  · reservas/reservas-nueva.png            — formulario de una reserva con periodicidad semanal
  *  · reservas/reservas-previsualizacion.png — fechas de la periodicidad: libres y ocupadas
@@ -61,14 +62,25 @@ async function shootCards(page, from, to, path) {
     await page.screenshot({ path, clip: { x: first.x, y: first.y, width: first.width, height: last.y + last.height - first.y } });
 }
 
-// ── Calendario semanal y mensual, vistos por un docente ───────────────────────────────────────────────
+// ── Calendario semanal y mensual, vistos por la dirección (ve el botón «Gestionar recursos compartidos») ──
 const teacher = await newPage();
-await login(teacher, 'roberto.guerrero', 'ejemplo');
+// El reloj del navegador marca la 2.ª hora del lunes de la demo para que se vea resaltado el tramo en curso.
+await teacher.clock.setFixedTime(new Date(`${today}T09:30:00`));
+await login(teacher, 'carmen.diaz', 'ejemplo');
 
 await goto(teacher, `${baseUrl}/reservas?date=${today}`);
 expect(await teacher.locator('td a[href*="/reservas/"]').count() >= 6, 'el calendario semanal debe mostrar las reservas sembradas');
 expect(await teacher.locator('a.border-dashed').count() >= 1, 'debe verse alguna reserva pendiente (borde discontinuo)');
+expect(await teacher.locator('th.text-amber-900').count() === 1, 'debe resaltarse el tramo en curso');
+expect(await teacher.locator('a', { hasText: 'Gestionar recursos compartidos' }).count() === 1, 'la dirección debe ver el botón de gestión');
 await teacher.screenshot({ path: `${root}/reservas/reservas-calendario.png` });
+
+// Filtro de recursos desplegado: buscador y recursos agrupados por categoría.
+await teacher.locator('select[name="resource"] ~ .ts-wrapper .ts-control').click();
+await teacher.waitForTimeout(300);
+expect(await teacher.locator('.ts-dropdown .optgroup-header').count() >= 2, 'los recursos deben agruparse por categoría');
+await teacher.screenshot({ path: `${root}/reservas/reservas-filtros.png`, clip: { x: 256, y: 280, width: 1024, height: 330 } });
+await teacher.keyboard.press('Escape');
 
 await goto(teacher, `${baseUrl}/reservas?view=month&date=${today}`);
 await teacher.screenshot({ path: `${root}/reservas/reservas-calendario-mes.png` });
@@ -80,7 +92,11 @@ await login(director, 'carmen.diaz', 'ejemplo');
 await director.setViewportSize({ width: 1280, height: 1900 });
 
 await goto(director, `${baseUrl}/reservas/nueva?date=${today}`);
-await director.selectOption('#resource', { label: 'Aula de informática 1 · Planta 2' });
+await director.evaluate(() => {
+    const select = document.getElementById('resource');
+    const option = Array.from(select.options).find((o) => o.textContent.includes('Aula de informática 1'));
+    select.tomselect.setValue(option.value);
+});
 await director.waitForTimeout(200);
 const slots = director.locator('input[name="slots[]"]:not([disabled])');
 expect(await slots.count() === 3, 'solo deben ofrecerse los tres tramos del día elegido');

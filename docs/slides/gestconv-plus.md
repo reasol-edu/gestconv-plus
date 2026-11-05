@@ -597,7 +597,9 @@ el centro**, no solo de sus propios grupos:
   máxima. El catálogo se **exporta e importa en JSON** para copiarlo a otro
   centro.
 - La sección **Reservas** muestra un **calendario semanal o mensual** con
-  filtros por categoría, recurso, docente y grupo, que **marca el tramo en
+  filtros **con buscador** (recursos agrupados por categoría) por categoría,
+  recurso, docente y grupo, un acceso directo a **Gestionar recursos
+  compartidos** para la dirección, que **marca el tramo en
   curso** y **se actualiza solo** con las reservas de otras personas, y un **listado** paginado
   de tus reservas (los responsables y la dirección ven también las ajenas).
 - **Reservar**: recurso, fecha, tramos, grupos y descripción, con

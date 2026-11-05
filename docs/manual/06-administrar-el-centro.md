@@ -247,7 +247,9 @@ Actividades están activadas.
 
 **Centro educativo › Recursos compartidos** define lo que el profesorado puede
 [reservar](03-el-trabajo-diario.md#reservas): dependencias, carros de portátiles, el salón de
-actos… Se organiza en dos niveles: **categorías** y, dentro de cada una, **recursos**.
+actos… Se organiza en dos niveles: **categorías** y, dentro de cada una, **recursos**. Además de
+desde el menú del centro, se llega a él con el botón **Gestionar recursos compartidos** de la
+sección **Reservas**.
 
 ![Administración de los recursos compartidos por categorías](img/centro/centro-recursos.png)
 
