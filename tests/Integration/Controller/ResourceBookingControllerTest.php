@@ -45,6 +45,20 @@ class ResourceBookingControllerTest extends ControllerTestCase
         self::assertSelectorTextContains('h1', 'Reservas');
     }
 
+    public function testTheGlobalSearchOffersToBookAResourceOnlyWhileTheSectionIsOn(): void
+    {
+        $w = $this->makeBookingWorld();
+        $this->flush();
+        $this->loginAs($w['owner'], $w['centre']);
+
+        $with = $this->client->request('GET', '/');
+        self::assertStringContainsString('Reservar recurso', $with->filter('[data-command-palette-actions-value]')->attr('data-command-palette-actions-value') ?? '');
+
+        $this->switchOffTheSection();
+        $without = $this->client->request('GET', '/');
+        self::assertStringNotContainsString('Reservar recurso', $without->filter('[data-command-palette-actions-value]')->attr('data-command-palette-actions-value') ?? '');
+    }
+
     public function testTeacherOutsideTheYearIsDenied(): void
     {
         $w = $this->makeBookingWorld();
