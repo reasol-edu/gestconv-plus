@@ -13,6 +13,11 @@ export default class extends Controller {
         clearInterval(this.timer);
     }
 
+    // Si el contenido se sustituye (p. ej. al refrescarse un calendario), los tramos nuevos se marcan al momento.
+    slotTargetConnected() {
+        this.tick();
+    }
+
     tick = () => {
         const now = new Date();
         const minutes = now.getHours() * 60 + now.getMinutes();

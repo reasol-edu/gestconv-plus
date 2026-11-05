@@ -104,6 +104,12 @@
         </ul>
     {% endif %}
 
+    {# El calendario se mantiene al día solo (reservas de otras personas) y, en la semana actual, marca el tramo en curso. #}
+    {% set weekHasToday = view == 'week' and (data.days|filter(d => d.isToday)|length) > 0 %}
+    <div data-controller="live-refresh {{ weekHasToday ? 'current-time-slot' : '' }}"
+         {% if weekHasToday %}data-current-time-slot-current-class="bg-amber-100! text-amber-900"{% endif %}>
+    <div data-live-refresh-target="content" class="space-y-6">
+
     {# ── Vista semanal ────────────────────────────────────────────────── #}
     {% if view == 'week' %}
         {% if data.rows is empty %}
@@ -140,13 +146,15 @@
                     <tbody>
                         {% for row in data.rows %}
                             <tr class="border-b border-gray-100 last:border-b-0">
-                                <th scope="row" class="bg-gray-50 px-3 py-2 text-left align-top text-xs font-medium text-gray-600">
+                                <th scope="row" class="bg-gray-50 px-3 py-2 text-left align-top text-xs font-medium text-gray-600"
+                                    {% if weekHasToday %}data-current-time-slot-target="slot" data-start="{{ row.start|date('H:i') }}" data-end="{{ row.end|date('H:i') }}"{% endif %}>
                                     {{ row.label }}
                                     <span class="block font-normal tabular-nums text-gray-400">{{ row.start|date('H:i') }}–{{ row.end|date('H:i') }}</span>
                                 </th>
                                 {% for day in data.days %}
                                     {% set list = row.cells[day.date|date('Y-m-d')] ?? [] %}
-                                    <td class="border-l border-gray-100 p-1.5 align-top {{ day.isToday ? 'bg-forest-50/40' : (day.nonWorking ? 'bg-gray-50/70' : '') }}">
+                                    <td class="border-l border-gray-100 p-1.5 align-top {{ day.isToday ? 'bg-forest-50/40' : (day.nonWorking ? 'bg-gray-50/70' : '') }}"
+                                        {% if day.isToday %}data-current-time-slot-target="slot" data-start="{{ row.start|date('H:i') }}" data-end="{{ row.end|date('H:i') }}"{% endif %}>
                                         <div class="space-y-1.5">
                                             {% for booking in list %}
                                                 {% include 'resource_booking/_chip.html.twig' with {booking: booking} only %}
@@ -205,6 +213,9 @@
             <p class="text-center text-sm text-gray-500">{{ (hasFilters ? 'booking.empty_filtered' : 'booking.empty_month')|trans({}, 'admin') }}</p>
         {% endif %}
     {% endif %}
+
+    </div>
+    </div>
 
 </div>
 {% endblock %}
