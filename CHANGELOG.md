@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0] - 2026-11-05
+
+### Added
+
+- El **calendario de reservas** marca el **tramo en curso** en la vista semanal de la semana actual (la etiqueta de la hora y la columna de hoy se resaltan en ámbar, y el resaltado avanza solo con el reloj).
+- El calendario de reservas **se mantiene al día por sí solo**: cada 30 segundos, y al volver a la pestaña, incorpora las reservas que otras personas hayan hecho, cambiado o dado de baja, sin recargar la página ni perder los filtros.
+
 ## [1.16.4] - 2026-11-01
 
 ### Changed
