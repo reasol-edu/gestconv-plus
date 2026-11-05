@@ -44,8 +44,16 @@
                 <span class="mb-1 block text-xs font-medium text-gray-500">{{ 'booking.filter.resource'|trans({}, 'admin') }}</span>
                 <select data-model="norender|resourceId" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }}">
                     <option value="">{{ 'booking.filter.all_resources'|trans({}, 'admin') }}</option>
+                    {# Agrupados por categoría (llegan ordenados por categoría). #}
+                    {% set lastCategory = null %}
                     {% for resource in this.availableResources %}
+                        {% if resource.category.id.toRfc4122 != lastCategory %}
+                            {% if lastCategory is not null %}</optgroup>{% endif %}
+                            <optgroup label="{{ resource.category.name }}">
+                            {% set lastCategory = resource.category.id.toRfc4122 %}
+                        {% endif %}
                         <option value="{{ resource.id.toRfc4122 }}" {{ resourceId == resource.id.toRfc4122 ? 'selected' : '' }}>{{ resource.name }}</option>
+                        {% if loop.last %}</optgroup>{% endif %}
                     {% endfor %}
                 </select>
             </label>

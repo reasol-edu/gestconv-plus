@@ -389,6 +389,11 @@ select:not([multiple]):not([size]):not(.ts-hidden-accessible) {
     padding-right: 2.75rem;
 }
 
+/* Selección simple: el valor y el campo de búsqueda comparten línea, para que el control no crezca al abrirse. */
+:root .ts-wrapper.single .ts-control { flex-wrap: nowrap; align-items: center; }
+:root .ts-wrapper.single.input-active .ts-control > .item { position: absolute; visibility: hidden; }
+:root .ts-wrapper.single .ts-control > input { min-width: 2rem; flex: 1 1 auto; }
+
 /* Plugin checkbox_options: separa la casilla del texto de la opción. */
 :root .ts-dropdown .option input[type="checkbox"] {
     margin-right: 0.625rem;

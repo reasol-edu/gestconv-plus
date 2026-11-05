@@ -7,7 +7,7 @@
 {% set shortDays = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'] %}
 <div class="px-6 py-8 max-w-7xl mx-auto space-y-6">
 
-    {% include 'resource_booking/_header.html.twig' with {active: 'calendar', canBook: canBook} only %}
+    {% include 'resource_booking/_header.html.twig' with {active: 'calendar', canBook: canBook, centre: centre} only %}
 
     {# ── Barra: navegación, vista y filtros ───────────────────────────── #}
     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -53,35 +53,56 @@
           class="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-xs">
         <input type="hidden" name="view" value="{{ view }}">
         <input type="hidden" name="date" value="{{ anchor|date('Y-m-d') }}">
-        {% set selectClass = 'rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors' %}
+        {# Los cuatro filtros son desplegables con buscador (Tom Select); al elegir uno se envía el formulario. #}
+        {% set noResults = 'tom_select.no_results'|trans({}, 'admin')|e('html_attr') %}
 
-        <select name="category" data-action="change->auto-submit#submit" class="{{ selectClass }}" aria-label="{{ 'booking.filter.category'|trans({}, 'admin') }}">
-            <option value="">{{ 'booking.filter.all_categories'|trans({}, 'admin') }}</option>
-            {% for category in filterOptions.categories %}
-                <option value="{{ category.id.toRfc4122 }}" {{ filters.categoryId == category.id.toRfc4122 ? 'selected' : '' }}>{{ category.name }}</option>
-            {% endfor %}
-        </select>
+        <div class="w-full sm:w-52">
+            <select name="category" data-action="change->auto-submit#submit" class="ts-local ts-filter w-full text-sm" data-no-results="{{ noResults }}"
+                    aria-label="{{ 'booking.filter.category'|trans({}, 'admin') }}">
+                <option value="">{{ 'booking.filter.all_categories'|trans({}, 'admin') }}</option>
+                {% for category in filterOptions.categories %}
+                    <option value="{{ category.id.toRfc4122 }}" {{ filters.categoryId == category.id.toRfc4122 ? 'selected' : '' }}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-        <select name="resource" data-action="change->auto-submit#submit" class="{{ selectClass }}" aria-label="{{ 'booking.filter.resource'|trans({}, 'admin') }}">
-            <option value="">{{ 'booking.filter.all_resources'|trans({}, 'admin') }}</option>
-            {% for resource in filterOptions.resources %}
-                <option value="{{ resource.id.toRfc4122 }}" {{ filters.resourceId == resource.id.toRfc4122 ? 'selected' : '' }}>{{ resource.name }} ({{ resource.category.name }})</option>
-            {% endfor %}
-        </select>
+        {# Los recursos se agrupan por categoría. #}
+        <div class="w-full sm:w-64">
+            <select name="resource" data-action="change->auto-submit#submit" class="ts-local ts-filter w-full text-sm" data-no-results="{{ noResults }}"
+                    aria-label="{{ 'booking.filter.resource'|trans({}, 'admin') }}">
+                <option value="">{{ 'booking.filter.all_resources'|trans({}, 'admin') }}</option>
+                {% set lastCategory = null %}
+                {% for resource in filterOptions.resources %}
+                    {% if resource.category.id.toRfc4122 != lastCategory %}
+                        {% if lastCategory is not null %}</optgroup>{% endif %}
+                        <optgroup label="{{ resource.category.name }}">
+                        {% set lastCategory = resource.category.id.toRfc4122 %}
+                    {% endif %}
+                    <option value="{{ resource.id.toRfc4122 }}" {{ filters.resourceId == resource.id.toRfc4122 ? 'selected' : '' }}>{{ resource.name }}</option>
+                    {% if loop.last %}</optgroup>{% endif %}
+                {% endfor %}
+            </select>
+        </div>
 
-        <select name="teacher" data-action="change->auto-submit#submit" class="{{ selectClass }}" aria-label="{{ 'booking.filter.teacher'|trans({}, 'admin') }}">
-            <option value="">{{ 'booking.filter.all_teachers'|trans({}, 'admin') }}</option>
-            {% for teacher in filterOptions.teachers %}
-                <option value="{{ teacher.id.toRfc4122 }}" {{ filters.teacherId == teacher.id.toRfc4122 ? 'selected' : '' }}>{{ teacher.name.full() }}</option>
-            {% endfor %}
-        </select>
+        <div class="w-full sm:w-56">
+            <select name="teacher" data-action="change->auto-submit#submit" class="ts-local ts-filter w-full text-sm" data-no-results="{{ noResults }}"
+                    aria-label="{{ 'booking.filter.teacher'|trans({}, 'admin') }}">
+                <option value="">{{ 'booking.filter.all_teachers'|trans({}, 'admin') }}</option>
+                {% for teacher in filterOptions.teachers %}
+                    <option value="{{ teacher.id.toRfc4122 }}" {{ filters.teacherId == teacher.id.toRfc4122 ? 'selected' : '' }}>{{ teacher.name.full() }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-        <select name="group" data-action="change->auto-submit#submit" class="{{ selectClass }}" aria-label="{{ 'booking.filter.group'|trans({}, 'admin') }}">
-            <option value="">{{ 'booking.filter.all_groups'|trans({}, 'admin') }}</option>
-            {% for group in filterOptions.groups %}
-                <option value="{{ group.id.toRfc4122 }}" {{ filters.groupId == group.id.toRfc4122 ? 'selected' : '' }}>{{ group.name }}</option>
-            {% endfor %}
-        </select>
+        <div class="w-full sm:w-44">
+            <select name="group" data-action="change->auto-submit#submit" class="ts-local ts-filter w-full text-sm" data-no-results="{{ noResults }}"
+                    aria-label="{{ 'booking.filter.group'|trans({}, 'admin') }}">
+                <option value="">{{ 'booking.filter.all_groups'|trans({}, 'admin') }}</option>
+                {% for group in filterOptions.groups %}
+                    <option value="{{ group.id.toRfc4122 }}" {{ filters.groupId == group.id.toRfc4122 ? 'selected' : '' }}>{{ group.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
         {% if hasFilters %}
             <a href="{{ path('app_bookings_index', {view: view, date: anchor|date('Y-m-d')}) }}"
@@ -96,7 +117,16 @@
     {% if filterOptions.categories is not empty %}
         <ul class="flex flex-wrap items-center gap-2 text-xs" aria-label="{{ 'booking.legend'|trans({}, 'admin') }}">
             {% for category in filterOptions.categories %}
-                {% if category.active %}<li><twig:EventTypeBadge :type="category" /></li>{% endif %}
+                {# La leyenda también filtra: pulsar una categoría deja solo sus reservas. #}
+                {% if category.active %}
+                    <li>
+                        <a href="{{ path('app_bookings_index', filterQuery|merge({view: view, date: anchor|date('Y-m-d'), category: category.id.toRfc4122})|filter((v, k) => k != 'resource')) }}"
+                           class="rounded-md hover:shadow-sm transition-shadow {{ filters.categoryId == category.id.toRfc4122 ? 'ring-2 ring-offset-1 ring-forest-500' : '' }}"
+                           title="{{ 'booking.legend_filter'|trans({'%name%': category.name}, 'admin') }}">
+                            <twig:EventTypeBadge :type="category" />
+                        </a>
+                    </li>
+                {% endif %}
             {% endfor %}
             <li class="inline-flex items-center gap-1 rounded-md border border-dashed border-gray-400 px-2 py-0.5 font-medium text-gray-600">
                 {{ ux_icon('heroicons:clock', {class: 'h-3 w-3'}) }}{{ 'booking.status.pending'|trans({}, 'admin') }}
@@ -131,7 +161,7 @@
                                             {{ shortDays[day.date|date('N') - 1]|trans({}, 'calendar') }} {{ day.date|date('j') }}
                                         </a>
                                         {% if canBook and not day.nonWorking %}
-                                            <a href="{{ path('app_bookings_new', {date: day.date|date('Y-m-d')}) }}"
+                                            <a href="{{ path('app_bookings_new', {date: day.date|date('Y-m-d'), resource: filters.resourceId}|filter(v => v != '')) }}"
                                                class="rounded p-0.5 text-gray-400 hover:bg-white hover:text-forest-700 transition-colors"
                                                aria-label="{{ 'booking.add_on'|trans({'%date%': day.date|date('format.date'|trans)}, 'admin') }}">
                                                 {{ ux_icon('heroicons:plus', {class: 'h-3.5 w-3.5'}) }}
@@ -218,4 +248,23 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script type="module">
+import TomSelect from 'tom-select';
+
+// Desplegables de los filtros: buscador, categorías como grupos y desplegable sobre <body> (no lo recorta la tarjeta).
+document.querySelectorAll('select.ts-filter').forEach((el) => {
+    new TomSelect(el, {
+        create:           false,
+        maxOptions:       null,
+        dropdownParent:   'body',
+        allowEmptyOption: true,
+        render: {
+            no_results: () => `<div class="no-results px-3 py-2 text-sm">${el.dataset.noResults ?? ''}</div>`,
+        },
+    });
+});
+</script>
 {% endblock %}
