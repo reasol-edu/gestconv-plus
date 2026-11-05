@@ -788,6 +788,45 @@ Quien valida ve en la **campana** y en el **panel de inicio** (tarjeta **Reserva
 solicitudes que le tocan, y las resuelve desde la ficha de la reserva o con el botón **Aprobar** del
 listado. Las series se pueden aprobar o rechazar enteras.
 
+### Incidencias {#incidencias-de-las-reservas}
+
+Si algo falla al usar un recurso (un proyector que no enciende, portátiles que no arrancan…), el docente
+que hizo la reserva puede **registrar una incidencia** desde la ficha de esa reserva, con una
+descripción obligatoria. Solo se puede en reservas **aprobadas**, y también después de usar el
+recurso, aunque la fecha ya haya pasado. Cada reserva tiene una incidencia a la vez: cuando se
+soluciona, se puede registrar otra.
+
+![Tarjeta Incidencia de la ficha de una reserva, con el texto de la incidencia y el botón para registrarla](img/reservas/reservas-incidencia-registrar.png)
+
+Al registrarla se avisa por correo (o en el resumen diario, según la preferencia de cada persona) a
+los **responsables de la categoría** del recurso o, si la categoría no tiene responsables, a la
+**dirección** del centro.
+
+**Quién la ve.** La incidencia, y la marca que la señala, solo las ven el docente de la reserva, los
+responsables de la categoría y la dirección (administradores del centro y de la plataforma); el
+resto del profesorado ve la reserva como siempre. La marca es un icono junto al nombre del recurso,
+en el **calendario** y en el **listado**: ámbar si está **registrada**, azul si está **recibida** y
+verde si está **solucionada**. El texto de la incidencia solo aparece en la ficha, nunca en el
+calendario.
+
+![Calendario con el icono de incidencia en una reserva](img/reservas/reservas-incidencia-calendario.png)
+
+**Responderla.** Los responsables de la categoría y la dirección la marcan como **recibida** (la
+han visto y la van a atender) o como **solucionada**, escribiendo siempre un **comentario**
+(obligatorio). Quien registró la incidencia no puede responderla él mismo.
+
+![Tarjeta Incidencia vista por un responsable, con el formulario para marcarla como recibida o solucionada](img/reservas/reservas-incidencia-responder.png)
+
+Al responder, el docente recibe un aviso con el estado y el comentario (por correo o en el resumen
+diario, según su preferencia), y la campana le avisa hasta que abre la reserva.
+
+**Avisos y filtros.** Las incidencias aparecen en la **campana** (a los responsables, «Incidencias de
+reservas por recibir»; al docente, «Respuesta a tus incidencias de reservas») y en el **panel de
+inicio**, con una tarjeta y el número de pendientes. En el listado, el filtro **Incidencias** deja
+solo las reservas con incidencia por recibir, sin solucionar o con cualquier incidencia. Cada
+persona puede dejar de recibir estos correos en sus ajustes personales (ver
+[Avisos por correo](07-administrar-la-plataforma.md#avisos-por-correo)).
+
 ### Editar y eliminar
 
 Desde la ficha de una reserva, **Editar** abre el mismo formulario y **Eliminar** la borra (con
@@ -801,7 +840,8 @@ ficha tiene igualmente **Eliminar** y **Eliminar la serie**.
 
 ### El listado
 
-La pestaña **Listado** muestra las reservas en una tabla paginada. De entrada salen **tus reservas a
+La pestaña **Listado** muestra las reservas en una tabla paginada (con la marca de
+[incidencia](#incidencias-de-las-reservas) para quien puede verla). De entrada salen **tus reservas a
 partir de hoy**; vaciando la fecha **Desde** se ven también las pasadas. Los filtros son la fecha
 (**Desde** / **Hasta**), la categoría, el recurso (agrupado por categoría), el grupo y el estado
 (pendiente, aprobada o rechazada).
@@ -872,7 +912,9 @@ agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni
   la ficha no muestra datos de contacto ni el historial de convivencia, solo las notas diarias.
 - **Docentes** — solo para administradores.
 - **Acciones** — accesos directos a **Nuevo parte**, **Ir a notificaciones** y **Cambiar de
-  curso** (esta última requiere permisos de administración).
+  curso** (esta última requiere permisos de administración). Si la sección de
+  [Reservas](#reservas) está habilitada para el centro, también **Reservar recurso** y **Ver el
+  calendario de reservas** (no se ofrecen al consultar un curso pasado).
 
 ## Uso con teclado y cambios sin guardar
 

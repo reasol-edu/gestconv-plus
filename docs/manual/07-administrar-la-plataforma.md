@@ -274,6 +274,8 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Enviar parte adjunto al correo | Sí / No | No |
 | Enviar sanción adjunta al correo | Sí / No | No |
 | Tareas de sanción asignadas | Sí / No | Sí |
+| Incidencia en una reserva (global, centro y docente) | Sí / No | Sí |
+| Respuesta a una incidencia de reserva (global, centro y docente) | Sí / No | Sí |
 | Prefijo del asunto de los correos | Texto libre (máx. 50 caracteres) | *(vacío)* |
 
 Los dos primeros controlan **cuándo** llegan los avisos: por defecto, todos juntos en un único
@@ -292,6 +294,14 @@ dos ajustes de adjuntar PDF al correo adjuntan el PDF del parte o de la sanción
 anteriores. Ninguno tiene ámbito de docente: se fijan a nivel global o de centro. Salvo **Tareas de
 sanción asignadas**, todos están desactivados o vacíos por defecto. El detalle de cada aviso está
 en [Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones).
+
+Los dos avisos de **incidencias de reservas** son la excepción a lo anterior: tienen también
+**ámbito de docente**, de modo que cada persona puede desactivarlos en sus ajustes personales. El
+primero avisa a los responsables de la categoría del recurso (o a la dirección, si no tiene
+responsables) cuando un docente [registra una incidencia](03-el-trabajo-diario.md#incidencias-de-las-reservas)
+en su reserva; el segundo, al docente, cuando la incidencia se marca como recibida o solucionada,
+con el comentario de quien la gestiona. Quien los desactiva no recibe ni el correo ni la línea del
+resumen diario, aunque la campana y el panel de inicio siguen avisando.
 
 El **prefijo del asunto** se antepone, seguido de un espacio, al asunto de todos los correos de
 esta tabla (partes, sanciones, tareas de sanción y notas diarias) — por ejemplo, con el prefijo

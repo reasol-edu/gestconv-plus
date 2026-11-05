@@ -185,6 +185,10 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Editar y eliminar | Solo las suyas | Las de los recursos de su categoría | Todas | Todas |
 | Aprobar o rechazar las reservas pendientes | — | Las de su categoría | Todas | Todas |
 | Recibir el aviso de una solicitud pendiente | — | Las de su categoría | Si la categoría no tiene responsables | — |
+| Registrar una [incidencia](03-el-trabajo-diario.md#incidencias-de-las-reservas) | Solo en sus reservas aprobadas | Solo en sus reservas aprobadas | Solo en sus reservas aprobadas | Solo en sus reservas aprobadas |
+| Ver la incidencia y su marca | Las de sus reservas | Las de su categoría | Todas | Todas |
+| Marcar una incidencia como recibida o solucionada (con comentario) | — | Las de su categoría | Todas | Todas |
+| Recibir el aviso de una incidencia registrada | — | Las de su categoría | Si la categoría no tiene responsables | — |
 
 ## Administración global
 

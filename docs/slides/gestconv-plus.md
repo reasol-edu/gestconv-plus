@@ -96,7 +96,8 @@ Cada bloque solo añade lo que ese rol tiene **de más** sobre el anterior.
 - El **panel de inicio** muestra tarjetas con lo pendiente: partes sin
   notificar, tareas de seguimiento, avisos del centro.
 - La **búsqueda global** (`⌘K` / `Ctrl+K`) encuentra un estudiante, un grupo o un
-  parte en segundos, sin navegar por menús.
+  parte en segundos, sin navegar por menús, y ofrece accesos rápidos como
+  **Reservar recurso**.
 - Si tienes acceso a **varios centros educativos**, un selector en la cabecera
   permite cambiar de centro sin cerrar sesión.
 - El menú lateral se adapta a tu rol: solo muestra las secciones que puedes
@@ -607,6 +608,10 @@ el centro**, no solo de sus propios grupos:
 - Un recurso solo admite una reserva por día y tramo. Con validación, la
   reserva queda **pendiente** —y ocupa el tramo— hasta que un responsable la
   aprueba o la rechaza, con aviso en la campana, el inicio y el correo.
+- Si algo falla, el docente registra una **incidencia** en su reserva: la ven
+  solo él, los responsables y la dirección (con una marca en el calendario y
+  el listado), que la marcan como **recibida** o **solucionada** con un
+  comentario, y todo se avisa por correo, campana y panel.
 - Se pueden **activar o desactivar** de golpe, global o por centro.
 
 ---
