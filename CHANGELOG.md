@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.1] - 2026-11-05
+
+### Changed
+
+- En **Reservas**, los filtros del calendario (categoría, recurso, docente y grupo) son desplegables con buscador, y el de recursos se agrupa por categoría. Al elegir una categoría, el desplegable de recursos se limita a los de esa categoría, tanto en el calendario como en el listado.
+- La leyenda de categorías del calendario de reservas filtra al pulsarla, y el «+» de cada día abre el formulario con el recurso filtrado ya elegido.
+- Quien dirige el centro o lo administra ve el botón **Gestionar recursos compartidos** en la sección Reservas, que lleva al catálogo.
+- Los desplegables con buscador de selección simple ya no crecen en altura al abrirse.
+
 ## [1.17.0] - 2026-11-05
 
 ### Added
