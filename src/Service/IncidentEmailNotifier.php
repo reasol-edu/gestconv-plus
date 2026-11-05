@@ -413,6 +413,61 @@ final class IncidentEmailNotifier
     }
 
     /**
+     * Avisa a un responsable de la categoría (o a la dirección) de una incidencia registrada en una reserva, salvo que
+     * haya desactivado este tipo de aviso en sus ajustes.
+     */
+    public function bookingIssueReported(Teacher $recipient, ResourceBooking $booking, Teacher $reporter): void
+    {
+        $centre = $booking->getResource()->getCategory()->getEducationalCentre();
+        if (!$this->settings->getForTeacherInCentre('notifications.email_booking_issue_reported', $recipient, $centre)) {
+            return;
+        }
+
+        $this->dispatch($centre, $recipient, 'booking_issue_reported', [
+            '%reporter%' => $this->fullName($reporter),
+            '%resource%' => $booking->getResource()->getName(),
+            '%date%'     => $booking->getDate()->format('d/m/Y'),
+        ], 'email/booking_issue.html.twig', $this->bookingIssueContext($booking, $booking->getIssueDescription(), null));
+    }
+
+    /**
+     * Avisa al docente de la reserva de que su incidencia se ha marcado como recibida o solucionada, con el comentario
+     * de quien la gestiona, salvo que haya desactivado este tipo de aviso en sus ajustes.
+     */
+    public function bookingIssueAnswered(Teacher $recipient, ResourceBooking $booking, Teacher $responder): void
+    {
+        $centre = $booking->getResource()->getCategory()->getEducationalCentre();
+        if (!$this->settings->getForTeacherInCentre('notifications.email_booking_issue_answered', $recipient, $centre)) {
+            return;
+        }
+
+        $status = $booking->getIssueStatus()?->value === 'resolved' ? 'resolved' : 'received';
+
+        $this->dispatch($centre, $recipient, 'booking_issue_' . $status, [
+            '%responder%' => $this->fullName($responder),
+            '%resource%'  => $booking->getResource()->getName(),
+            '%date%'      => $booking->getDate()->format('d/m/Y'),
+        ], 'email/booking_issue.html.twig', $this->bookingIssueContext($booking, $booking->getIssueDescription(), $booking->getIssueComment()));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function bookingIssueContext(ResourceBooking $booking, ?string $description, ?string $comment): array
+    {
+        return [
+            'rows'        => [[
+                'date'  => $booking->getDate(),
+                'slots' => implode(', ', array_map(static fn (TimeSlot $slot): string => $slot->getName(), $booking->getTimeSlotsOrdered())),
+            ]],
+            'description' => $description,
+            'comment'     => $comment,
+            // Con el aviso en el resumen diario, el enlace de cada línea lleva a la reserva.
+            'bookingsUrl' => $this->urlGenerator->generate('app_bookings_show', ['id' => $booking->getId()->toRfc4122()], UrlGeneratorInterface::ABSOLUTE_URL),
+        ];
+    }
+
+    /**
      * @param list<ResourceBooking> $bookings
      * @return array<string, mixed>
      */

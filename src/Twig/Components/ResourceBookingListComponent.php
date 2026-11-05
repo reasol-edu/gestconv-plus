@@ -62,6 +62,10 @@ class ResourceBookingListComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $status = '';
 
+    /** Filtro de incidencias: '' (todas), 'to_receive', 'open' o 'any'. */
+    #[LiveProp(writable: true)]
+    public string $issue = '';
+
     #[LiveProp(writable: true)]
     public string $dateFrom = '';
 
@@ -176,6 +180,7 @@ class ResourceBookingListComponent extends AbstractController
             status: trim($this->status),
             dateFrom: $this->parseDate($this->dateFrom),
             dateTo: $this->parseDate($this->dateTo),
+            issue: in_array($this->issue, ['to_receive', 'open', 'any'], true) ? $this->issue : '',
         );
 
         if (!$managed) {
@@ -195,7 +200,7 @@ class ResourceBookingListComponent extends AbstractController
     public function hasActiveFilters(): bool
     {
         return $this->categoryId !== '' || $this->effectiveResourceId() !== '' || $this->teacherId !== '' || $this->groupId !== ''
-            || $this->status !== '' || $this->dateTo !== '' || $this->dateFrom !== $this->planner->today()->format('Y-m-d');
+            || $this->issue !== '' || $this->status !== '' || $this->dateTo !== '' || $this->dateFrom !== $this->planner->today()->format('Y-m-d');
     }
 
     private function parseDate(string $value): ?\DateTimeImmutable

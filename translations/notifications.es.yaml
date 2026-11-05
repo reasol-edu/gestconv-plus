@@ -12,7 +12,12 @@ bell:
         note_threshold: 'Notas que dan lugar a parte'
         booking_validation: 'Reservas por validar'
         booking_resolved: 'Respuesta a tus reservas'
+        booking_issue_open: 'Incidencias de reservas por recibir'
+        booking_issue_answered: 'Respuesta a tus incidencias de reservas'
     item:
+        booking_issue_reported: '%teacher% ha registrado una incidencia en «%resource%»'
+        booking_issue_received: 'Tu incidencia en «%resource%» se ha recibido'
+        booking_issue_resolved: 'Tu incidencia en «%resource%» se ha solucionado'
         booking_validation: '%teacher% solicita reservar «%resource%»'
         booking_approved: 'Tu reserva de «%resource%» se ha aprobado'
         booking_rejected: 'Tu reserva de «%resource%» se ha rechazado'

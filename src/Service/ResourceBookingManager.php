@@ -5,17 +5,23 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\AcademicYear;
+use App\Entity\BookingIssueStatus;
 use App\Entity\ResourceBooking;
 use App\Entity\ResourceBookingStatus;
 use App\Entity\Teacher;
 use App\Repository\ResourceBookingRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Uid\Uuid;
 
 /** Altas, cambios, bajas y validación de reservas, con el estado que corresponde a cada operación. */
 final class ResourceBookingManager
 {
+    /** Longitud máxima de la descripción de una incidencia y del comentario de su respuesta. */
+    public const ISSUE_MAX_LENGTH = 2000;
+
     public function __construct(
+        private readonly ClockInterface $clock,
         private readonly EntityManagerInterface $em,
         private readonly ResourceBookingPlanner $planner,
         private readonly ResourceBookingRepository $bookings,
@@ -170,6 +176,38 @@ final class ResourceBookingManager
             $this->activityLog->log('resource_booking.rejected', $this->logData($booking));
         }
         $this->notifier->resolved($resolved, $actor);
+    }
+
+    /**
+     * Registra una incidencia en la reserva y avisa a los responsables de la categoría (o, si no tiene, a la dirección).
+     */
+    public function reportIssue(ResourceBooking $booking, string $description, Teacher $reporter): void
+    {
+        $booking->reportIssue(mb_substr(trim($description), 0, self::ISSUE_MAX_LENGTH), $this->clock->now());
+        $this->em->flush();
+
+        $this->activityLog->log('resource_booking.issue_reported', $this->logData($booking));
+        $this->notifier->issueReported($booking, $reporter);
+    }
+
+    /**
+     * Marca la incidencia como recibida o solucionada, con el comentario obligatorio de quien la gestiona, y avisa al
+     * docente de la reserva.
+     */
+    public function respondToIssue(ResourceBooking $booking, BookingIssueStatus $status, string $comment, Teacher $responder): void
+    {
+        if ($status === BookingIssueStatus::Reported) {
+            throw new \InvalidArgumentException('Una incidencia solo se puede marcar como recibida o solucionada.');
+        }
+
+        // Quien registró la incidencia y la gestiona a la vez no necesita que se le avise de su propia respuesta.
+        $own = $booking->getTeacher()->getId()->equals($responder->getId());
+        $booking->respondToIssue($status, mb_substr(trim($comment), 0, self::ISSUE_MAX_LENGTH), $responder, $this->clock->now());
+        $booking->setIssueResponseSeen($own);
+        $this->em->flush();
+
+        $this->activityLog->log('resource_booking.issue_' . $status->value, $this->logData($booking));
+        $this->notifier->issueAnswered($booking, $responder);
     }
 
     /**

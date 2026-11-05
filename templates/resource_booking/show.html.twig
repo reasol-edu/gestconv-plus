@@ -78,6 +78,77 @@
         {% endif %}
     </div>
 
+    {# ── Incidencia: la ve el docente de la reserva y quien gestiona el recurso ────────────────── #}
+    {% set canViewIssue = is_granted('resource_booking.view_issue', booking) %}
+    {% set canReportIssue = is_granted('resource_booking.report_issue', booking) %}
+    {% set canRespondIssue = is_granted('resource_booking.respond_issue', booking) %}
+    {% set textareaClass = 'block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900 focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors' %}
+    {% if canViewIssue and (booking.hasIssue or canReportIssue) %}
+        <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4" aria-labelledby="issue-title">
+            <div class="flex flex-wrap items-center gap-3">
+                <h2 id="issue-title" class="text-base font-semibold text-gray-900">{{ 'booking.issue.title'|trans({}, 'admin') }}</h2>
+                {% include 'resource_booking/_issue_badge.html.twig' with {booking: booking, label: true} only %}
+            </div>
+
+            {% if booking.hasIssue %}
+                <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                        {{ 'booking.issue.reported_on'|trans({'%date%': booking.issueReportedAt|date('format.datetime'|trans)}, 'admin') }}
+                    </p>
+                    <p class="mt-1 whitespace-pre-line">{{ booking.issueDescription }}</p>
+                </div>
+                {% if booking.issueComment %}
+                    <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            {{ 'booking.issue.answered_by'|trans({
+                                '%name%': booking.issueRespondedBy ? booking.issueRespondedBy.name.full() : '—',
+                                '%date%': booking.issueRespondedAt|date('format.datetime'|trans),
+                            }, 'admin') }}
+                        </p>
+                        <p class="mt-1 whitespace-pre-line">{{ booking.issueComment }}</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            {% if canRespondIssue %}
+                <form method="post" action="{{ path('app_bookings_issue_respond', {id: booking.id}) }}" class="space-y-3 border-t border-gray-100 pt-4">
+                    <input type="hidden" name="_token" value="{{ csrf_token('respond_booking_issue_' ~ booking.id) }}">
+                    <label for="issue-comment" class="block text-sm font-medium text-gray-700">
+                        {{ 'booking.issue.comment'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+                    </label>
+                    <textarea id="issue-comment" name="comment" rows="3" required maxlength="2000" class="{{ textareaClass }}"></textarea>
+                    <p class="text-xs text-gray-500">{{ 'booking.issue.comment_help'|trans({}, 'admin') }}</p>
+                    <div class="flex flex-wrap items-center gap-2">
+                        {% if booking.issueStatus.value == 'reported' %}
+                            <button type="submit" name="status" value="received"
+                                    class="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50 transition-colors">
+                                {{ ux_icon('heroicons:inbox-arrow-down', {class: 'h-4 w-4'}) }}{{ 'booking.issue.mark_received'|trans({}, 'admin') }}
+                            </button>
+                        {% endif %}
+                        <button type="submit" name="status" value="resolved"
+                                class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                            {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}{{ 'booking.issue.mark_resolved'|trans({}, 'admin') }}
+                        </button>
+                    </div>
+                </form>
+            {% endif %}
+
+            {% if canReportIssue %}
+                <form method="post" action="{{ path('app_bookings_issue_report', {id: booking.id}) }}" class="space-y-3 {{ booking.hasIssue ? 'border-t border-gray-100 pt-4' : '' }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('report_booking_issue_' ~ booking.id) }}">
+                    <label for="issue-description" class="block text-sm font-medium text-gray-700">
+                        {{ (booking.hasIssue ? 'booking.issue.report_another' : 'booking.issue.report_label')|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+                    </label>
+                    <textarea id="issue-description" name="description" rows="3" required maxlength="2000" class="{{ textareaClass }}"></textarea>
+                    <p class="text-xs text-gray-500">{{ 'booking.issue.report_help'|trans({}, 'admin') }}</p>
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50 transition-colors">
+                        {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4 w-4'}) }}{{ 'booking.issue.report'|trans({}, 'admin') }}
+                    </button>
+                </form>
+            {% endif %}
+        </section>
+    {% endif %}
+
     {# ── Validación: solo quien gestiona la categoría ──────────────────── #}
     {% if canManage and booking.pending %}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">

@@ -61,6 +61,40 @@ final class ResourceBookingNotifier
     }
 
     /**
+     * Una incidencia nueva: se avisa a los responsables de la categoría o, si no tiene, a la dirección del centro.
+     */
+    public function issueReported(ResourceBooking $booking, Teacher $reporter): void
+    {
+        $category = $booking->getResource()->getCategory();
+
+        /** @var array<string, Teacher> $recipients */
+        $recipients = [];
+        foreach ($category->getManagers() as $manager) {
+            $recipients[$manager->getId()->toRfc4122()] = $manager;
+        }
+        if ($recipients === []) {
+            foreach ($category->getEducationalCentre()->getAdmins() as $admin) {
+                $recipients[$admin->getId()->toRfc4122()] = $admin;
+            }
+        }
+        unset($recipients[$reporter->getId()->toRfc4122()]);
+
+        foreach ($recipients as $recipient) {
+            $this->emails->bookingIssueReported($recipient, $booking, $reporter);
+        }
+    }
+
+    /** La incidencia se ha marcado como recibida o solucionada: se avisa al docente de la reserva. */
+    public function issueAnswered(ResourceBooking $booking, Teacher $responder): void
+    {
+        if ($booking->getTeacher()->getId()->equals($responder->getId())) {
+            return;
+        }
+
+        $this->emails->bookingIssueAnswered($booking->getTeacher(), $booking, $responder);
+    }
+
+    /**
      * Agrupa por serie (o por reserva suelta) y por estado.
      *
      * @param list<ResourceBooking> $bookings

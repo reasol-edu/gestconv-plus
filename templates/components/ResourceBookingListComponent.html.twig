@@ -92,6 +92,16 @@
                 </select>
             </label>
 
+            <label class="block">
+                <span class="mb-1 block text-xs font-medium text-gray-500">{{ 'booking.filter.issue'|trans({}, 'admin') }}</span>
+                <select data-model="norender|issue" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }}">
+                    <option value="">{{ 'booking.filter.issue_all'|trans({}, 'admin') }}</option>
+                    <option value="to_receive" {{ issue == 'to_receive' ? 'selected' : '' }}>{{ 'booking.filter.issue_to_receive'|trans({}, 'admin') }}</option>
+                    <option value="open" {{ issue == 'open' ? 'selected' : '' }}>{{ 'booking.filter.issue_open'|trans({}, 'admin') }}</option>
+                    <option value="any" {{ issue == 'any' ? 'selected' : '' }}>{{ 'booking.filter.issue_any'|trans({}, 'admin') }}</option>
+                </select>
+            </label>
+
             <svg data-loading class="hidden h-4 w-4 text-forest-500 animate-spin shrink-0 ml-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 22 6.477 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
@@ -137,7 +147,11 @@
                                 </div>
                             </td>
                             <td data-label="{{ 'booking.col.status'|trans({}, 'admin')|e('html_attr') }}" class="px-4 py-4">
-                                {% include 'resource_booking/_status_badge.html.twig' with {booking: booking} only %}
+                                <div class="flex flex-wrap items-center gap-2">
+                                    {% include 'resource_booking/_status_badge.html.twig' with {booking: booking} only %}
+                                    {# Incidencia: solo la ven el docente de la reserva, los responsables de la categoría y la dirección. #}
+                                    {% include 'resource_booking/_issue_badge.html.twig' with {booking: booking, label: true} only %}
+                                </div>
                             </td>
                             <td class="px-4 py-4">
                                 <div class="flex items-center justify-end gap-2">

@@ -77,6 +77,26 @@
                                 badge: pendingBookingsCount
                             } only %}
                         {% endif %}
+                        {% if issuesToReceiveCount > 0 %}
+                            {% include 'dashboard/_quick_action.html.twig' with {
+                                url: path('app_bookings_list', {scope: 'managed', issue: 'to_receive', from: 'all'}),
+                                icon: 'heroicons:exclamation-triangle',
+                                label: 'quick_action_booking_issues'|trans({}, 'dashboard'),
+                                help: 'quick_action_booking_issues_help'|trans({}, 'dashboard'),
+                                tone: 'amber',
+                                badge: issuesToReceiveCount
+                            } only %}
+                        {% endif %}
+                        {% if issueAnswersCount > 0 %}
+                            {% include 'dashboard/_quick_action.html.twig' with {
+                                url: path('app_bookings_list', {issue: 'any', from: 'all'}),
+                                icon: 'heroicons:inbox-arrow-down',
+                                label: 'quick_action_booking_answers'|trans({}, 'dashboard'),
+                                help: 'quick_action_booking_answers_help'|trans({}, 'dashboard'),
+                                tone: 'blue',
+                                badge: issueAnswersCount
+                            } only %}
+                        {% endif %}
                     {% endif %}
                 </div>
             </section>

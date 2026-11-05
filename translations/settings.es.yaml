@@ -165,6 +165,10 @@ settings.key.notifications_email_sanction_task_assigned.description: 'Envía un 
 settings.key.notifications_sanction_task_reminder_days.label: 'Días de antelación del recordatorio de tareas de sanción'
 settings.key.notifications_sanction_task_reminder_days.description: 'Días antes del inicio de la sanción a partir de los cuales se envía un recordatorio diario a los docentes con tareas de sanción pendientes de cumplimentar. Un valor de 0 desactiva este recordatorio.'
 
+settings.key.notifications_email_booking_issue_reported.label: 'Incidencia en una reserva'
+settings.key.notifications_email_booking_issue_reported.description: 'Si se avisa por correo a los responsables de la categoría de un recurso (o a la dirección, si la categoría no tiene responsables) cuando un docente registra una incidencia en su reserva. Cada docente puede desactivarlo en sus ajustes personales.'
+settings.key.notifications_email_booking_issue_answered.label: 'Respuesta a una incidencia de reserva'
+settings.key.notifications_email_booking_issue_answered.description: 'Si se avisa por correo al docente cuando su incidencia de una reserva se marca como recibida o solucionada, con el comentario de quien la gestiona. Cada docente puede desactivarlo en sus ajustes personales.'
 settings.key.notifications_email_daily_note_threshold.label: 'Nota que implica registro de parte'
 settings.key.notifications_email_daily_note_threshold.description: 'Determina quién recibe un correo la primera vez que un estudiante alcanza o supera el número de ocurrencias de un tipo de nota diaria activa que da lugar a un aviso de parte.'
 settings.key.notifications_email_daily_note_threshold.choice.none: 'A nadie'

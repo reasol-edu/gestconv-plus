@@ -7,7 +7,11 @@
    class="block rounded-lg border px-2 py-1 text-xs leading-snug hover:shadow-sm transition-shadow {{ booking.pending ? 'border-dashed' : '' }}"
    style="{{ hex_color(color).style }}"
    title="{{ booking.resource.name }} · {{ booking.teacher.name.full() }}{{ booking.pending ? ' · ' ~ 'booking.status.pending'|trans({}, 'admin') : '' }}">
-    <span class="block font-semibold truncate">{{ booking.resource.name }}</span>
+    <span class="flex items-center justify-between gap-1">
+        <span class="block min-w-0 truncate font-semibold">{{ booking.resource.name }}</span>
+        {# Marca de incidencia: solo la ven el docente de la reserva, los responsables de la categoría y la dirección. #}
+        {% include 'resource_booking/_issue_badge.html.twig' with {booking: booking} only %}
+    </span>
     <span class="block truncate opacity-80">{{ booking.teacher.name.full() }}</span>
     {% if not (compact ?? false) and booking.groups|length > 0 %}
         <span class="mt-0.5 flex flex-wrap gap-1">

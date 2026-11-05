@@ -31,6 +31,9 @@ final class EmailDigestSections
         'booking_requested'             => 'bookings',
         'booking_approved'              => 'bookings',
         'booking_rejected'              => 'bookings',
+        'booking_issue_reported'        => 'bookings',
+        'booking_issue_received'        => 'bookings',
+        'booking_issue_resolved'        => 'bookings',
     ];
 
     /** @return list<string> */

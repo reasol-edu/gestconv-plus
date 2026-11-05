@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\BookingIssueStatus;
 use App\Entity\ResourceBooking;
 use App\Entity\ResourceBookingStatus;
 use App\Entity\ResourceCategory;
@@ -253,6 +254,78 @@ class ResourceBookingRepository extends ServiceEntityRepository
         $qb->getQuery()->execute();
     }
 
+    /**
+     * Reservas con una incidencia registrada que nadie ha recibido aún, de las categorías indicadas (`null` = todas).
+     *
+     * @param list<ResourceCategory>|null $categories
+     * @return list<ResourceBooking>
+     */
+    public function findIssuesToReceive(AcademicYear $year, ?array $categories): array
+    {
+        if ($categories === []) {
+            return [];
+        }
+
+        $qb = $this->baseQueryBuilder()
+            ->where('b.academicYear = :year')
+            ->andWhere('b.issueStatus = :reported')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('reported', BookingIssueStatus::Reported->value)
+            ->orderBy('b.issueReportedAt', 'ASC');
+
+        if ($categories !== null) {
+            $qb->andWhere('c.id IN (' . $this->uuidList($qb, 'categories', array_map(static fn (ResourceCategory $c): Uuid => $c->getId(), $categories)) . ')');
+        }
+
+        /** @var list<ResourceBooking> $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $this->preload($result);
+    }
+
+    /**
+     * Reservas del docente cuya incidencia se ha marcado como recibida o solucionada y aún no ha visto.
+     *
+     * @return list<ResourceBooking>
+     */
+    public function findUnseenIssueResponsesFor(Teacher $teacher, AcademicYear $year): array
+    {
+        /** @var list<ResourceBooking> $result */
+        $result = $this->baseQueryBuilder()
+            ->where('b.academicYear = :year')
+            ->andWhere('b.teacher = :teacher')
+            ->andWhere('b.issueResponseSeen = false')
+            ->andWhere('b.issueStatus IN (:answered)')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('teacher', $teacher->getId(), 'uuid')
+            ->setParameter('answered', [BookingIssueStatus::Received->value, BookingIssueStatus::Resolved->value])
+            ->orderBy('b.issueRespondedAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->preload($result);
+    }
+
+    /** Da por vistas las respuestas a las incidencias del docente: todas las del curso o, con `$only`, solo la de esa reserva. */
+    public function markIssueResponsesSeen(Teacher $teacher, AcademicYear $year, ?ResourceBooking $only = null): void
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->update(ResourceBooking::class, 'b')
+            ->set('b.issueResponseSeen', ':seen')
+            ->where('b.teacher = :teacher')
+            ->andWhere('b.academicYear = :year')
+            ->andWhere('b.issueResponseSeen = false')
+            ->setParameter('seen', true)
+            ->setParameter('teacher', $teacher->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid');
+
+        if ($only !== null) {
+            $qb->andWhere('b.id = :only')->setParameter('only', $only->getId(), 'uuid');
+        }
+
+        $qb->getQuery()->execute();
+    }
+
     public function countByResource(SharedResource $resource): int
     {
         return (int) $this->createQueryBuilder('b')
@@ -318,6 +391,12 @@ class ResourceBookingRepository extends ServiceEntityRepository
         if ($filters->status !== '' && ResourceBookingStatus::tryFrom($filters->status) !== null) {
             $qb->andWhere('b.status = :fStatus')->setParameter('fStatus', $filters->status);
         }
+        match ($filters->issue) {
+            'to_receive' => $qb->andWhere('b.issueStatus = :fIssue')->setParameter('fIssue', BookingIssueStatus::Reported->value),
+            'open'       => $qb->andWhere('b.issueStatus IN (:fIssue)')->setParameter('fIssue', [BookingIssueStatus::Reported->value, BookingIssueStatus::Received->value]),
+            'any'        => $qb->andWhere('b.issueStatus IS NOT NULL'),
+            default      => null,
+        };
         if ($filters->dateFrom !== null) {
             $qb->andWhere('b.date >= :fFrom')->setParameter('fFrom', $filters->dateFrom, Types::DATE_IMMUTABLE);
         }

@@ -15,11 +15,13 @@ final readonly class ResourceBookingFilters
         public string $status = '',
         public ?\DateTimeImmutable $dateFrom = null,
         public ?\DateTimeImmutable $dateTo = null,
+        /** Incidencias: 'to_receive' (registradas, sin recibir), 'open' (sin solucionar) o 'any' (con incidencia). */
+        public string $issue = '',
     ) {}
 
     public function isEmpty(): bool
     {
         return $this->categoryId === '' && $this->resourceId === '' && $this->teacherId === ''
-            && $this->groupId === '' && $this->status === '' && $this->dateFrom === null && $this->dateTo === null;
+            && $this->groupId === '' && $this->status === '' && $this->dateFrom === null && $this->dateTo === null && $this->issue === '';
     }
 }

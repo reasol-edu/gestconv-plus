@@ -61,6 +61,8 @@ abstract class ControllerTestCase extends WebTestCase
             ['notifications.report_prescription_warning_days', SettingType::Integer, '7', true,  true,  true,  0,    365,  'settings.category.notifications', 40, 40, null],
             ['notifications.email_delivery',    SettingType::Choice,  'daily_digest', true, true, true, null, null, 'settings.category.email_alerts', 50, 1, 'immediate,daily_digest'],
             ['notifications.email_digest_hour', SettingType::Integer, '7',         true, true, true, 0,    23,   'settings.category.email_alerts', 50, 2, null],
+            ['notifications.email_booking_issue_reported', SettingType::Boolean, 'true', true, true, true, null, null, 'settings.category.email_alerts', 50, 150, null],
+            ['notifications.email_booking_issue_answered', SettingType::Boolean, 'true', true, true, true, null, null, 'settings.category.email_alerts', 50, 160, null],
             ['notifications.sanction_auto_prescribe_days', SettingType::Integer, '0',  true,  true,  false, 0,    365,  'settings.category.notifications', 40, 35, null],
             ['notifications.sanction_prescription_warning_days', SettingType::Integer, '7', true,  true,  true,  0,    365,  'settings.category.notifications', 40, 45, null],
             ['notifications.email_log_enabled',                SettingType::Boolean, 'true', true, true,  false, null, null, 'settings.category.notifications', 40, 50, null],

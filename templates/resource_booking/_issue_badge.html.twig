@@ -1,0 +1,14 @@
+{#
+   Marca de la incidencia de una reserva: un icono (con el color de su estado) y, si `label` es verdadero, su estado en texto.
+   Solo se pinta para quien puede ver la incidencia (el docente de la reserva, los responsables de la categoría y la
+   dirección); el resto del calendario no la ve. Variables: booking, label (opcional).
+#}
+{% if booking.hasIssue and is_granted('resource_booking.view_issue', booking) %}
+    {% set status = booking.issueStatus.value %}
+    {% set tone = {reported: 'text-amber-600', received: 'text-sky-600', resolved: 'text-forest-600'}[status] %}
+    {% set text = ('booking.issue.status.' ~ status)|trans({}, 'admin') %}
+    <span class="inline-flex items-center gap-1 {{ tone }}" title="{{ 'booking.issue.title'|trans({}, 'admin') }}: {{ text }}">
+        {{ ux_icon(status == 'resolved' ? 'heroicons:check-circle' : 'heroicons:exclamation-triangle', {class: 'h-4 w-4 shrink-0'}) }}
+        {% if label ?? false %}<span class="text-xs font-semibold">{{ text }}</span>{% else %}<span class="sr-only">{{ 'booking.issue.title'|trans({}, 'admin') }}: {{ text }}</span>{% endif %}
+    </span>
+{% endif %}

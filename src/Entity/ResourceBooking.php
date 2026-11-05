@@ -15,6 +15,7 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Entity(repositoryClass: ResourceBookingRepository::class)]
 #[ORM\Index(name: 'idx_resource_booking_date', columns: ['date'])]
 #[ORM\Index(name: 'idx_resource_booking_series', columns: ['series_id'])]
+#[ORM\Index(name: 'idx_resource_booking_issue', columns: ['issue_status'])]
 class ResourceBooking
 {
     #[ORM\Id]
@@ -65,6 +66,32 @@ class ResourceBooking
     /** Falso mientras el docente no ha visto cómo se resolvió su solicitud (aprobada o rechazada): lo avisa la campana. */
     #[ORM\Column]
     private bool $resolutionSeen = true;
+
+    // ── Incidencia asociada (una por reserva; se puede registrar otra cuando la anterior se soluciona) ──────
+
+    #[ORM\Column(length: 16, nullable: true, enumType: BookingIssueStatus::class)]
+    private ?BookingIssueStatus $issueStatus = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $issueDescription = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $issueReportedAt = null;
+
+    /** Comentario de quien marcó la incidencia como recibida o solucionada. */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $issueComment = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Teacher $issueRespondedBy = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $issueRespondedAt = null;
+
+    /** Falso mientras el docente no ha visto la respuesta a su incidencia: lo avisa la campana. */
+    #[ORM\Column]
+    private bool $issueResponseSeen = true;
 
     public function __construct()
     {
@@ -255,6 +282,85 @@ class ResourceBooking
     public function setResolutionSeen(bool $resolutionSeen): static
     {
         $this->resolutionSeen = $resolutionSeen;
+
+        return $this;
+    }
+
+    public function hasIssue(): bool
+    {
+        return $this->issueStatus !== null;
+    }
+
+    public function getIssueStatus(): ?BookingIssueStatus
+    {
+        return $this->issueStatus;
+    }
+
+    public function getIssueDescription(): ?string
+    {
+        return $this->issueDescription;
+    }
+
+    public function getIssueReportedAt(): ?\DateTimeImmutable
+    {
+        return $this->issueReportedAt;
+    }
+
+    public function getIssueComment(): ?string
+    {
+        return $this->issueComment;
+    }
+
+    public function getIssueRespondedBy(): ?Teacher
+    {
+        return $this->issueRespondedBy;
+    }
+
+    public function getIssueRespondedAt(): ?\DateTimeImmutable
+    {
+        return $this->issueRespondedAt;
+    }
+
+    public function isIssueResponseSeen(): bool
+    {
+        return $this->issueResponseSeen;
+    }
+
+    public function setIssueResponseSeen(bool $seen): static
+    {
+        $this->issueResponseSeen = $seen;
+
+        return $this;
+    }
+
+    /** Hay una incidencia sin solucionar. */
+    public function hasOpenIssue(): bool
+    {
+        return $this->issueStatus?->isOpen() ?? false;
+    }
+
+    /** Registra una incidencia nueva (sustituye a una anterior ya solucionada, de la que no se guarda historial). */
+    public function reportIssue(string $description, \DateTimeImmutable $at): static
+    {
+        $this->issueStatus       = BookingIssueStatus::Reported;
+        $this->issueDescription  = $description;
+        $this->issueReportedAt   = $at;
+        $this->issueComment      = null;
+        $this->issueRespondedBy  = null;
+        $this->issueRespondedAt  = null;
+        $this->issueResponseSeen = true;
+
+        return $this;
+    }
+
+    /** Marca la incidencia como recibida o solucionada, con el comentario de quien la gestiona. */
+    public function respondToIssue(BookingIssueStatus $status, string $comment, Teacher $by, \DateTimeImmutable $at): static
+    {
+        $this->issueStatus       = $status;
+        $this->issueComment      = $comment;
+        $this->issueRespondedBy  = $by;
+        $this->issueRespondedAt  = $at;
+        $this->issueResponseSeen = false;
 
         return $this;
     }

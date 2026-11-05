@@ -8,7 +8,7 @@
     {% include 'resource_booking/_header.html.twig' with {active: 'list', canBook: canBook, centre: centre} only %}
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
-        <twig:ResourceBookingListComponent :centre="centre" :scope="scope" :status="status" :dateFrom="from" />
+        <twig:ResourceBookingListComponent :centre="centre" :scope="scope" :status="status" :issue="issue" :dateFrom="from" />
     </div>
 
 </div>
