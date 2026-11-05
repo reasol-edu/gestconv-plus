@@ -716,7 +716,8 @@ Muestra todas las reservas del centro, para que se vea de un vistazo qué está 
   sí; **Quitar filtros** los limpia. Las reservas rechazadas no se muestran porque no ocupan el
   recurso. Los cuatro son desplegables con **buscador**: escribe parte del nombre (sin importar las
   tildes) para encontrar rápido el recurso, el docente o el grupo, y el de recursos los **agrupa por
-  categoría**.
+  categoría**. Si eliges una categoría, el desplegable de recursos **se limita a los de esa
+  categoría** (y descarta un recurso ya elegido que no sea de ella). Lo mismo ocurre en el listado.
 - La **leyenda de categorías** también filtra: pulsa una de ellas para ver solo sus reservas.
 - Si hay un recurso filtrado, el **+** de cada día abre el formulario ya con ese recurso elegido.
 - La dirección y las personas con permiso de administración del centro ven, junto a **Reservar**,

@@ -120,6 +120,33 @@ class ResourceBookingControllerTest extends ControllerTestCase
         self::assertCount(2, $byCategory->filter('td a[href*="/reservas/"]'));
     }
 
+    public function testResourceFilterOffersOnlyTheResourcesOfTheChosenCategory(): void
+    {
+        $w = $this->makeBookingWorld();
+        $laptops = (new \App\Entity\ResourceCategory())->setEducationalCentre($w['centre'])->setName('Carros')->setColor('#16a34a');
+        $cart    = (new \App\Entity\SharedResource())->setCategory($laptops)->setName('Carro de portátiles');
+        $this->persist($laptops, $cart);
+        $this->makeBooking($w['year'], $w['resource'], $w['owner'], '2026-09-15', [$w['slots'][1][0]]);
+        $this->makeBooking($w['year'], $cart, $w['owner'], '2026-09-16', [$w['slots'][2][0]]);
+        $this->flush();
+        $this->loginAs($w['owner'], $w['centre']);
+
+        // Sin categoría, el desplegable ofrece los recursos de todas, agrupados por categoría.
+        $all = $this->client->request('GET', '/reservas?date=2026-09-14');
+        self::assertCount(2, $all->filter('select[name="resource"] option:not([value=""])'));
+        self::assertCount(2, $all->filter('select[name="resource"] optgroup'));
+
+        // Con una categoría, solo los de esa categoría.
+        $byCategory = $this->client->request('GET', '/reservas?date=2026-09-14&category=' . $laptops->getId()->toRfc4122());
+        self::assertCount(1, $byCategory->filter('select[name="resource"] option:not([value=""])'));
+        self::assertSelectorTextContains('select[name="resource"]', 'Carro de portátiles');
+
+        // Un recurso de otra categoría que la elegida se descarta: queda solo el filtro de categoría.
+        $mismatch = $this->client->request('GET', '/reservas?date=2026-09-14&category=' . $laptops->getId()->toRfc4122() . '&resource=' . $w['resource']->getId()->toRfc4122());
+        self::assertCount(1, $mismatch->filter('td a[href*="/reservas/"]'));
+        self::assertSelectorTextContains('tbody', 'Carro de portátiles');
+    }
+
     // ── alta ──────────────────────────────────────────────────────────────────
 
     public function testTeacherBooksAResource(): void

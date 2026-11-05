@@ -76,6 +76,15 @@ class ResourceBookingController extends AbstractController
         $anchor  = $this->parseDate($request->query->getString('date')) ?? $this->planner->today();
         $filters = $this->filtersFromQuery($request);
 
+        // Un recurso de otra categoría que la elegida no se puede filtrar: se descarta (queda solo la categoría).
+        $filterOptions = $this->filterOptions($centre, $year, $filters->categoryId);
+        if ($filters->resourceId !== '') {
+            $known = array_filter($filterOptions['resources'], static fn (SharedResource $r): bool => $r->getId()->toRfc4122() === $filters->resourceId);
+            if ($known === []) {
+                $filters = new ResourceBookingFilters(categoryId: $filters->categoryId, teacherId: $filters->teacherId, groupId: $filters->groupId);
+            }
+        }
+
         $data = $view === 'month'
             ? $this->calendar->month($year, $anchor, $filters)
             : $this->calendar->week($year, $anchor, $filters);
@@ -96,7 +105,7 @@ class ResourceBookingController extends AbstractController
             'today'        => $this->planner->today(),
             'data'         => $data,
             'filters'      => $filters,
-            'filterOptions' => $this->filterOptions($centre, $year),
+            'filterOptions' => $filterOptions,
             'canBook'      => $this->canBookAnything($centre),
             'hasFilters'   => !$filters->isEmpty(),
         ]);
@@ -556,11 +565,20 @@ class ResourceBookingController extends AbstractController
     /**
      * @return array{categories: list<\App\Entity\ResourceCategory>, resources: list<SharedResource>, teachers: list<Teacher>, groups: list<\App\Entity\Group>}
      */
-    private function filterOptions(EducationalCentre $centre, AcademicYear $year): array
+    private function filterOptions(EducationalCentre $centre, AcademicYear $year, string $categoryId = ''): array
     {
+        $resources = $this->resources->findByCentreOrdered($centre);
+        // Con una categoría elegida, solo se ofrecen los recursos de esa categoría.
+        if ($categoryId !== '') {
+            $resources = array_values(array_filter(
+                $resources,
+                static fn (SharedResource $resource): bool => $resource->getCategory()->getId()->toRfc4122() === $categoryId,
+            ));
+        }
+
         return [
             'categories' => $this->categories->findByCentreOrdered($centre),
-            'resources'  => $this->resources->findByCentreOrdered($centre),
+            'resources'  => $resources,
             'teachers'   => array_values($this->teachers->findByAcademicYearOrderedByName($year)),
             'groups'     => array_values($this->groups->findByActiveYearOfCentreOrderedByName($centre, $year)),
         ];

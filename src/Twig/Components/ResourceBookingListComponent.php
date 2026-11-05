@@ -107,7 +107,33 @@ class ResourceBookingListComponent extends AbstractController
     /** @return list<SharedResource> */
     public function getAvailableResources(): array
     {
-        return $this->resources->findByCentreOrdered($this->centre);
+        $resources  = $this->resources->findByCentreOrdered($this->centre);
+        $categoryId = trim($this->categoryId);
+        // Con una categoría elegida, solo se ofrecen los recursos de esa categoría.
+        if ($categoryId === '') {
+            return $resources;
+        }
+
+        return array_values(array_filter(
+            $resources,
+            static fn (SharedResource $resource): bool => $resource->getCategory()->getId()->toRfc4122() === $categoryId,
+        ));
+    }
+
+    /** El recurso filtrado, o vacío si no pertenece a la categoría elegida (el desplegable ya no lo ofrece). */
+    private function effectiveResourceId(): string
+    {
+        $resourceId = trim($this->resourceId);
+        if ($resourceId === '') {
+            return '';
+        }
+        foreach ($this->getAvailableResources() as $resource) {
+            if ($resource->getId()->toRfc4122() === $resourceId) {
+                return $resourceId;
+            }
+        }
+
+        return '';
     }
 
     /** @return list<Group> */
@@ -143,7 +169,7 @@ class ResourceBookingListComponent extends AbstractController
 
         $filters = new ResourceBookingFilters(
             categoryId: trim($this->categoryId),
-            resourceId: trim($this->resourceId),
+            resourceId: $this->effectiveResourceId(),
             // En «mis reservas» el docente es siempre el propio, diga lo que diga el filtro.
             teacherId: $managed ? trim($this->teacherId) : $user->getId()->toRfc4122(),
             groupId: trim($this->groupId),
@@ -168,7 +194,7 @@ class ResourceBookingListComponent extends AbstractController
 
     public function hasActiveFilters(): bool
     {
-        return $this->categoryId !== '' || $this->resourceId !== '' || $this->teacherId !== '' || $this->groupId !== ''
+        return $this->categoryId !== '' || $this->effectiveResourceId() !== '' || $this->teacherId !== '' || $this->groupId !== ''
             || $this->status !== '' || $this->dateTo !== '' || $this->dateFrom !== $this->planner->today()->format('Y-m-d');
     }
 
