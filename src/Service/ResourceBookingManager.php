@@ -206,7 +206,10 @@ final class ResourceBookingManager
         $booking->setIssueResponseSeen($own);
         $this->em->flush();
 
-        $this->activityLog->log('resource_booking.issue_' . $status->value, $this->logData($booking));
+        $this->activityLog->log(
+            $status === BookingIssueStatus::Resolved ? 'resource_booking.issue_resolved' : 'resource_booking.issue_received',
+            $this->logData($booking),
+        );
         $this->notifier->issueAnswered($booking, $responder);
     }
 
