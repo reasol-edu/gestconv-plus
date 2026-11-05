@@ -326,6 +326,9 @@ El parte pasa a **"Notificado"** y queda en el historial.
 - Un docente solo ve y edita **sus propias tareas**, no el resto de la
   sanción (datos de contacto familiar, observaciones o notificación).
 - El panel de inicio avisa con un contador de **tareas pendientes**.
+- Al registrar la sanción se puede elegir **No solicitar tareas a los
+  docentes** (por defecto se solicitan): entonces no se crean tareas ni se
+  avisa al profesorado.
 
 ---
 

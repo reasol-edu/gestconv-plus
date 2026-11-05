@@ -56,6 +56,7 @@ class SanctionController extends AbstractController
         'noMeasureReason',
         'effectiveFrom',
         'effectiveTo',
+        'requestTasks',
         'measuresEffective',
         'familyClaimed',
         'familyClaimAttitude',
@@ -303,7 +304,7 @@ class SanctionController extends AbstractController
             $result = null;
 
             if ($canEditAll) {
-                $result = $this->formHandler->validate($data, $centre, $sanction->getGroup()->getAcademicYear());
+                $result = $this->formHandler->validate($data, $centre, $sanction->getGroup()->getAcademicYear(), $sanction);
                 $errors = $result->errors;
             } else {
                 $errors = $this->formHandler->validateFollowup($data, $sanction->isNoMeasureApplied());
@@ -520,6 +521,10 @@ class SanctionController extends AbstractController
 
         $this->denyAccessUnlessGranted(SanctionVoter::EDIT, $sanction);
         $this->denyIfViewingPastYear($this->centreFor($sanction));
+        // Una sanción en la que no se solicitan tareas no tiene materias que refrescar.
+        if (!$sanction->isRequestTasks()) {
+            throw $this->createNotFoundException();
+        }
 
         $diff = $this->computeTaskRefreshDiff($sanction);
 
@@ -541,6 +546,10 @@ class SanctionController extends AbstractController
 
         $this->denyAccessUnlessGranted(SanctionVoter::EDIT, $sanction);
         $this->denyIfViewingPastYear($this->centreFor($sanction));
+
+        if (!$sanction->isRequestTasks()) {
+            throw $this->createNotFoundException();
+        }
 
         if (!$this->isCsrfTokenValid('refresh_sanction_tasks_' . $id, $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException();

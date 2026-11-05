@@ -25,6 +25,8 @@ final readonly class SanctionFormData
         public ?bool $familyClaimed,
         public string $familyClaimAttitude,
         public ?bool $registeredInSeneca,
+        /** Solicitar tareas a los docentes (por defecto, sí); null si el formulario no lo envía (se conserva el valor actual). */
+        public ?bool $requestTasks = null,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -42,6 +44,7 @@ final readonly class SanctionFormData
             familyClaimed: self::parseBool($request->request->getString('family_claimed')),
             familyClaimAttitude: trim($request->request->getString('family_claim_attitude')),
             registeredInSeneca: self::parseBool($request->request->getString('registered_in_seneca')),
+            requestTasks: self::parseBool($request->request->getString('request_tasks')),
         );
     }
 
@@ -61,6 +64,7 @@ final readonly class SanctionFormData
             'familyClaimed'       => $this->familyClaimed,
             'familyClaimAttitude' => $this->familyClaimAttitude,
             'registeredInSeneca'  => $this->registeredInSeneca,
+            'requestTasks'        => $this->requestTasks ?? true,
         ];
     }
 

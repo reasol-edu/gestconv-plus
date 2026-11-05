@@ -9,6 +9,7 @@ use App\Entity\CentreSettingValue;
 use App\Entity\Communication;
 use App\Entity\CommunicationMethod;
 use App\Entity\CommunicationResult;
+use App\Entity\EmailDigestItem;
 use App\Entity\EducationalCentre;
 use App\Entity\GlobalSettingValue;
 use App\Entity\Group;
@@ -486,6 +487,103 @@ class SanctionControllerTest extends ControllerTestCase
 
         $this->em->clear();
         self::assertCount(1, $this->em->getRepository(Sanction::class)->findAll());
+    }
+
+    // ── «No solicitar tareas a los docentes» ──────────────────────────────────
+
+    public function testNewFormOffersTheRequestTasksChoiceWithRequestingAsDefault(): void
+    {
+        [$admin, $centre, $group, $student] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->client->request('GET', '/sanciones/nueva?studentId=' . $student->getId()->toRfc4122() . '&groupId=' . $group->getId()->toRfc4122());
+
+        self::assertCount(2, $crawler->filter('input[type="radio"][name="request_tasks"]'));
+        self::assertCount(1, $crawler->filter('input[name="request_tasks"][value="1"][checked]'), 'por defecto se solicitan tareas');
+        self::assertCount(0, $crawler->filter('input[name="request_tasks"][value="0"][checked]'));
+    }
+
+    public function testTasksAreRequestedFromTheTeachersByDefault(): void
+    {
+        $s = $this->makeTasksScenario();
+
+        $this->createDatedSanction($s, null);
+
+        $sanction = $this->onlySanction();
+        self::assertTrue($sanction->isRequestTasks());
+        self::assertCount(1, $sanction->getTasks());
+        self::assertCount(1, $this->em->getRepository(EmailDigestItem::class)->findAll(), 'el docente recibe el aviso de la tarea asignada');
+    }
+
+    public function testNoTasksAreCreatedNorTeachersWarnedWhenTheSanctionOptsOut(): void
+    {
+        $s = $this->makeTasksScenario();
+
+        $this->createDatedSanction($s, '0');
+
+        $sanction = $this->onlySanction();
+        self::assertFalse($sanction->isRequestTasks());
+        self::assertCount(0, $sanction->getTasks());
+        self::assertCount(0, $this->em->getRepository(EmailDigestItem::class)->findAll(), 'sin tareas no se avisa a nadie');
+
+        $show = $this->client->request('GET', '/sanciones/' . $sanction->getId()->toRfc4122());
+        self::assertStringContainsString('no se solicitan tareas a los docentes', $show->html());
+    }
+
+    public function testEditingToOptOutRemovesTheEmptyTasks(): void
+    {
+        $s = $this->makeTasksScenario();
+        $this->createDatedSanction($s, null);
+        $id = $this->onlySanction()->getId()->toRfc4122();
+
+        $this->editDatedSanction($s, $id, '0');
+
+        $sanction = $this->onlySanction();
+        self::assertFalse($sanction->isRequestTasks());
+        self::assertCount(0, $sanction->getTasks(), 'las tareas vacías se retiran');
+    }
+
+    public function testEditingToOptOutIsRefusedWhenATeacherAlreadyCompletedATask(): void
+    {
+        $s = $this->makeTasksScenario();
+        $this->createDatedSanction($s, null);
+        $sanction = $this->onlySanction();
+        $sanction->getTasks()->first()->setDescription('Hacer los ejercicios 1 a 5')->setCompletedAt(new \DateTimeImmutable('2026-09-01'));
+        $this->flush();
+        $id = $sanction->getId()->toRfc4122();
+
+        $this->editDatedSanction($s, $id, '0');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'No se puede dejar de solicitar tareas');
+        $sanction = $this->onlySanction();
+        self::assertTrue($sanction->isRequestTasks());
+        self::assertCount(1, $sanction->getTasks());
+    }
+
+    public function testEditingBackToRequestingGeneratesTheTasks(): void
+    {
+        $s = $this->makeTasksScenario();
+        $this->createDatedSanction($s, '0');
+        $id = $this->onlySanction()->getId()->toRfc4122();
+
+        $this->editDatedSanction($s, $id, '1');
+
+        $sanction = $this->onlySanction();
+        self::assertTrue($sanction->isRequestTasks());
+        self::assertCount(1, $sanction->getTasks());
+        self::assertCount(1, $this->em->getRepository(EmailDigestItem::class)->findAll());
+    }
+
+    public function testNoShareLinkNorTaskRefreshWhenTheSanctionOptsOut(): void
+    {
+        $s = $this->makeTasksScenario();
+        $this->createDatedSanction($s, '0');
+        $id = $this->onlySanction()->getId()->toRfc4122();
+
+        $this->client->request('GET', '/sanciones/' . $id . '/tareas/refrescar');
+        self::assertResponseStatusCodeSame(404);
+        self::assertFalse(self::getContainer()->get('security.authorization_checker')->isGranted(\App\Security\Voter\SanctionVoter::SHARE_TASKS, $this->onlySanction()));
     }
 
     public function testNewPostShowsErrorWhenDetailsEmpty(): void
@@ -1194,6 +1292,73 @@ class SanctionControllerTest extends ControllerTestCase
         $this->persist($admin, $centre, $year, $course, $group, $student, $category, $behavior, $measureCat, $measure);
 
         return [$admin, $centre, $group, $student, $behavior, $measure];
+    }
+
+    /**
+     * Un centro con un grupo cuyo profesorado tiene correo, un parte y una medida con fechas.
+     *
+     * @return array{admin: Teacher, centre: EducationalCentre, group: Group, student: Student, report: IncidentReport, measure: SanctionMeasure}
+     */
+    private function makeTasksScenario(): array
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $teacher = $this->makeTeacher('docente.tareas.' . uniqid('', false))->setEmail('docente@example.org');
+        $this->persist($teacher);
+        $group->addTeacher($teacher, 'Matemáticas');
+        $report  = $this->makeReport($student, $group, $behavior);
+        $measure = $this->makeDateRangeMeasure($centre);
+        // El aviso de «tarea de sanción asignada» está activado por defecto en la aplicación real.
+        $this->persist((new SettingDefinition())->setKey('notifications.email_sanction_task_assigned')->setType(\App\Entity\SettingType::Boolean)
+            ->setCategory('settings.category.email_alerts')->setDefaultValue('true')->setGlobalScope(true)->setCentreScope(true));
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        return ['admin' => $admin, 'centre' => $centre, 'group' => $group, 'student' => $student, 'report' => $report, 'measure' => $measure];
+    }
+
+    /** @param array<string, mixed> $s */
+    private function createDatedSanction(array $s, ?string $requestTasks): void
+    {
+        $url     = '/sanciones/nueva?studentId=' . $s['student']->getId()->toRfc4122() . '&groupId=' . $s['group']->getId()->toRfc4122();
+        $crawler = $this->client->request('GET', $url);
+        $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', $url, array_filter([
+            '_token'         => $token,
+            'reports'        => [$s['report']->getId()->toRfc4122()],
+            'measures'       => [$s['measure']->getId()->toRfc4122()],
+            'details'        => 'Motivo de la sanción.',
+            'effective_from' => (new \DateTimeImmutable('next monday'))->format('Y-m-d'),
+            'effective_to'   => (new \DateTimeImmutable('next monday'))->modify('+1 day')->format('Y-m-d'),
+            'request_tasks'  => $requestTasks,
+        ], static fn (mixed $value): bool => $value !== null));
+        self::assertResponseRedirects();
+    }
+
+    /** @param array<string, mixed> $s */
+    private function editDatedSanction(array $s, string $id, string $requestTasks): void
+    {
+        $crawler = $this->client->request('GET', '/sanciones/' . $id . '/editar');
+        $token   = $crawler->filter('form [name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/sanciones/' . $id . '/editar', [
+            '_token'         => $token,
+            'reports'        => [$s['report']->getId()->toRfc4122()],
+            'measures'       => [$s['measure']->getId()->toRfc4122()],
+            'details'        => 'Motivo de la sanción.',
+            'effective_from' => (new \DateTimeImmutable('next monday'))->format('Y-m-d'),
+            'effective_to'   => (new \DateTimeImmutable('next monday'))->modify('+1 day')->format('Y-m-d'),
+            'request_tasks'  => $requestTasks,
+        ]);
+    }
+
+    private function onlySanction(): Sanction
+    {
+        $this->em->clear();
+        $all = $this->em->getRepository(Sanction::class)->findAll();
+        self::assertCount(1, $all);
+
+        return $all[0];
     }
 
     private function makeDateRangeMeasure(EducationalCentre $centre): SanctionMeasure

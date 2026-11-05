@@ -19,7 +19,7 @@ class SanctionTaskGenerator
     /**
      * Creates one SanctionTask per GroupTeacher currently assigned to the sanction's group,
      * snapshotting the group's teaching assignments at this moment. No-op if the sanction's
-     * measures don't require dates, or if tasks already exist for this sanction (subsequent
+     * measures don't require dates, if the sanction opts out of requesting tasks, or if tasks already exist for this sanction (subsequent
      * changes to the group's teaching assignments are handled separately by "refrescar
      * materias", not by calling this method again). Also a no-op when the centre has the
      * "tareas de sanción" feature turned off (features.sanction_tasks).
@@ -28,7 +28,8 @@ class SanctionTaskGenerator
      */
     public function generateFor(Sanction $sanction): array
     {
-        if (!$sanction->requiresDates() || !$sanction->getTasks()->isEmpty()) {
+        // Sin fechas, o con la opción «no solicitar tareas a los docentes», no se genera nada ni se avisa a nadie.
+        if (!$sanction->requestsTasks() || !$sanction->getTasks()->isEmpty()) {
             return [];
         }
 

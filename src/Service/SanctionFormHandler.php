@@ -35,7 +35,11 @@ class SanctionFormHandler
         private readonly NonWorkingDayChecker $nonWorkingDayChecker,
     ) {}
 
-    public function validate(SanctionFormData $data, EducationalCentre $centre, AcademicYear $academicYear): SanctionFormResult
+    /**
+     * @param Sanction|null $existing la sanción que se edita (null al crearla): sirve para no permitir dejar de
+     *                                solicitar tareas si los docentes ya han cumplimentado alguna
+     */
+    public function validate(SanctionFormData $data, EducationalCentre $centre, AcademicYear $academicYear, ?Sanction $existing = null): SanctionFormResult
     {
         $errors = [];
 
@@ -78,6 +82,16 @@ class SanctionFormHandler
 
         $effectiveFrom = null;
         $effectiveTo   = null;
+
+        // Dejar de solicitar tareas descarta las que aún no tienen nada, pero no las que un docente ya ha cumplimentado.
+        if ($requiresDates && $data->requestTasks === false && $existing !== null) {
+            foreach ($existing->getTasks() as $task) {
+                if ($task->getCompletedAt() !== null || !$task->getAttachments()->isEmpty()) {
+                    $errors['request_tasks'] = $this->t('sanction.error.request_tasks_has_data');
+                    break;
+                }
+            }
+        }
 
         if ($requiresDates) {
             if ($data->effectiveFromRaw === '') {
@@ -185,6 +199,14 @@ class SanctionFormHandler
             }
         }
 
+        // Con «no solicitar tareas» se retiran las que se hubieran creado y estén vacías (la validación ya impide
+        // hacerlo si algún docente ha cumplimentado alguna).
+        if ($sanction->requiresDates() && !$sanction->isRequestTasks()) {
+            foreach ($sanction->getTasks()->toArray() as $task) {
+                $sanction->getTasks()->removeElement($task);
+            }
+        }
+
         $this->em->flush();
 
         foreach ($newlyLinkedReports as $newlyLinkedReport) {
@@ -221,6 +243,13 @@ class SanctionFormHandler
                  ->setNoMeasureReason($data->noMeasure ? ($data->noMeasureReason ?: null) : null)
                  ->setEffectiveFrom($result->requiresDates ? $result->effectiveFrom : null)
                  ->setEffectiveTo($result->requiresDates ? $result->effectiveTo : null);
+
+        // Sin fechas no hay tareas que pedir: vuelve al valor por defecto. Si el formulario no lo envía, se conserva.
+        if (!$result->requiresDates) {
+            $sanction->setRequestTasks(true);
+        } elseif ($data->requestTasks !== null) {
+            $sanction->setRequestTasks($data->requestTasks);
+        }
 
         foreach ($sanction->getMeasures()->toArray() as $m) {
             $sanction->removeMeasure($m);

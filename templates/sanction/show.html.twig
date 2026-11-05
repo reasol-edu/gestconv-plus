@@ -247,6 +247,14 @@
 
     </div>
 
+    {# Sanción con fechas en la que se decidió no pedir tareas al profesorado. #}
+    {% if sanction.requiresDates and not sanction.requestTasks and feature_enabled('sanction_tasks') %}
+        <div class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-6 py-4 text-sm text-gray-600">
+            {{ ux_icon('heroicons:no-symbol', {class: 'h-5 w-5 shrink-0 text-gray-400'}) }}
+            <p>{{ 'sanction.tasks_not_requested'|trans({}, 'admin') }}</p>
+        </div>
+    {% endif %}
+
     {% if sanction.tasks is not empty and feature_enabled('sanction_tasks') %}
     <div>
         <div class="flex items-center justify-between mb-3">

@@ -62,6 +62,10 @@ El registro tiene dos pasos:
       claustro lo verá de un vistazo en el tablón.
     - **Fechas de inicio y fin** — determinan el periodo de vigencia y cuándo aparece la sanción
       en el calendario.
+    - **Tareas para el estudiante durante la sanción** — solo aparece si la sanción tiene fechas
+      (y la sección de [tareas de sanción](#tareas-de-sancion) está activada). Un grupo de dos
+      opciones decide si se piden tareas al profesorado: **Solicitar tareas a los docentes**, que es
+      la opción por defecto, o **No solicitar tareas a los docentes**.
     - **Seguimiento de la sanción** — tres indicadores que se pueden rellenar al registrarla o
       completar más adelante: si la sanción **se ha registrado en Séneca**, si **las medidas han
       sido efectivas** (la conducta ha mejorado tras aplicarlas) y si **la familia ha presentado
@@ -110,6 +114,22 @@ de su aula habitual), la aplicación genera automáticamente una **tarea de sanc
 docente y materia del grupo, para que cada uno deje constancia del trabajo asignado — o indique
 que no procede (ver [Tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion)). El resultado
 se hace visible en dos sitios:
+
+**Sanciones sin tareas.** Hay sanciones con fechas en las que no tiene sentido pedir trabajo al
+profesorado (por ejemplo, una suspensión del derecho a participar en una actividad). En el
+formulario, el grupo **Tareas para el estudiante durante la sanción** permite elegir **No solicitar
+tareas a los docentes**. Con esa opción:
+
+- **no se crean tareas** ni se avisa a ningún docente (ni por correo, ni en el resumen diario, ni
+  en la campana);
+- el detalle de la sanción lo indica («En esta sanción no se solicitan tareas a los docentes»);
+- no se ofrece el **enlace de tareas para el alumno**, ni el enlace **Refrescar materias**.
+
+La elección se puede cambiar al editar la sanción. Pasar de «No solicitar» a «Solicitar» crea las
+tareas y avisa al profesorado en ese momento; pasar de «Solicitar» a «No solicitar» retira las tareas
+que todavía están vacías, pero **no se permite si algún docente ya ha cumplimentado o adjuntado la
+suya**, para no perder su trabajo. El cambio queda en el
+[registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
 
 - El **listado de sanciones** incorpora el filtro **Con materias sin cumplimentar**, junto a
   Vigentes hoy y Pendientes de notificar, y una columna con el ratio de tareas cumplimentadas

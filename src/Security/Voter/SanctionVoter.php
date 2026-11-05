@@ -74,7 +74,8 @@ final class SanctionVoter extends Voter
         }
 
         if ($attribute === self::SHARE_TASKS) {
-            return $subject->getGroup()->getTutors()->contains($user);
+            // Con «no solicitar tareas» no hay nada que compartir con el alumno.
+            return $subject->isRequestTasks() && $subject->getGroup()->getTutors()->contains($user);
         }
 
         $canView = $subject->getReports()->exists(

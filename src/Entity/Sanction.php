@@ -57,6 +57,13 @@ class Sanction
     #[ORM\Column]
     private bool $noMeasureApplied = false;
 
+    /**
+     * En una sanción con fechas, si se solicitan tareas a los docentes del grupo (por defecto) o no. Con «no», no se
+     * generan tareas, ni se avisa a los docentes, ni se ofrece el enlace público del alumnado.
+     */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $requestTasks = true;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $noMeasureReason = null;
 
@@ -211,6 +218,24 @@ class Sanction
         $this->details = $details;
 
         return $this;
+    }
+
+    public function isRequestTasks(): bool
+    {
+        return $this->requestTasks;
+    }
+
+    public function setRequestTasks(bool $requestTasks): static
+    {
+        $this->requestTasks = $requestTasks;
+
+        return $this;
+    }
+
+    /** La sanción tiene fechas y no se ha pedido omitir las tareas: se solicitan tareas a los docentes del grupo. */
+    public function requestsTasks(): bool
+    {
+        return $this->requestTasks && $this->requiresDates();
     }
 
     public function isNoMeasureApplied(): bool

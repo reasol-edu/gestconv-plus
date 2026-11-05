@@ -860,7 +860,10 @@ Cuando una sanción incluye una medida con **rango de fechas** (el estudiante pa
 de su aula habitual, por ejemplo una expulsión al aula de convivencia o a casa), la aplicación
 genera automáticamente una **tarea de sanción** por cada docente que le imparte alguna materia en
 ese grupo, para que cada uno deje constancia del trabajo que le corresponde asignar — o indique
-que no procede — y el estudiante no se quede atrás.
+que no procede — y el estudiante no se quede atrás. Quien registra la sanción puede elegir
+**No solicitar tareas a los docentes** (ver
+[Sanciones sin tareas](04-sanciones-y-comision.md#tareas-de-sancion)): en ese caso no se crea ninguna
+tarea ni se avisa al profesorado.
 
 La sección **Tareas de sanción** del menú lateral aparece para cualquier docente que imparta
 materia a algún grupo en el curso visualizado, y lista sus propias tareas (pendientes primero),
