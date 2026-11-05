@@ -141,6 +141,40 @@ Cuando un ajuste tiene valor en varios niveles, se resuelve en este orden de pri
 
 **docente > centro > global > valor por defecto**
 
+### Buscar y moverse por los ajustes {#buscar-en-los-ajustes}
+
+Como hay muchos ajustes, la parte superior de la pantalla lleva una **barra fija** (se queda visible
+al desplazarse) para encontrarlos sin recorrer la lista entera:
+
+![Ajustes globales con la barra de búsqueda, las categorías y los candados](img/ajustes/ajustes-candados.png)
+
+- **Buscador.** Escribe una o varias palabras y la lista se reduce al momento a los ajustes que
+  las contienen todas, sin importar mayúsculas ni tildes: se busca en el nombre, la descripción, la
+  categoría y la clave interna del ajuste. Debajo se indica cuántos quedan («4 de 28 ajustes») y,
+  si ninguno coincide, se avisa. La tecla **/** lleva el cursor al buscador desde cualquier punto
+  de la pantalla y **Esc** borra la búsqueda.
+
+  ![«Mis ajustes» filtrados al buscar «prescripción»](img/ajustes/ajustes-busqueda.png)
+
+- **Categorías.** La fila de pestañas muestra cada categoría con su número de ajustes; pulsar una
+  lleva a su sección, y la que se está leyendo queda resaltada al desplazarse. Con una búsqueda
+  activa, cada pestaña indica cuántos resultados tiene y las que no tienen ninguno se atenúan. Los
+  [avisos por correo que se reciben](#avisos-que-se-reciben) se reparten en cuatro categorías (partes,
+  sanciones, tareas y notas, y reservas) para no formar una lista interminable.
+
+  ![Categoría «Recibir avisos de reservas» seleccionada en la barra](img/ajustes/ajustes-categorias.png)
+
+- **Solo los modificados.** En cuanto hay algún ajuste con un valor propio en ese nivel, aparece
+  esta casilla con su recuento, y los ajustes personalizados llevan la etiqueta **Modificado**.
+  Marcarla deja solo esos ajustes: la forma más rápida de ver qué se ha cambiado respecto de los
+  valores por defecto.
+
+  ![«Solo los modificados» marcado, con un único ajuste personalizado](img/ajustes/ajustes-modificados.png)
+
+El filtro sigue aplicado cuando se guarda un ajuste. Al pulsar una categoría, la dirección de la
+página se actualiza (termina en algo como `#settings-cat-settings_category_bookings`), de modo que se
+puede copiar para llevar a alguien directamente a esa categoría.
+
 ### Bloqueo de ajustes
 
 Un administrador global o de centro puede **bloquear** el valor de un ajuste con el icono del
@@ -162,7 +196,8 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
 Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón, Actividades,
-Reservas, Notificaciones a familias, Avisos por correo, Avisos que se reciben, Personalización de informes, Plantillas de informes,
+Reservas, Notificaciones a familias, Avisos por correo, Recibir avisos de partes, de sanciones, de tareas y notas
+y de reservas, Personalización de informes, Plantillas de informes,
 Ausencias, Tareas de sanción y Subida de ficheros.
 
 ### Visualización
@@ -331,8 +366,8 @@ de validar, aprobada y rechazada; e incidencia de una reserva registrada, recibi
 Se pueden fijar en **los tres niveles** (ámbito global, de centro y de docente), con la misma regla
 que el resto de ajustes:
 
-- El **docente** elige los suyos en **Mi perfil › Ajustes**, en la categoría **Avisos que se
-  reciben**.
+- El **docente** elige los suyos en **Mi perfil › Ajustes**, en las categorías **Recibir avisos de
+  partes**, **de sanciones**, **de tareas y notas** y **de reservas**.
 - El **centro** puede fijar un valor para todo su profesorado. Si lo **bloquea**, ningún docente
   puede cambiarlo.
 - La **plataforma** puede fijarlo para todos los centros y, igualmente, bloquearlo.

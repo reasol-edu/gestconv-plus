@@ -11,14 +11,23 @@ use Symfony\Component\Uid\Uuid;
 
 final class Version20260101000063 extends AbstractMigration
 {
-    /** Un ajuste «recibir este aviso» por cada tipo de aviso por correo (el mismo nombre que su evento). */
+    /**
+     * Un ajuste «recibir este aviso» por cada tipo de aviso por correo (el mismo nombre que su evento), con el grupo
+     * (categoría de ajustes) en que se muestra.
+     */
     private const array EVENTS = [
-        'report_created', 'report_notified', 'report_modified', 'report_deleted', 'report_prescribed', 'report_auto_prescribed',
-        'report_sanctioned', 'report_sanctionable_committee', 'sanction_notified', 'sanction_prescribed', 'sanction_auto_prescribed',
-        'sanction_task_assigned', 'sanction_task_reminder', 'daily_note_threshold', 'report_prescription_warning',
-        'sanction_prescription_warning', 'booking_requested', 'booking_approved', 'booking_rejected',
-        'booking_issue_reported', 'booking_issue_received', 'booking_issue_resolved',
+        'report_created' => 'reports', 'report_notified' => 'reports', 'report_modified' => 'reports', 'report_deleted' => 'reports',
+        'report_prescribed' => 'reports', 'report_auto_prescribed' => 'reports', 'report_sanctioned' => 'reports',
+        'report_sanctionable_committee' => 'reports', 'report_prescription_warning' => 'reports',
+        'sanction_notified' => 'sanctions', 'sanction_prescribed' => 'sanctions', 'sanction_auto_prescribed' => 'sanctions',
+        'sanction_prescription_warning' => 'sanctions',
+        'sanction_task_assigned' => 'tasks', 'sanction_task_reminder' => 'tasks', 'daily_note_threshold' => 'tasks',
+        'booking_requested' => 'bookings', 'booking_approved' => 'bookings', 'booking_rejected' => 'bookings',
+        'booking_issue_reported' => 'bookings', 'booking_issue_received' => 'bookings', 'booking_issue_resolved' => 'bookings',
     ];
+
+    /** Orden de las categorías de ajustes de cada grupo. */
+    private const array GROUP_ORDER = ['reports' => 52, 'sanctions' => 53, 'tasks' => 54, 'bookings' => 55];
 
     public function getDescription(): string
     {
@@ -41,11 +50,12 @@ final class Version20260101000063 extends AbstractMigration
         $this->addSql('ALTER TABLE resource_booking ADD COLUMN issue_response_seen INTEGER NOT NULL DEFAULT 1');
         $this->addSql('CREATE INDEX idx_resource_booking_issue ON resource_booking (issue_status)');
 
-        foreach (self::EVENTS as $index => $event) {
+        $position = 0;
+        foreach (self::EVENTS as $event => $group) {
             $this->addSql(
                 "INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, choices, category, category_order, position) VALUES
-                (?, ?, 'boolean', 'true', 1, 1, 1, NULL, NULL, NULL, 'settings.category.email_receive', 52, ?)",
-                [Uuid::v4()->toBinary(), 'notifications.receive_' . $event, ($index + 1) * 10]
+                (?, ?, 'boolean', 'true', 1, 1, 1, NULL, NULL, NULL, ?, ?, ?)",
+                [Uuid::v4()->toBinary(), 'notifications.receive_' . $event, 'settings.category.email_receive_' . $group, self::GROUP_ORDER[$group], ++$position * 10]
             );
         }
 
@@ -59,7 +69,7 @@ final class Version20260101000063 extends AbstractMigration
             'Esta migración sólo puede ejecutarse en SQLite.'
         );
 
-        foreach (self::EVENTS as $event) {
+        foreach (array_keys(self::EVENTS) as $event) {
             $key = 'notifications.receive_' . $event;
             foreach (['global_setting_value', 'centre_setting_value', 'teacher_setting_value'] as $table) {
                 $this->addSql("DELETE FROM $table WHERE definition_id IN (SELECT id FROM setting_definition WHERE key = '$key')");

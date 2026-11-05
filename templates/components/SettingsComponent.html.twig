@@ -47,14 +47,14 @@
                         </span>
                     </div>
 
-                    {% if modifiedTotal > 0 %}
-                        <label class="inline-flex shrink-0 cursor-pointer items-center gap-2 text-sm text-gray-600">
-                            <input type="checkbox" data-settings-nav-target="modified" data-action="change->settings-nav#filter"
-                                   class="rounded border-gray-300 text-forest-600 focus:ring-forest-500">
-                            {{ 'settings.filter.modified'|trans({}, 'settings') }}
-                            <span data-settings-nav-target="modifiedCount" class="rounded-full bg-forest-50 px-1.5 text-xs font-medium text-forest-700">{{ modifiedTotal }}</span>
-                        </label>
-                    {% endif %}
+                    {# Siempre está en la página (la barra no se repinta); el navegador lo muestra solo si hay ajustes modificados. #}
+                    <label data-settings-nav-target="modifiedLabel"
+                           class="{{ modifiedTotal > 0 ? 'inline-flex' : 'hidden' }} shrink-0 cursor-pointer items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" data-settings-nav-target="modified" data-action="change->settings-nav#filter"
+                               class="rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                        {{ 'settings.filter.modified'|trans({}, 'settings') }}
+                        <span data-settings-nav-target="modifiedCount" class="rounded-full bg-forest-50 px-1.5 text-xs font-medium text-forest-700">{{ modifiedTotal }}</span>
+                    </label>
                 </div>
 
                 {% if categoryCounts|length > 1 %}

@@ -10,38 +10,28 @@ import { Controller } from '@hotwired/stimulus';
  * vuelve a aplicar con cada evento «live:render». La barra de búsqueda lleva data-live-ignore y no se repinta.
  */
 export default class extends Controller {
-    static targets = ['input', 'clear', 'hint', 'modified', 'modifiedCount', 'chip', 'section', 'item', 'empty', 'status'];
+    static targets = ['input', 'clear', 'hint', 'modified', 'modifiedLabel', 'modifiedCount', 'chip', 'section', 'item', 'empty', 'status'];
     static values  = { countAll: String, countFiltered: String, empty: String };
 
-    #spy = null;
-    #visible = new Set();
     #root = null;
+    #frame = 0;
 
     connect() {
         this.#root = this.element.parentElement;
         this.#root?.addEventListener('live:render', this.#onRender);
         document.addEventListener('keydown', this.#onKey);
-
-        this.#spy = new IntersectionObserver((entries) => this.#spyEntries(entries), { rootMargin: '-140px 0px -55% 0px' });
-        this.sectionTargets.forEach((section) => this.#spy.observe(section));
+        window.addEventListener('scroll', this.#onScroll, { passive: true });
 
         this.apply();
         this.#scrollToHash();
+        this.#updateActive();
     }
 
     disconnect() {
         this.#root?.removeEventListener('live:render', this.#onRender);
         document.removeEventListener('keydown', this.#onKey);
-        this.#spy?.disconnect();
-    }
-
-    sectionTargetConnected(section) {
-        this.#spy?.observe(section);
-    }
-
-    sectionTargetDisconnected(section) {
-        this.#spy?.unobserve(section);
-        this.#visible.delete(section);
+        window.removeEventListener('scroll', this.#onScroll);
+        cancelAnimationFrame(this.#frame);
     }
 
     filter() {
@@ -82,6 +72,16 @@ export default class extends Controller {
     }
 
     apply() {
+        // El interruptor de «solo los modificados» solo tiene sentido si hay alguno (el número cambia al guardar).
+        const modifiedCount = this.itemTargets.filter((item) => item.dataset.modified === '1').length;
+        if (this.hasModifiedTarget) {
+            if (modifiedCount === 0) {
+                this.modifiedTarget.checked = false;
+            }
+            this.modifiedLabelTarget.classList.toggle('hidden', modifiedCount === 0);
+            this.modifiedLabelTarget.classList.toggle('inline-flex', modifiedCount > 0);
+        }
+
         const terms    = this.#normalize(this.inputTarget.value).split(/\s+/).filter(Boolean);
         const onlyMod  = this.hasModifiedTarget && this.modifiedTarget.checked;
         const filtered = terms.length > 0 || onlyMod;
@@ -112,7 +112,7 @@ export default class extends Controller {
         });
 
         if (this.hasModifiedCountTarget) {
-            this.modifiedCountTarget.textContent = String(this.itemTargets.filter((item) => item.dataset.modified === '1').length);
+            this.modifiedCountTarget.textContent = String(modifiedCount);
         }
         this.clearTarget.classList.toggle('hidden', this.inputTarget.value === '');
         this.hintTarget.classList.toggle('sm:inline-block', this.inputTarget.value === '');
@@ -122,11 +122,16 @@ export default class extends Controller {
 
         this.emptyTarget.classList.toggle('hidden', matches > 0);
         this.emptyTarget.textContent = this.emptyValue.replace('%query%', this.inputTarget.value.trim());
+
+        this.#updateActive();
     }
 
     #onRender = () => {
         // El repintado puede traer secciones y ajustes nuevos: se aplica de nuevo el filtro vigente.
-        queueMicrotask(() => this.apply());
+        queueMicrotask(() => {
+            this.apply();
+            this.#updateActive();
+        });
     };
 
     /** «/» lleva el foco al buscador, como en tantas aplicaciones, salvo que ya se esté escribiendo en un campo. */
@@ -147,19 +152,34 @@ export default class extends Controller {
         this.inputTarget.select();
     };
 
-    #spyEntries(entries) {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                this.#visible.add(entry.target);
-            } else {
-                this.#visible.delete(entry.target);
-            }
-        });
+    #onScroll = () => {
+        cancelAnimationFrame(this.#frame);
+        this.#frame = requestAnimationFrame(() => this.#updateActive());
+    };
 
-        const current = this.sectionTargets.find((section) => this.#visible.has(section) && !section.classList.contains('hidden'));
-        if (current) {
-            this.#markActive(current.dataset.category);
+    /**
+     * La categoría activa es la última cuyo comienzo ya ha pasado por debajo de la barra fija; al llegar al final de
+     * la página, la última (que no podría subir hasta arriba).
+     */
+    #updateActive() {
+        const sections = this.sectionTargets.filter((section) => !section.classList.contains('hidden'));
+        if (sections.length === 0) {
+            return;
         }
+
+        const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+        let current    = sections[0];
+        if (atBottom) {
+            current = sections[sections.length - 1];
+        } else {
+            for (const section of sections) {
+                if (section.getBoundingClientRect().top <= 190) {
+                    current = section;
+                }
+            }
+        }
+
+        this.#markActive(current.dataset.category);
     }
 
     #markActive(slug) {

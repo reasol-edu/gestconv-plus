@@ -63,7 +63,7 @@ abstract class ControllerTestCase extends WebTestCase
             ['notifications.email_digest_hour', SettingType::Integer, '7',         true, true, true, 0,    23,   'settings.category.email_alerts', 50, 2, null],
             // «Recibir este aviso»: un ajuste por tipo de aviso, activado por defecto, en los tres niveles.
             ...array_map(
-                static fn (string $event, int $i): array => ['notifications.receive_' . $event, SettingType::Boolean, 'true', true, true, true, null, null, 'settings.category.email_receive', 52, ($i + 1) * 10, null],
+                static fn (string $event, int $i): array => ['notifications.receive_' . $event, SettingType::Boolean, 'true', true, true, true, null, null, 'settings.category.email_receive_reports', 52, ($i + 1) * 10, null],
                 $events = [
                     'report_created', 'report_notified', 'report_modified', 'report_deleted', 'report_prescribed', 'report_auto_prescribed',
                     'report_sanctioned', 'report_sanctionable_committee', 'sanction_notified', 'sanction_prescribed', 'sanction_auto_prescribed',

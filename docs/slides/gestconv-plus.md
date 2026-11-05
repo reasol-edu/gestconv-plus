@@ -837,6 +837,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 - Cada ajuste puede **bloquearse** a nivel global para impedir que un centro
   lo modifique, o dejarse libre para que cada centro lo personalice.
+- Una **barra fija** permite **buscar** un ajuste al escribir (sin distinguir
+  tildes), saltar por **categorías** y ver **solo los modificados**.
 - El **catálogo de conductas**, el de **medidas disciplinarias**, el de
   **ubicaciones** (dónde sucedió) y el de **métodos de comunicación** también
   se gestionan desde aquí, adaptándolos a las normas de convivencia propias
