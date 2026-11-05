@@ -8,6 +8,75 @@
             <p class="text-sm text-gray-500">{{ 'settings.no_settings_for_scope'|trans({}, 'settings') }}</p>
         </div>
     {% else %}
+        {# Categorías con su número de ajustes y cuántos están personalizados (para la barra de búsqueda y navegación). #}
+        {% set categoryCounts = {} %}
+        {% set modifiedTotal = 0 %}
+        {% for row in rows %}
+            {% set categoryCounts = categoryCounts|merge({(row.definition.category): (categoryCounts[row.definition.category] ?? 0) + 1}) %}
+            {% if row.storedValue is not null or row.storedFile is not null %}{% set modifiedTotal = modifiedTotal + 1 %}{% endif %}
+        {% endfor %}
+
+        <div data-controller="settings-nav"
+             data-settings-nav-count-all-value="{{ 'settings.search.count_all'|trans({}, 'settings')|e('html_attr') }}"
+             data-settings-nav-count-filtered-value="{{ 'settings.search.count_filtered'|trans({}, 'settings')|e('html_attr') }}"
+             data-settings-nav-empty-value="{{ 'settings.search.empty'|trans({}, 'settings')|e('html_attr') }}">
+
+            {# ── Barra de búsqueda y navegación (queda fija al desplazarse). La gestiona el navegador: el componente no la repinta. ── #}
+            <div data-live-ignore
+                 class="sticky top-14 z-20 border-b border-gray-100 bg-white/95 px-6 py-3 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="relative min-w-0 flex-1 basis-64">
+                        <label for="settings-search-{{ scope }}" class="sr-only">{{ 'settings.search.label'|trans({}, 'settings') }}</label>
+                        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
+                            {{ ux_icon('heroicons:magnifying-glass', {class: 'h-4 w-4'}) }}
+                        </span>
+                        <input id="settings-search-{{ scope }}" type="search" autocomplete="off" spellcheck="false"
+                               data-settings-nav-target="input"
+                               data-action="input->settings-nav#filter keydown->settings-nav#inputKey"
+                               placeholder="{{ 'settings.search.placeholder'|trans({}, 'settings') }}"
+                               class="block w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-16 text-sm text-gray-900 placeholder-gray-400
+                                      focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors
+                                      [&::-webkit-search-cancel-button]:appearance-none">
+                        <span class="absolute inset-y-0 right-2 flex items-center gap-1.5">
+                            <button type="button" data-settings-nav-target="clear" data-action="settings-nav#clear"
+                                    class="hidden rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                                    title="{{ 'settings.search.clear'|trans({}, 'settings') }}" aria-label="{{ 'settings.search.clear'|trans({}, 'settings') }}">
+                                {{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}
+                            </button>
+                            <kbd data-settings-nav-target="hint" class="hidden rounded border border-gray-200 bg-white px-1.5 text-[11px] font-medium text-gray-400 sm:inline-block" aria-hidden="true">/</kbd>
+                        </span>
+                    </div>
+
+                    {% if modifiedTotal > 0 %}
+                        <label class="inline-flex shrink-0 cursor-pointer items-center gap-2 text-sm text-gray-600">
+                            <input type="checkbox" data-settings-nav-target="modified" data-action="change->settings-nav#filter"
+                                   class="rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                            {{ 'settings.filter.modified'|trans({}, 'settings') }}
+                            <span data-settings-nav-target="modifiedCount" class="rounded-full bg-forest-50 px-1.5 text-xs font-medium text-forest-700">{{ modifiedTotal }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                {% if categoryCounts|length > 1 %}
+                    <nav class="-mx-1 mt-3 flex gap-1.5 overflow-x-auto px-1 pb-0.5" aria-label="{{ 'settings.nav.aria'|trans({}, 'settings') }}">
+                        {% for category, total in categoryCounts %}
+                            {% set slug = category|replace({'.': '_', '-': '_'}) %}
+                            <a href="#settings-cat-{{ slug }}" data-settings-nav-target="chip" data-category="{{ slug }}" data-total="{{ total }}"
+                               data-action="settings-nav#go"
+                               class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600
+                                      hover:border-forest-300 hover:text-forest-700 transition-colors">
+                                {{ (category ~ '.label')|trans({}, 'settings') }}
+                                <span data-role="count" class="rounded-full bg-gray-100 px-1.5 text-[11px] text-gray-500">{{ total }}</span>
+                            </a>
+                        {% endfor %}
+                    </nav>
+                {% endif %}
+
+                <p class="mt-2 text-xs text-gray-400" data-settings-nav-target="status" role="status" aria-live="polite"></p>
+            </div>
+
+            <p data-settings-nav-target="empty" class="hidden px-6 py-12 text-center text-sm text-gray-500"></p>
+
         {% set currentCategory = null %}
         {% for row in rows %}
             {% set def        = row.definition %}
@@ -28,7 +97,9 @@
                     </section>
                 {% endif %}
                 {% set currentCategory = def.category %}
-                <section class="{{ loop.first ? '' : 'border-t border-gray-100' }}">
+                {% set categorySlug = def.category|replace({'.': '_', '-': '_'}) %}
+                <section id="settings-cat-{{ categorySlug }}" data-settings-nav-target="section" data-category="{{ categorySlug }}"
+                         class="scroll-mt-40 {{ loop.first ? '' : 'border-t border-gray-100' }}">
                     <h3 class="px-6 pt-5 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
                         {{ (def.category ~ '.label')|trans({}, 'settings') }}
                     </h3>
@@ -38,15 +109,24 @@
             {# Los ajustes richtext y pdf se apilan en vertical: necesitan el ancho completo #}
             {% set isRichText = def.type.value == 'richtext' %}
             {% set isPdf      = def.type.value == 'pdf' %}
-            <li class="flex flex-col gap-3 px-6 py-4 {{ (isRichText or isPdf) ? '' : 'sm:flex-row sm:items-center sm:gap-6' }}
+            {% set itemLabel = ('settings.key.' ~ keySlug ~ '.label')|trans({}, 'settings') %}
+            {% set itemDescKey = 'settings.key.' ~ keySlug ~ '.description' %}
+            {% set itemDesc = itemDescKey|trans({}, 'settings') %}
+            {% set isModified = stored is not null or row.storedFile is not null %}
+            <li data-settings-nav-target="item" data-category="{{ categorySlug }}" data-modified="{{ isModified ? '1' : '0' }}"
+                data-search="{{ (itemLabel ~ ' ' ~ (itemDesc != itemDescKey ? itemDesc : '') ~ ' ' ~ (def.category ~ '.label')|trans({}, 'settings') ~ ' ' ~ key)|lower|e('html_attr') }}"
+                class="flex flex-col gap-3 px-6 py-4 {{ (isRichText or isPdf) ? '' : 'sm:flex-row sm:items-center sm:gap-6' }}
                         {{ parentLock is not null ? 'opacity-60' : '' }}">
 
                 {# ── Label + description ── #}
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1.5">
                         <p class="text-sm font-medium text-gray-900">
-                            {{ ('settings.key.' ~ keySlug ~ '.label')|trans({}, 'settings') }}
+                            {{ itemLabel }}
                         </p>
+                        {% if isModified %}
+                            <span class="rounded-full bg-forest-50 px-1.5 py-0.5 text-[10px] font-semibold text-forest-700">{{ 'settings.modified_badge'|trans({}, 'settings') }}</span>
+                        {% endif %}
                         {% if isRichText %}
                             <div class="relative" data-controller="dropdown">
                                 <button type="button"
@@ -271,6 +351,7 @@
         {% endfor %}
                 </ul>
             </section>
+        </div>
     {% endif %}
 
 </div>

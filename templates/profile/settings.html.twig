@@ -31,7 +31,8 @@
     </div>
 
     {# ── Ajustes del docente ────────────────────────────────────────────── #}
-    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+    {# overflow-clip (y no hidden) para que la barra de búsqueda de los ajustes pueda quedar fija al desplazarse. #}
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-clip">
         <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
             {{ ux_icon('heroicons:adjustments-horizontal', {class: 'h-4 w-4 text-forest-500'}) }}
             <h2 class="text-sm font-semibold text-gray-700">{{ 'settings.teacher.title'|trans({}, 'settings') }}</h2>
