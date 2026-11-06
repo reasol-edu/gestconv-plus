@@ -81,11 +81,20 @@ Aviso puntual con fecha, horario y tipo (complementaria, extraescolar u otros) q
 **Recurso compartido**
 Dependencia o material del centro que el profesorado puede reservar por tramos horarios (un aula de informática, el salón de actos, un carro de portátiles…). Se organiza en categorías y lo define la dirección en Centro educativo › Recursos compartidos.
 
+**Incidencia**
+Aviso de una avería, desperfecto o problema del centro (una luz fundida, un aula sin wifi…), que se sigue hasta cerrarla: abierta, en proceso, solucionada, no procede o cerrada por duplicidad. Tiene un tipo (que decide quién la atiende), una prioridad que asigna el responsable, observaciones, adjuntos e historial. Distinta del *parte* de convivencia, que es sobre el alumnado.
+
+**Prioridad (de una incidencia)**
+Importancia que el responsable asigna a una incidencia (por defecto Crítica, Alta, Media o Baja), con un color y un plazo recomendado y otro máximo en días lectivos. Asignarla permite poner la incidencia «en proceso».
+
 **Responsable de categoría**
 Docente que gestiona las reservas de todos los recursos de una categoría —las edita, las elimina y, si la categoría lo exige, las valida— y puede reservar aunque esté restringida.
 
 **Reserva**
 Uso de un recurso compartido un día, en uno o varios tramos horarios, a nombre de un docente. Puede repetirse cada semana (serie) y, en las categorías con validación, nace *pendiente* hasta que un responsable la aprueba o la rechaza; mientras tanto ocupa el tramo.
+
+**Tipo de incidencia**
+Elemento de la lista jerárquica de incidencias del centro (por ejemplo, *Mantenimiento › Electricidad*). Sus responsables son los suyos más los de todos los tipos de los que cuelga, y reciben el aviso de las incidencias que se registran en él.
 
 **Tutor/a de grupo**
 Docente responsable de un grupo. Puede consultar todos los partes del grupo además de los propios.

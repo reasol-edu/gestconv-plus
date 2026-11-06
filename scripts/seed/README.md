@@ -13,6 +13,10 @@ Material **temporal** para regenerar las capturas del manual, de las fichas y de
   y 30 minutos fuera, y ya terminadas) y un pase prioritario, fechadas respecto a `SHOTS_NOW` (por defecto, el
   mismo lunes 2026-10-05 09:30 UTC). Se ejecuta **después** de `tmp:seed-shots` y se copia a `src/Command/` igual
   que aquel. Lo usan `capture-exits-manual-shots.mjs` (manual) y `capture-exits-shots.mjs` (fichas móviles).
+- `TmpSeedIssuesCommand.php` — comando `tmp:seed-issues`: el árbol de tipos de incidencia (con responsables: Beatriz para
+  Mantenimiento y Rafael para Informática, que son del curso activo) y ocho incidencias en todos los estados, con
+  observaciones, historial, un adjunto con miniatura, una asociada a una reserva y una vencida. Se ejecuta **después** de
+  `tmp:seed-shots` (usa sus reservas) y se copia a `src/Command/` igual que aquel. Lo usa `capture-issues-shots.mjs`.
 - `router-clock.php` + `index-clock.php` — router del servidor PHP integrado con el reloj de la aplicación fijado
   (`Clock::set(MockClock)`, variable `SHOTS_NOW`), para que «hoy» sea un día lectivo aunque se capture en fin de
   semana. Usar con `php -S ... -t public scripts/seed/router-clock.php`.

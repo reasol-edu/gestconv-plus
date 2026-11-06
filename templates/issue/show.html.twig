@@ -298,8 +298,15 @@
                                 <label for="manage-location" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.location'|trans({}, 'admin') }}</label>
                                 <select id="manage-location" name="location" class="{{ inputClass }}">
                                     <option value="">—</option>
+                                    {% set lastCategory = null %}
                                     {% for location in locations %}
-                                        <option value="{{ location.id.toRfc4122 }}" {{ issue.location and issue.location.id.equals(location.id) ? 'selected' : '' }}>{{ location.category.name }} · {{ location.name }}</option>
+                                        {% if location.category.id.toRfc4122 != lastCategory %}
+                                            {% if lastCategory is not null %}</optgroup>{% endif %}
+                                            <optgroup label="{{ location.category.name }}">
+                                            {% set lastCategory = location.category.id.toRfc4122 %}
+                                        {% endif %}
+                                        <option value="{{ location.id.toRfc4122 }}" {{ issue.location and issue.location.id.equals(location.id) ? 'selected' : '' }}>{{ location.name }}</option>
+                                        {% if loop.last %}</optgroup>{% endif %}
                                     {% endfor %}
                                 </select>
                             </div>

@@ -49,5 +49,5 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 </div>
 
 <div class="nota">
-  <p>Un recurso admite <strong>una sola reserva por día y tramo</strong>. En algunas categorías un responsable debe <strong>validar</strong> la reserva: queda <strong>pendiente</strong> (y ocupa el tramo) hasta que la aprueba o rechaza, y te avisa. Puedes editarla o eliminarla desde su ficha, o toda la serie si es periódica. <strong>¿Algo ha fallado al usar el recurso?</strong> Abre tu reserva, describe el problema y pulsa <strong>Registrar incidencia</strong>: se avisa a los responsables (y solo tú, ellos y el equipo directivo la veis) y recibirás su respuesta en la campana y por correo.</p>
+  <p>Un recurso admite <strong>una sola reserva por día y tramo</strong>. En algunas categorías un responsable debe <strong>validar</strong> la reserva: queda <strong>pendiente</strong> (y ocupa el tramo) hasta que la aprueba o rechaza, y te avisa. Puedes editarla o eliminarla desde su ficha, o toda la serie si es periódica. <strong>¿Algo ha fallado al usar el recurso?</strong> Abre tu reserva, pulsa <strong>Registrar incidencia</strong> y describe el problema (puedes adjuntar fotos): se avisa a los responsables (y solo tú, ellos y el equipo directivo la veis) y seguirás su estado en <strong>Incidencias</strong>, en la campana y por correo.</p>
 </div>

@@ -93,9 +93,13 @@ class IssueAttachment
         return $this->size;
     }
 
+    /** Los BLOB llegan como flujo (SQLite, PostgreSQL) que solo se puede leer una vez: se lee y se guarda como texto. */
     public function getContent(): string
     {
-        return is_resource($this->content) ? (string) stream_get_contents($this->content) : (string) $this->content;
+        $content       = is_resource($this->content) ? (string) stream_get_contents($this->content) : (string) $this->content;
+        $this->content = $content;
+
+        return $content;
     }
 
     public function hasThumbnail(): bool
@@ -109,7 +113,10 @@ class IssueAttachment
             return null;
         }
 
-        return is_resource($this->thumbnail) ? (string) stream_get_contents($this->thumbnail) : (string) $this->thumbnail;
+        $thumbnail       = is_resource($this->thumbnail) ? (string) stream_get_contents($this->thumbnail) : (string) $this->thumbnail;
+        $this->thumbnail = $thumbnail;
+
+        return $thumbnail;
     }
 
     public function isImage(): bool

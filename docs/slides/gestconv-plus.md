@@ -611,11 +611,34 @@ el centro**, no solo de sus propios grupos:
 - Un recurso solo admite una reserva por día y tramo. Con validación, la
   reserva queda **pendiente** —y ocupa el tramo— hasta que un responsable la
   aprueba o la rechaza, con aviso en la campana, el inicio y el correo.
-- Si algo falla, el docente registra una **incidencia** en su reserva: la ven
-  solo él, los responsables y la dirección (con una marca en el calendario y
-  el listado), que la marcan como **recibida** o **solucionada** con un
-  comentario, y todo se avisa por correo, campana y panel.
+- Si algo falla, el docente registra una **incidencia** desde su reserva (ver
+  la diapositiva siguiente): la marca del calendario y del listado solo la
+  ven él, los responsables y la dirección.
 - Se pueden **activar o desactivar** de golpe, global o por centro.
+
+---
+
+## Incidencias del centro
+
+![bg right:40% fit](../manual/img/incidencias/incidencias-listado.png)
+
+- Para avisar de **averías y desperfectos** (una luz fundida, un aula sin
+  wifi): **Incidencias** del menú, **Nueva incidencia** o el buscador. Se
+  elige un **tipo** de una lista jerárquica (que decide **quién la atiende**),
+  una dependencia opcional, una **descripción** con formato y **adjuntos**
+  (las imágenes, en miniatura). Desde la ficha de una **reserva** se asocia a
+  ella, sin pedir la dependencia.
+- Los **responsables** del tipo (los suyos y los de los tipos superiores)
+  asignan una **prioridad** —con plazos en días lectivos— y la ponen
+  **en proceso** o la cierran: **solucionada**, **no procede** o **duplicada**
+  (enlazando la original). Cualquiera de los implicados añade
+  **observaciones**, y todo cambio queda en el **historial**.
+- El **listado** (solo las abiertas por defecto) tiene cifras, filtros que se
+  recuerdan, búsqueda, orden y **cambio de estado en bloque**.
+- Todo se avisa por **correo** (o en el resumen diario), en la **campana** y
+  en el **panel**, con un **recordatorio diario de las vencidas**.
+- La dirección configura **tipos y prioridades**, con exportación e
+  importación en JSON.
 
 ---
 

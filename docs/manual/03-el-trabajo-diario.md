@@ -17,7 +17,7 @@ puede usar (un grupo sin ninguna entrada visible no aparece):
 
 - **Inicio**, suelto arriba.
 - **Día a día** — lo que se usa en mitad de la clase, también desde el móvil: **Salidas**,
-  **Guardias**, **Ausencias**, **Reservas** y **Calendario**.
+  **Guardias**, **Ausencias**, **Reservas**, **Incidencias** y **Calendario**.
 - **Convivencia** — **Partes**, **Notas**, **Sanciones**, **Tareas de sanción**,
   **Notificaciones** y **Mi tutoría**. Es el recorrido completo de un incidente: se registra, se
   sanciona si procede, se cumplen las tareas y se informa a la familia.
@@ -791,42 +791,25 @@ listado. Las series se pueden aprobar o rechazar enteras.
 ### Incidencias {#incidencias-de-las-reservas}
 
 Si algo falla al usar un recurso (un proyector que no enciende, portátiles que no arrancan…), el docente
-que hizo la reserva puede **registrar una incidencia** desde la ficha de esa reserva, con una
-descripción obligatoria. Solo se puede en reservas **aprobadas**, y también después de usar el
-recurso, aunque la fecha ya haya pasado. Cada reserva tiene una incidencia a la vez: cuando se
-soluciona, se puede registrar otra.
+que hizo la reserva puede **registrar una incidencia** desde la ficha de esa reserva con el botón
+**Registrar incidencia**. Solo se puede en reservas **aprobadas**, y también después de usar el
+recurso, aunque la fecha ya haya pasado. Es una incidencia del módulo general de
+[Incidencias](#incidencias): la reserva ya indica el recurso, así que no se pide la dependencia, y
+la ficha de la reserva lista las incidencias que tiene.
 
-![Tarjeta Incidencia de la ficha de una reserva, con el texto de la incidencia y el botón para registrarla](img/reservas/reservas-incidencia-registrar.png)
+![Tarjeta Incidencias de la ficha de una reserva, con la incidencia registrada y el botón para registrar otra](img/incidencias/incidencias-reserva.png)
 
-Al registrarla se avisa por correo (o en el resumen diario, según la preferencia de cada persona) a
-los **responsables de la categoría** del recurso o, si la categoría no tiene responsables, a la
-**dirección** del centro.
+**Quién la ve.** Las incidencias de una reserva, y la marca que las señala, solo las ven el docente
+de la reserva, los responsables del tipo de incidencia y la dirección; el resto del profesorado ve
+la reserva como siempre. La marca es un icono junto al nombre del recurso, en el **calendario** y en
+el **listado**: ámbar si alguna incidencia sigue **sin cerrar** y verde si están todas cerradas. El
+texto de la incidencia solo aparece en su ficha, nunca en el calendario.
 
-**Quién la ve.** La incidencia, y la marca que la señala, solo las ven el docente de la reserva, los
-responsables de la categoría y la dirección (administradores del centro y de la plataforma); el
-resto del profesorado ve la reserva como siempre. La marca es un icono junto al nombre del recurso,
-en el **calendario** y en el **listado**: ámbar si está **registrada**, azul si está **recibida** y
-verde si está **solucionada**. El texto de la incidencia solo aparece en la ficha, nunca en el
-calendario.
+![Marca de incidencia en una reserva del calendario](img/incidencias/incidencias-reserva-calendario.png)
 
-![Calendario con el icono de incidencia en una reserva](img/reservas/reservas-incidencia-calendario.png)
-
-**Responderla.** Los responsables de la categoría y la dirección la marcan como **recibida** (la
-han visto y la van a atender) o como **solucionada**, escribiendo siempre un **comentario**
-(obligatorio). Quien registró la incidencia no puede responderla él mismo.
-
-![Tarjeta Incidencia vista por un responsable, con el formulario para marcarla como recibida o solucionada](img/reservas/reservas-incidencia-responder.png)
-
-Al responder, el docente recibe un aviso con el estado y el comentario (por correo o en el resumen
-diario, según su preferencia), y la campana le avisa hasta que abre la reserva.
-
-**Avisos y filtros.** Las incidencias aparecen en la **campana** (a los responsables, «Incidencias de
-reservas por recibir»; al docente, «Respuesta a tus incidencias de reservas») y en el **panel de
-inicio**, con una tarjeta y el número de pendientes. En el listado, el filtro **Incidencias** deja
-solo las reservas con incidencia por recibir, sin solucionar o con cualquier incidencia. Cada
-persona puede dejar de recibir estos correos en sus ajustes personales, y el centro o la plataforma
-pueden fijarlo para todos (ver
-[Avisos que se reciben](07-administrar-la-plataforma.md#avisos-que-se-reciben)).
+En el listado de reservas, el filtro **Incidencias** deja solo las reservas con incidencias sin
+cerrar o con cualquier incidencia. El seguimiento (prioridad, estados, observaciones, avisos…) es el
+de cualquier otra incidencia.
 
 ### Editar y eliminar
 
@@ -853,6 +836,152 @@ Quien es responsable de alguna categoría, o administra el centro, ve además el
 **Mis reservas** o **Todas las que gestiono** (todas las del centro para la dirección; las de sus
 categorías para un responsable), con el filtro **Docente** y las acciones de validar, editar y
 eliminar sobre las de otros.
+
+## Incidencias {#incidencias}
+
+La sección **Incidencias** (grupo **Día a día**) sirve para avisar de **averías, desperfectos y
+problemas del centro** —una luz fundida, un grifo que gotea, un aula sin wifi, un proyector
+estropeado— y seguir su arreglo hasta que se cierran. Es distinta de los **partes** de convivencia,
+que son sobre el alumnado. Cualquier docente del curso visualizado puede registrar incidencias; el
+equipo directivo puede desactivar la sección (ver
+[Secciones de la aplicación](07-administrar-la-plataforma.md#secciones-de-la-aplicacion)).
+
+### Registrar una incidencia
+
+**Nueva incidencia**, en la propia sección o en el panel de inicio (y también desde el buscador
+global, **Ctrl/⌘ + K**), abre un formulario muy corto:
+
+![Formulario de nueva incidencia con el tipo, la dependencia, la descripción y los adjuntos](img/incidencias/incidencias-nueva.png)
+
+- **Tipo** (obligatorio). Una lista jerárquica que define el centro (por ejemplo, *Mantenimiento ›
+  Electricidad*), con buscador. Elige el más concreto posible: **determina quién la atiende**.
+- **Dependencia** (opcional). Dónde ocurre, del catálogo de
+  [Ubicaciones](06-administrar-el-centro.md#ubicaciones) del centro.
+- **Descripción** (obligatoria), con formato de texto enriquecido.
+- **Adjuntos** (opcionales). Las **imágenes** se muestran en miniatura en la ficha y los **demás
+  documentos** (PDF, ofimática, texto) se descargan.
+
+Al registrarla se avisa a las personas **responsables** del tipo (ver [Avisos](#avisos-de-incidencias)).
+Una incidencia recién registrada está **Abierta** y **sin prioridad**.
+
+Si la incidencia es sobre un recurso reservado, se registra desde la **ficha de la reserva** (botón
+**Registrar incidencia**, solo quien hizo la reserva aprobada): queda asociada a la reserva, que ya
+incluye el recurso, y no se pide la dependencia. Ver
+[Incidencias de las reservas](#incidencias-de-las-reservas).
+
+### La ficha de la incidencia
+
+Cada incidencia tiene un número (**Incidencia #12**) y una ficha con la descripción, las miniaturas y
+los adjuntos, las **observaciones**, el **historial** de cambios y, a la derecha, los datos: quién la
+registró y cuándo, la dependencia o la reserva, los plazos y, si se cerró, la incidencia original
+de la que es duplicada.
+
+![Ficha de una incidencia vista por quien la registró](img/incidencias/incidencias-ficha.png)
+
+- **Observaciones.** Cualquier persona relacionada con la incidencia (quien la registró y sus
+  responsables) puede añadir observaciones, que quedan con su fecha y hora, y subir más adjuntos.
+- **Descripción.** Quien la registró puede modificarla mientras esté abierta; los responsables,
+  siempre. Los adjuntos los quita quien los subió (mientras esté abierta) o un responsable.
+- **Historial.** Cada cambio (alta, estado, prioridad, tipo, dependencia, descripción y adjuntos)
+  queda anotado con quién lo hizo, cuándo y el valor anterior y el nuevo.
+
+### Estados y prioridad
+
+| Estado | Significado |
+|---|---|
+| **Abierta** | Registrada, a la espera de atención. |
+| **En proceso** | Un responsable la está atendiendo. |
+| **Solucionada** | Cerrada: está arreglada. |
+| **No procede** | Cerrada: no es algo que se pueda o deba hacer. |
+| **Cerrada por duplicidad** | Cerrada: ya estaba registrada. Enlaza con la incidencia original. |
+
+La **prioridad** la asigna el responsable (una incidencia nueva no tiene). Las del centro, de más a
+menos importante, son por defecto *Crítica*, *Alta*, *Media* y *Baja*, con su color. **Asignar una
+prioridad es lo que permite poner la incidencia «en proceso»**; para cerrarla no hace falta. Cada
+prioridad puede tener un **plazo recomendado** y un **plazo máximo**, en días lectivos desde que se
+asigna: la ficha muestra las dos fechas, y el listado marca en rojo el plazo máximo de las
+incidencias abiertas que ya lo han **vencido**.
+
+### Gestionar una incidencia
+
+Quien es **responsable** del tipo (propio o heredado de un tipo superior) y la dirección ven en la
+ficha el panel **Gestionar**: prioridad, estado, tipo y dependencia. Para cerrar por duplicidad se
+indica el número de la incidencia original (**#12**); una incidencia cerrada **se puede reabrir** si
+se es responsable.
+
+![Panel Gestionar de la ficha, con la prioridad, el estado, el tipo y la dependencia](img/incidencias/incidencias-gestionar.png)
+
+Para cerrarla con un comentario, en un solo paso, el responsable puede escribir la **observación** y
+elegir el **estado** en el mismo formulario:
+
+![Formulario de observación con el selector para cambiar el estado a la vez](img/incidencias/incidencias-observacion.png)
+
+### El listado
+
+La sección abre el **listado**: paginado, con búsqueda, filtros y orden. De entrada solo salen las
+incidencias **abiertas** (abiertas y en proceso); el filtro de estado permite ver las cerradas o
+todas.
+
+![Listado de incidencias con las cifras, los filtros y la tabla](img/incidencias/incidencias-listado.png)
+
+- **Qué se ve.** Quien solo informa ve **las que ha registrado**. Un responsable ve también las de
+  los tipos que gestiona (y los de debajo) y la dirección, todas.
+- **Cifras.** Arriba, unas tarjetas que son también atajos: un responsable ve las **abiertas**, las
+  **en proceso**, las **abiertas sin prioridad**, las **vencidas** y las **cerradas**; quien solo
+  informa, sus incidencias abiertas, en proceso y cerradas.
+- **Filtros.** Estado, tipo (incluye los que cuelgan de él), prioridad (o «sin prioridad»), ámbito
+  (*las que he registrado* / *las que gestiono*) y **solo vencidas**. El buscador mira el número
+  (**#12**), el texto, el tipo, la dependencia y la persona. Los filtros **se recuerdan** la próxima
+  vez que se abre el listado.
+- **Orden.** Pulsa la cabecera de número, tipo, prioridad, estado, plazo o registro.
+
+![Listado visto por quien solo informa](img/incidencias/incidencias-listado-docente.png)
+
+**Cambio en bloque.** Los responsables marcan varias incidencias y pulsan **Poner en proceso**,
+**Cerrar: solucionada**, **Cerrar: no procede** o **Reabrir**. Las que no se pueden cambiar (por
+ejemplo, poner en proceso una sin prioridad) se dejan como están y se cuentan en el aviso.
+
+![Varias incidencias marcadas, con las acciones en bloque](img/incidencias/incidencias-lote.png)
+
+Para la dirección, la cabecera del listado tiene el botón **Tipos y prioridades**, que lleva a la
+[configuración del módulo](06-administrar-el-centro.md#incidencias-del-centro).
+
+![Cabecera del listado para la dirección, con el botón Tipos y prioridades](img/incidencias/incidencias-boton-ajustes.png)
+
+### Avisos {#avisos-de-incidencias}
+
+Cada novedad se avisa por correo a las personas **afectadas**, salvo a quien la hace:
+
+| Aviso | A quién llega |
+|---|---|
+| Nueva incidencia | A los responsables del tipo. Si el tipo no tiene ninguno en su rama, a la dirección. |
+| Cambio de estado | A quien la registró y a los responsables. |
+| Prioridad asignada | A quien la registró y a los responsables. |
+| Nueva observación | A quien la registró y a los responsables, con el texto. |
+| Cambios en los datos | A quien la registró y a los responsables (tipo, dependencia o descripción). |
+| Incidencias vencidas | Recordatorio **diario** (solo días lectivos) a cada responsable, con todas sus incidencias abiertas que han pasado el plazo máximo. |
+
+Cada persona puede dejar de recibir cada tipo de aviso en sus ajustes, y el centro o la plataforma
+pueden fijarlo para todos (ver
+[Avisos que se reciben](07-administrar-la-plataforma.md#avisos-que-se-reciben)). Quien prefiere el
+**resumen diario** recibe estos avisos, y el recordatorio de las vencidas, como líneas de ese correo.
+
+También se ven sin salir de la aplicación:
+
+- La **campana** avisa a los responsables de las incidencias **por atender** (nuevas, sin
+  gestionar) y **vencidas**, y a quien las registró, de las **novedades de la última semana**.
+
+  ![La campana con las incidencias vencidas y por atender](img/incidencias/incidencias-campana.png)
+
+- El **panel de inicio** ofrece **Nueva incidencia** y, con el número, las incidencias abiertas o
+  vencidas.
+
+  ![Accesos del panel de inicio con las incidencias](img/incidencias/incidencias-panel.png)
+
+- El **buscador global** encuentra las incidencias propias o gestionadas por número, texto, tipo o
+  dependencia.
+
+  ![El buscador global con una incidencia](img/incidencias/incidencias-buscador.png)
 
 ## Tareas de sanción
 

@@ -11,7 +11,8 @@ automáticos por correo.
 La sección **Centro educativo** del menú lateral es el panel de configuración del centro,
 reservado a los administradores. Sus tarjetas dan acceso a los cursos académicos, los docentes,
 la oferta formativa, los estudiantes, los tramos horarios, los días no lectivos, los catálogos del
-centro, los perfiles especiales, los ajustes y el registro de avisos por correo.
+centro, las incidencias (tipos y prioridades), los perfiles especiales, los ajustes y el registro de
+avisos por correo.
 
 Las tarjetas de **Docentes** y **Estudiantes** —altas e importaciones desde Séneca— se explican
 paso a paso en [Preparar el curso académico](02-preparar-el-curso-academico.md); el resto, a
@@ -327,6 +328,52 @@ sus reglas, los **responsables** (cada uno con su usuario IdEA y su nombre) y su
 responsables se buscan por usuario entre los docentes del curso activo del centro de destino y los que no estén
 allí se omiten (los ficheros exportados antes de la 1.18, con solo el usuario, se siguen leyendo). Si se marca **vaciar el catálogo existente**, se conservan las categorías y los
 recursos que ya tienen reservas.
+
+### Incidencias {#incidencias-del-centro}
+
+**Centro educativo › Incidencias** configura cómo se registran y se atienden las
+[incidencias](03-el-trabajo-diario.md#incidencias) del centro: los **tipos**, con sus responsables, y las
+**prioridades**. Además de desde el panel del centro, se llega con el botón **Tipos y prioridades** del
+listado de incidencias. Esta tarjeta solo aparece si el módulo de **Incidencias** está activado.
+
+![Configuración de las incidencias: prioridades y tipos](img/incidencias/incidencias-ajustes.png)
+
+**Prioridades.** Una lista ordenada **de la más a la menos importante** (se reordena con las
+flechas). El centro empieza con *Crítica*, *Alta*, *Media* y *Baja*, con un degradado de rojo a verde.
+Cada una tiene un **nombre**, un **color** y dos plazos en **días lectivos** contados desde que se
+asigna la prioridad: el **recomendado** y el **máximo**. Con **0** esa prioridad no tiene plazo
+(por defecto, el recomendado es 0, y el máximo, 1 día para *Crítica*, 7 para *Alta* y 0 para las
+demás). Cambiar los plazos no mueve las fechas de las incidencias que ya tienen la prioridad. Una
+prioridad que alguna incidencia usa no se puede eliminar. Sin prioridades, los responsables no pueden
+poner las incidencias en proceso.
+
+**Tipos.** Una lista **jerárquica** (por ejemplo, *Mantenimiento › Electricidad*, *Informática › Red y
+wifi*). Cada tipo tiene:
+
+- **Nombre** y **Cuelga de**: el tipo del que depende en la lista (o el nivel superior).
+- **Responsables**: uno o varios docentes del curso, elegidos en un buscador. Reciben el aviso de las
+  incidencias de ese tipo y de **todos los que cuelgan de él**, y las gestionan. Los **responsables de
+  un tipo son los suyos más los de todos sus ascendentes**: quien gestiona *Mantenimiento* gestiona
+  también *Electricidad*. Si en una rama no hay ningún responsable, el aviso va a la dirección del
+  centro.
+- **Estado**: un tipo **inactivo** no se ofrece al registrar incidencias nuevas, pero las que ya lo
+  usan se conservan. Un tipo con incidencias, o con otros tipos debajo, no se puede eliminar:
+  márcalo como inactivo.
+
+![Edición de un tipo de incidencia con su posición en la lista y sus responsables](img/incidencias/incidencias-tipo.png)
+
+**Exportar e importar.** Los botones **Exportar** e **Importar** de la cabecera copian los tipos y las
+prioridades entre centros o cursos en un fichero JSON, con los responsables incluidos (cada uno con su
+**usuario IdEA** y su nombre). Al importar se abre una **vista previa** en la que se elige qué tipos y
+qué prioridades traer, si se importan los responsables y si lo que ya existe se **ignora** o se
+**sustituye**; cada elemento indica si es *Nuevo* o *Ya existe* (los tipos se emparejan por su ruta y
+las prioridades por su nombre). Los responsables se buscan entre los docentes del curso activo y los
+que no estén se omiten, con un aviso. Nunca se borra nada.
+
+![Vista previa de la importación con los tipos y las prioridades del fichero](img/incidencias/incidencias-importar.png)
+
+Los avisos por correo de las incidencias (a quién llegan y cómo se desactivan) se explican en
+[Avisos de incidencias](03-el-trabajo-diario.md#avisos-de-incidencias).
 
 ### Copiar catálogos entre centros {#copiar-catalogos-entre-centros}
 

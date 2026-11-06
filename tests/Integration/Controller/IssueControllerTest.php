@@ -115,6 +115,11 @@ class IssueControllerTest extends ControllerTestCase
         $this->client->request('GET', "/incidencias/$id/adjuntos/" . $byName['foto.png']->getId()->toRfc4122() . '?miniatura=1');
         self::assertResponseIsSuccessful();
         self::assertSame('image/jpeg', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertNotSame('', $this->client->getResponse()->getContent(), 'la miniatura no puede llegar vacía');
+
+        // Y el original, leído después del flujo de la miniatura.
+        $this->client->request('GET', "/incidencias/$id/adjuntos/" . $byName['foto.png']->getId()->toRfc4122() . '?ver=1');
+        self::assertStringStartsWith("\x89PNG", (string) $this->client->getResponse()->getContent());
     }
 
     public function testAFileThatIsNotAnAllowedTypeIsRejectedBeforeSavingAnything(): void
@@ -135,6 +140,18 @@ class IssueControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('Tipo de fichero no permitido', $crawler->html());
         self::assertSame(0, $this->em->getRepository(Issue::class)->count([]));
+    }
+
+    public function testOnlyManagementIsOfferedTheTypesAndPrioritiesSettingsFromTheList(): void
+    {
+        $w = $this->makeWorld();
+
+        foreach (['admin' => 1, 'rita' => 0, 'ana' => 0] as $who => $count) {
+            $this->loginAs($w[$who], $w['centre']);
+            $crawler = $this->client->request('GET', '/incidencias');
+            self::assertResponseIsSuccessful();
+            self::assertCount($count, $crawler->filter('a[href$="/incidencias"][href^="/centro/"]'), $who);
+        }
     }
 
     // ── visibilidad ───────────────────────────────────────────────────────────

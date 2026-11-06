@@ -159,8 +159,8 @@ al desplazarse) para encontrarlos sin recorrer la lista entera:
 - **Categorías.** La fila de pestañas muestra cada categoría con su número de ajustes; pulsar una
   lleva a su sección, y la que se está leyendo queda resaltada al desplazarse. Con una búsqueda
   activa, cada pestaña indica cuántos resultados tiene y las que no tienen ninguno se atenúan. Los
-  [avisos por correo que se reciben](#avisos-que-se-reciben) se reparten en cuatro categorías (partes,
-  sanciones, tareas y notas, y reservas) para no formar una lista interminable.
+  [avisos por correo que se reciben](#avisos-que-se-reciben) se reparten en cinco categorías (partes,
+  sanciones, tareas y notas, reservas e incidencias) para no formar una lista interminable.
 
   ![Categoría «Recibir avisos de reservas» seleccionada en la barra](img/ajustes/ajustes-categorias.png)
 
@@ -197,7 +197,7 @@ no borra el valor guardado; simplemente deja de forzarlo sobre los niveles infer
 La pantalla de ajustes agrupa cada uno en una de estas categorías, en este mismo orden:
 Mantenimiento, Secciones de la aplicación, Visualización, Correo electrónico, Modo tablón, Actividades,
 Reservas, Notificaciones a familias, Avisos por correo, Recibir avisos de partes, de sanciones, de tareas y notas
-y de reservas, Personalización de informes, Plantillas de informes,
+de reservas y de incidencias, Personalización de informes, Plantillas de informes,
 Ausencias, Tareas de sanción y Subida de ficheros.
 
 ### Visualización
@@ -330,10 +330,10 @@ centro; que cada persona **reciba o no** un aviso concreto se configura aparte, 
 sanción asignadas**, todos están desactivados o vacíos por defecto. El detalle de cada aviso está
 en [Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones).
 
-Los avisos de las [incidencias de las reservas](03-el-trabajo-diario.md#incidencias-de-las-reservas)
-funcionan como el resto: se envían a los responsables de la categoría del recurso (o a la dirección,
-si no tiene responsables) cuando un docente registra una incidencia, y al docente cuando se marca
-como recibida o solucionada, con el comentario de quien la gestiona.
+Los avisos de las [incidencias](03-el-trabajo-diario.md#avisos-de-incidencias) llegan a quien la
+registró y a sus responsables (o a la dirección, si el tipo no tiene), salvo a quien hace el cambio;
+no dependen de estos ajustes de «a quién» sino solo de los interruptores de
+[Avisos que se reciben](#avisos-que-se-reciben).
 
 El **prefijo del asunto** se antepone, seguido de un espacio, al asunto de todos los correos de
 esta tabla (partes, sanciones, tareas de sanción y notas diarias) — por ejemplo, con el prefijo
@@ -356,18 +356,19 @@ booleano anterior.
 
 Cada **tipo de aviso por correo** tiene un interruptor **Sí / No** (activado por defecto) que decide
 si el aviso llega a una persona, ya sea como correo o como línea del
-[resumen diario](06-administrar-el-centro.md#resumen-diario). Son 22 ajustes, uno por tipo, con los
+[resumen diario](06-administrar-el-centro.md#resumen-diario). Son 25 ajustes, uno por tipo, con los
 mismos nombres que en el registro de correos: parte registrado, notificado, modificado, eliminado,
 prescrito (a mano y automático), incorporado a una sanción y sancionable (comisión de convivencia);
 sanción notificada, prescrita (a mano y automática); tarea de sanción asignada y su recordatorio;
 nota que implica registro de parte; aviso de parte o sanción próximos a prescribir; reserva pendiente
-de validar, aprobada y rechazada; e incidencia de una reserva registrada, recibida y solucionada.
+de validar, aprobada y rechazada; e incidencias: nueva, cambio de estado, prioridad asignada, nueva
+observación, cambios en los datos y recordatorio de las vencidas.
 
 Se pueden fijar en **los tres niveles** (ámbito global, de centro y de docente), con la misma regla
 que el resto de ajustes:
 
 - El **docente** elige los suyos en **Mi perfil › Ajustes**, en las categorías **Recibir avisos de
-  partes**, **de sanciones**, **de tareas y notas** y **de reservas**.
+  partes**, **de sanciones**, **de tareas y notas**, **de reservas** y **de incidencias**.
 - El **centro** puede fijar un valor para todo su profesorado. Si lo **bloquea**, ningún docente
   puede cambiarlo.
 - La **plataforma** puede fijarlo para todos los centros y, igualmente, bloquearlo.
@@ -598,6 +599,7 @@ Mientras está activado:
 | Tareas de sanción | Global, centro | Activado / Desactivado | Activado |
 | Actividades de centro | Global, centro | Activado / Desactivado | Activado |
 | Reservas de recursos | Global, centro | Activado / Desactivado | Activado |
+| Incidencias | Global, centro | Activado / Desactivado | Activado |
 
 Permiten que un centro (o toda la plataforma) no use una parte de la aplicación. Todas vienen
 **activadas**, así que nada cambia hasta que alguien las desactiva. Siguen las reglas de cualquier
@@ -634,6 +636,10 @@ Qué incluye cada una:
   listado), sus avisos en la campana y en el panel de inicio, y el catálogo de
   [recursos compartidos](06-administrar-el-centro.md#recursos-compartidos) del centro. Los recursos y
   las reservas ya registrados se conservan.
+- **Incidencias**: la sección [Incidencias](03-el-trabajo-diario.md#incidencias) (listado, alta y
+  fichas), sus avisos en la campana y en el panel de inicio, su búsqueda global, la configuración de
+  [tipos y prioridades](06-administrar-el-centro.md#incidencias-del-centro) y el botón de registrar
+  incidencias de la ficha de una reserva. Las incidencias ya registradas se conservan.
 
 ## Copias de seguridad
 

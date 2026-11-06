@@ -6,10 +6,18 @@
 <div class="px-6 py-8 max-w-7xl mx-auto space-y-6">
     <div class="flex items-start justify-between gap-4 flex-wrap">
         <h1 class="text-2xl font-bold text-gray-900">{{ 'issue.title'|trans({}, 'admin') }}</h1>
-        <a href="{{ path('app_issues_new') }}"
-           class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs shrink-0">
-            {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}{{ 'issue.new.title'|trans({}, 'admin') }}
-        </a>
+        <div class="flex flex-wrap items-center gap-2">
+            {% if is_granted('educational_centre.section', centre) %}
+                <a href="{{ path('app_centre_issue_settings', {centreId: centre.id}) }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shrink-0">
+                    {{ ux_icon('heroicons:cog-6-tooth', {class: 'h-4 w-4'}) }}{{ 'issue.manage_settings'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
+            <a href="{{ path('app_issues_new') }}"
+               class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs shrink-0">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}{{ 'issue.new.title'|trans({}, 'admin') }}
+            </a>
+        </div>
     </div>
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
