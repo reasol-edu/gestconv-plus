@@ -43,7 +43,7 @@ class NotificationBellComponent extends AbstractController
     public const MAX_PER_SECTION = 4;
 
     /** Orden de las secciones, de más a menos urgente. */
-    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold', 'booking_validation', 'booking_resolved', 'issue_overdue', 'issue_attend', 'issue_news'];
+    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold', 'booking_validation', 'booking_resolved', 'issue_overdue', 'issue_assigned', 'issue_attend', 'issue_news'];
 
     /** @var array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|Issue|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>|null */
     private ?array $grouped = null;
@@ -160,6 +160,18 @@ class NotificationBellComponent extends AbstractController
                 foreach ($this->managedIssues($centre, $user, $management, $managedIds, IssueStatus::openValues(), true, $now) as $issue) {
                     $sections['issue_overdue'][] = ['type' => 'issue_overdue', 'entity' => $issue, 'date' => $issue->getMaxDue() ?? $issue->getCreatedAt(), 'daysLeft' => null];
                 }
+            }
+
+            // Las que tiene asignadas y siguen abiertas.
+            /** @var list<Issue> $assigned */
+            $assigned = $this->issues->createListQuery($centre, $user, false, [], new IssueListFilter(
+                statuses: IssueStatus::openValues(),
+                scope: IssueListFilter::SCOPE_ASSIGNED,
+                sort: 'created',
+                sortDir: 'asc',
+            ))->getResult();
+            foreach ($assigned as $issue) {
+                $sections['issue_assigned'][] = ['type' => 'issue_assigned', 'entity' => $issue, 'date' => $issue->getCreatedAt(), 'daysLeft' => null];
             }
 
             // Lo que otras personas han hecho en las suyas en la última semana (puesta en proceso o cierre).

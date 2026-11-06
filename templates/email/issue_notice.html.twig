@@ -9,7 +9,7 @@
 </p>
 {% if transPrefix == 'emails.issue_observation' and detail %}
 <p style="margin: 0 0 24px; padding: 10px 16px; background-color: #f9fafb; border-left: 3px solid #677dae; color: #374151; font-size: 13px; white-space: pre-line;">{{ detail }}</p>
-{% elseif transPrefix == 'emails.issue_created' %}
+{% elseif transPrefix in ['emails.issue_created', 'emails.issue_assigned'] %}
 <p style="margin: 0 0 8px; color: #374151; font-size: 13px;"><strong>{{ 'emails.issue.description'|trans({}, 'emails') }}</strong></p>
 <div style="margin: 0 0 24px; padding: 10px 16px; background-color: #f9fafb; border-left: 3px solid #d97706; color: #374151; font-size: 13px;">{{ issue.description|sanitize_html('app.rich_text') }}</div>
 {% endif %}

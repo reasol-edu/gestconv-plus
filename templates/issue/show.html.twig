@@ -28,7 +28,7 @@
     </div>
 
     {# ── Fila superior: los datos y, para quien la gestiona, el panel de gestión ───────────────────── #}
-    <div class="grid grid-cols-1 items-start gap-6 {{ canManage ? 'lg:grid-cols-2' : '' }}">
+    <div class="grid grid-cols-1 items-start gap-6 {{ canAct ? 'lg:grid-cols-2' : '' }}">
         <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5" aria-labelledby="issue-data-title">
             <h2 id="issue-data-title" class="sr-only">{{ 'issue.data'|trans({}, 'admin') }}</h2>
             <dl class="space-y-3 text-sm">
@@ -40,6 +40,12 @@
                     <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.created_at'|trans({}, 'admin') }}</dt>
                     <dd class="mt-0.5 text-gray-900">{{ issue.createdAt|date('format.datetime'|trans) }}</dd>
                 </div>
+                {% if issue.assignee %}
+                    <div>
+                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.assignee'|trans({}, 'admin') }}</dt>
+                        <dd class="mt-0.5 text-gray-900">{{ issue.assignee.name.full() }}</dd>
+                    </div>
+                {% endif %}
                 {% if issue.booking %}
                     <div>
                         <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.booking'|trans({}, 'admin') }}</dt>
@@ -82,7 +88,7 @@
             </dl>
         </section>
 
-        {% if canManage %}
+        {% if canAct %}
             <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5" aria-labelledby="issue-manage-title">
                 <h2 id="issue-manage-title" class="text-sm font-semibold text-gray-900 mb-3">{{ 'issue.manage.title'|trans({}, 'admin') }}</h2>
                 <form method="post" action="{{ path('app_issues_manage', {id: id}) }}" class="space-y-3">
@@ -112,6 +118,25 @@
                     <div>
                         <label for="manage-duplicate" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.duplicate_of'|trans({}, 'admin') }}</label>
                         {% include 'issue/_duplicate_select.html.twig' with {id: 'manage-duplicate', candidates: candidates, current: issue.duplicateOf} only %}
+                    </div>
+                    {% if canManage %}
+                    <div>
+                        <label for="manage-assignee" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.assignee'|trans({}, 'admin') }}</label>
+                        <select id="manage-assignee" name="assignee" class="w-full text-sm ts-local"
+                                data-placeholder="{{ 'issue.field.assignee_placeholder'|trans({}, 'admin')|e('html_attr') }}"
+                                data-no-results="{{ 'tom_select.no_results'|trans({}, 'admin')|e('html_attr') }}">
+                            <option value="">{{ 'issue.field.assignee_none'|trans({}, 'admin') }}</option>
+                            {% set known = [] %}
+                            {% for person in assignees %}{% set known = known|merge([person.id.toRfc4122]) %}{% endfor %}
+                            {# Quien la tiene asignada se conserva aunque ya no figure entre las personas elegibles. #}
+                            {% if issue.assignee and issue.assignee.id.toRfc4122 not in known %}
+                                <option value="{{ issue.assignee.id.toRfc4122 }}" selected>{{ issue.assignee.name.full() }}</option>
+                            {% endif %}
+                            {% for person in assignees %}
+                                <option value="{{ person.id.toRfc4122 }}" {{ issue.assignee and issue.assignee.id.equals(person.id) ? 'selected' : '' }}>{{ person.name.full() }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">{{ 'issue.field.assignee_help'|trans({}, 'admin') }}</p>
                     </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
@@ -145,6 +170,7 @@
                             </div>
                         {% endif %}
                     </div>
+                    {% endif %}
                     <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
                         {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}{{ 'issue.manage.save'|trans({}, 'admin') }}
                     </button>
@@ -272,7 +298,7 @@
                         <label for="observation-content" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'issue.observations.add'|trans({}, 'admin') }}</label>
                         <textarea id="observation-content" name="content" rows="3" required maxlength="5000" class="{{ inputClass }}"></textarea>
                     </div>
-                    {% if canManage %}
+                    {% if canAct %}
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
                                 <label for="observation-status" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'issue.observations.change_status'|trans({}, 'admin') }}</label>
@@ -342,9 +368,24 @@
 {% endblock %}
 
 {% block javascripts %}{{ parent() }}
-{% if canManage %}
+{% if canAct %}
 <script type="module">
 import TomSelect from 'tom-select';
+
+// Persona asignada: desplegable con buscador (sobre <body> para que no lo recorte la tarjeta).
+const assignee = document.getElementById('manage-assignee');
+if (assignee) {
+    new TomSelect(assignee, {
+        create:           false,
+        maxOptions:       null,
+        dropdownParent:   'body',
+        placeholder:      assignee.dataset.placeholder ?? '',
+        allowEmptyOption: true,
+        render: {
+            no_results: () => `<div class="no-results px-3 py-2 text-sm">${assignee.dataset.noResults ?? ''}</div>`,
+        },
+    });
+}
 
 // Original de una duplicada: desplegable con buscador por número, tipo o texto (sobre <body> para que no lo recorte la tarjeta).
 for (const el of document.querySelectorAll('select.ts-duplicate')) {

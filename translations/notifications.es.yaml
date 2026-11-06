@@ -13,10 +13,12 @@ bell:
         booking_validation: 'Reservas por validar'
         booking_resolved: 'Respuesta a tus reservas'
         issue_overdue: 'Incidencias vencidas'
+        issue_assigned: 'Incidencias asignadas a ti'
         issue_attend: 'Incidencias por atender'
         issue_news: 'Novedades en tus incidencias'
     item:
         issue_overdue: 'Incidencia #%number% (%type%) vencida'
+        issue_assigned: 'Tienes asignada la incidencia #%number% (%type%)'
         issue_attend: '%reporter% ha registrado la incidencia #%number% (%type%)'
         issue_news: 'Tu incidencia #%number% (%type%): %status%'
         booking_validation: '%teacher% solicita reservar «%resource%»'

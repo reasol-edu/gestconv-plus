@@ -23,6 +23,7 @@ use App\Repository\ResourceBookingRepository;
 use App\Security\Voter\IssueVoter;
 use App\Security\Voter\ResourceBookingVoter;
 use App\Service\AttachmentDownloadResponder;
+use App\Service\IssueAssignees;
 use App\Service\IssueAttachmentFactory;
 use App\Service\IssueManager;
 use App\Service\TenantContext;
@@ -52,6 +53,7 @@ class IssueController extends AbstractController
         private readonly LocationOptionRepository $locations,
         private readonly ResourceBookingRepository $bookings,
         private readonly IssueManager $manager,
+        private readonly IssueAssignees $assignees,
         private readonly IssueAttachmentFactory $attachmentFactory,
         private readonly AttachmentDownloadResponder $downloads,
     ) {}
@@ -148,18 +150,22 @@ class IssueController extends AbstractController
         $issue = $this->requireIssue($id, $centre);
         $this->denyAccessUnlessGranted(IssueVoter::VIEW, $issue);
 
+        // Quien gestiona lo cambia todo; la persona asignada, solo la prioridad y el estado.
         $canManage = $this->isGranted(IssueVoter::MANAGE, $issue);
+        $canAct    = $this->isGranted(IssueVoter::ACT, $issue);
 
         return $this->render('issue/show.html.twig', [
             'centre'     => $centre,
             'issue'      => $issue,
             'canManage'  => $canManage,
+            'canAct'     => $canAct,
             'canEdit'    => $this->isGranted(IssueVoter::EDIT, $issue),
             'canDelete'  => $this->isGranted(IssueVoter::DELETE, $issue),
-            'candidates' => $canManage ? $this->issues->findDuplicateCandidates($centre, $issue) : [],
-            'priorities' => $canManage ? $this->priorities->findByCentreOrdered($centre) : [],
+            'candidates' => $canAct ? $this->issues->findDuplicateCandidates($centre, $issue) : [],
+            'priorities' => $canAct ? $this->priorities->findByCentreOrdered($centre) : [],
             'types'      => $canManage ? $this->selectableTypes($centre, $issue->getType()) : [],
             'locations'  => $canManage ? $this->locations->findByCentreActive($centre, true) : [],
+            'assignees'  => $canManage ? $this->assignees->candidates($centre) : [],
             'today'      => $this->clockNow(),
         ]);
     }
@@ -184,9 +190,9 @@ class IssueController extends AbstractController
             return $this->redirectToRoute('app_issues_show', ['id' => $id]);
         }
 
-        // El cambio de estado solo lo puede pedir quien gestiona; si falla, la observación no se guarda.
+        // El cambio de estado solo lo puede pedir quien gestiona o tiene asignada la incidencia; si falla, la observación no se guarda.
         $status = IssueStatus::tryFrom($request->request->getString('status'));
-        if ($status !== null && $this->isGranted(IssueVoter::MANAGE, $issue)) {
+        if ($status !== null && $this->isGranted(IssueVoter::ACT, $issue)) {
             $error = $this->manager->transition($issue, $actor, $status, $this->duplicateFrom($request, $centre));
             if ($error !== null) {
                 $this->addFlash('error', $this->t($error));
@@ -220,22 +226,36 @@ class IssueController extends AbstractController
         return $this->redirectToRoute('app_issues_show', ['id' => $id]);
     }
 
-    /** Gestión por los responsables: tipo, dependencia, prioridad y estado. */
+    /**
+     * Gestión: los responsables y la dirección cambian el tipo, la dependencia, la persona asignada, la prioridad y el
+     * estado; la persona asignada, solo la prioridad y el estado.
+     */
     #[Route('/{id}/gestionar', name: 'app_issues_manage', requirements: ['id' => '[0-9a-fA-F-]{36}'], methods: ['POST'])]
     public function manage(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
     {
         $issue = $this->requireWritableIssue($id, $centre, $request, 'manage_issue_');
-        $this->denyAccessUnlessGranted(IssueVoter::MANAGE, $issue);
+        $this->denyAccessUnlessGranted(IssueVoter::ACT, $issue);
         $actor = $this->requireTeacher();
+        $full  = $this->isGranted(IssueVoter::MANAGE, $issue);
 
         $errors = [];
 
-        $type = $this->selectableType($centre, $request->request->getString('type'), $issue->getType());
+        $type = $full ? $this->selectableType($centre, $request->request->getString('type'), $issue->getType()) : null;
         if ($type !== null) {
             $this->manager->changeType($issue, $actor, $type);
         }
 
-        if ($issue->getBooking() === null) {
+        // Asignada a: vacío la deja sin asignar; solo se acepta a quien se le puede asignar (o a quien ya la tiene).
+        if ($full && $request->request->has('assignee')) {
+            $assigneeId = $request->request->getString('assignee');
+            $assignee   = $assigneeId !== '' ? $this->assignees->find($centre, $assigneeId) : null;
+            $keeps      = $assigneeId !== '' && $issue->getAssignee()?->getId()->toRfc4122() === strtolower($assigneeId);
+            if ($assigneeId === '' || $assignee !== null || $keeps) {
+                $this->manager->changeAssignee($issue, $actor, $assigneeId === '' ? null : ($assignee ?? $issue->getAssignee()));
+            }
+        }
+
+        if ($full && $issue->getBooking() === null) {
             $locationId = $request->request->getString('location');
             $location   = $locationId !== '' ? $this->locations->findById($locationId) : null;
             // Se puede dejar la actual (aunque sea de una categoría «solo para partes») o elegir una disponible para todos los sitios.

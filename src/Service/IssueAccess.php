@@ -54,10 +54,22 @@ final class IssueAccess implements ResetInterface
         return $issue->getReporter()->getId()->equals($teacher->getId());
     }
 
-    /** Quien la registró, sus responsables y la dirección. */
+    /** Es la persona a quien se ha asignado la incidencia. */
+    public function isAssignee(Teacher $teacher, Issue $issue): bool
+    {
+        return $issue->getAssignee()?->getId()->equals($teacher->getId()) === true;
+    }
+
+    /** Puede cambiar su prioridad y su estado: quien la gestiona y la persona asignada. */
+    public function canAct(Teacher $teacher, Issue $issue): bool
+    {
+        return $this->manages($teacher, $issue) || $this->isAssignee($teacher, $issue);
+    }
+
+    /** Quien la registró, la persona asignada, sus responsables y la dirección. */
     public function canView(Teacher $teacher, Issue $issue): bool
     {
-        return $this->isReporter($teacher, $issue) || $this->manages($teacher, $issue);
+        return $this->isReporter($teacher, $issue) || $this->isAssignee($teacher, $issue) || $this->manages($teacher, $issue);
     }
 
     /** Es dirección o responsable de algún tipo del centro (gestiona incidencias ajenas). */

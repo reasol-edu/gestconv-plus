@@ -39,6 +39,7 @@ class IssueManager
     public const FIELD_DESCRIPTION = 'description';
     public const FIELD_DUPLICATE   = 'duplicate_of';
     public const FIELD_ATTACHMENT  = 'attachment';
+    public const FIELD_ASSIGNEE    = 'assignee';
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -160,6 +161,24 @@ class IssueManager
 
         $this->activityLog->log('issue.updated', ['entityId' => $issue->getId()->toRfc4122(), 'number' => $issue->getNumber()]);
         $this->notifier->changed($issue, $actor, self::FIELD_TYPE, $oldPath, $type->getPath());
+
+        return true;
+    }
+
+    /** Asigna la incidencia a una persona (o quita la asignación). Devuelve si cambió. */
+    public function changeAssignee(Issue $issue, Teacher $actor, ?Teacher $assignee): bool
+    {
+        $previous = $issue->getAssignee();
+        if (($previous?->getId()->toRfc4122()) === ($assignee?->getId()->toRfc4122())) {
+            return false;
+        }
+
+        $this->record($issue, $actor, self::FIELD_ASSIGNEE, $previous?->getName()->full(), $assignee?->getName()->full());
+        $issue->setAssignee($assignee)->touch($this->clock->now());
+        $this->em->flush();
+
+        $this->activityLog->log('issue.updated', ['entityId' => $issue->getId()->toRfc4122(), 'number' => $issue->getNumber()]);
+        $this->notifier->assigned($issue, $actor, $previous);
 
         return true;
     }

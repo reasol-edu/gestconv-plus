@@ -12,6 +12,7 @@ final readonly class IssueListFilter
     public const SCOPE_ALL     = '';
     public const SCOPE_MINE    = 'mine';
     public const SCOPE_MANAGED = 'managed';
+    public const SCOPE_ASSIGNED = 'assigned';
 
     /** Valor de la prioridad para «sin prioridad». */
     public const NO_PRIORITY = 'none';

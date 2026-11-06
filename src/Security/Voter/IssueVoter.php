@@ -24,6 +24,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  *    responsables de su tipo (propios y heredados) y la dirección.
  *  - EDIT (sujeto Issue): cambiar la descripción: quien la registró, mientras esté abierta, y quien la gestiona.
  *  - MANAGE (sujeto Issue): gestionarla (tipo, dependencia, prioridad, estado, reabrirla): responsables y dirección.
+ *  - ACT (sujeto Issue): cambiar su prioridad y su estado: quien la gestiona y la persona a quien está asignada, que además
+ *    puede observar. Asignarla, y cambiar el tipo o la dependencia, sigue siendo de MANAGE.
  *  - DELETE (sujeto Issue): eliminarla, con sus observaciones, adjuntos e historial: solo la dirección (administradores del
  *    centro y de la plataforma), no los responsables de un tipo.
  *
@@ -38,6 +40,7 @@ final class IssueVoter extends Voter
     public const EDIT   = 'issue.edit';
     public const MANAGE = 'issue.manage';
     public const DELETE = 'issue.delete';
+    public const ACT    = 'issue.act';
 
     public function __construct(
         private readonly IssueAccess $access,
@@ -50,7 +53,7 @@ final class IssueVoter extends Voter
     {
         return match ($attribute) {
             self::CREATE                       => $subject instanceof EducationalCentre,
-            self::VIEW, self::EDIT, self::MANAGE, self::DELETE => $subject instanceof Issue,
+            self::VIEW, self::EDIT, self::MANAGE, self::DELETE, self::ACT => $subject instanceof Issue,
             default                            => false,
         };
     }
@@ -81,6 +84,7 @@ final class IssueVoter extends Voter
 
         return match ($attribute) {
             self::MANAGE => $this->access->manages($user, $subject),
+            self::ACT    => $this->access->canAct($user, $subject),
             self::DELETE => $this->access->isManagement($user, $subject->getEducationalCentre()),
             self::EDIT   => $this->access->manages($user, $subject) || ($this->access->isReporter($user, $subject) && $subject->isOpen()),
             default      => $this->access->canView($user, $subject),

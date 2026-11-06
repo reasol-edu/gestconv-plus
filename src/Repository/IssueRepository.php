@@ -120,6 +120,8 @@ class IssueRepository extends ServiceEntityRepository
             $qb->andWhere('i.reporter = :viewer')->setParameter('viewer', $viewer->getId(), 'uuid');
         } elseif ($filter->scope === IssueListFilter::SCOPE_MANAGED) {
             $qb->andWhere('i.reporter != :viewer')->setParameter('viewer', $viewer->getId(), 'uuid');
+        } elseif ($filter->scope === IssueListFilter::SCOPE_ASSIGNED) {
+            $qb->andWhere('i.assignee = :viewer')->setParameter('viewer', $viewer->getId(), 'uuid');
         }
         if ($filter->overdueOnly && $filter->today !== null) {
             $qb->andWhere('i.status IN (:openStatuses)')->andWhere('i.maxDue < :today')
@@ -314,10 +316,11 @@ class IssueRepository extends ServiceEntityRepository
             return;
         }
 
+        // Las que registró, las que tiene asignadas y las de los tipos que gestiona.
         if ($managedTypeIds === []) {
-            $qb->andWhere('i.reporter = :me');
+            $qb->andWhere('i.reporter = :me OR i.assignee = :me');
         } else {
-            $qb->andWhere('i.reporter = :me OR ' . $this->inUuids($qb, 'IDENTITY(i.type)', 'managed', $managedTypeIds));
+            $qb->andWhere('i.reporter = :me OR i.assignee = :me OR ' . $this->inUuids($qb, 'IDENTITY(i.type)', 'managed', $managedTypeIds));
         }
         $qb->setParameter('me', $viewer->getId(), 'uuid');
     }

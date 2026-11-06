@@ -73,13 +73,14 @@
             {% endfor %}
         </select>
 
-        {% if isManager %}
-            <select data-model="norender|scope" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }}" aria-label="{{ 'issue.list.filter.scope'|trans({}, 'admin') }}">
-                <option value="">{{ 'issue.list.filter.scope_all'|trans({}, 'admin') }}</option>
-                <option value="mine" {{ scope == 'mine' ? 'selected' : '' }}>{{ 'issue.list.filter.scope_mine'|trans({}, 'admin') }}</option>
+        <select data-model="norender|scope" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }}" aria-label="{{ 'issue.list.filter.scope'|trans({}, 'admin') }}">
+            <option value="">{{ 'issue.list.filter.scope_all'|trans({}, 'admin') }}</option>
+            <option value="mine" {{ scope == 'mine' ? 'selected' : '' }}>{{ 'issue.list.filter.scope_mine'|trans({}, 'admin') }}</option>
+            <option value="assigned" {{ scope == 'assigned' ? 'selected' : '' }}>{{ 'issue.list.filter.scope_assigned'|trans({}, 'admin') }}</option>
+            {% if isManager %}
                 <option value="managed" {{ scope == 'managed' ? 'selected' : '' }}>{{ 'issue.list.filter.scope_managed'|trans({}, 'admin') }}</option>
-            </select>
-        {% endif %}
+            {% endif %}
+        </select>
 
         <label class="inline-flex shrink-0 items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" data-model="overdueOnly" {{ overdueOnly ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
@@ -187,6 +188,7 @@
                                     {{ issue.location.name }} ·
                                 {% endif %}
                                 {{ issue.reporter.name.full() }}
+                                {% if issue.assignee %}<span class="text-forest-700">· {{ 'issue.list.assigned_to'|trans({'%name%': issue.assignee.name.full()}, 'admin') }}</span>{% endif %}
                             </p>
                         </td>
                         <td data-label="{{ 'issue.list.col.priority'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">{% include 'issue/_priority_badge.html.twig' with {priority: issue.priority} only %}</td>

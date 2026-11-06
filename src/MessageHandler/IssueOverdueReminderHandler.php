@@ -50,9 +50,16 @@ final class IssueOverdueReminderHandler
             /** @var array<string, non-empty-list<Issue>> $byTeacher */
             $byTeacher = [];
             foreach ($this->issues->findOverdue($centre, $today) as $issue) {
-                foreach ($this->access->responsibles($issue) as $responsible) {
-                    $id             = $responsible->getId()->toRfc4122();
-                    $teachers[$id]  = $responsible;
+                // Sus responsables y la persona a quien está asignada.
+                /** @var array<string, Teacher> $people */
+                $people = [];
+                foreach ([...$this->access->responsibles($issue), $issue->getAssignee()] as $person) {
+                    if ($person !== null) {
+                        $people[$person->getId()->toRfc4122()] = $person;
+                    }
+                }
+                foreach ($people as $id => $person) {
+                    $teachers[$id]    = $person;
                     $byTeacher[$id][] = $issue;
                 }
             }

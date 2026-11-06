@@ -58,6 +58,11 @@ class Issue
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Teacher $reporter;
 
+    /** Persona a quien se ha asignado (opcional): puede observar y cambiar la prioridad y el estado. */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Teacher $assignee = null;
+
     /** Lo ocurrido, en texto enriquecido (HTML que se sanea al mostrarlo). */
     #[ORM\Column(type: Types::TEXT)]
     private string $description = '';
@@ -200,6 +205,18 @@ class Issue
     public function setReporter(Teacher $reporter): static
     {
         $this->reporter = $reporter;
+
+        return $this;
+    }
+
+    public function getAssignee(): ?Teacher
+    {
+        return $this->assignee;
+    }
+
+    public function setAssignee(?Teacher $assignee): static
+    {
+        $this->assignee = $assignee;
 
         return $this;
     }

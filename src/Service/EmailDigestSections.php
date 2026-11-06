@@ -32,6 +32,7 @@ final class EmailDigestSections
         'booking_approved'              => 'bookings',
         'booking_rejected'              => 'bookings',
         'issue_created'                 => 'issues',
+        'issue_assigned'                => 'issues',
         'issue_status'                  => 'issues',
         'issue_priority'                => 'issues',
         'issue_observation'             => 'issues',

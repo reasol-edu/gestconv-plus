@@ -313,7 +313,7 @@ class IssueListComponent extends AbstractController
             statuses: $statuses,
             typeIds: $this->typeIdsWithDescendants(),
             priority: $this->priorityId,
-            scope: in_array($scope, [IssueListFilter::SCOPE_MINE, IssueListFilter::SCOPE_MANAGED], true) ? $scope : '',
+            scope: in_array($scope, [IssueListFilter::SCOPE_MINE, IssueListFilter::SCOPE_MANAGED, IssueListFilter::SCOPE_ASSIGNED], true) ? $scope : '',
             overdueOnly: $this->overdueOnly,
             sort: in_array($this->sort, IssueListFilter::SORTS, true) ? $this->sort : 'created',
             sortDir: $this->sortDir === 'asc' ? 'asc' : 'desc',

@@ -67,19 +67,42 @@ class IssueNotifier
     }
 
     /**
-     * Quien la registró (si `$includeReporter`) y sus responsables, sin repetir y sin quien hace el cambio.
+     * Se ha asignado (o reasignado, o desasignado) la incidencia. A la nueva persona asignada le llega el aviso de asignación;
+     * a las demás (quien la registró, sus responsables y la persona asignada hasta entonces), el de cambio de datos.
+     */
+    public function assigned(Issue $issue, Teacher $actor, ?Teacher $previous): void
+    {
+        $assignee = $issue->getAssignee();
+        $label    = $this->translator->trans('issue.history.field.assignee', [], 'admin');
+        $detail   = sprintf('%s: %s → %s', $label, $previous?->getName()->full() ?? '—', $assignee?->getName()->full() ?? '—');
+
+        if ($assignee !== null && !$assignee->getId()->equals($actor->getId())) {
+            $this->emails->issueNotice($assignee, $issue, 'issue_assigned', $actor);
+        }
+        foreach ($this->recipients($issue, $actor, true, $previous) as $recipient) {
+            if ($assignee === null || !$recipient->getId()->equals($assignee->getId())) {
+                $this->emails->issueNotice($recipient, $issue, 'issue_changed', $actor, $detail);
+            }
+        }
+    }
+
+    /**
+     * Quien la registró (si `$includeReporter`), la persona asignada, sus responsables y, si se indica, otra persona más
+     * (la asignada hasta entonces), sin repetir y sin quien hace el cambio.
      *
      * @return list<Teacher>
      */
-    private function recipients(Issue $issue, Teacher $actor, bool $includeReporter = true): array
+    private function recipients(Issue $issue, Teacher $actor, bool $includeReporter = true, ?Teacher $also = null): array
     {
         /** @var array<string, Teacher> $recipients */
         $recipients = [];
         if ($includeReporter) {
             $recipients[$issue->getReporter()->getId()->toRfc4122()] = $issue->getReporter();
         }
-        foreach ($this->access->responsibles($issue) as $responsible) {
-            $recipients[$responsible->getId()->toRfc4122()] = $responsible;
+        foreach ([$issue->getAssignee(), $also, ...$this->access->responsibles($issue)] as $person) {
+            if ($person !== null) {
+                $recipients[$person->getId()->toRfc4122()] = $person;
+            }
         }
         unset($recipients[$actor->getId()->toRfc4122()]);
 
