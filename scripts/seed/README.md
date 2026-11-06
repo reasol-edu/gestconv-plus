@@ -11,7 +11,7 @@ Material **temporal** para regenerar las capturas del manual, de las fichas y de
   `getRepository()`/`find()` fuera de los repositorios) y no debe commitearse.
 - `TmpSeedExitsCommand.php` — comando `tmp:seed-exits`: salidas del aula (propias, ajenas con más de 10, 20
   y 30 minutos fuera, y ya terminadas) y un pase prioritario, fechadas respecto a `SHOTS_NOW` (por defecto, el
-  mismo lunes 2026-10-05 09:30 UTC). Se ejecuta **después** de `tmp:seed-shots` y se copia a `src/Command/` igual
+  mismo lunes 2026-10-05 09:30, hora de la aplicación: `APP_TIMEZONE`, Europe/Madrid por defecto). Se ejecuta **después** de `tmp:seed-shots` y se copia a `src/Command/` igual
   que aquel. Lo usan `capture-exits-manual-shots.mjs` (manual) y `capture-exits-shots.mjs` (fichas móviles).
 - `TmpSeedIssuesCommand.php` — comando `tmp:seed-issues`: el árbol de tipos de incidencia (con responsables: Beatriz para
   Mantenimiento y Rafael para Informática, que son del curso activo) y ocho incidencias en todos los estados, con

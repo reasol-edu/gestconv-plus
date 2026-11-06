@@ -11,6 +11,10 @@ parameters:
     app.name:                   "GestConv+"
     app.version:                "1.20.0"
     app.pub_date:               "2026-11-06"
+    # Zona horaria de la aplicación (la que ven las personas y la de «hoy», los tramos y los avisos). Las fechas con hora
+    # siguen guardándose en UTC; ver App\Doctrine\Type\UtcDateTimeImmutableType. Se cambia con APP_TIMEZONE.
+    env(APP_TIMEZONE):          "Europe/Madrid"
+    app.timezone:               "%env(APP_TIMEZONE)%"
     # Tiempo mínimo (en microsegundos) que tarda la rama POST de la solicitud
     # de restablecimiento de contraseña. Iguala las dos ramas (usuario existe /
     # no existe) para que el envío síncrono del correo no permita enumerar

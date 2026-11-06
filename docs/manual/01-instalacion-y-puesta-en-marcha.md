@@ -255,6 +255,7 @@ de lanzar el script (tanto en Linux/macOS como en Windows); en Docker se definen
 | `MAILER_FROM` | Dirección remitente de los emails automáticos | `no-responder@example.com` |
 | `MESSENGER_TRANSPORT_DSN` | Cola de envío asíncrono de correos | `doctrine://default?auto_setup=0` |
 | `LOAD_FIXTURES` | Cargar datos de demostración al arrancar (⚠️ borra datos existentes) | `false` |
+| `APP_TIMEZONE` | Zona horaria de la aplicación: la hora que ve cada persona y la de «hoy», los tramos y los avisos. PHP ignora la zona del servidor, así que se indica aquí. Las fechas con hora se guardan siempre en UTC | `Europe/Madrid` (Canarias: `Atlantic/Canary`) |
 | `APP_LOG` | Activar el [registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad) | `true` (`false` en el binario nativo) |
 | `SYMFONY_TRUSTED_PROXIES` | IPs del proxy inverso desde el que recibe peticiones la aplicación (p. ej. nginx, Caddy). Necesario para que el registro muestre la IP real del usuario. Déjalo sin definir si no usas proxy | *(sin definir)* |
 
