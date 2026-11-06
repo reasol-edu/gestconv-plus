@@ -1,4 +1,4 @@
-# Calendario y tablón
+# Calendario, actividades y tablón
 
 La sección **Calendario** reúne, en una sola vista mensual, todo lo que le interesa al
 profesorado día a día: las **sanciones** en vigor, las **ausencias** del profesorado (solo
@@ -15,11 +15,11 @@ quien la consulta:
 - **Sanciones**: todas las del curso activo ya comunicadas a la familia y con fecha, sin filtrar
   por autoría ni tutoría — cualquier docente del centro las ve todas. Las pendientes de comunicar
   no aparecen hasta que se registra la comunicación (ver
-  [Notificaciones](03-el-trabajo-diario.md#notificaciones)). Cada una se colorea según el grupo del
+  [Notificaciones](04-convivencia-profesorado.md#notificaciones)). Cada una se colorea según el grupo del
   estudiante y muestra el icono ⚠, el nombre del estudiante, su grupo y la
   **descripción para calendario y tablón** (o el detalle completo si ese campo está en blanco).
 - **Ausencias del profesorado** (solo administradores de centro, ver
-  [Ausencias](03-el-trabajo-diario.md#ausencias)): se colorean en ámbar con el icono de un docente
+  [Ausencias](08-ausencias-y-guardias.md#ausencias)): se colorean en ámbar con el icono de un docente
   y muestran únicamente el nombre de quien está ausente, sin grupo ni descripción. El resto del
   profesorado no las ve en su calendario. Las ausencias marcadas con **docente sustituto/a** no
   aparecen (ni en el calendario, ni en la vista de día, las guardias o el tablón).
@@ -28,7 +28,7 @@ quien la consulta:
   la hora seguida del nombre de la actividad.
 
 Los colores de los grupos se calculan automáticamente, pero la dirección puede personalizarlos
-desde la [oferta formativa](06-administrar-el-centro.md#color-de-un-grupo). Dondequiera que se
+desde la [oferta formativa](12-administrar-el-centro.md#color-de-un-grupo). Dondequiera que se
 nombra un grupo —calendario, panel de inicio, guardias, tablón y listados— se hace con una
 etiqueta de ese color.
 
@@ -71,7 +71,7 @@ disponible desde la vista de detalle de un día, con la fecha ya rellenada).
 
 Las **Actividades** se pueden desactivar de golpe, para toda la plataforma o para un centro, con el
 ajuste **Actividades de centro** (categoría **Secciones de la aplicación**, ver
-[Sistema de ajustes](07-administrar-la-plataforma.md#sistema-de-ajustes)): desaparecen la pestaña,
+[Sistema de ajustes](13-administrar-la-plataforma.md#sistema-de-ajustes)): desaparecen la pestaña,
 los avisos del panel de inicio, de las guardias y del tablón, el catálogo de tipos y el perfil de
 coordinación, y sus direcciones dejan de funcionar. Los datos ya registrados se conservan.
 
@@ -79,7 +79,7 @@ coordinación, y sus direcciones dejan de funcionar. Los datos ya registrados se
 
 Lo decide el ajuste **Quién puede publicar actividades** (categoría **Actividades**, en los ajustes
 globales y en los de cada centro) junto con el perfil **Coordinación de actividades** del centro
-(ver [Perfiles](06-administrar-el-centro.md#perfiles)):
+(ver [Perfiles](12-administrar-el-centro.md#perfiles)):
 
 - **Equipo directivo** (valor por defecto): solo los administradores del centro y de la
   plataforma publican actividades.
@@ -101,11 +101,11 @@ Cada actividad tiene:
 - **Fecha**, **hora de inicio** y **hora de fin** (obligatorias).
 - **Nombre** (obligatorio) y **descripción** (opcional).
 - **Tipo de actividad** (obligatorio), elegido del catálogo del centro (ver
-  [Tipos de actividad](06-administrar-el-centro.md#tipos-de-actividad)). Por defecto:
+  [Tipos de actividad](#tipos-de-actividad)). Por defecto:
   *Complementaria*, *Extraescolar* y *Otros*.
 - **Enlace** opcional (por ejemplo, a un formulario de inscripción o más información).
 - **Lugar de realización**: opcional. Es un desplegable que sugiere las
-  [ubicaciones del centro](06-administrar-el-centro.md#ubicaciones), pero el valor es **texto libre**:
+  [ubicaciones del centro](12-administrar-el-centro.md#ubicaciones), pero el valor es **texto libre**:
   se puede escribir cualquier lugar («Teatro Lope de Vega», «Parque de las Ciencias»…) y se guarda tal
   cual, sin enlazarlo con el catálogo.
 - **Departamento organizador** y **coordinador/a de la actividad** (un docente del curso, elegido en un
@@ -168,7 +168,7 @@ solo recoge sus datos y los grupos.
 ![Primera página del informe: datos de la actividad, recuento por grupo y listado de los estudiantes de 1º ESO A (1º ESO B solo con el recuento)](img/calendario/actividad-informe.png)
 
 El aspecto del informe (encabezado, pie, margen superior y plantilla de fondo) se configura en los
-[ajustes del centro](07-administrar-la-plataforma.md#personalizacion-de-informes), igual que el de los
+[ajustes del centro](13-administrar-la-plataforma.md#personalizacion-de-informes), igual que el de los
 demás informes.
 
 ## Modo tablón
@@ -240,7 +240,7 @@ encendido/apagado, cierra la sesión.
 ## Ajustes del modo tablón
 
 Los administradores pueden afinar el comportamiento del tablón desde **Ajustes** (ver
-[Sistema de ajustes](07-administrar-la-plataforma.md#sistema-de-ajustes)):
+[Sistema de ajustes](13-administrar-la-plataforma.md#sistema-de-ajustes)):
 
 | Ajuste | Rango | Por defecto |
 |---|---|---|
@@ -260,3 +260,20 @@ que se produzcan con la pantalla ya abierta, sin recargarla.
 
 Los cuatro ajustes se fijan a nivel global o de centro; no existen como preferencia individual de
 docente.
+
+## Tipos de actividad {#tipos-de-actividad}
+
+En **Centro educativo › Tipos de actividad** se configura la lista —plana— de tipos entre los que
+se elige al publicar una [actividad de centro](#actividades-de-centro). Los
+3 tipos por defecto son **Complementaria**, **Extraescolar** y **Otros**; los centros que ya
+existían los reciben automáticamente al actualizar, y las actividades que ya estaban registradas
+pasan a ser *Complementaria*.
+
+![Administración de los tipos de actividad](img/centro/centro-tipos-actividad.png)
+
+Cada tipo tiene además un **color** opcional (gris si no se le da ninguno) con el que se pinta su
+distintivo en la vista de día, las guardias, el panel de inicio, los listados y el tablón. Un tipo
+que ya tiene actividades no se puede eliminar (aparece un aviso); desactívalo en su lugar, y dejará
+de ofrecerse en las actividades nuevas sin afectar a las existentes. Esta tarjeta solo aparece si las
+Actividades están activadas.
+

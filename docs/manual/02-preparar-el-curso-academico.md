@@ -15,12 +15,12 @@ Desde **Centro educativo › Cursos académicos**, crea el curso nuevo (por ejem
 márcalo como **activo**. Solo puede haber un curso activo por centro: es el curso de referencia
 para las altas de estudiantes, la oferta formativa, los partes y las sanciones. Los cursos
 anteriores no se pierden: quedan disponibles para consulta como histórico (ver
-[Cambio de curso académico](03-el-trabajo-diario.md#cambio-de-curso-academico-administradores)).
+[Cambio de curso académico](03-usar-la-aplicacion.md#cambio-de-curso-academico-administradores)).
 
 Al crear el centro se configuraron automáticamente las conductas contrarias, las medidas
 disciplinarias y los métodos de comunicación por defecto. Este es un buen momento para revisarlos
 y adaptarlos al plan de convivencia del centro (ver
-[Administrar el centro educativo](06-administrar-el-centro.md#catalogos-del-centro)).
+[Administrar el centro educativo](12-administrar-el-centro.md#catalogos-del-centro)).
 
 ## 2. Añadir el profesorado
 
@@ -151,7 +151,7 @@ Ciencias Sociales)»; se puede resolver escribiendo simplemente «1º Bachillera
 
 Con el alumnado ya importado, conviene indicar qué docentes ejercen la tutoría de cada grupo.
 Esta asignación determina, entre otras cosas, qué docentes ven los partes y sanciones de su grupo
-(ver [Permisos de un vistazo](08-permisos-de-un-vistazo.md)).
+(ver [Permisos de un vistazo](14-permisos-de-un-vistazo.md)).
 
 Se hace desde **Centro educativo › Oferta formativa**: al seleccionar un grupo, aparece debajo su
 panel de detalle, donde se asignan los tutores/as.
@@ -212,4 +212,4 @@ página.
 5. Tutorías asignadas en todos los grupos.
 6. Asignaciones docente-grupo importadas (opcional, pero recomendable).
 7. Perfiles de **comisión de convivencia**, **orientación** y **coordinación de actividades** asignados (ver
-   [Administrar el centro educativo](06-administrar-el-centro.md#perfiles)).
+   [Administrar el centro educativo](12-administrar-el-centro.md#perfiles)).

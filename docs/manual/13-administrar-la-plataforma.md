@@ -20,7 +20,7 @@ editarlos y eliminarlos.
 - **Crear un centro** solo requiere tres datos: código, nombre y localidad. Al crearlo, la
   aplicación genera automáticamente su primer curso académico (con el año actual, ya marcado como
   activo) y sus catálogos por defecto de conductas, medidas y métodos de comunicación (ver
-  [Catálogos del centro](06-administrar-el-centro.md#catalogos-del-centro)).
+  [Catálogos del centro](12-administrar-el-centro.md#catalogos-del-centro)).
 - **Editar un centro** permite, además de corregir sus datos, designar qué docentes son sus
   **administradores de centro**.
 - **Eliminar un centro** borra en cascada todos sus datos: cursos, estudiantes, partes, sanciones
@@ -83,7 +83,7 @@ visible para los administradores globales.
     (verificación de dirección, restablecimiento de contraseña, avisos al profesorado). El
     registro de las **comunicaciones con las familias** sobre partes y sanciones se hace desde la
     sección Notificaciones del menú lateral y se explica en
-    [El trabajo diario del profesorado](03-el-trabajo-diario.md#notificaciones).
+    [El trabajo diario del profesorado](04-convivencia-profesorado.md#notificaciones).
 
 ### Activar el correo
 
@@ -108,7 +108,7 @@ Con el correo activo, la aplicación envía dos tipos de mensaje que no se puede
   desde la pantalla de acceso.
 
 Además, envía los [avisos de partes y
-sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones), que sí son configurables.
+sanciones](06-convivencia-administracion.md#avisos-de-partes-y-sanciones), que sí son configurables.
 
 ### Usar una cuenta de Gmail
 
@@ -134,7 +134,7 @@ están en [Correos en cola (Messenger)](#correos-en-cola-messenger).
 
 La pantalla de **Ajustes** existe en tres sitios, uno por ámbito: la tarjeta **Ajustes globales**
 del panel de administración (todo el servidor), la tarjeta **Ajustes** del panel de
-[Centro educativo](06-administrar-el-centro.md#ajustes-del-centro) (un centro concreto) y el
+[Centro educativo](12-administrar-el-centro.md#ajustes-del-centro) (un centro concreto) y el
 apartado **Ajustes** del perfil de cada docente (valores personales).
 
 Cuando un ajuste tiene valor en varios niveles, se resuelve en este orden de prioridad:
@@ -217,7 +217,7 @@ perfil, y no admite valor global ni de centro.
 | Activar notificaciones automáticas | Global, centro, docente | Booleano (sí/no) | Activado |
 
 Activa o desactiva todos los correos automáticos de avisos de la aplicación (ver
-[Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones)). Es el
+[Avisos de partes y sanciones](06-convivencia-administracion.md#avisos-de-partes-y-sanciones)). Es el
 único ajuste con los tres ámbitos disponibles: un administrador global puede desactivarlos para
 todo el servidor, uno de centro para su centro, y cada docente para sí mismo.
 
@@ -228,7 +228,7 @@ todo el servidor, uno de centro para su centro, y cada docente para sí mismo.
 | Quién puede publicar actividades | Global, centro | Todos / Equipo directivo | Equipo directivo |
 
 Decide quién puede crear, editar y eliminar las
-[actividades de centro](05-calendario-y-tablon.md#quien-puede-publicar-actividades): solo la
+[actividades de centro](11-calendario-actividades-y-tablon.md#quien-puede-publicar-actividades): solo la
 dirección y los administradores (valor por defecto) o cualquier docente del centro, que entonces
 solo gestiona las que ha publicado él. La coordinación de actividades, un perfil del centro,
 gestiona todas en cualquier caso.
@@ -239,16 +239,16 @@ gestiona todas en cualquier caso.
 |---|---|---|---|---|
 | Antelación máxima de las reservas (días) | Global, centro | Entero | 0-365 | 0 (sin límite) |
 
-Cuántos días por delante de hoy, como máximo, puede [reservar](03-el-trabajo-diario.md#reservas) un
+Cuántos días por delante de hoy, como máximo, puede [reservar](09-reservas.md#reservas-de-recursos) un
 docente un recurso compartido. Cada categoría de recursos puede fijar su propio límite
-([Recursos compartidos](06-administrar-el-centro.md#recursos-compartidos)), que sustituye a este; la
+([Recursos compartidos](09-reservas.md#recursos-compartidos)), que sustituye a este; la
 dirección y los responsables de la categoría no tienen límite.
 
 ### Modo tablón
 
 Cuatro ajustes de ámbito global o de centro controlan la duración de las pantallas, los días de
 antelación de las actividades y el tema de colores del modo tablón. Se describen en
-[Ajustes del modo tablón](05-calendario-y-tablon.md#ajustes-del-modo-tablon).
+[Ajustes del modo tablón](11-calendario-actividades-y-tablon.md#ajustes-del-modo-tablon).
 
 ### Notificaciones a familias
 
@@ -265,27 +265,27 @@ antelación de las actividades y el tema de colores del modo tablón. Se describ
 
 Los dos primeros determinan, además de los administradores, qué docentes pueden registrar una
 comunicación con la familia (ver
-[Notificaciones](03-el-trabajo-diario.md#notificaciones)).
+[Notificaciones](04-convivencia-profesorado.md#notificaciones)).
 
 El tercero y el cuarto controlan la
-[prescripción automática](06-administrar-el-centro.md#prescripcion-automatica-de-partes-sin-notificar)
+[prescripción automática](06-convivencia-administracion.md#prescripcion-automatica-de-partes-sin-notificar)
 y el
-[aviso de prescripción próxima](06-administrar-el-centro.md#aviso-de-prescripcion-proxima) de los
+[aviso de prescripción próxima](06-convivencia-administracion.md#aviso-de-prescripcion-proxima) de los
 partes; el quinto y el sexto, los equivalentes para las
-[sanciones](06-administrar-el-centro.md#prescripcion-de-sanciones-sin-notificar), que **por
+[sanciones](06-convivencia-administracion.md#prescripcion-de-sanciones-sin-notificar), que **por
 defecto no prescriben** (0 días): hasta que se les asigne un plazo, la aplicación se comporta
 como si esa función no existiera. En todos ellos, un valor de 0 desactiva la tarea para ese
 nivel. Los avisos de prescripción próxima son los únicos que admiten también un valor personal de
 docente, que prevalece sobre el de su centro.
 
 El séptimo activa o desactiva el
-[registro de avisos por correo](06-administrar-el-centro.md#registro-de-avisos-por-correo): si
+[registro de avisos por correo](06-convivencia-administracion.md#registro-de-avisos-por-correo): si
 está desactivado, los avisos se siguen enviando con normalidad, pero no queda constancia de
 ellos.
 
 El octavo controla cuántos días se conservan las entradas del
 [registro de actividad](#registro-de-actividad) y del
-[registro de avisos por correo](06-administrar-el-centro.md#registro-de-avisos-por-correo) antes
+[registro de avisos por correo](06-convivencia-administracion.md#registro-de-avisos-por-correo) antes
 de que una tarea programada semanal (domingos a las 3:00) las elimine. Es el único de los ocho
 con ámbito exclusivamente global, ya que también gobierna la retención del registro de actividad,
 que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminación automática.
@@ -312,7 +312,7 @@ que no está asociado a ningún centro. Un valor de 0 desactiva esta eliminació
 | Prefijo del asunto de los correos | Texto libre (máx. 50 caracteres) | *(vacío)* |
 
 Los dos primeros controlan **cuándo** llegan los avisos: por defecto, todos juntos en un único
-[resumen diario](06-administrar-el-centro.md#resumen-diario) por docente y centro, a la hora
+[resumen diario](06-convivencia-administracion.md#resumen-diario) por docente y centro, a la hora
 indicada; cada docente puede preferir la forma inmediata (un correo por aviso), salvo que un
 administrador bloquee el ajuste. El resto de la tabla indica **qué** avisos se envían.
 
@@ -321,16 +321,16 @@ aviso de parte modificado no se dispara al marcar un parte como prescrito, que t
 ajuste independiente, y el aviso a la comisión de convivencia solo se envía cuando un parte queda
 notificado a la familia y todavía puede ser sancionado. El aviso de **nota que implica registro de
 parte** se envía la primera vez que un estudiante alcanza o supera el umbral de un tipo de
-[nota diaria](03-el-trabajo-diario.md#notas) activa; si se sigue por encima del umbral con notas
+[nota diaria](04-convivencia-profesorado.md#notas) activa; si se sigue por encima del umbral con notas
 nuevas no se repite, y el correo incluye el detalle completo de las notas activas de ese tipo. Los
 dos ajustes de adjuntar PDF al correo adjuntan el PDF del parte o de la sanción a los correos
 anteriores. Estos ajustes deciden **a quién** se envía cada aviso y se fijan a nivel global o de
 centro; que cada persona **reciba o no** un aviso concreto se configura aparte, en
 [Avisos que se reciben](#avisos-que-se-reciben). Salvo **Tareas de
 sanción asignadas**, todos están desactivados o vacíos por defecto. El detalle de cada aviso está
-en [Avisos de partes y sanciones](06-administrar-el-centro.md#avisos-de-partes-y-sanciones).
+en [Avisos de partes y sanciones](06-convivencia-administracion.md#avisos-de-partes-y-sanciones).
 
-Los avisos de las [incidencias](03-el-trabajo-diario.md#avisos-de-incidencias) llegan a quien la
+Los avisos de las [incidencias](10-incidencias.md#avisos-de-incidencias) llegan a quien la
 registró y a sus responsables (o a la dirección, si el tipo no tiene), salvo a quien hace el cambio;
 no dependen de estos ajustes de «a quién» sino solo de los interruptores de
 [Avisos que se reciben](#avisos-que-se-reciben).
@@ -344,7 +344,7 @@ ninguno de los dos está definido, no se añade ningún prefijo.
 
 **Tareas de sanción asignadas**, a diferencia de los anteriores, está **activado por defecto**: en
 cuanto se generan las tareas de una sanción (ver
-[Tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion)), cada docente afectado recibe un
+[Tareas de sanción](04-convivencia-profesorado.md#tareas-de-sancion)), cada docente afectado recibe un
 correo con las materias pendientes. Junto a él, el ajuste **Días de antelación del recordatorio de
 tareas de sanción** (entero, global y de centro, 0-365, por defecto 3) controla un segundo aviso:
 una tarea programada diaria (a las 6:00) envía un recordatorio a quien todavía tenga tareas
@@ -356,7 +356,7 @@ booleano anterior.
 
 Cada **tipo de aviso por correo** tiene un interruptor **Sí / No** (activado por defecto) que decide
 si el aviso llega a una persona, ya sea como correo o como línea del
-[resumen diario](06-administrar-el-centro.md#resumen-diario). Son 26 ajustes, uno por tipo, con los
+[resumen diario](06-convivencia-administracion.md#resumen-diario). Son 26 ajustes, uno por tipo, con los
 mismos nombres que en el registro de correos: parte registrado, notificado, modificado, eliminado,
 prescrito (a mano y automático), incorporado a una sanción y sancionable (comisión de convivencia);
 sanción notificada, prescrita (a mano y automática); tarea de sanción asignada y su recordatorio;
@@ -411,8 +411,8 @@ incidencias…): son un recuento de trabajo, no un correo.
 
 Los ajustes de **encabezado** controlan el contenido que se repite en cada página de los PDF de
 partes, sanciones, del informe de estadísticas por grupo y del informe de profesorado de guardia
-(ver [Informes](06-administrar-el-centro.md#informes) y
-[Tramos horarios](06-administrar-el-centro.md#tramos-horarios)). Cada tipo de informe tiene dos
+(ver [Informes](06-convivencia-administracion.md#informes) y
+[Tramos horarios](12-administrar-el-centro.md#tramos-horarios)). Cada tipo de informe tiene dos
 zonas —izquierda y derecha, en la misma línea— que se editan con un editor de texto enriquecido
 (negrita, cursiva, subrayado, títulos, listas, citas y enlaces). El margen superior determina, en
 milímetros, a qué altura empieza el cuerpo del documento en cada página: conviene aumentarlo si
@@ -426,12 +426,12 @@ texto o vaciar por completo.
 
 La **marca de agua de borrador**, cuando está activada, superpone el texto «BORRADOR» en diagonal
 sobre el PDF de un parte o una sanción mientras no se haya notificado a la familia; desaparece en
-cuanto se registra la notificación. También se aplica al informe de una [actividad](05-calendario-y-tablon.md#informe-de-una-actividad)
+cuanto se registra la notificación. También se aplica al informe de una [actividad](11-calendario-actividades-y-tablon.md#informe-de-una-actividad)
 mientras esté en borrador.
 
 En los encabezados y pies del informe de actividad hay además dos marcadores propios: `{event_name}`
 (nombre de la actividad) y `{event_date}` (su fecha). El informe de una
-[incidencia](03-el-trabajo-diario.md#informe-de-una-incidencia) tiene los suyos: `{issue_nr}` (su
+[incidencia](10-incidencias.md#informe-de-una-incidencia) tiene los suyos: `{issue_nr}` (su
 número) y `{issue_type}` (su tipo, con la ruta completa).
 
 ![Ajustes de personalización de informes](img/ajustes/ajustes-informes.png)
@@ -546,7 +546,7 @@ aviso previo.
 | Retención de adjuntos de tareas de sanción | Global, centro | Entero (días) | 0-3650 | 30 |
 
 Igual que en Ausencias, controla cuántos días se conservan los ficheros adjuntos a las
-[tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion). La diferencia está en el punto de
+[tareas de sanción](04-convivencia-profesorado.md#tareas-de-sancion). La diferencia está en el punto de
 partida: aquí la cuenta empieza en la **fecha de fin de la sanción**, no en la de la propia tarea,
 así que todas las tareas de una misma sanción caducan a la vez. Una tarea programada semanal
 (domingos a las 5:30, media hora después de la de Ausencias) elimina los adjuntos vencidos y añade
@@ -564,8 +564,8 @@ eliminado. Un valor de 0 desactiva esta eliminación automática para ese ámbit
 **Modo mantenimiento** (en **Administración → Ajustes globales**, categoría **Mantenimiento**,
 la primera de la lista) cierra la aplicación a todo el mundo salvo a los **administradores
 globales**. Sirve para trabajar sin que nadie se encuentre datos a medias: antes de
-[actualizar](07-administrar-la-plataforma.md#actualizacion), de restaurar una
-[copia de seguridad](07-administrar-la-plataforma.md#copias-de-seguridad) o de
+[actualizar](#actualizacion), de restaurar una
+[copia de seguridad](#copias-de-seguridad) o de
 cualquier otra intervención delicada. Es un ajuste **solo global**: no existe a nivel de centro ni
 personal, porque afecta a todos los centros del servidor. Viene **desactivado**; el cambio se
 guarda al instante y rige desde la petición siguiente.
@@ -638,16 +638,16 @@ Qué incluye cada una:
   se envían los recordatorios y el enlace público para el alumno deja de abrirse. Las sanciones y
   las tareas ya creadas no se borran.
 - **Actividades de centro**: la publicación y gestión de
-  [actividades](05-calendario-y-tablon.md#actividades-de-centro), su entrada del menú lateral, sus
+  [actividades](11-calendario-actividades-y-tablon.md#actividades-de-centro), su entrada del menú lateral, sus
   avisos en el panel de inicio, la vista de día, las guardias y el tablón, el catálogo de tipos de
   actividad y el perfil de coordinación de actividades. Se desactiva de una vez, entera.
-- **Reservas de recursos**: la sección [Reservas](03-el-trabajo-diario.md#reservas) (calendario y
+- **Reservas de recursos**: la sección [Reservas](09-reservas.md#reservas-de-recursos) (calendario y
   listado), sus avisos en la campana y en el panel de inicio, y el catálogo de
-  [recursos compartidos](06-administrar-el-centro.md#recursos-compartidos) del centro. Los recursos y
+  [recursos compartidos](09-reservas.md#recursos-compartidos) del centro. Los recursos y
   las reservas ya registrados se conservan.
-- **Incidencias**: la sección [Incidencias](03-el-trabajo-diario.md#incidencias) (listado, alta y
+- **Incidencias**: la sección [Incidencias](10-incidencias.md#incidencias) (listado, alta y
   fichas), sus avisos en la campana y en el panel de inicio, su búsqueda global, la configuración de
-  [tipos y prioridades](06-administrar-el-centro.md#incidencias-del-centro) y el botón de registrar
+  [tipos y prioridades](10-incidencias.md#incidencias-del-centro) y el botón de registrar
   incidencias de la ficha de una reserva. Las incidencias ya registradas se conservan.
 
 ## Copias de seguridad
@@ -714,7 +714,7 @@ php bin/console messenger:failed:retry   # reintentarlos
 ## Actualización
 
 1. Haz una **copia de seguridad** de la base de datos (ver arriba). Si quieres que nadie use la
-   aplicación mientras tanto, activa antes el [modo mantenimiento](07-administrar-la-plataforma.md#modo-mantenimiento).
+   aplicación mientras tanto, activa antes el [modo mantenimiento](#modo-mantenimiento).
 2. Actualiza según el tipo de despliegue:
     - **Docker** — `docker compose pull && docker compose up -d`.
     - **Binario nativo** — sigue los pasos de
@@ -743,7 +743,7 @@ Medidas que la aplicación aporta de serie:
 
 - **Acceso restringido** — solo el profesorado registrado puede entrar, y cada perfil ve
   únicamente lo que le corresponde (ver
-  [Permisos de un vistazo](08-permisos-de-un-vistazo.md)). Los datos de cada centro están
+  [Permisos de un vistazo](14-permisos-de-un-vistazo.md)). Los datos de cada centro están
   separados.
 - **Registro de actividad** — con `APP_LOG=true` (valor por defecto) queda traza de las acciones
   de los usuarios. Para las acciones de negocio principales (altas, modificaciones y bajas de

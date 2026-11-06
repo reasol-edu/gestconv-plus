@@ -251,12 +251,12 @@ de lanzar el script (tanto en Linux/macOS como en Windows); en Docker se definen
 | `APP_EXTERNAL_ENABLED` | Activar autenticación iSéneca (ver [Introducción](index.md#acceso-a-la-aplicacion)) | `true` |
 | `APP_EXTERNAL_URL` | URL del servicio iSéneca | *(URL oficial)* |
 | `APP_EXTERNAL_URL_FORCE_SECURITY` | Verificar certificado TLS de iSéneca | `true` |
-| `MAILER_DSN` | Transporte de correo para los [emails automáticos](07-administrar-la-plataforma.md#correo-electronico-del-servidor) | `null://null` (desactivado) |
+| `MAILER_DSN` | Transporte de correo para los [emails automáticos](13-administrar-la-plataforma.md#correo-electronico-del-servidor) | `null://null` (desactivado) |
 | `MAILER_FROM` | Dirección remitente de los emails automáticos | `no-responder@example.com` |
 | `MESSENGER_TRANSPORT_DSN` | Cola de envío asíncrono de correos | `doctrine://default?auto_setup=0` |
 | `LOAD_FIXTURES` | Cargar datos de demostración al arrancar (⚠️ borra datos existentes) | `false` |
 | `APP_TIMEZONE` | Zona horaria de la aplicación: la hora que ve cada persona y la de «hoy», los tramos y los avisos. PHP ignora la zona del servidor, así que se indica aquí. Las fechas con hora se guardan siempre en UTC | `Europe/Madrid` (Canarias: `Atlantic/Canary`) |
-| `APP_LOG` | Activar el [registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad) | `true` (`false` en el binario nativo) |
+| `APP_LOG` | Activar el [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad) | `true` (`false` en el binario nativo) |
 | `SYMFONY_TRUSTED_PROXIES` | IPs del proxy inverso desde el que recibe peticiones la aplicación (p. ej. nginx, Caddy). Necesario para que el registro muestre la IP real del usuario. Déjalo sin definir si no usas proxy | *(sin definir)* |
 
 ## Despliegue con Docker
@@ -317,7 +317,7 @@ dar de alta el centro real: ver
 El stack levanta tres contenedores: `app` (servidor FrankenPHP), `database` (PostgreSQL) y `worker`, que
 procesa el envío asíncrono de los correos y las tareas programadas con Symfony Scheduler, como la
 limpieza semanal del registro de actividad o la prescripción automática diaria de partes sin
-notificar (ver [Envío asíncrono](07-administrar-la-plataforma.md#envio-asincrono)).
+notificar (ver [Envío asíncrono](13-administrar-la-plataforma.md#envio-asincrono)).
 
 !!! danger "Cambia la contraseña por defecto"
     El usuario inicial `admin` / `admin` se crea solo para el primer acceso: la propia aplicación
@@ -633,7 +633,7 @@ administración. Esto se hace **una sola vez** por centro.
    un enlace directo a **Administración › Centros › Nuevo centro**. Solo pide tres datos: código,
    nombre y localidad. Al crearlo se generan automáticamente su primer curso académico (ya activo)
    y los catálogos por defecto de conductas, medidas, métodos de comunicación y ubicaciones (ver
-   [Administrar la plataforma](07-administrar-la-plataforma.md#centros-educativos)). También se
+   [Administrar la plataforma](13-administrar-la-plataforma.md#centros-educativos)). También se
    puede crear desde la consola con
    [`app:create-educational-centre`](#appcreate-educational-centre).
 3. **Designa la administración del centro** — desde **Administración › Centros**, edita el centro
@@ -666,7 +666,7 @@ en arranques posteriores.
 
 Cuando sí se ejecuta, crea siempre un docente administrador global con usuario `admin` y
 contraseña `admin`, con el cambio de contraseña obligatorio en el primer inicio de sesión (ver
-[Forzar cambio de contraseña](07-administrar-la-plataforma.md#forzar-cambio-de-contrasena)): la
+[Forzar cambio de contraseña](13-administrar-la-plataforma.md#forzar-cambio-de-contrasena)): la
 cuenta queda confinada a la pantalla de cambio de contraseña hasta que se establece una nueva. La
 opción `--no-force-password-change` omite esta obligación y deja la contraseña `admin` activa sin
 restricciones.
@@ -718,10 +718,10 @@ Si el nombre de usuario ya existe, el comando falla con un error y no modifica l
 
 Por defecto, la cuenta creada tiene el cambio de contraseña obligatorio en el primer inicio de
 sesión (ver
-[Forzar cambio de contraseña](07-administrar-la-plataforma.md#forzar-cambio-de-contrasena)).
+[Forzar cambio de contraseña](13-administrar-la-plataforma.md#forzar-cambio-de-contrasena)).
 La opción `--no-force-password-change` omite esta obligación y deja la contraseña indicada activa
 sin restricciones.
 
 Es la vía recomendada para crear administradores adicionales o para recuperar el acceso si se ha
 perdido la contraseña del único administrador (ver
-[Resolución de problemas](09-resolucion-de-problemas.md)).
+[Resolución de problemas](15-resolucion-de-problemas.md)).

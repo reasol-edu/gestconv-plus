@@ -1,9 +1,10 @@
-# Sanciones y comisión de convivencia
+# Convivencia: la comisión y las sanciones
 
 Este capítulo es para quienes tramitan las sanciones: la **comisión de convivencia** y quienes
 administran el centro (normalmente, el equipo directivo). La orientación puede consultar todas
 las sanciones, pero no registrarlas; el resto de perfiles solo ve las que le corresponden (ver
-[Permisos de un vistazo](08-permisos-de-un-vistazo.md#sanciones)).
+[Permisos de un vistazo](14-permisos-de-un-vistazo.md#sanciones)). Los partes y su comunicación a
+la familia se explican en [Convivencia: el trabajo del profesorado](04-convivencia-profesorado.md).
 
 La sección **Sanciones** del menú lateral recoge las sanciones del curso activo: qué partes las
 motivaron, qué medidas disciplinarias se aplican y en qué fechas están en vigor.
@@ -11,7 +12,7 @@ motivaron, qué medidas disciplinarias se aplican y en qué fechas están en vig
 !!! warning "Dos condiciones que conviene tener siempre presentes"
     Una sanción solo puede incorporar partes **ya comunicados a la familia**, y ella misma debe
     comunicarse también: hasta entonces no aparece en el
-    [calendario ni en el tablón](05-calendario-y-tablon.md), aunque tenga fechas de vigencia.
+    [calendario ni en el tablón](11-calendario-actividades-y-tablon.md), aunque tenga fechas de vigencia.
 
 ## Listado de sanciones
 
@@ -23,7 +24,7 @@ El listado muestra las sanciones accesibles para el docente, con paginación y e
 - Filtros de **Vigentes hoy** y **Pendientes de notificar**.
 - Una columna con el **estado de la notificación** a la familia, con enlace directo para
   registrar la comunicación si está pendiente. Si el centro permite que las sanciones sin
-  notificar [prescriban](06-administrar-el-centro.md#prescripcion-de-sanciones-sin-notificar)
+  notificar [prescriban](06-convivencia-administracion.md#prescripcion-de-sanciones-sin-notificar)
   (por defecto no lo hacen), las que han prescrito se muestran atenuadas con la etiqueta
   **Prescrita** y ya no se pueden notificar.
 - Una columna de **tareas** con el ratio de tareas cumplimentadas sobre el total (por ejemplo,
@@ -56,7 +57,7 @@ El registro tiene dos pasos:
       conductas del parte; con «No», indica el motivo de la no aplicación.
     - **Detalle de la sanción** — campo de texto con formato para describir la sanción completa.
     - **Descripción para calendario y tablón** — texto breve que se mostrará en el
-      [calendario y en el modo tablón](05-calendario-y-tablon.md) en lugar del detalle. Si se
+      [calendario y en el modo tablón](11-calendario-actividades-y-tablon.md) en lugar del detalle. Si se
       deja en blanco, se usa el texto del campo Detalle, así que conviene rellenarlo con algo
       corto, directo y descriptivo: «Expulsión», «Aula de convivencia», «Sin recreo»… Todo el
       claustro lo verá de un vistazo en el tablón.
@@ -109,11 +110,10 @@ aparecer como pendiente de notificar.
 
 ## Tareas de sanción
 
-Cuando una sanción incluye una **medida con rango de fechas** (el estudiante pasa un periodo fuera
-de su aula habitual), la aplicación genera automáticamente una **tarea de sanción** por cada
-docente y materia del grupo, para que cada uno deje constancia del trabajo asignado — o indique
-que no procede (ver [Tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion)). El resultado
-se hace visible en dos sitios:
+Cuando una sanción incluye una **medida con rango de fechas**, la aplicación genera una **tarea de
+sanción** por cada docente y materia del grupo (cómo las cumplimenta el profesorado se explica en
+[Tareas de sanción](04-convivencia-profesorado.md#tareas-de-sancion); aquí, cómo las sigue quien
+tramita la sanción). El resultado se hace visible en dos sitios:
 
 - El **listado de sanciones** incorpora el filtro **Con materias sin cumplimentar**, junto a
   Vigentes hoy y Pendientes de notificar, y una columna con el ratio de tareas cumplimentadas
@@ -134,7 +134,7 @@ después de generarse las tareas (por ejemplo, se incorpora un nuevo docente a m
 3. Si no hay ninguna diferencia, la pantalla lo indica y no ofrece nada que confirmar.
 4. Al **Confirmar**, se crean las tareas nuevas y se eliminan (con sus adjuntos) las que ya no
    corresponden a ninguna asignación actual del grupo; queda registrado en el
-   [registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
+   [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
 
 ### Sanciones sin tareas
 
@@ -156,7 +156,7 @@ La elección se puede cambiar al editar la sanción. Pasar de «No solicitar» a
 tareas y avisa al profesorado en ese momento; pasar de «Solicitar» a «No solicitar» retira las tareas
 que todavía están vacías, pero **no se permite si algún docente ya ha cumplimentado o adjuntado la
 suya**, para no perder su trabajo. El cambio queda en el
-[registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
+[registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
 
 ### Enlace de tareas para el alumno
 
@@ -184,7 +184,7 @@ el último día, el enlace deja de mostrar nada al alumno. Quien puede gestionar
 comisión, administradores) sigue pudiendo abrirlo con su sesión iniciada para revisar lo que vio el
 alumno; la página lo indica con un aviso. Como protección, tras 10 códigos erróneos seguidos
 desde la misma conexión se bloquean los intentos durante 15 minutos. Crear, regenerar y eliminar
-enlaces queda anotado en el [registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
+enlaces queda anotado en el [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
 
 Si la sanción ya tiene un enlace vigente, el **PDF de la sanción** incluye la dirección completa y
 el código en un apartado propio, listos para entregárselos a la familia. Generar el PDF nunca crea
@@ -199,7 +199,7 @@ Dos herramientas ayudan a la comisión a no perder de vista el conjunto:
 
 - **Alumnado con partes pendientes de sanción**, en la pantalla de inicio: los estudiantes con
   más partes ya comunicados a la familia y todavía sin sanción, cada uno con enlace a su
-  [ficha](03-el-trabajo-diario.md#ficha-del-estudiante).
+  [ficha](04-convivencia-profesorado.md#ficha-del-estudiante).
 - El informe de **estadísticas por grupo**, con los partes registrados, comunicados, sancionados
   y prescritos de cada grupo en un rango de fechas (ver
-  [Informes](06-administrar-el-centro.md#informes)).
+  [Informes](06-convivencia-administracion.md#informes)).

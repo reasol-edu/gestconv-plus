@@ -17,7 +17,7 @@ capítulos anteriores enlazan aquí cada vez que un permiso entra en juego.
 
 Los perfiles de **comisión de convivencia**, **orientador/a** y **coordinación de actividades** se asignan a docentes concretos
 desde la tarjeta Perfiles del panel del centro (ver
-[Administrar el centro educativo](06-administrar-el-centro.md#perfiles)). La condición de
+[Administrar el centro educativo](12-administrar-el-centro.md#perfiles)). La condición de
 **tutor/a** viene de la asignación de tutorías en la oferta formativa (ver
 [Preparar el curso académico](02-preparar-el-curso-academico.md#4-asignar-las-tutorias-de-grupo)).
 El resto del profesorado asignado a un grupo, sin ser su tutor/a, no obtiene por ello visibilidad
@@ -56,10 +56,10 @@ editar y eliminar sanciones de cualquier estudiante. La orientación solo puede 
 ## Notificaciones a las familias
 
 Quién puede registrar una comunicación (ver
-[Notificaciones](03-el-trabajo-diario.md#notificaciones)) depende de dos ajustes de centro —
+[Notificaciones](04-convivencia-profesorado.md#notificaciones)) depende de dos ajustes de centro —
 *Quién notifica los partes* y *Quién notifica las sanciones* — con tres valores posibles: **el
 docente que registró** el parte o la sanción, **el tutor/a del grupo**, o **ambos** (valor por
-defecto). Ver [Ajustes del centro](06-administrar-el-centro.md#ajustes-del-centro).
+defecto). Ver [Ajustes del centro](12-administrar-el-centro.md#ajustes-del-centro).
 
 | Acción | Docente autor | Tutor/a del grupo | Comisión | Orientador/a | Admin de centro | Admin global |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -73,7 +73,7 @@ notificar.
 
 ## Ausencias
 
-Las [ausencias](03-el-trabajo-diario.md#ausencias) son privadas para el profesorado normal: cada
+Las [ausencias](08-ausencias-y-guardias.md#ausencias) son privadas para el profesorado normal: cada
 docente solo gestiona las suyas, y deja de poder modificarlas en cuanto pasa su fecha de fin. Los
 administradores, en cambio, tienen acceso completo a las de cualquier docente del centro.
 
@@ -93,7 +93,7 @@ las ausencias de otra persona.
 
 ## Tareas de sanción
 
-Las [tareas de sanción](03-el-trabajo-diario.md#tareas-de-sancion) solo se generan para sanciones
+Las [tareas de sanción](04-convivencia-profesorado.md#tareas-de-sancion) solo se generan para sanciones
 con una medida de rango de fechas, una por cada docente y materia del grupo.
 
 | Acción | Docente asignado a la tarea | Otro docente de materia | Tutor/a del grupo | Comisión | Orientador/a | Admin de centro | Admin global |
@@ -103,7 +103,7 @@ con una medida de rango de fechas, una por cada docente y materia del grupo.
 | Ver el bloque de seguimiento en el detalle de la sanción | — | — | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Ver el contenido de una tarea ajena desde ese bloque | — | — | — | — | — | — | — |
 | Refrescar las materias de una sanción | — | — | — | ✓ | — | ✓ | ✓ |
-| Generar, regenerar o eliminar el [enlace de tareas para el alumno](04-sanciones-y-comision.md#enlace-de-tareas-para-el-alumno) | — | — | ✓ | ✓ | — | ✓ | ✓ |
+| Generar, regenerar o eliminar el [enlace de tareas para el alumno](05-convivencia-comision.md#enlace-de-tareas-para-el-alumno) | — | — | ✓ | ✓ | — | ✓ | ✓ |
 
 \* La sección es visible para cualquier docente que imparta materia a algún grupo en el curso
 visualizado, pero cada uno ve únicamente sus propias tareas.
@@ -116,7 +116,7 @@ materias** exige además el permiso de edición sobre la sanción, igual que reg
 
 ## Salidas
 
-Las [salidas del aula](03-el-trabajo-diario.md#salidas) las autoriza cualquier docente del
+Las [salidas del aula](07-salidas.md#salidas-del-aula) las autoriza cualquier docente del
 centro. Quién puede registrar el regreso o gestionar el pase prioritario depende del perfil.
 
 | Acción | Docente | Tutor/a del grupo | Comisión | Orientador/a | Admin de centro | Admin global |
@@ -135,7 +135,7 @@ Las altas, los regresos y los cambios en el pase prioritario quedan en el regist
 
 ## Guardias
 
-Las [guardias](03-el-trabajo-diario.md#guardias) muestran, para el tramo horario y día
+Las [guardias](08-ausencias-y-guardias.md#guardias) muestran, para el tramo horario y día
 visualizados, las ausencias con sus actividades y el alumnado sancionado del centro.
 
 | Acción | Docente con guardia ese curso | Docente sin ninguna guardia | Admin de centro | Admin global |
@@ -157,22 +157,22 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 |---|:---:|:---:|:---:|
 | Ver el panel del centro | — | ✓ | ✓ |
 | Gestionar docentes del curso | — | ✓ | ✓ |
-| Gestionar el [personal no docente](06-administrar-el-centro.md#personal-no-docente) del centro | — | ✓ | ✓ |
+| Gestionar el [personal no docente](12-administrar-el-centro.md#personal-no-docente) del centro | — | ✓ | ✓ |
 | Gestionar oferta formativa | — | ✓ | ✓ |
 | Gestionar estudiantes | — | ✓ | ✓ |
 | Gestionar conductas, medidas y métodos de comunicación | — | ✓ | ✓ |
 | Gestionar días no lectivos, con importación desde iCal y CSV de Séneca | — | ✓ | ✓ |
 | Gestionar perfiles (comisión, orientación y coordinación de actividades) | — | ✓ | ✓ |
-| Gestionar el catálogo de tipos de [actividad](05-calendario-y-tablon.md#actividades-de-centro) | — | ✓ | ✓ |
-| Gestionar el catálogo de [recursos compartidos](06-administrar-el-centro.md#recursos-compartidos) (categorías, responsables y recursos) | — | ✓ | ✓ |
-| Activar o desactivar [secciones](07-administrar-la-plataforma.md#secciones-de-la-aplicacion) (Salidas, Ausencias, Notas, tareas de sanción, Actividades, Reservas, Incidencias) en el centro, salvo que el valor global esté bloqueado | — | ✓ | ✓ |
+| Gestionar el catálogo de tipos de [actividad](11-calendario-actividades-y-tablon.md#actividades-de-centro) | — | ✓ | ✓ |
+| Gestionar el catálogo de [recursos compartidos](09-reservas.md#recursos-compartidos) (categorías, responsables y recursos) | — | ✓ | ✓ |
+| Activar o desactivar [secciones](13-administrar-la-plataforma.md#secciones-de-la-aplicacion) (Salidas, Ausencias, Notas, tareas de sanción, Actividades, Reservas, Incidencias) en el centro, salvo que el valor global esté bloqueado | — | ✓ | ✓ |
 
 ### Actividades de centro
 
 | Acción | Docente | Coordinación de actividades | Admin de centro | Admin global |
 |---|:---:|:---:|:---:|:---:|
 | Ver las actividades en el calendario | Las generales y las de sus grupos | Todas | Todas | Todas |
-| [Publicar](05-calendario-y-tablon.md#quien-puede-publicar-actividades) | Solo con el ajuste «Todos» | ✓ | ✓ | ✓ |
+| [Publicar](11-calendario-actividades-y-tablon.md#quien-puede-publicar-actividades) | Solo con el ajuste «Todos» | ✓ | ✓ | ✓ |
 | Listar, modificar y eliminar | Solo las que ha publicado, con el ajuste «Todos» | Todas | Todas | Todas |
 
 ### Reservas de recursos
@@ -180,18 +180,18 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Acción | Docente | Responsable de la categoría | Admin de centro | Admin global |
 |---|:---:|:---:|:---:|:---:|
 | Ver el calendario y las reservas de todo el centro | ✓ | ✓ | ✓ | ✓ |
-| [Reservar](03-el-trabajo-diario.md#reservas) | ✓, salvo en las categorías restringidas | ✓ | ✓ | ✓ |
+| [Reservar](09-reservas.md#reservas-de-recursos) | ✓, salvo en las categorías restringidas | ✓ | ✓ | ✓ |
 | Reservar a nombre de otro docente | — | En los recursos de su categoría | ✓ | ✓ |
 | Reservar en el pasado o sin límite de antelación | — | ✓ | ✓ | ✓ |
 | Editar y eliminar | Solo las suyas | Las de los recursos de su categoría | Todas | Todas |
 | Aprobar o rechazar las reservas pendientes | — | Las de su categoría | Todas | Todas |
 | Recibir el aviso de una solicitud pendiente | — | Las de su categoría | Si la categoría no tiene responsables | — |
-| Registrar una [incidencia sobre la reserva](03-el-trabajo-diario.md#incidencias-de-las-reservas) | Solo en sus reservas aprobadas | En las reservas aprobadas de su categoría | Todas las aprobadas | Todas las aprobadas |
+| Registrar una [incidencia sobre la reserva](09-reservas.md#incidencias-de-las-reservas) | Solo en sus reservas aprobadas | En las reservas aprobadas de su categoría | Todas las aprobadas | Todas las aprobadas |
 | Ver la marca de incidencia de una reserva | Las de sus reservas | Las de los tipos que gestiona | Todas | Todas |
 
 ### Incidencias
 
-Las [incidencias](03-el-trabajo-diario.md#incidencias) no dependen de la categoría de un recurso sino
+Las [incidencias](10-incidencias.md#incidencias) no dependen de la categoría de un recurso sino
 del **tipo** de incidencia: **responsable** es quien tiene asignado el tipo o alguno de los de arriba
 en la lista jerárquica.
 
@@ -219,18 +219,18 @@ en la lista jerárquica.
 | Gestionar docentes de la plataforma | ✓ |
 | Ver el registro de actividad | ✓ |
 | Configuración global | ✓ |
-| Activar el [modo mantenimiento](07-administrar-la-plataforma.md#modo-mantenimiento), que cierra la aplicación al resto de usuarios | ✓ |
+| Activar el [modo mantenimiento](13-administrar-la-plataforma.md#modo-mantenimiento), que cierra la aplicación al resto de usuarios | ✓ |
 
 ## Otras acciones y permisos generales
 
 - Cualquier docente puede ver y editar su propio perfil (nombre, contraseña, correo electrónico).
 - Las secciones de **Inicio** y **Calendario** son accesibles para todo el profesorado
   autenticado con un centro seleccionado. El **modo tablón** solo pueden activarlo los
-  administradores (ver [Calendario y tablón](05-calendario-y-tablon.md#modo-tablon)).
-- En la [ficha del estudiante](03-el-trabajo-diario.md#ficha-del-estudiante), los **datos de
+  administradores (ver [Calendario y tablón](11-calendario-actividades-y-tablon.md#modo-tablon)).
+- En la [ficha del estudiante](04-convivencia-profesorado.md#ficha-del-estudiante), los **datos de
   contacto de la familia** solo son visibles para los administradores, la comisión de
   convivencia, la orientación y los tutores/as del grupo del estudiante; el historial muestra a
   cada docente únicamente los partes y sanciones que ya puede ver según las tablas anteriores. De
   entre todos ellos, solo el **tutor/a del grupo** puede además **editar** esos datos de contacto.
-- La sección [Mi tutoría](03-el-trabajo-diario.md#mi-tutoria) del menú lateral solo es visible
+- La sección [Mi tutoría](04-convivencia-profesorado.md#mi-tutoria) del menú lateral solo es visible
   para quien sea **tutor/a de al menos un grupo** en el curso académico visualizado.

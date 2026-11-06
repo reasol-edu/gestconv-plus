@@ -37,7 +37,7 @@ parte que pasa demasiado tiempo sin comunicarse acaba prescribiendo.
   alojados en él.
 
 El detalle completo de lo que puede hacer cada perfil está en
-[Permisos de un vistazo](08-permisos-de-un-vistazo.md).
+[Permisos de un vistazo](14-permisos-de-un-vistazo.md).
 
 ## Acceso a la aplicación
 
@@ -50,15 +50,23 @@ entrar y puede cambiar de centro en cualquier momento desde el menú lateral.
 
 No hace falta leerlo de principio a fin; cada persona puede ir directamente a lo que necesita:
 
-- **¿Eres docente o tutor/a?** Ve a [El trabajo diario del profesorado](03-el-trabajo-diario.md).
+- **¿Acabas de empezar a usar la aplicación?** Empieza por [Usar la aplicación](03-usar-la-aplicacion.md):
+  el menú, la pantalla de inicio, la búsqueda y el uso desde el móvil.
+- **¿Eres docente o tutor/a?** Para los partes, las notas y la comunicación con las familias, ve a
+  [Convivencia: el trabajo del profesorado](04-convivencia-profesorado.md). Después, el capítulo del
+  módulo que uses: [Salidas del aula](07-salidas.md),
+  [Ausencias y guardias](08-ausencias-y-guardias.md), [Reservas de recursos](09-reservas.md),
+  [Incidencias](10-incidencias.md) o [Calendario, actividades y tablón](11-calendario-actividades-y-tablon.md).
 - **¿Formas parte de la comisión de convivencia?** Tu capítulo es
-  [Sanciones y comisión de convivencia](04-sanciones-y-comision.md).
+  [Convivencia: la comisión y las sanciones](05-convivencia-comision.md).
 - **¿Formas parte del equipo directivo?** Empieza por
   [Preparar el curso académico](02-preparar-el-curso-academico.md) y consulta
-  [Administrar el centro educativo](06-administrar-el-centro.md).
+  [Administrar el centro educativo](12-administrar-el-centro.md) y, para configurar cada módulo, el
+  apartado de configuración de su capítulo (por ejemplo,
+  [Convivencia: la administración](06-convivencia-administracion.md)).
 - **¿Vas a instalar la aplicación o mantener el servidor?** Los capítulos
   [Instalación y puesta en marcha](01-instalacion-y-puesta-en-marcha.md) y
-  [Administrar la plataforma](07-administrar-la-plataforma.md) son los únicos con contenido
+  [Administrar la plataforma](13-administrar-la-plataforma.md) son los únicos con contenido
   técnico. Si tu centro ya tiene GestConv+ en marcha, puedes saltártelos por completo.
 
 ## Sobre el proyecto

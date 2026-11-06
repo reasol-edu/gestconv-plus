@@ -54,11 +54,17 @@ nav:
   - Introducción: index.md
   - Instalación y puesta en marcha: 01-instalacion-y-puesta-en-marcha.md
   - Preparar el curso académico: 02-preparar-el-curso-academico.md
-  - El trabajo diario del profesorado: 03-el-trabajo-diario.md
-  - Sanciones y comisión de convivencia: 04-sanciones-y-comision.md
-  - Calendario y tablón: 05-calendario-y-tablon.md
-  - Administrar el centro educativo: 06-administrar-el-centro.md
-  - Administrar la plataforma: 07-administrar-la-plataforma.md
-  - Permisos de un vistazo: 08-permisos-de-un-vistazo.md
-  - 'Anexo: Resolución de problemas': 09-resolucion-de-problemas.md
-  - 'Anexo: Glosario': 10-glosario.md
+  - Usar la aplicación: 03-usar-la-aplicacion.md
+  - 'Convivencia: el trabajo del profesorado': 04-convivencia-profesorado.md
+  - 'Convivencia: la comisión y las sanciones': 05-convivencia-comision.md
+  - 'Convivencia: la administración': 06-convivencia-administracion.md
+  - Salidas del aula: 07-salidas.md
+  - Ausencias y guardias: 08-ausencias-y-guardias.md
+  - Reservas de recursos: 09-reservas.md
+  - Incidencias: 10-incidencias.md
+  - Calendario, actividades y tablón: 11-calendario-actividades-y-tablon.md
+  - Administrar el centro educativo: 12-administrar-el-centro.md
+  - Administrar la plataforma: 13-administrar-la-plataforma.md
+  - Permisos de un vistazo: 14-permisos-de-un-vistazo.md
+  - 'Anexo: Resolución de problemas': 15-resolucion-de-problemas.md
+  - 'Anexo: Glosario': 16-glosario.md

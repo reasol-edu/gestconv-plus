@@ -3,7 +3,7 @@
 Esta sección cubre los problemas más habituales al desplegar y usar GestConv+. Si no encuentras
 aquí lo que buscas, revisa también
 [Instalación y puesta en marcha](01-instalacion-y-puesta-en-marcha.md) y
-[Administrar la plataforma](07-administrar-la-plataforma.md).
+[Administrar la plataforma](13-administrar-la-plataforma.md).
 
 ## No puedo arrancar la aplicación
 
@@ -50,7 +50,7 @@ entornos gestionados por TI.
 ### He olvidado la contraseña de administrador
 
 Si el propio administrador tiene configurado un correo electrónico y el envío de email está activo
-(ver [Correo electrónico del servidor](07-administrar-la-plataforma.md#correo-electronico-del-servidor)),
+(ver [Correo electrónico del servidor](13-administrar-la-plataforma.md#correo-electronico-del-servidor)),
 usa el enlace **¿Has olvidado tu contraseña?** de la pantalla de acceso: recibirás un correo con un enlace de restablecimiento
 válido durante 1 hora.
 
@@ -97,9 +97,9 @@ Comprueba que el docente:
 
 1. Comprueba que `MAILER_DSN` está configurado con un transporte real (por defecto es
    `null://null`, que descarta todos los correos silenciosamente sin dar ningún error — ver
-   [Correo electrónico del servidor](07-administrar-la-plataforma.md#correo-electronico-del-servidor)).
+   [Correo electrónico del servidor](13-administrar-la-plataforma.md#correo-electronico-del-servidor)).
 2. Comprueba que el ajuste **Activar notificaciones automáticas** no está desactivado a nivel global, de
-   centro o de docente (ver [Ajustes](07-administrar-la-plataforma.md#correo-electronico)).
+   centro o de docente (ver [Ajustes](13-administrar-la-plataforma.md#correo-electronico)).
 3. Salvo el correo de restablecimiento de contraseña (que se envía al momento), los correos se
    **encolan** y los procesa un *worker* en segundo plano. Comprueba que el worker está en marcha
    (el contenedor `worker` en Docker, o el proceso que lanzan los scripts de arranque del binario
@@ -110,7 +110,7 @@ Comprueba que el docente:
    php bin/console messenger:failed:show    # ver los envíos fallidos
    ```
 
-   Ver [Correos en cola (Messenger)](07-administrar-la-plataforma.md#correos-en-cola-messenger)
+   Ver [Correos en cola (Messenger)](13-administrar-la-plataforma.md#correos-en-cola-messenger)
    para más detalle, incluidos los reintentos automáticos.
 4. Si los mensajes aparecen como fallidos, revisa las credenciales y el host del `MAILER_DSN`
    (usuario, contraseña, servidor SMTP o proveedor) y que el firewall del servidor permite la
@@ -139,12 +139,12 @@ Comprueba que el docente:
 ## Copias de seguridad y actualización
 
 Estos dos procedimientos están documentados en detalle en
-[Administrar la plataforma](07-administrar-la-plataforma.md):
+[Administrar la plataforma](13-administrar-la-plataforma.md):
 
-- [Copias de seguridad](07-administrar-la-plataforma.md#copias-de-seguridad) — cómo respaldar la
+- [Copias de seguridad](13-administrar-la-plataforma.md#copias-de-seguridad) — cómo respaldar la
   base de datos según el tipo de despliegue (Docker/PostgreSQL o binario nativo/SQLite) y
   recomendaciones de retención.
-- [Actualización](07-administrar-la-plataforma.md#actualizacion) — cómo actualizar a una nueva
+- [Actualización](13-administrar-la-plataforma.md#actualizacion) — cómo actualizar a una nueva
   versión sin perder datos; las migraciones de base de datos se aplican automáticamente al
   arrancar.
 
