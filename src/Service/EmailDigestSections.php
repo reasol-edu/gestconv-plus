@@ -8,7 +8,7 @@ namespace App\Service;
 final class EmailDigestSections
 {
     /** Display order. */
-    public const ORDER = ['prescription', 'reports', 'sanctions', 'tasks', 'notes', 'bookings'];
+    public const ORDER = ['prescription', 'reports', 'sanctions', 'tasks', 'notes', 'bookings', 'issues'];
 
     /** @var array<string, string> */
     private const BY_EVENT = [
@@ -34,6 +34,12 @@ final class EmailDigestSections
         'booking_issue_reported'        => 'bookings',
         'booking_issue_received'        => 'bookings',
         'booking_issue_resolved'        => 'bookings',
+        'issue_created'                 => 'issues',
+        'issue_status'                  => 'issues',
+        'issue_priority'                => 'issues',
+        'issue_observation'             => 'issues',
+        'issue_changed'                 => 'issues',
+        'issue_overdue'                 => 'issues',
     ];
 
     /** @return list<string> */

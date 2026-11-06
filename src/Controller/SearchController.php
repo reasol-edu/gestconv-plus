@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Issue;
 use App\Entity\Teacher;
+use App\Repository\IssueRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
+use App\Security\Voter\IssueVoter;
+use App\Service\IssueAccess;
+use App\Service\IssueListFilter;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -15,6 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[IsGranted('ROLE_TEACHER')]
 class SearchController extends AbstractController
@@ -23,6 +29,9 @@ class SearchController extends AbstractController
         private readonly TenantContext $tenantContext,
         private readonly StudentRepository $studentRepository,
         private readonly TeacherRepository $teacherRepository,
+        private readonly IssueRepository $issues,
+        private readonly IssueAccess $issueAccess,
+        private readonly TranslatorInterface $translator,
         #[Target('search')]
         private readonly RateLimiterFactoryInterface $searchLimiter,
     ) {}
@@ -106,6 +115,25 @@ class SearchController extends AbstractController
                         ]),
                     ], $teachers);
                 }
+            }
+        }
+
+        // Incidencias: las que el docente registró o gestiona, por número, texto, tipo, dependencia o persona.
+        if ($viewer !== null && $this->isGranted(IssueVoter::CREATE, $centre)) {
+            $found = $this->issues->createListQuery(
+                $centre,
+                $viewer,
+                $this->issueAccess->isManagement($viewer, $centre),
+                $this->issueAccess->managedTypeIds($viewer, $centre),
+                new IssueListFilter(search: $q, sort: 'created', sortDir: 'desc'),
+            )->setMaxResults(5)->getResult();
+            /** @var list<Issue> $found */
+            if ($found !== []) {
+                $groups['issues'] = array_map(fn (Issue $issue): array => [
+                    'label'    => '#' . $issue->getNumber() . ' · ' . $issue->getType()->getName(),
+                    'sublabel' => $this->translator->trans('issue.status.' . $issue->getStatus()->value, [], 'admin') . ' · ' . $issue->getReporter()->getName()->full(),
+                    'url'      => $this->generateUrl('app_issues_show', ['id' => $issue->getId()->toRfc4122()]),
+                ], $found);
             }
         }
 

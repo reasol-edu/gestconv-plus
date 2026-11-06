@@ -1,0 +1,23 @@
+{% extends 'email/_layout.html.twig' %}
+
+{% block content %}
+<p style="margin: 0 0 16px;">
+    {{ 'emails.greeting'|trans({'%name%': teacher.name.firstName}, 'emails') }}
+</p>
+<p style="margin: 0 0 16px;">
+    {{ (transPrefix ~ '.intro')|trans(params, 'emails') }}
+</p>
+{% if transPrefix == 'emails.issue_observation' and detail %}
+<p style="margin: 0 0 24px; padding: 10px 16px; background-color: #f9fafb; border-left: 3px solid #677dae; color: #374151; font-size: 13px; white-space: pre-line;">{{ detail }}</p>
+{% elseif transPrefix == 'emails.issue_created' %}
+<p style="margin: 0 0 8px; color: #374151; font-size: 13px;"><strong>{{ 'emails.issue.description'|trans({}, 'emails') }}</strong></p>
+<div style="margin: 0 0 24px; padding: 10px 16px; background-color: #f9fafb; border-left: 3px solid #d97706; color: #374151; font-size: 13px;">{{ issue.description|sanitize_html('app.rich_text') }}</div>
+{% endif %}
+<p style="margin: 0 0 24px; text-align: center;">
+    <a href="{{ issueUrl }}"
+       style="display: inline-block; background-color: #677dae; color: #ffffff; font-size: 14px;
+              font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none;">
+        {{ 'emails.issue.cta'|trans({}, 'emails') }}
+    </a>
+</p>
+{% endblock %}

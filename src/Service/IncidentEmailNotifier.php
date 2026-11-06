@@ -11,6 +11,7 @@ use App\Entity\EmailDigestItem;
 use App\Entity\EmailNotificationLog;
 use App\Entity\Group;
 use App\Entity\IncidentReport;
+use App\Entity\Issue;
 use App\Entity\ResourceBooking;
 use App\Entity\Sanction;
 use App\Entity\SanctionTask;
@@ -444,6 +445,52 @@ final class IncidentEmailNotifier
     }
 
     /**
+     * Avisa a una persona afectada por una incidencia (la que la registró o una de sus responsables) de un alta o de un
+     * cambio: `issue_created`, `issue_status`, `issue_priority`, `issue_observation` o `issue_changed`.
+     *
+     * @param string|null $detail lo que cambió: el estado nuevo, la prioridad, el texto de la observación, etc.
+     */
+    public function issueNotice(Teacher $recipient, Issue $issue, string $eventKey, Teacher $actor, ?string $detail = null): void
+    {
+        $url = $this->urlGenerator->generate('app_issues_show', ['id' => $issue->getId()->toRfc4122()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $this->dispatch($issue->getEducationalCentre(), $recipient, $eventKey, [
+            '%number%' => $issue->getNumber(),
+            '%type%'   => $issue->getType()->getPath(),
+            '%actor%'  => $this->fullName($actor),
+            '%detail%' => $detail ?? '',
+        ], 'email/issue_notice.html.twig', [
+            'issue'    => $issue,
+            'detail'   => $detail,
+            'issueUrl' => $url,
+        ]);
+    }
+
+    /**
+     * Recordatorio diario de las incidencias abiertas que han pasado su plazo máximo, para una persona responsable.
+     *
+     * @param non-empty-list<Issue> $issues
+     */
+    public function issueOverdue(Teacher $recipient, array $issues): void
+    {
+        $centre = $issues[0]->getEducationalCentre();
+        $rows   = [];
+        foreach ($issues as $issue) {
+            $rows[] = [
+                'number' => $issue->getNumber(),
+                'type'   => $issue->getType()->getPath(),
+                'due'    => $issue->getMaxDue(),
+                'url'    => $this->urlGenerator->generate('app_issues_show', ['id' => $issue->getId()->toRfc4122()], UrlGeneratorInterface::ABSOLUTE_URL),
+            ];
+        }
+
+        $this->dispatch($centre, $recipient, 'issue_overdue', ['%count%' => count($issues)], 'email/issue_overdue.html.twig', [
+            'rows'     => $rows,
+            'issueUrl' => $this->urlGenerator->generate('app_issues_index', [], UrlGeneratorInterface::ABSOLUTE_URL),
+        ]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function bookingIssueContext(ResourceBooking $booking, ?string $description, ?string $comment): array
@@ -637,7 +684,7 @@ final class IncidentEmailNotifier
 
         // Recipients who chose the daily digest get this event as a line of their next digest instead.
         if ($this->usesDigest($centre, $teacher)) {
-            $url = $context['reportUrl'] ?? $context['sanctionUrl'] ?? $context['studentUrl'] ?? $context['bookingsUrl'] ?? null;
+            $url = $context['reportUrl'] ?? $context['sanctionUrl'] ?? $context['studentUrl'] ?? $context['bookingsUrl'] ?? $context['issueUrl'] ?? null;
             $this->queueDigestItem($centre, $teacher, $eventKey, $params, is_string($url) ? $url : null);
 
             return;

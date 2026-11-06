@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace App\Twig\Components;
 
-use App\Entity\IncidentReport;
 use App\Entity\BookingIssueStatus;
+use App\Entity\EducationalCentre;
+use App\Entity\IncidentReport;
+use App\Entity\Issue;
+use App\Entity\IssueStatus;
 use App\Entity\ResourceBooking;
 use App\Entity\Sanction;
 use App\Entity\SanctionTask;
 use App\Entity\Teacher;
 use App\Repository\DailyNoteRepository;
+use App\Repository\IssueRepository;
 use App\Repository\ResourceBookingRepository;
 use App\Repository\SanctionTaskRepository;
 use App\Service\Feature;
 use App\Service\FeatureToggle;
+use App\Service\IssueAccess;
+use App\Service\IssueListFilter;
 use App\Service\PendingNotificationQueue;
 use App\Service\ResourceBookingAccess;
 use App\Service\TenantContext;
@@ -38,9 +44,9 @@ class NotificationBellComponent extends AbstractController
     public const MAX_PER_SECTION = 4;
 
     /** Orden de las secciones, de más a menos urgente. */
-    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold', 'booking_validation', 'booking_issue_open', 'booking_resolved', 'booking_issue_answered'];
+    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold', 'booking_validation', 'booking_issue_open', 'booking_resolved', 'booking_issue_answered', 'issue_overdue', 'issue_attend', 'issue_news'];
 
-    /** @var array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>|null */
+    /** @var array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|Issue|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>|null */
     private ?array $grouped = null;
 
     public function __construct(
@@ -52,12 +58,14 @@ class NotificationBellComponent extends AbstractController
         private readonly FeatureToggle $features,
         private readonly ResourceBookingRepository $resourceBookings,
         private readonly ResourceBookingAccess $bookingAccess,
+        private readonly IssueRepository $issues,
+        private readonly IssueAccess $issueAccess,
     ) {}
 
     /**
      * Elementos pendientes por sección (sin truncar), solo las que tienen alguno.
      *
-     * @return array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>
+     * @return array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|Issue|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>
      */
     private function grouped(): array
     {
@@ -148,6 +156,37 @@ class NotificationBellComponent extends AbstractController
             }
         }
 
+        // Incidencias: a quien las gestiona, las nuevas por atender y las vencidas; a quien las registró, las novedades recientes.
+        if ($this->features->isEnabledForCentre(Feature::Issues, $centre)) {
+            $management = $this->issueAccess->isManagement($user, $centre);
+            $managedIds = $this->issueAccess->managedTypeIds($user, $centre);
+            $now        = \Symfony\Component\Clock\now();
+
+            if ($management || $managedIds !== []) {
+                foreach ($this->managedIssues($centre, $user, $management, $managedIds, [IssueStatus::Open->value], false, $now) as $issue) {
+                    $sections['issue_attend'][] = ['type' => 'issue_attend', 'entity' => $issue, 'date' => $issue->getCreatedAt(), 'daysLeft' => null];
+                }
+                foreach ($this->managedIssues($centre, $user, $management, $managedIds, IssueStatus::openValues(), true, $now) as $issue) {
+                    $sections['issue_overdue'][] = ['type' => 'issue_overdue', 'entity' => $issue, 'date' => $issue->getMaxDue() ?? $issue->getCreatedAt(), 'daysLeft' => null];
+                }
+            }
+
+            // Lo que otras personas han hecho en las suyas en la última semana (puesta en proceso o cierre).
+            $since = $now->modify('-7 days');
+            /** @var list<Issue> $mine */
+            $mine = $this->issues->createListQuery($centre, $user, false, [], new IssueListFilter(
+                statuses: [IssueStatus::InProgress->value, IssueStatus::Solved->value, IssueStatus::NotApplicable->value, IssueStatus::Duplicate->value],
+                scope: IssueListFilter::SCOPE_MINE,
+                sort: 'created',
+                sortDir: 'desc',
+            ))->setMaxResults(50)->getResult();
+            foreach ($mine as $issue) {
+                if ($issue->getUpdatedAt() >= $since) {
+                    $sections['issue_news'][] = ['type' => 'issue_news', 'entity' => $issue, 'date' => $issue->getUpdatedAt(), 'daysLeft' => null];
+                }
+            }
+        }
+
         foreach ($sections as $key => $items) {
             if ($key !== 'prescription') {
                 usort($items, static fn (array $a, array $b): int => $a['date'] <=> $b['date']);
@@ -158,6 +197,28 @@ class NotificationBellComponent extends AbstractController
         return $this->grouped = array_filter($sections, static fn (array $items): bool => $items !== []);
     }
 
+    /**
+     * Incidencias ajenas que le toca gestionar, las más antiguas primero.
+     *
+     * @param list<string> $managedTypeIds
+     * @param list<string> $statuses
+     * @return list<Issue>
+     */
+    private function managedIssues(EducationalCentre $centre, Teacher $user, bool $management, array $managedTypeIds, array $statuses, bool $overdueOnly, \DateTimeImmutable $now): array
+    {
+        /** @var list<Issue> $issues */
+        $issues = $this->issues->createListQuery($centre, $user, $management, $managedTypeIds, new IssueListFilter(
+            statuses: $statuses,
+            scope: IssueListFilter::SCOPE_MANAGED,
+            overdueOnly: $overdueOnly,
+            sort: 'created',
+            sortDir: 'asc',
+            today: $now,
+        ))->getResult();
+
+        return $issues;
+    }
+
     public function getTotal(): int
     {
         return array_sum(array_map('count', $this->grouped()));
@@ -166,7 +227,7 @@ class NotificationBellComponent extends AbstractController
     /**
      * Secciones a pintar, en orden de prioridad, con sus primeros elementos y cuántos quedan fuera.
      *
-     * @return list<array{key: string, total: int, hidden: int, items: list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>}>
+     * @return list<array{key: string, total: int, hidden: int, items: list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|Issue|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>}>
      */
     public function getSections(): array
     {

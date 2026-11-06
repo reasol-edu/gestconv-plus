@@ -14,7 +14,13 @@ bell:
         booking_resolved: 'Respuesta a tus reservas'
         booking_issue_open: 'Incidencias de reservas por recibir'
         booking_issue_answered: 'Respuesta a tus incidencias de reservas'
+        issue_overdue: 'Incidencias vencidas'
+        issue_attend: 'Incidencias por atender'
+        issue_news: 'Novedades en tus incidencias'
     item:
+        issue_overdue: 'Incidencia #%number% (%type%) vencida'
+        issue_attend: '%reporter% ha registrado la incidencia #%number% (%type%)'
+        issue_news: 'Tu incidencia #%number% (%type%): %status%'
         booking_issue_reported: '%teacher% ha registrado una incidencia en «%resource%»'
         booking_issue_received: 'Tu incidencia en «%resource%» se ha recibido'
         booking_issue_resolved: 'Tu incidencia en «%resource%» se ha solucionado'

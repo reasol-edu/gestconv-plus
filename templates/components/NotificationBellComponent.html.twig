@@ -53,6 +53,13 @@
                                 </p>
                                 <p class="mt-0.5 text-xs font-medium text-red-700">{{ 'notification.upcoming.in_days'|trans({'%count%': item.daysLeft}, 'notifications') }}</p>
                             </a>
+                        {% elseif item.type starts with 'issue_' %}
+                            <a href="{{ path('app_issues_show', {id: entity.id}) }}" class="block px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                <p class="text-sm text-gray-800">
+                                    {{ ('bell.item.' ~ item.type)|trans({'%number%': entity.number, '%type%': entity.type.name, '%reporter%': entity.reporter.name.full(), '%status%': ('issue.status.' ~ entity.status.value)|trans({}, 'admin')}, 'notifications') }}
+                                </p>
+                                <p class="mt-0.5 text-xs {{ item.type == 'issue_overdue' ? 'font-medium text-red-700' : 'text-gray-400' }}">{{ item.date|date('format.date'|trans) }}</p>
+                            </a>
                         {% elseif item.type starts with 'booking_' %}
                             <a href="{{ path('app_bookings_show', {id: entity.id}) }}" class="block px-4 py-2.5 hover:bg-gray-50 transition-colors">
                                 <p class="text-sm text-gray-800">
@@ -89,10 +96,11 @@
                 {% endfor %}
                 {% if section.hidden > 0 %}
                     {% set moreHref = section.key == 'task' ? path('app_sanction_tasks_index')
+                        : (section.key starts with 'issue_' ? path('app_issues_index')
                         : (section.key == 'note_threshold' ? path('app_daily_notes_index', {tab: 'students'})
                         : (section.key == 'booking_validation' ? path('app_bookings_list', {scope: 'managed', status: 'pending', from: 'all'})
                         : (section.key == 'booking_issue_open' ? path('app_bookings_list', {scope: 'managed', issue: 'to_receive', from: 'all'})
-                        : (section.key in ['booking_resolved', 'booking_issue_answered'] ? path('app_bookings_list', section.key == 'booking_issue_answered' ? {issue: 'any', from: 'all'} : {}) : path('app_notifications_index'))))) %}
+                        : (section.key in ['booking_resolved', 'booking_issue_answered'] ? path('app_bookings_list', section.key == 'booking_issue_answered' ? {issue: 'any', from: 'all'} : {}) : path('app_notifications_index')))))) %}
                     <li>
                         <a href="{{ moreHref }}" class="block px-4 py-1.5 text-xs font-medium text-forest-700 hover:bg-gray-50 transition-colors">
                             {{ 'bell.more'|trans({'%count%': section.hidden}, 'notifications') }}

@@ -12,5 +12,7 @@ actions:
     new_note: 'Nueva nota'
     new_booking: 'Reservar recurso'
     bookings: 'Ver el calendario de reservas'
+    new_issue: 'Nueva incidencia'
+    issues: 'Ver las incidencias'
     notifications: 'Ir a notificaciones'
     change_year: 'Cambiar de curso'

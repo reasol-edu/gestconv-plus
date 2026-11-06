@@ -1,0 +1,25 @@
+{% extends 'email/_layout.html.twig' %}
+
+{% block content %}
+<p style="margin: 0 0 16px;">
+    {{ 'emails.greeting'|trans({'%name%': teacher.name.firstName}, 'emails') }}
+</p>
+<p style="margin: 0 0 16px;">
+    {{ (transPrefix ~ '.intro')|trans(params, 'emails') }}
+</p>
+<ul style="margin: 0 0 24px; padding-left: 0; list-style: none; color: #374151; font-size: 13px;">
+    {% for row in rows %}
+    <li style="margin: 0 0 8px; padding: 10px 16px; background-color: #f9fafb; border-left: 3px solid #dc2626;">
+        <a href="{{ row.url }}" style="color: #374151;"><strong>#{{ row.number }}</strong> · {{ row.type }}</a>
+        {% if row.due %}<br><span style="color: #6b7280;">{{ 'emails.issue.due'|trans({'%date%': row.due|date('format.date'|trans)}, 'emails') }}</span>{% endif %}
+    </li>
+    {% endfor %}
+</ul>
+<p style="margin: 0 0 24px; text-align: center;">
+    <a href="{{ issueUrl }}"
+       style="display: inline-block; background-color: #677dae; color: #ffffff; font-size: 14px;
+              font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none;">
+        {{ 'emails.issue.cta_list'|trans({}, 'emails') }}
+    </a>
+</p>
+{% endblock %}

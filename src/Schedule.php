@@ -7,6 +7,7 @@ namespace App;
 use App\Message\AutoPrescribeIncidentReportsMessage;
 use App\Message\AutoPrescribeSanctionsMessage;
 use App\Message\DeactivateExpiredDailyNotesMessage;
+use App\Message\IssueOverdueReminderMessage;
 use App\Message\PurgeActivityAttachmentsMessage;
 use App\Message\PurgeActivityLogMessage;
 use App\Message\PurgeEmailNotificationLogMessage;
@@ -43,6 +44,7 @@ class Schedule implements ScheduleProviderInterface
                 RecurringMessage::cron('0 5 * * 0', new PurgeActivityAttachmentsMessage()),
                 RecurringMessage::cron('30 5 * * 0', new PurgeSanctionTaskAttachmentsMessage()),
                 RecurringMessage::cron('0 6 * * *', new SanctionTaskReminderMessage()),
+                RecurringMessage::cron('30 6 * * 1-5', new IssueOverdueReminderMessage()),
                 RecurringMessage::cron('0 * * * *', new SendDailyEmailDigestsMessage()),
             )
             ->stateful($this->cache)

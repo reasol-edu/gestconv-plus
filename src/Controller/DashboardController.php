@@ -10,6 +10,7 @@ use App\Entity\Teacher;
 use App\Repository\DailyNoteRepository;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
+use App\Repository\IssueRepository;
 use App\Repository\ResourceBookingRepository;
 use App\Repository\SanctionRepository;
 use App\Repository\SanctionTaskRepository;
@@ -17,10 +18,12 @@ use App\Repository\SchoolEventRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Security\Voter\IssueVoter;
 use App\Security\Voter\SanctionVoter;
 use App\Service\AppSettingsInterface;
 use App\Service\Feature;
 use App\Service\FeatureToggle;
+use App\Service\IssueAccess;
 use App\Service\PendingNotificationQueue;
 use App\Service\ResourceBookingAccess;
 use App\Service\TeacherYearRoles;
@@ -49,6 +52,8 @@ class DashboardController extends AbstractController
         private readonly FeatureToggle $features,
         private readonly ResourceBookingRepository $resourceBookings,
         private readonly ResourceBookingAccess $bookingAccess,
+        private readonly IssueRepository $issues,
+        private readonly IssueAccess $issueAccess,
     ) {}
 
     #[Route('/', name: 'app_dashboard')]
@@ -152,6 +157,16 @@ class DashboardController extends AbstractController
             $issueAnswersCount = count($this->resourceBookings->findUnseenIssueResponsesFor($viewer, $year));
         }
 
+        // Incidencias: las cifras de lo que el docente puede ver (si gestiona, lo pendiente de atender y lo vencido).
+        $issueStats     = null;
+        $issueIsManager = false;
+        if ($this->isGranted(IssueVoter::CREATE, $centre)) {
+            $management     = $this->issueAccess->isManagement($viewer, $centre);
+            $managedIds     = $this->issueAccess->managedTypeIds($viewer, $centre);
+            $issueIsManager = $management || $managedIds !== [];
+            $issueStats     = $this->issues->statistics($centre, $viewer, $management, $managedIds, $this->clock->now());
+        }
+
         $autoPrescribeDays = $this->settings->getForCentre('notifications.report_auto_prescribe_days', $centre);
         $warningDays       = $this->settings->getForTeacherInCentre('notifications.report_prescription_warning_days', $viewer, $centre);
         $showPrescriptionWarning = is_int($autoPrescribeDays) && $autoPrescribeDays > 0
@@ -215,6 +230,8 @@ class DashboardController extends AbstractController
             'pendingBookingsCount'              => $pendingBookingsCount,
             'issuesToReceiveCount'              => $issuesToReceiveCount,
             'issueAnswersCount'                 => $issueAnswersCount,
+            'issueStats'                        => $issueStats,
+            'issueIsManager'                    => $issueIsManager,
             'today'                             => $today->format('Y-m-d'),
         ]);
     }

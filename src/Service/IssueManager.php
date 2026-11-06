@@ -46,6 +46,7 @@ class IssueManager
         private readonly IssueRepository $issues,
         private readonly IssueDeadlines $deadlines,
         private readonly ActivityLogService $activityLog,
+        private readonly IssueNotifier $notifier,
     ) {}
 
     /**
@@ -85,6 +86,7 @@ class IssueManager
             'number'   => $issue->getNumber(),
             'type'     => $type->getPath(),
         ]);
+        $this->notifier->created($issue);
 
         return $issue;
     }
@@ -99,6 +101,7 @@ class IssueManager
         $this->em->flush();
 
         $this->activityLog->log('issue.observed', ['entityId' => $issue->getId()->toRfc4122(), 'number' => $issue->getNumber()]);
+        $this->notifier->observation($issue, $author, $content);
 
         return $observation;
     }
@@ -115,6 +118,7 @@ class IssueManager
         $this->em->flush();
 
         $this->activityLog->log('issue.updated', ['entityId' => $issue->getId()->toRfc4122(), 'number' => $issue->getNumber()]);
+        $this->notifier->changed($issue, $actor, self::FIELD_DESCRIPTION);
 
         return true;
     }
@@ -149,11 +153,13 @@ class IssueManager
             return false;
         }
 
-        $this->record($issue, $actor, self::FIELD_TYPE, $issue->getType()->getPath(), $type->getPath());
+        $oldPath = $issue->getType()->getPath();
+        $this->record($issue, $actor, self::FIELD_TYPE, $oldPath, $type->getPath());
         $issue->setType($type)->touch($this->clock->now());
         $this->em->flush();
 
         $this->activityLog->log('issue.updated', ['entityId' => $issue->getId()->toRfc4122(), 'number' => $issue->getNumber()]);
+        $this->notifier->changed($issue, $actor, self::FIELD_TYPE, $oldPath, $type->getPath());
 
         return true;
     }
@@ -168,6 +174,7 @@ class IssueManager
         $this->record($issue, $actor, self::FIELD_LOCATION, $current?->getName(), $location?->getName());
         $issue->setLocation($location)->touch($this->clock->now());
         $this->em->flush();
+        $this->notifier->changed($issue, $actor, self::FIELD_LOCATION, $current?->getName(), $location?->getName());
 
         return true;
     }
@@ -193,6 +200,7 @@ class IssueManager
         $this->em->flush();
 
         $this->activityLog->log('issue.prioritized', ['entityId' => $issue->getId()->toRfc4122(), 'number' => $issue->getNumber()]);
+        $this->notifier->priority($issue, $actor, $priority);
 
         return null;
     }
@@ -232,6 +240,9 @@ class IssueManager
             'number'   => $issue->getNumber(),
             'status'   => $to->value,
         ]);
+        if ($to !== $from) {
+            $this->notifier->status($issue, $actor);
+        }
 
         return null;
     }

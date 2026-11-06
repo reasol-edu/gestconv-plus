@@ -212,6 +212,31 @@ class IssueRepository extends ServiceEntityRepository
     }
 
     /**
+     * Las incidencias abiertas del centro que han pasado su plazo máximo (para el recordatorio diario).
+     *
+     * @return list<Issue>
+     */
+    public function findOverdue(EducationalCentre $centre, \DateTimeImmutable $today): array
+    {
+        /** @var list<Issue> $result */
+        $result = $this->createQueryBuilder('i')
+            ->addSelect('t')
+            ->join('i.type', 't')
+            ->where('i.educationalCentre = :centre')
+            ->andWhere('i.status IN (:open)')
+            ->andWhere('i.maxDue < :today')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('open', IssueStatus::openValues())
+            ->setParameter('today', $today->setTime(0, 0), Types::DATE_IMMUTABLE)
+            ->orderBy('i.maxDue', 'ASC')
+            ->addOrderBy('i.number', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
      * Las incidencias del centro con esos ids (para las acciones masivas).
      *
      * @param list<string> $ids

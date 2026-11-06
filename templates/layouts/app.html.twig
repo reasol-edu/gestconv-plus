@@ -37,6 +37,10 @@
              {label: 'actions.new_booking'|trans({}, 'search'), url: path('app_bookings_new')},
              {label: 'actions.bookings'|trans({}, 'search'), url: path('app_bookings_index')},
          ] : [])
+         |merge(active_centre and not viewing_past and is_granted('issue.create', active_centre) ? [
+             {label: 'actions.new_issue'|trans({}, 'search'), url: path('app_issues_new')},
+             {label: 'actions.issues'|trans({}, 'search'), url: path('app_issues_index')},
+         ] : [])
          |merge([
              {label: 'actions.notifications'|trans({}, 'search'), url: path('app_notifications_index')},
              {label: 'actions.change_year'|trans({}, 'search'), url: path('app_select_year_page')},

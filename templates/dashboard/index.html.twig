@@ -52,7 +52,8 @@
         {% set grid_classes = 'grid grid-cols-2 gap-2.5 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] sm:gap-3' %}
         <div id="quick-actions" class="space-y-5">
             {% set can_book = is_granted('educational_centre.bookings', active_centre) %}
-            {% if feature_enabled('exits') or hasGuardsAccess or (can_register_absence and feature_enabled('absences')) or can_book %}
+            {% set issueStats = issueStats|default(null) %}
+            {% if feature_enabled('exits') or hasGuardsAccess or (can_register_absence and feature_enabled('absences')) or can_book or issueStats is not null %}
             <section aria-labelledby="quick-daily-title">
                 <h2 id="quick-daily-title" class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{{ 'quick_actions.daily'|trans({}, 'dashboard') }}</h2>
                 <div class="{{ grid_classes }}">
@@ -95,6 +96,30 @@
                                 help: 'quick_action_booking_answers_help'|trans({}, 'dashboard'),
                                 tone: 'blue',
                                 badge: issueAnswersCount
+                            } only %}
+                        {% endif %}
+                    {% endif %}
+                    {% if issueStats is not null %}
+                        {% include 'dashboard/_quick_action.html.twig' with {url: path('app_issues_new'), icon: 'heroicons:wrench-screwdriver', label: 'quick_action_new_issue'|trans({}, 'dashboard'), help: 'quick_action_new_issue_help'|trans({}, 'dashboard'), tone: 'blue'} only %}
+                        {% set issuesPending = issueStats.open + issueStats.in_progress %}
+                        {% if issuesPending > 0 %}
+                            {% include 'dashboard/_quick_action.html.twig' with {
+                                url: path('app_issues_index'),
+                                icon: 'heroicons:clipboard-document-list',
+                                label: (issueIsManager|default(false) ? 'quick_action_issues_manage' : 'quick_action_issues_mine')|trans({}, 'dashboard'),
+                                help: (issueIsManager|default(false) ? 'quick_action_issues_manage_help' : 'quick_action_issues_mine_help')|trans({}, 'dashboard'),
+                                tone: 'amber',
+                                badge: issuesPending
+                            } only %}
+                        {% endif %}
+                        {% if issueIsManager|default(false) and issueStats.overdue > 0 %}
+                            {% include 'dashboard/_quick_action.html.twig' with {
+                                url: path('app_issues_index'),
+                                icon: 'heroicons:clock',
+                                label: 'quick_action_issues_overdue'|trans({}, 'dashboard'),
+                                help: 'quick_action_issues_overdue_help'|trans({}, 'dashboard'),
+                                tone: 'amber',
+                                badge: issueStats.overdue
                             } only %}
                         {% endif %}
                     {% endif %}
