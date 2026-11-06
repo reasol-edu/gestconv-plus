@@ -9,8 +9,8 @@ instalación inicial se explica en
 ## El panel de administración
 
 La sección **Administración** del menú lateral, visible solo para los administradores globales,
-reúne en tarjetas la gestión de toda la plataforma: centros educativos, docentes, registro de
-actividad y ajustes globales.
+reúne en tarjetas la gestión de toda la plataforma: centros educativos, usuarios (docentes y
+personal no docente), registro de actividad y ajustes globales.
 
 ### Centros educativos
 
@@ -26,9 +26,14 @@ editarlos y eliminarlos.
 - **Eliminar un centro** borra en cascada todos sus datos: cursos, estudiantes, partes, sanciones
   y comunicaciones. No se puede deshacer.
 
-### Docentes
+### Usuarios
 
-La tarjeta **Docentes** permite crear y editar cualquier cuenta de docente del servidor, con
+La tarjeta **Usuarios** gestiona las cuentas del servidor y las separa en dos bloques: **Docentes**
+y, aparte y con otro color, **Personal no docente** (ver más abajo).
+
+#### Docentes
+
+Permite crear y editar cualquier cuenta de docente del servidor, con
 independencia del centro al que pertenezca. El listado muestra el nombre, el usuario, el **correo
 electrónico** y los roles de cada docente; si un docente ha pedido cambiar su correo y aún no lo ha
 verificado, se indica debajo como *Pendiente de verificar*. El buscador encuentra por nombre,
@@ -55,6 +60,26 @@ cambio de contraseña** en el próximo acceso: la próxima vez que ese docente i
 confinado a una pantalla dedicada de cambio de contraseña hasta que la cambie (o cierre sesión).
 Es la vía recomendada para entregar una contraseña provisional a un docente nuevo o para forzar
 la renovación de una contraseña que se sospeche comprometida.
+
+#### Personal no docente {#usuarios-personal-no-docente}
+
+El segundo bloque de **Usuarios** lista todas las cuentas de [personal no docente](12-administrar-el-centro.md#personal-no-docente)
+del servidor, con los **centros** a los que pertenece cada una. Los docentes no aparecen en él y estas
+cuentas no aparecen entre los docentes. Desde aquí se puede:
+
+- **Crear** una cuenta (**Nuevo personal no docente**): nombre, apellidos, usuario, correo electrónico
+  (obligatorio) y los **centros** a los que pertenecerá, que pueden quedar vacíos y asociarse más
+  tarde. El acceso inicial es una **contraseña** (la persona deberá cambiarla en su primer acceso)
+  o un **enlace de invitación** por correo, válido 7 días.
+- **Editar** nombre, usuario, correo, contraseña, estado y **centros**. Si se le quita un centro, deja
+  de ser responsable de sus tipos de incidencia; sus incidencias se conservan.
+- **Enviar la invitación** otra vez, si caducó o no llegó.
+- **Eliminar** la cuenta. Si tiene incidencias u otros datos asociados no se puede eliminar: en ese
+  caso, se desactiva.
+
+La dirección de cada centro puede, además, incorporar y gestionar a su personal no docente desde
+Centro educativo; esta pantalla es la vía para quien administra varios centros o para crear cuentas
+antes de asignarlas.
 
 ### Registro de actividad
 

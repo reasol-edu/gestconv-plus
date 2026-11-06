@@ -3,30 +3,121 @@
 {% block title %}{{ 'teachers.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
 
 {% block content %}
-<div class="px-6 py-8 max-w-7xl mx-auto">
+<div class="px-6 py-8 max-w-7xl mx-auto space-y-8">
 
-    <div class="mb-6 flex items-center justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                {% include 'components/_breadcrumb_home.html.twig' %}
-                <a href="{{ path('app_admin') }}" class="hover:text-forest-600 transition-colors">
-                    {{ 'dashboard.title'|trans({}, 'admin') }}
-                </a>
-                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
-            </div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ 'teachers.title'|trans({}, 'admin') }}</h1>
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_admin') }}" class="hover:text-forest-600 transition-colors">
+                {{ 'dashboard.title'|trans({}, 'admin') }}
+            </a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4'}) }}
         </div>
-        <a href="{{ path('app_admin_teachers_new') }}"
-           class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
-                  hover:bg-forest-700 transition-colors shadow-xs">
-            {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
-            {{ 'teachers.new'|trans({}, 'admin') }}
-        </a>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'teachers.title'|trans({}, 'admin') }}</h1>
     </div>
 
-    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
-        <twig:Admin:TeacherListComponent />
-    </div>
+    {# ── Docentes ── #}
+    <section>
+        <div class="mb-3 flex items-center justify-between gap-4">
+            <h2 class="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                {{ ux_icon('heroicons:users', {class: 'h-5 w-5 text-forest-600'}) }}
+                {{ 'teachers.section_teachers'|trans({}, 'admin') }}
+            </h2>
+            <a href="{{ path('app_admin_teachers_new') }}"
+               class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                      hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'teachers.new'|trans({}, 'admin') }}
+            </a>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+            <twig:Admin:TeacherListComponent />
+        </div>
+    </section>
+
+    {# ── Personal no docente: bloque aparte, con otro color, para no confundirlo con los docentes ── #}
+    <section>
+        <div class="mb-3 flex items-center justify-between gap-4">
+            <div>
+                <h2 class="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                    {{ ux_icon('heroicons:identification', {class: 'h-5 w-5 text-amber-600'}) }}
+                    {{ 'teachers.section_non_teaching'|trans({}, 'admin') }}
+                </h2>
+                <p class="mt-0.5 text-sm text-gray-500">{{ 'teachers.section_non_teaching_help'|trans({}, 'admin') }}</p>
+            </div>
+            <a href="{{ path('app_admin_non_teaching_new') }}"
+               class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white
+                      hover:bg-amber-600 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}
+                {{ 'teachers.new_non_teaching'|trans({}, 'admin') }}
+            </a>
+        </div>
+
+        <div class="rounded-2xl border border-amber-200 bg-white shadow-xs overflow-hidden overflow-x-auto">
+            {% if non_teaching is empty %}
+                <p class="px-6 py-8 text-center text-sm text-gray-500">{{ 'teachers.non_teaching_empty'|trans({}, 'admin') }}</p>
+            {% else %}
+                <table class="w-full text-sm">
+                    <thead class="bg-amber-50 border-b border-amber-100">
+                        <tr class="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                            <th scope="col" class="text-left px-4 py-3">{{ 'teachers.name'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-left px-4 py-3">{{ 'teachers.username'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-left px-4 py-3">{{ 'teachers.email'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-left px-4 py-3">{{ 'teachers.non_teaching_centres'|trans({}, 'admin') }}</th>
+                            <th scope="col" class="text-right px-4 py-3"><span class="sr-only">{{ 'centre_teachers.col.actions'|trans({}, 'admin') }}</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for account in non_teaching %}
+                            {% set accountCentres = centres_by_account[account.id.toRfc4122] ?? [] %}
+                            <tr class="[&>td]:px-4 [&>td]:py-3">
+                                <td class="font-medium text-gray-900">
+                                    {{ account.name.lastName }}, {{ account.name.firstName }}
+                                    {% if not account.active %}
+                                        <span class="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{{ 'non_teaching.inactive'|trans({}, 'admin') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="font-mono text-gray-700">{{ account.username }}</td>
+                                <td class="text-gray-700">{{ account.email }}</td>
+                                <td class="text-gray-700">
+                                    {% for centre in accountCentres %}
+                                        <span class="mr-1 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-800">{{ centre.name }}</span>
+                                    {% else %}
+                                        <span class="text-xs text-gray-400">{{ 'teachers.non_teaching_no_centres'|trans({}, 'admin') }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ path('app_admin_non_teaching_edit', {id: account.id}) }}"
+                                           class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                            {{ 'non_teaching.action.edit'|trans({}, 'admin') }}
+                                        </a>
+                                        {% if account.email %}
+                                            <form method="post" action="{{ path('app_admin_non_teaching_invite', {id: account.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('invite_non_teaching_admin_' ~ account.id) }}">
+                                                <button type="submit"
+                                                        class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                                    {{ 'non_teaching.action.invite'|trans({}, 'admin') }}
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        <form method="post" action="{{ path('app_admin_non_teaching_delete', {id: account.id}) }}"
+                                              onsubmit="return confirm({{ 'non_teaching.admin.delete_confirm'|trans({}, 'admin')|json_encode|e('html_attr') }});">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_non_teaching_admin_' ~ account.id) }}">
+                                            <button type="submit"
+                                                    class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors">
+                                                {{ 'non_teaching.action.delete'|trans({}, 'admin') }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </section>
 
 </div>
 {% endblock %}

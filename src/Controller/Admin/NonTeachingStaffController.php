@@ -9,17 +9,14 @@ use App\Entity\EducationalCentre;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Repository\EducationalCentreRepository;
-use App\Repository\IssueTypeRepository;
 use App\Repository\TeacherRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
-use App\Service\ProfileMailer;
+use App\Service\NonTeachingStaffManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -33,18 +30,12 @@ class NonTeachingStaffController extends AbstractController
 {
     use TranslatorTrait;
 
-    /** Validez del enlace de invitación. */
-    private const INVITATION_VALIDITY = '+7 days';
-
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EducationalCentreRepository $centres,
         private readonly TeacherRepository $teachers,
-        private readonly IssueTypeRepository $issueTypes,
-        private readonly UserPasswordHasherInterface $hasher,
         private readonly TranslatorInterface $translator,
-        private readonly ProfileMailer $mailer,
-        private readonly ClockInterface $clock,
+        private readonly NonTeachingStaffManager $manager,
         private readonly ActivityLogService $activityLog,
     ) {}
 
@@ -121,7 +112,7 @@ class NonTeachingStaffController extends AbstractController
                 $values[$field] = $field === 'password' ? $request->request->getString($field) : trim($request->request->getString($field));
             }
             $mode   = $request->request->getString('mode') === 'invitation' ? 'invitation' : 'password';
-            $errors = $this->validate($values, $mode === 'password', true);
+            $errors = $this->manager->validate($values, $mode === 'password');
             if (!isset($errors['username']) && $this->teachers->findByUsername($values['username']) !== null) {
                 $errors['username'] = $this->t('non_teaching.error.username_duplicate');
             }
@@ -130,30 +121,12 @@ class NonTeachingStaffController extends AbstractController
             }
 
             if ($errors === []) {
-                $account = (new Teacher(new PersonName($values['first_name'], $values['last_name'])))
-                    ->setUsername($values['username'])
-                    ->setEmail($values['email'])
-                    ->setActive(true)
-                    ->setExternal(false)
-                    ->setNonTeaching(true);
-
-                if ($mode === 'password') {
-                    $account->setPassword($this->hasher->hashPassword($account, $values['password']))->setForcePasswordChange(true);
-                } else {
-                    // Contraseña inutilizable hasta que la persona establezca la suya con el enlace.
-                    $account->setPassword($this->hasher->hashPassword($account, bin2hex(random_bytes(32))));
-                    $token = bin2hex(random_bytes(32));
-                    $account->setPasswordResetToken($token)
-                        ->setPasswordResetTokenExpiresAt($this->clock->now()->modify(self::INVITATION_VALIDITY));
-                }
-
-                $centre->addNonTeachingStaff($account);
-                $this->em->persist($account);
+                [$account, $token] = $this->manager->register($values, $mode === 'password' ? $values['password'] : null, [$centre]);
                 $this->em->flush();
                 $this->activityLog->log('non_teaching.created', ['entityId' => $account->getId()->toRfc4122(), 'username' => $account->getUsername()]);
 
-                if ($mode === 'invitation') {
-                    $this->mailer->sendInvitation($account, $token, $centre);
+                if ($token !== null) {
+                    $this->manager->sendInvitation($account, $token, $centre->getName());
                     $this->addFlash('success', $this->t('non_teaching.flash.invited'));
                 } else {
                     $this->addFlash('success', $this->t('non_teaching.flash.created'));
@@ -199,7 +172,7 @@ class NonTeachingStaffController extends AbstractController
                 $values[$field] = $field === 'password' ? $request->request->getString($field) : trim($request->request->getString($field));
             }
             $active = $request->request->getString('active') === '1';
-            $errors = $this->validate($values, false, true);
+            $errors = $this->manager->validate($values, false);
             $other  = isset($errors['username']) ? null : $this->teachers->findByUsername($values['username']);
             if ($other !== null && $other->getId()->toRfc4122() !== $account->getId()->toRfc4122()) {
                 $errors['username'] = $this->t('non_teaching.error.username_duplicate');
@@ -215,7 +188,7 @@ class NonTeachingStaffController extends AbstractController
                     ->setEmail($values['email'])
                     ->setActive($active);
                 if ($values['password'] !== '') {
-                    $account->setPassword($this->hasher->hashPassword($account, $values['password']))->setForcePasswordChange(true);
+                    $this->manager->changePassword($account, $values['password']);
                 }
                 $this->em->flush();
                 $this->activityLog->log('non_teaching.updated', ['entityId' => $account->getId()->toRfc4122(), 'username' => $account->getUsername()]);
@@ -248,11 +221,9 @@ class NonTeachingStaffController extends AbstractController
         if ($account->getEmail() === null || $account->getEmail() === '') {
             $this->addFlash('error', $this->t('non_teaching.error.email_required'));
         } else {
-            $token = bin2hex(random_bytes(32));
-            $account->setPasswordResetToken($token)
-                ->setPasswordResetTokenExpiresAt($this->clock->now()->modify(self::INVITATION_VALIDITY));
+            $token = $this->manager->newInvitationToken($account);
             $this->em->flush();
-            $this->mailer->sendInvitation($account, $token, $centre);
+            $this->manager->sendInvitation($account, $token, $centre->getName());
             $this->addFlash('success', $this->t('non_teaching.flash.invited'));
         }
 
@@ -269,10 +240,7 @@ class NonTeachingStaffController extends AbstractController
         }
 
         // Deja de ser responsable de los tipos de incidencia del centro; sus incidencias se conservan.
-        foreach ($this->issueTypes->findByCentre($centre) as $type) {
-            $type->removeManager($account);
-        }
-        $centre->removeNonTeachingStaff($account);
+        $this->manager->removeFromCentre($account, $centre);
         $this->em->flush();
         $this->activityLog->log('non_teaching.removed', ['entityId' => $account->getId()->toRfc4122(), 'username' => $account->getUsername()]);
         $this->addFlash('success', $this->t('non_teaching.flash.removed'));
@@ -300,33 +268,5 @@ class NonTeachingStaffController extends AbstractController
         }
 
         throw $this->createNotFoundException();
-    }
-
-    /**
-     * @param array<string, string> $values
-     * @return array<string, string>
-     */
-    private function validate(array $values, bool $passwordRequired, bool $emailRequired): array
-    {
-        $errors = [];
-        if ($values['first_name'] === '') {
-            $errors['first_name'] = $this->t('teacher.error.first_name_required');
-        }
-        if ($values['last_name'] === '') {
-            $errors['last_name'] = $this->t('teacher.error.last_name_required');
-        }
-        if ($values['username'] === '') {
-            $errors['username'] = $this->t('teacher.error.username_required');
-        }
-        if ($values['email'] === '' && $emailRequired) {
-            $errors['email'] = $this->t('non_teaching.error.email_required');
-        } elseif ($values['email'] !== '' && !filter_var($values['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = $this->t('teacher.error.email_invalid');
-        }
-        if ($passwordRequired && $values['password'] === '') {
-            $errors['password'] = $this->t('teacher.error.password_required');
-        }
-
-        return $errors;
     }
 }

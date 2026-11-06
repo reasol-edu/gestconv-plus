@@ -36,6 +36,10 @@
                     <span class="text-sm text-gray-500">{{ 'card.teachers.admins'|trans({}, 'admin') }}</span>
                     <span class="text-lg font-semibold text-forest-600">{{ stats.teachers_admin }}</span>
                 </div>
+                <div class="flex items-baseline justify-between">
+                    <span class="text-sm text-gray-500">{{ 'card.teachers.non_teaching'|trans({}, 'admin') }}</span>
+                    <span class="text-lg font-semibold text-amber-600">{{ stats.non_teaching_total }}</span>
+                </div>
             </div>
             <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-end">
                 <span class="inline-flex items-center gap-1.5 text-sm font-medium text-forest-600 group-hover:text-forest-800 transition-colors">

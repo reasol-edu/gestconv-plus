@@ -29,6 +29,7 @@ class AdminController extends AbstractController
                 'teachers_total'  => $this->teachers->countAll(),
                 'teachers_active' => $this->teachers->countActive(),
                 'teachers_admin'  => $this->teachers->countAdmins(),
+                'non_teaching_total' => $this->teachers->countNonTeaching(),
                 'centres_total'   => $this->centres->countAll(),
                 'logs_today'      => $this->activityLogs->countToday(),
             ],

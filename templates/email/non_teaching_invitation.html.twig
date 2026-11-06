@@ -5,7 +5,7 @@
     {{ 'emails.greeting'|trans({'%name%': teacher.name.firstName}, 'emails') }}
 </p>
 <p style="margin: 0 0 16px;">
-    {{ 'emails.invitation.intro'|trans({'%centre%': centre.name}, 'emails') }}
+    {{ 'emails.invitation.intro'|trans({'%centre%': centre_names}, 'emails') }}
 </p>
 <p style="margin: 0 0 24px;">
     {{ 'emails.invitation.username'|trans({'%username%': teacher.username}, 'emails') }}

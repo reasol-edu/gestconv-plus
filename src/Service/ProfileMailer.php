@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -53,7 +52,7 @@ class ProfileMailer
     }
 
     /** Invitación a una cuenta de personal no docente: el enlace permite establecer su contraseña. */
-    public function sendInvitation(Teacher $teacher, string $token, EducationalCentre $centre): void
+    public function sendInvitation(Teacher $teacher, string $token, string $centreNames): void
     {
         $inviteUrl = $this->urlGenerator->generate(
             'app_password_reset',
@@ -65,11 +64,11 @@ class ProfileMailer
 
         $this->sendSync((new TemplatedEmail())
             ->to(new Address((string) $teacher->getEmail(), $fullName))
-            ->subject($this->translator->trans('emails.invitation.subject', ['%centre%' => $centre->getName()], 'emails'))
+            ->subject($this->translator->trans('emails.invitation.subject', ['%centre%' => $centreNames], 'emails'))
             ->htmlTemplate('email/non_teaching_invitation.html.twig')
             ->context([
-                'teacher'    => $teacher,
-                'centre'     => $centre,
+                'teacher'      => $teacher,
+                'centre_names' => $centreNames,
                 'invite_url' => $inviteUrl,
             ]));
     }

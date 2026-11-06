@@ -68,6 +68,24 @@ class EducationalCentreRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Todos los centros, por nombre, con su personal no docente ya cargado.
+     *
+     * @return list<EducationalCentre>
+     */
+    public function findAllWithNonTeachingStaff(): array
+    {
+        /** @var list<EducationalCentre> $result */
+        $result = $this->createQueryBuilder('ec')
+            ->addSelect('nts')
+            ->leftJoin('ec.nonTeachingStaff', 'nts')
+            ->orderBy('ec.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
     /** @return EducationalCentre[] */
     public function findAllWithActiveYear(): array
     {

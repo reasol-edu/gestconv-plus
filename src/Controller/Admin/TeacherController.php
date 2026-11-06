@@ -8,6 +8,7 @@ use App\Controller\TranslatorTrait;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Pagination\Paginator;
+use App\Repository\EducationalCentreRepository;
 use App\Repository\TeacherRepository;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
@@ -33,6 +34,7 @@ class TeacherController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly TeacherRepository $teachers,
+        private readonly EducationalCentreRepository $centres,
         private readonly UserPasswordHasherInterface $hasher,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
@@ -42,7 +44,18 @@ class TeacherController extends AbstractController
     #[Route('', name: 'app_admin_teachers_index')]
     public function index(): Response
     {
-        return $this->render('admin/teacher/index.html.twig');
+        // El personal no docente se muestra aparte de los docentes, con los centros a los que pertenece cada persona.
+        $centresByAccount = [];
+        foreach ($this->centres->findAllWithNonTeachingStaff() as $centre) {
+            foreach ($centre->getNonTeachingStaff() as $member) {
+                $centresByAccount[$member->getId()->toRfc4122()][] = $centre;
+            }
+        }
+
+        return $this->render('admin/teacher/index.html.twig', [
+            'non_teaching'       => $this->teachers->findNonTeaching(),
+            'centres_by_account' => $centresByAccount,
+        ]);
     }
 
     #[Route('/nuevo', name: 'app_admin_teachers_new')]
@@ -118,6 +131,11 @@ class TeacherController extends AbstractController
         $teacher = $this->teachers->findById($id);
         if ($teacher === null) {
             throw $this->createNotFoundException();
+        }
+
+        // El personal no docente tiene su propia ficha (con los centros a los que pertenece).
+        if ($teacher->isNonTeaching()) {
+            return $this->redirectToRoute('app_admin_non_teaching_edit', ['id' => $id]);
         }
 
         $currentUser = $this->getUser();

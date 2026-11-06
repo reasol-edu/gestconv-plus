@@ -214,10 +214,14 @@ en la lista jerárquica.
 
 ## Administración global
 
+Las cuentas de **personal no docente** también las gestiona la administración global, desde
+[Administración › Usuarios](13-administrar-la-plataforma.md#usuarios-personal-no-docente), en un bloque
+aparte de los docentes y con los centros a los que pertenece cada una.
+
 | Acción | Admin global |
 |---|:---:|
 | Gestionar centros educativos | ✓ |
-| Gestionar docentes de la plataforma | ✓ |
+| Gestionar los usuarios de la plataforma (docentes y personal no docente) | ✓ |
 | Ver el registro de actividad | ✓ |
 | Configuración global | ✓ |
 | Activar el [modo mantenimiento](13-administrar-la-plataforma.md#modo-mantenimiento), que cierra la aplicación al resto de usuarios | ✓ |

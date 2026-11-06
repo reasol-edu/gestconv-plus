@@ -242,6 +242,40 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         return $result;
     }
 
+    /**
+     * Todas las cuentas de personal no docente, de cualquier centro, por apellidos; opcionalmente las que coinciden con el texto
+     * (nombre, apellidos, usuario o correo).
+     *
+     * @return list<Teacher>
+     */
+    public function findNonTeaching(string $search = ''): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.nonTeaching = true')
+            ->orderBy('t.name.lastName', 'ASC')
+            ->addOrderBy('t.name.firstName', 'ASC');
+
+        $search = trim($search);
+        if ($search !== '') {
+            $qb->andWhere('LOWER(t.name.firstName) LIKE :q OR LOWER(t.name.lastName) LIKE :q OR LOWER(t.username) LIKE :q OR LOWER(t.email) LIKE :q')
+                ->setParameter('q', '%' . mb_strtolower(addcslashes($search, '%_\\')) . '%');
+        }
+
+        /** @var list<Teacher> $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $result;
+    }
+
+    public function countNonTeaching(): int
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.nonTeaching = true')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function findByEmailVerificationToken(string $token): ?Teacher
     {
         return $this->findOneBy(['emailVerificationToken' => Teacher::hashToken($token)]);
