@@ -57,18 +57,13 @@ class IssueController extends AbstractController
 
     // ── Listado ───────────────────────────────────────────────────────────────
 
-    /** Provisional (la fase 3 lo sustituye por el listado filtrable): las últimas incidencias que el usuario puede ver. */
+    /** Listado (componente Live): las incidencias que el usuario puede ver. */
     #[Route('', name: 'app_issues_index', methods: ['GET'])]
     public function index(#[CurrentCentre] EducationalCentre $centre): Response
     {
         $this->denyAccessUnlessGranted(IssueVoter::CREATE, $centre);
 
-        $issues = array_values(array_filter(
-            $this->issues->findBy(['educationalCentre' => $centre], ['createdAt' => 'DESC'], 100),
-            fn (Issue $issue): bool => $this->isGranted(IssueVoter::VIEW, $issue),
-        ));
-
-        return $this->render('issue/index.html.twig', ['centre' => $centre, 'issues' => $issues]);
+        return $this->render('issue/index.html.twig', ['centre' => $centre]);
     }
 
     // ── Alta ──────────────────────────────────────────────────────────────────

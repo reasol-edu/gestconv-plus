@@ -1,0 +1,184 @@
+{% import 'components/_pagination_live.html.twig' as pager %}
+{% import 'components/_sort_header.html.twig' as sorter %}
+{% set pagination = this.pagination %}
+{% set stats = this.stats %}
+{% set isManager = this.isManager %}
+{% set selectClass = 'rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0' %}
+<div {{ attributes.defaults(stimulus_controller('filter-persist', {
+    centreId: centre.id.toRfc4122,
+    active: this.hasActiveFilters,
+    key: 'issue-filters',
+    defaults: {search: '', status: '', typeId: '', priorityId: '', scope: '', overdueOnly: false},
+})) }}>
+
+    {# Cifras por rol: quien gestiona ve lo pendiente de atender; quien solo informa, el estado de las suyas. #}
+    {% set cards = isManager
+        ? [
+            {name: 'open', label: 'issue.list.stats.open', value: stats.open, tone: 'text-amber-700'},
+            {name: 'in_progress', label: 'issue.list.stats.in_progress', value: stats.in_progress, tone: 'text-sky-700'},
+            {name: 'no_priority', label: 'issue.list.stats.no_priority', value: stats.no_priority, tone: 'text-gray-700'},
+            {name: 'overdue', label: 'issue.list.stats.overdue', value: stats.overdue, tone: 'text-red-700'},
+            {name: 'closed', label: 'issue.list.stats.closed', value: stats.closed, tone: 'text-forest-700'},
+        ]
+        : [
+            {name: 'open', label: 'issue.list.stats.mine_open', value: stats.open, tone: 'text-amber-700'},
+            {name: 'in_progress', label: 'issue.list.stats.mine_in_progress', value: stats.in_progress, tone: 'text-sky-700'},
+            {name: 'closed', label: 'issue.list.stats.mine_closed', value: stats.closed, tone: 'text-forest-700'},
+        ] %}
+    <div class="grid grid-cols-2 gap-3 border-b border-gray-100 px-6 py-4 sm:grid-cols-3 {{ isManager ? 'lg:grid-cols-5' : '' }}">
+        {% for card in cards %}
+            <button type="button" data-action="live#action" data-live-action-param="quickFilter" data-live-name-param="{{ card.name }}"
+                    class="rounded-xl border border-gray-200 bg-white px-4 py-3 text-left transition-colors hover:border-forest-300 hover:bg-forest-50/40">
+                <span class="block text-2xl font-bold tabular-nums {{ card.tone }}">{{ card.value }}</span>
+                <span class="block text-xs font-medium text-gray-500">{{ card.label|trans({}, 'admin') }}</span>
+            </button>
+        {% endfor %}
+    </div>
+
+    {# Filtros #}
+    <div class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
+        <div class="relative flex-1 min-w-48">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                {{ ux_icon('heroicons:magnifying-glass', {class: 'h-4 w-4 text-gray-400'}) }}
+            </div>
+            <input type="search" data-model="norender|search" data-action="input->live#action" data-live-action-param="resetPage"
+                   placeholder="{{ 'issue.list.search'|trans({}, 'admin') }}" value="{{ search }}"
+                   class="block w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+        </div>
+
+        <select data-model="norender|status" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }}" aria-label="{{ 'issue.field.status'|trans({}, 'admin') }}">
+            <option value="" {{ status == '' ? 'selected' : '' }}>{{ 'issue.list.filter.open'|trans({}, 'admin') }}</option>
+            <option value="closed" {{ status == 'closed' ? 'selected' : '' }}>{{ 'issue.list.filter.closed'|trans({}, 'admin') }}</option>
+            <option value="all" {{ status == 'all' ? 'selected' : '' }}>{{ 'issue.list.filter.all'|trans({}, 'admin') }}</option>
+            {% for value in ['open', 'in_progress', 'solved', 'not_applicable', 'duplicate'] %}
+                <option value="{{ value }}" {{ status == value ? 'selected' : '' }}>{{ ('issue.status.' ~ value)|trans({}, 'admin') }}</option>
+            {% endfor %}
+        </select>
+
+        {% set availableTypes = this.availableTypes %}
+        {% if availableTypes is not empty %}
+            <select data-model="norender|typeId" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }} max-w-56" aria-label="{{ 'issue.field.type'|trans({}, 'admin') }}">
+                <option value="">{{ 'issue.list.filter.all_types'|trans({}, 'admin') }}</option>
+                {% for type in availableTypes %}
+                    <option value="{{ type.id.toRfc4122 }}" {{ typeId == type.id.toRfc4122 ? 'selected' : '' }}>{{ type.path }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+
+        <select data-model="norender|priorityId" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }}" aria-label="{{ 'issue.field.priority'|trans({}, 'admin') }}">
+            <option value="">{{ 'issue.list.filter.all_priorities'|trans({}, 'admin') }}</option>
+            <option value="none" {{ priorityId == 'none' ? 'selected' : '' }}>{{ 'issue.priority.none'|trans({}, 'admin') }}</option>
+            {% for priority in this.availablePriorities %}
+                <option value="{{ priority.id.toRfc4122 }}" {{ priorityId == priority.id.toRfc4122 ? 'selected' : '' }}>{{ priority.name }}</option>
+            {% endfor %}
+        </select>
+
+        {% if isManager %}
+            <select data-model="norender|scope" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }}" aria-label="{{ 'issue.list.filter.scope'|trans({}, 'admin') }}">
+                <option value="">{{ 'issue.list.filter.scope_all'|trans({}, 'admin') }}</option>
+                <option value="mine" {{ scope == 'mine' ? 'selected' : '' }}>{{ 'issue.list.filter.scope_mine'|trans({}, 'admin') }}</option>
+                <option value="managed" {{ scope == 'managed' ? 'selected' : '' }}>{{ 'issue.list.filter.scope_managed'|trans({}, 'admin') }}</option>
+            </select>
+        {% endif %}
+
+        <label class="inline-flex shrink-0 items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" data-model="overdueOnly" {{ overdueOnly ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+            {{ 'issue.list.filter.overdue'|trans({}, 'admin') }}
+        </label>
+
+        {% if this.hasActiveFilters %}
+            <button type="button" data-action="live#action" data-live-action-param="clearFilters" class="text-sm font-medium text-forest-700 hover:underline">{{ 'issue.list.clear_filters'|trans({}, 'admin') }}</button>
+        {% endif %}
+
+        <svg data-loading class="hidden h-4 w-4 text-forest-500 animate-spin shrink-0 ml-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 22 6.477 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+        </svg>
+    </div>
+
+    {% if message != '' %}
+        <div role="status" class="mx-6 mt-3 rounded-xl border px-4 py-2.5 text-sm {{ messageKind == 'warning' ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-forest-200 bg-forest-50 text-forest-900' }}">{{ message }}</div>
+    {% endif %}
+
+    {# Cambio de estado en bloque #}
+    {% if selected is not empty %}
+        <div class="mx-6 mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-forest-200 bg-forest-50 px-4 py-2.5 text-sm">
+            <span class="font-medium text-forest-900">{{ 'issue.list.selected'|trans({'%count%': selected|length}, 'admin') }}</span>
+            {% for to in ['in_progress', 'solved', 'not_applicable', 'open'] %}
+                <button type="button" data-action="live#action" data-live-action-param="bulkStatus" data-live-to-param="{{ to }}"
+                        class="rounded-lg border border-forest-300 bg-white px-3 py-1 text-xs font-medium text-forest-800 hover:bg-forest-100 transition-colors">{{ ('issue.status.action.' ~ to)|trans({}, 'admin') }}</button>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div data-loading="addClass(opacity-50 pointer-events-none animate-pulse)" class="transition-opacity">
+    {% if pagination.totalItems == 0 %}
+        <div class="px-6 py-16 text-center">
+            {{ ux_icon('heroicons:wrench-screwdriver', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+            <p class="text-sm text-gray-500">{{ (this.hasActiveFilters ? 'issue.list.empty_filtered' : 'issue.list.empty')|trans({}, 'admin') }}</p>
+        </div>
+    {% else %}
+        <div class="overflow-x-auto">
+        <table class="table-cards w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-100 bg-gray-50">
+                    {% if isManager %}
+                        <th scope="col" class="w-10 px-6 py-3">
+                            <input type="checkbox" data-action="live#action" data-live-action-param="toggleAllVisible" aria-label="{{ 'issue.list.select_all'|trans({}, 'admin') }}"
+                                   class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                        </th>
+                    {% endif %}
+                    {{ sorter.th('issue.list.col.number'|trans({}, 'admin'), 'number', sort, sortDir) }}
+                    {{ sorter.th('issue.list.col.type'|trans({}, 'admin'), 'type', sort, sortDir) }}
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ 'issue.list.col.reporter'|trans({}, 'admin') }}</th>
+                    {{ sorter.th('issue.list.col.priority'|trans({}, 'admin'), 'priority', sort, sortDir) }}
+                    {{ sorter.th('issue.list.col.status'|trans({}, 'admin'), 'status', sort, sortDir) }}
+                    {{ sorter.th('issue.list.col.due'|trans({}, 'admin'), 'due', sort, sortDir) }}
+                    {{ sorter.th('issue.list.col.created'|trans({}, 'admin'), 'created', sort, sortDir) }}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for issue in pagination.items %}
+                    {% set issueId = issue.id.toRfc4122 %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        {% if isManager %}
+                            <td class="px-6 py-4">
+                                {% if this.canManage(issue) %}
+                                    <input type="checkbox" data-model="selected" value="{{ issueId }}" {{ issueId in selected ? 'checked' : '' }}
+                                           aria-label="{{ 'issue.list.select_one'|trans({'%number%': issue.number}, 'admin') }}"
+                                           class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                        <td data-label="{{ 'issue.list.col.number'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 whitespace-nowrap">
+                            <a href="{{ path('app_issues_show', {id: issueId}) }}" class="font-semibold text-forest-700 hover:underline">#{{ issue.number }}</a>
+                        </td>
+                        <td data-label="{{ 'issue.list.col.type'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
+                            <a href="{{ path('app_issues_show', {id: issueId}) }}" class="font-medium text-gray-900 hover:text-forest-700">{{ issue.type.path }}</a>
+                            {% if issue.booking %}
+                                <p class="text-xs text-gray-500">{{ ux_icon('heroicons:rectangle-stack', {class: 'inline h-3.5 w-3.5 align-text-bottom'}) }} {{ issue.booking.resource.name }}</p>
+                            {% elseif issue.location %}
+                                <p class="text-xs text-gray-500">{{ issue.location.name }}</p>
+                            {% endif %}
+                        </td>
+                        <td data-label="{{ 'issue.list.col.reporter'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 text-gray-700">{{ issue.reporter.name.full() }}</td>
+                        <td data-label="{{ 'issue.list.col.priority'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">{% include 'issue/_priority_badge.html.twig' with {priority: issue.priority} only %}</td>
+                        <td data-label="{{ 'issue.list.col.status'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">{% include 'issue/_status_badge.html.twig' with {status: issue.status} only %}</td>
+                        <td data-label="{{ 'issue.list.col.due'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 whitespace-nowrap">
+                            {% if issue.maxDue %}
+                                <span class="{{ issue.isOverdue(this.today) ? 'font-semibold text-red-700' : 'text-gray-700' }}">{{ issue.maxDue|date('format.date'|trans) }}</span>
+                            {% else %}
+                                <span class="text-gray-400">—</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="{{ 'issue.list.col.created'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4 whitespace-nowrap text-gray-500">{{ issue.createdAt|date('format.date'|trans) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        {{ pager.nav(pagination) }}
+    {% endif %}
+    </div>
+</div>

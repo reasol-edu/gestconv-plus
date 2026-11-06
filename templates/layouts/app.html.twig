@@ -147,6 +147,11 @@
                 {% if is_granted('educational_centre.bookings', active_centre) %}
                     {{ _self.nav_item('bookings'|trans({}, 'navigation'), path('app_bookings_index'), 'heroicons:rectangle-stack', current_route, 'app_bookings') }}
                 {% endif %}
+
+                {# Incidencias — profesorado del curso visualizado y dirección, con el módulo activado #}
+                {% if is_granted('issue.create', active_centre) %}
+                    {{ _self.nav_item('issues'|trans({}, 'navigation'), path('app_issues_index'), 'heroicons:wrench-screwdriver', current_route, 'app_issues') }}
+                {% endif %}
             {% endif %}
 
             {# Calendario — sin centro activo también se muestra, así que va fuera del bloque anterior #}
