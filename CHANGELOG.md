@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.0] - 2026-11-06
+
+### Added
+
+- **Módulo de incidencias** (sección **Incidencias**, desactivable en Ajustes › Secciones de la aplicación). Sirve para avisar de averías y desperfectos del centro y seguirlos hasta cerrarlos.
+  - **Registrar:** cualquier docente elige un **tipo** de una lista jerárquica (que decide quién la atiende), una dependencia opcional del catálogo de Ubicaciones, una descripción con formato y adjuntos (las imágenes, en miniatura). Desde la ficha de una **reserva** se registra asociada a ella, sin pedir la dependencia.
+  - **Atenderla:** los **responsables** de un tipo (los suyos y los de todos los tipos superiores; si no hay ninguno, la dirección) asignan una **prioridad** —con plazos recomendado y máximo en días lectivos— y la ponen **en proceso** o la cierran como **solucionada**, **no procede** o **duplicada** (enlazando la original). Una cerrada se puede reabrir. Todos los implicados añaden **observaciones** con fecha y hora, y cada cambio queda en el **historial** con su valor anterior y el nuevo.
+  - **Listado:** paginado, con búsqueda, filtros que se recuerdan, orden, cifras según el rol, solo las abiertas por defecto y **cambio de estado en bloque**. La dirección tiene el botón **Tipos y prioridades**.
+  - **Tipos y prioridades** configurables en cada centro (Centro educativo › Incidencias), con exportación e importación en JSON con vista previa, selección, ignorar o sustituir y responsables por su usuario IdEA. Cada centro empieza con las prioridades *Crítica*, *Alta*, *Media* y *Baja*.
+  - **Avisos** por correo (o en el resumen diario) de la nueva incidencia, el cambio de estado, la prioridad, las observaciones y los cambios de datos, con un **recordatorio diario de las vencidas** en días lectivos. Cada uno es configurable a nivel global, de centro y de docente. También salen en la campana, el panel de inicio y el buscador global.
+
+### Changed
+
+- Las **incidencias de las reservas** pasan al módulo de incidencias y se retira la función anterior. Las existentes se migran solas a un tipo «Reservas de recursos › categoría» con los responsables de la categoría: las registradas y las recibidas quedan **abiertas** (el comentario de una recibida se conserva como observación) y las solucionadas, **solucionadas**. La reserva sigue mostrando la marca de incidencia, solo a quien puede verla, y el listado de reservas conserva su filtro de incidencias. No hace falta ningún paso manual.
+- Los tres avisos «incidencia de reserva registrada, recibida y solucionada» desaparecen de los ajustes de avisos que se reciben, que pasan a ser 25 en cinco categorías; los valores que alguien hubiera fijado en ellos se pierden.
+
 ## [1.19.0] - 2026-11-06
 
 ### Added
