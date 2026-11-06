@@ -212,10 +212,18 @@ contrarias a graves.
 
 ### Ubicaciones
 
-En **Centro educativo › Ubicaciones** se configura el catálogo de lugares donde puede ocurrir un
-incidente, organizado en categorías. Es el que se ofrece en el campo obligatorio **Dónde
-sucedió** al registrar un parte (ver
-[Registrar un nuevo parte](03-el-trabajo-diario.md#registrar-un-nuevo-parte)). El catálogo por
+En **Centro educativo › Ubicaciones del centro** se configura el catálogo de lugares del centro,
+organizado en categorías. Se usa en tres sitios:
+
+- El campo obligatorio **Dónde sucedió** al registrar un parte (ver
+  [Registrar un nuevo parte](03-el-trabajo-diario.md#registrar-un-nuevo-parte)).
+- La **dependencia** (opcional) de una [incidencia](03-el-trabajo-diario.md#incidencias).
+- Como sugerencias del **lugar de realización** de una
+  [actividad](05-calendario-y-tablon.md#actividades-de-centro), que es un texto libre: se puede elegir
+  una ubicación del catálogo o escribir cualquier otro lugar.
+
+Una ubicación desactivada deja de ofrecerse en los formularios nuevos, pero se conserva en lo ya
+registrado. El catálogo por
 defecto incluye las ubicaciones más habituales: *En clase*, *En el intercambio de clases*,
 *Entrada/Salida*, *Recreo*, *Durante las actividades extraescolares* y *Otros*.
 

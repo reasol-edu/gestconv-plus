@@ -36,6 +36,30 @@ class SchoolEventControllerTest extends ControllerTestCase
         self::assertSelectorExists('form');
     }
 
+    public function testThePlaceDropdownSuggestsTheCentresLocationsAndKeepsAnyFreeText(): void
+    {
+        [$admin, $centre, , $year] = $this->makeScenario();
+        $category = (new \App\Entity\LocationOptionCategory())->setEducationalCentre($centre)->setName('Edificio principal')->setPosition(0);
+        $this->persist($category);
+        $this->persist((new \App\Entity\LocationOption())->setEducationalCentre($centre)->setCategory($category)->setName('Salón de actos')->setPosition(0));
+        $this->persist((new \App\Entity\LocationOption())->setEducationalCentre($centre)->setCategory($category)->setName('Gimnasio')->setPosition(1)->setActive(false));
+        $event = $this->makeEvent($year, 'Excursión')->setLocation('Teatro Lope de Vega');
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $options = fn ($crawler): array => $crawler->filter('select#location option')->each(static fn ($n): string => (string) $n->attr('value'));
+
+        // Nueva: solo las ubicaciones activas, agrupadas por categoría.
+        $crawler = $this->client->request('GET', '/actividades/nuevo');
+        self::assertContains('Salón de actos', $options($crawler));
+        self::assertNotContains('Gimnasio', $options($crawler), 'una ubicación inactiva no se sugiere');
+        self::assertSame('Edificio principal', $crawler->filter('select#location optgroup')->attr('label'));
+
+        // Editar: un lugar escrito a mano (que no es del catálogo) se conserva seleccionado.
+        $crawler = $this->client->request('GET', '/actividades/' . $event->getId()->toRfc4122() . '/editar');
+        self::assertSame('Teatro Lope de Vega', $crawler->filter('select#location option[selected]')->attr('value'));
+    }
+
     public function testNewGetDeniesNonAdmin(): void
     {
         [, $centre] = $this->makeScenario();

@@ -13,6 +13,7 @@ use App\Entity\SchoolEventType;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Repository\GroupRepository;
+use App\Repository\LocationOptionRepository;
 use App\Repository\SchoolEventRepository;
 use App\Repository\SchoolEventTypeRepository;
 use App\Repository\StudentRepository;
@@ -43,6 +44,7 @@ class SchoolEventController extends AbstractController
         private readonly GroupRepository $groups,
         private readonly SchoolEventTypeRepository $types,
         private readonly TeacherRepository $teachers,
+        private readonly LocationOptionRepository $locations,
         private readonly StudentRepository $students,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
@@ -118,6 +120,7 @@ class SchoolEventController extends AbstractController
             'selectedGroupIds'     => $selectedGroupIds,
             'availableTypes'       => $this->types->findActiveByCentreOrdered($centre),
             'availableTeachers'    => $this->teachers->findByAcademicYearOrderedByName($year),
+            'availableLocations'   => $this->locations->findByCentreActive($centre),
             'selectedCompanionIds' => $selectedCompanionIds,
         ]);
     }
@@ -189,6 +192,7 @@ class SchoolEventController extends AbstractController
             'selectedGroupIds'     => $selectedGroupIds,
             'availableTypes'       => $this->selectableTypes($centre, $event),
             'availableTeachers'    => $this->selectableTeachers($year, $event),
+            'availableLocations'   => $this->locations->findByCentreActive($centre),
             'selectedCompanionIds' => $selectedCompanionIds,
         ]);
     }

@@ -104,8 +104,12 @@ Cada actividad tiene:
   [Tipos de actividad](06-administrar-el-centro.md#tipos-de-actividad)). Por defecto:
   *Complementaria*, *Extraescolar* y *Otros*.
 - **Enlace** opcional (por ejemplo, a un formulario de inscripción o más información).
-- **Lugar de realización**, **departamento organizador** y **coordinador/a de la actividad**
-  (un docente del curso, elegido en un buscador): opcionales.
+- **Lugar de realización**: opcional. Es un desplegable que sugiere las
+  [ubicaciones del centro](06-administrar-el-centro.md#ubicaciones), pero el valor es **texto libre**:
+  se puede escribir cualquier lugar («Teatro Lope de Vega», «Parque de las Ciencias»…) y se guarda tal
+  cual, sin enlazarlo con el catálogo.
+- **Departamento organizador** y **coordinador/a de la actividad** (un docente del curso, elegido en un
+  buscador): opcionales.
 - **Profesorado acompañante** (opcional): uno o varios docentes del curso, además de quien coordina.
 - **Grupos asociados** (opcionales), elegidos en un desplegable de búsqueda que admite varios a la
   vez. Una actividad puede estar asociada a grupos aunque la vea todo el centro.

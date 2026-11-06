@@ -20,11 +20,31 @@
     </div>
 
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <twig:Form:Field
-            id="location" name="location" type="text"
-            label="{{ 'school_event.field.location'|trans({}, 'admin') }}"
-            value="{{ values.location }}"
-            maxlength="255" />
+        {# Texto libre (no una referencia al catálogo), con las ubicaciones del centro como sugerencias. #}
+        <div>
+            <label for="location" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'school_event.field.location'|trans({}, 'admin') }}</label>
+            <select id="location" name="location" class="w-full text-sm ts-local"
+                    data-placeholder="{{ 'school_event.field.location_placeholder'|trans({}, 'admin')|e('html_attr') }}"
+                    data-create-label="{{ 'school_event.field.location_create'|trans({}, 'admin')|e('html_attr') }}"
+                    data-no-results="{{ 'school_event.field.groups_no_results'|trans({}, 'admin')|e('html_attr') }}">
+                <option value=""></option>
+                {% set known = [] %}
+                {% for option in availableLocations|default([]) %}{% set known = known|merge([option.name]) %}{% endfor %}
+                {% if values.location != '' and values.location not in known %}
+                    <option value="{{ values.location }}" selected>{{ values.location }}</option>
+                {% endif %}
+                {% set lastCategory = null %}
+                {% for option in availableLocations|default([]) %}
+                    {% if option.category.id.toRfc4122 != lastCategory %}
+                        {% if lastCategory is not null %}</optgroup>{% endif %}
+                        <optgroup label="{{ option.category.name }}">
+                        {% set lastCategory = option.category.id.toRfc4122 %}
+                    {% endif %}
+                    <option value="{{ option.name }}" {{ values.location == option.name ? 'selected' : '' }}>{{ option.name }}</option>
+                    {% if loop.last %}</optgroup>{% endif %}
+                {% endfor %}
+            </select>
+        </div>
 
         <twig:Form:Field
             id="organizing_department" name="organizing_department" type="text"
