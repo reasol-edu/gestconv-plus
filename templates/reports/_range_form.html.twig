@@ -1,0 +1,53 @@
+{# Formulario de rango de fechas de un informe, con los rangos rápidos y los botones de exportación.
+   Variables: prefix (id de los campos), from, to, hasReport (bool), pdfRoute, xlsxRoute, centre. #}
+<form method="get" data-controller="quick-date-range" class="flex flex-wrap items-end gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-xs">
+    <div>
+        <label for="{{ prefix }}-from" class="block text-xs font-medium text-gray-500 mb-1">{{ 'group_stats.field.from'|trans({}, 'admin') }}</label>
+        <input type="date" id="{{ prefix }}-from" name="from" value="{{ from ? from|date('Y-m-d') : '' }}" required
+               data-quick-date-range-target="from"
+               class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                      focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+    </div>
+    <div>
+        <label for="{{ prefix }}-to" class="block text-xs font-medium text-gray-500 mb-1">{{ 'group_stats.field.to'|trans({}, 'admin') }}</label>
+        <input type="date" id="{{ prefix }}-to" name="to" value="{{ to ? to|date('Y-m-d') : '' }}" required
+               data-quick-date-range-target="to"
+               class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                      focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+    </div>
+
+    <div class="flex flex-wrap gap-1.5">
+        {% for days, key in {7: 'last_week', 30: 'last_month', 90: 'last_three_months', 180: 'last_six_months', 365: 'last_year'} %}
+            <button type="button" data-action="quick-date-range#apply" data-quick-date-range-days-param="{{ days }}"
+                    class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600
+                           hover:bg-forest-50 hover:border-forest-200 hover:text-forest-700 transition-colors">
+                {{ ('group_stats.quick_range.' ~ key)|trans({}, 'admin') }}
+            </button>
+        {% endfor %}
+    </div>
+
+    <button type="submit"
+            class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-medium text-white
+                   hover:bg-forest-700 transition-colors shadow-xs">
+        {{ ux_icon('heroicons:chart-bar', {class: 'h-4 w-4'}) }}
+        {{ 'group_stats.generate'|trans({}, 'admin') }}
+    </button>
+
+    {% if hasReport %}
+        <div class="ml-auto flex items-center gap-2">
+            <a href="{{ path(pdfRoute, {centreId: centre.id, from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}"
+               target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:document-arrow-down', {class: 'h-4 w-4'}) }}
+                {{ 'group_stats.export_pdf'|trans({}, 'admin') }}
+            </a>
+            <a href="{{ path(xlsxRoute, {centreId: centre.id, from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:table-cells', {class: 'h-4 w-4'}) }}
+                {{ 'group_stats.export_xlsx'|trans({}, 'admin') }}
+            </a>
+        </div>
+    {% endif %}
+</form>

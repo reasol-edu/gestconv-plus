@@ -50,11 +50,11 @@ enum Feature: string
     public function catalogRoutePrefixes(): array
     {
         return match ($this) {
-            self::Exits         => ['app_centre_exit_reasons'],
+            self::Exits         => ['app_centre_exit_reasons', 'app_reports_exit_stats'],
             self::DailyNotes    => ['app_centre_daily_note_types'],
             self::Events        => ['app_centre_school_event_types'],
             self::Bookings      => ['app_centre_resources'],
-            self::Issues        => ['app_centre_issue'],
+            self::Issues        => ['app_centre_issue', 'app_reports_issue_stats'],
             self::Absences,
             self::SanctionTasks => [],
         };

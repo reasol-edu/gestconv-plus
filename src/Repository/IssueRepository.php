@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Issue;
 use App\Entity\IssuePriority;
@@ -283,6 +284,71 @@ class IssueRepository extends ServiceEntityRepository
             ->getResult();
 
         return $result;
+    }
+
+    /**
+     * Las incidencias del curso registradas en el rango (días completos), con su tipo, prioridad y dependencia cargados,
+     * para el informe de incidencias.
+     *
+     * @return list<Issue>
+     */
+    public function findForStats(EducationalCentre $centre, AcademicYear $year, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        /** @var list<Issue> $result */
+        $result = $this->createQueryBuilder('i')
+            ->addSelect('t', 'p', 'l')
+            ->join('i.type', 't')
+            ->leftJoin('i.priority', 'p')
+            ->leftJoin('i.location', 'l')
+            ->where('i.educationalCentre = :centre')
+            ->andWhere('i.academicYear = :year')
+            ->andWhere('i.createdAt >= :from')
+            ->andWhere('i.createdAt <= :to')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('from', $from->setTime(0, 0, 0))
+            ->setParameter('to', $to->setTime(23, 59, 59))
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * Cuándo se gestionó por primera vez cada incidencia registrada en el rango (primera prioridad, estado o asignación
+     * distintos del alta): id (RFC 4122) => fecha. Las que aún no se han gestionado no aparecen.
+     *
+     * @return array<string, \DateTimeImmutable>
+     */
+    public function firstManagementDates(EducationalCentre $centre, AcademicYear $year, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        /** @var list<\App\Entity\IssueChange> $changes */
+        $changes = $this->getEntityManager()->createQueryBuilder()
+            ->select('c', 'i')
+            ->from(\App\Entity\IssueChange::class, 'c')
+            ->join('c.issue', 'i')
+            ->where('i.educationalCentre = :centre')
+            ->andWhere('i.academicYear = :year')
+            ->andWhere('i.createdAt >= :from')
+            ->andWhere('i.createdAt <= :to')
+            ->andWhere('c.field IN (:fields)')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('from', $from->setTime(0, 0, 0))
+            ->setParameter('to', $to->setTime(23, 59, 59))
+            ->setParameter('fields', ['status', 'priority', 'assignee'])
+            ->getQuery()
+            ->getResult();
+
+        $first = [];
+        foreach ($changes as $change) {
+            $id = $change->getIssue()->getId()->toRfc4122();
+            if (!isset($first[$id]) || $change->getCreatedAt() < $first[$id]) {
+                $first[$id] = $change->getCreatedAt();
+            }
+        }
+
+        return $first;
     }
 
     /**

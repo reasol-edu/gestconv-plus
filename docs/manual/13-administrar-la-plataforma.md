@@ -407,10 +407,16 @@ incidencias…): son un recuento de trabajo, no un correo.
 | Encabezado derecho (informe de incidencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de incidencia) | Global, centro | Entero (mm) | 10-80 | 22 |
 | Pie de contenido (informe de incidencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `En {city} a {current_day} de {current_month_name} de {current_year}` |
+| Encabezado izquierdo (informe de salidas) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (informe de salidas) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (informe de salidas) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Encabezado izquierdo (informe de incidencias) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (informe de incidencias) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (informe de incidencias) | Global, centro | Entero (mm) | 10-80 | 22 |
 | Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
 Los ajustes de **encabezado** controlan el contenido que se repite en cada página de los PDF de
-partes, sanciones, del informe de estadísticas por grupo y del informe de profesorado de guardia
+partes, sanciones, de los informes de estadísticas por grupo, de salidas y de incidencias y del informe de profesorado de guardia
 (ver [Informes](06-convivencia-administracion.md#informes) y
 [Tramos horarios](12-administrar-el-centro.md#tramos-horarios)). Cada tipo de informe tiene dos
 zonas —izquierda y derecha, en la misma línea— que se editan con un editor de texto enriquecido
@@ -450,7 +456,7 @@ texto enriquecido de la categoría.
 | `{group_name}` | Nombre del grupo | Partes y sanciones |
 | `{centre_name}` | Nombre del centro educativo | Todos |
 | `{academic_year}` | Nombre del curso académico | Todos |
-| `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado | Solo estadísticas por grupo |
+| `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado | Solo estadísticas por grupo, salidas e incidencias |
 | `{issue_nr}` | Número de la incidencia | Solo incidencias |
 | `{issue_type}` | Tipo de la incidencia, con su ruta completa | Solo incidencias |
 | `{city}` | Ciudad del centro educativo | Todos |
@@ -470,6 +476,8 @@ texto enriquecido de la categoría.
 | Plantilla PDF de informe de sanciones | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de estadísticas por grupo | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de profesorado de guardia | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF del informe de salidas | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF del informe de incidencias | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de informe de actividad | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de informe de incidencia | Centro | Fichero PDF | Sin plantilla |
 
@@ -481,8 +489,8 @@ cada centro educativo, no un valor de texto que tenga sentido compartir entre ce
 Las dos primeras filas son las plantillas **generales**, una por orientación (vertical y
 apaisada); las siguientes permiten sustituir, solo para ese tipo de informe en concreto,
 la plantilla general de su orientación. Si un tipo de informe no tiene plantilla propia, se usa la
-general de la orientación que necesita (vertical para partes, sanciones, estadísticas por grupo y actividades;
-apaisada para profesorado de guardia); si tampoco hay ninguna general, el informe se genera sin
+general de la orientación que necesita (vertical para partes, sanciones, estadísticas por grupo, incidencias y actividades;
+apaisada para profesorado de guardia y para el informe de salidas); si tampoco hay ninguna general, el informe se genera sin
 fondo, igual que antes de existir este ajuste.
 
 ![Ajustes de plantillas de informes](img/ajustes/ajustes-plantillas-pdf.png)

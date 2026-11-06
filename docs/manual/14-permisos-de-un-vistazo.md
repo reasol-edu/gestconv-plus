@@ -156,6 +156,7 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Acción | Docente | Admin de centro | Admin global |
 |---|:---:|:---:|:---:|
 | Ver el panel del centro | — | ✓ | ✓ |
+| Generar los informes agregados (estadísticas por grupo, [salidas](07-salidas.md#informe-de-salidas) e [incidencias](10-incidencias.md#informe-de-incidencias)) | — | ✓ | ✓ |
 | Gestionar docentes del curso | — | ✓ | ✓ |
 | Gestionar el [personal no docente](12-administrar-el-centro.md#personal-no-docente) del centro | — | ✓ | ✓ |
 | Gestionar oferta formativa | — | ✓ | ✓ |

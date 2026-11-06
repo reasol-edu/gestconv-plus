@@ -167,6 +167,34 @@ class StudentExitRepository extends ServiceEntityRepository
         return $qb->getQuery();
     }
 
+    /**
+     * Las salidas del curso cuya salida cae en el rango (días completos), con el estudiante, el grupo, su curso y el motivo
+     * ya cargados, para el informe de salidas.
+     *
+     * @return list<StudentExit>
+     */
+    public function findForStats(AcademicYear $year, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        /** @var list<StudentExit> $result */
+        $result = $this->createQueryBuilder('e')
+            ->addSelect('s', 'g', 'c', 'r')
+            ->join('e.student', 's')
+            ->join('e.group', 'g')
+            ->join('g.course', 'c')
+            ->join('e.reason', 'r')
+            ->where('e.academicYear = :year')
+            ->andWhere('e.exitedAt >= :from')
+            ->andWhere('e.exitedAt <= :to')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('from', $from->setTime(0, 0, 0))
+            ->setParameter('to', $to->setTime(23, 59, 59))
+            ->orderBy('e.exitedAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
     private function baseQuery(): QueryBuilder
     {
         return $this->createQueryBuilder('e')

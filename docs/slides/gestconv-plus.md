@@ -927,6 +927,19 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 ---
 
+## Salidas: informe por tipo, grupo y alumnado
+
+![bg right:38% fit](../manual/img/informes/informes-salidas.png)
+
+- **Informes › Salidas del aula**: un rango de fechas y el resumen del
+  periodo (salidas, estudiantes, tiempo medio fuera, sin regreso).
+- **Por tipo de salida**: cuántas hay de cada una, de cuántos estudiantes y
+  grupos, y los **grupos** y el **alumnado** que más la usan.
+- **Por grupo y tipo**, agrupado por curso, y el alumnado con más salidas.
+- Se exporta a **PDF** y a **hoja de cálculo**.
+
+---
+
 <!-- _class: sep -->
 
 # Bloque 3
@@ -1101,6 +1114,21 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Las **prioridades** tienen color y plazos recomendado y máximo.
 - Todo se **exporta e importa en JSON**.
 - El módulo se puede **desactivar**.
+
+---
+
+## Incidencias: informe de problemas frecuentes
+
+![bg right:38% fit](../manual/img/informes/informes-incidencias.png)
+
+- **Informes › Incidencias**: las registradas en un rango de fechas, **por
+  tipo** y **por prioridad**.
+- **Tiempos**: medio y mediana de cierre, y hasta la primera gestión.
+- **Plazos**: cuántas se cierran dentro del plazo máximo y recomendado, y
+  cuántas abiertas ya lo han superado.
+- **Cierres** (solucionada, no procede, duplicada) y qué tipos son los más
+  **frecuentes**, los más **lentos** y los que más se **retrasan**.
+- Se exporta a **PDF** y a **hoja de cálculo**.
 
 ---
 

@@ -1,0 +1,144 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{# Tabla de filas del informe de incidencias. `total` (opcional) es la fila de subtotal. #}
+{% macro rows_table(title, label_header, rows, total) %}
+    {% if title %}<p class="subsection-title">{{ title }}</p>{% endif %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>{{ label_header }}</th>
+                <th>{{ 'issue_stats.column.registered'|trans({}, 'admin') }}</th>
+                <th>{{ 'issue_stats.column.open'|trans({}, 'admin') }}</th>
+                <th>{{ 'issue_stats.column.closed'|trans({}, 'admin') }}</th>
+                <th>{{ 'issue_stats.column.overdue'|trans({}, 'admin') }}</th>
+                <th>{{ 'issue_stats.column.average_close'|trans({}, 'admin') }}</th>
+                <th>{{ 'issue_stats.column.first_management'|trans({}, 'admin') }}</th>
+                <th>{{ 'issue_stats.column.on_time_max'|trans({}, 'admin') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in total ? rows|merge([total]) : rows %}
+                {% set bold = total and loop.last %}
+                <tr{% if bold %} style="font-weight:bold;background-color:#eef0fa;"{% endif %}>
+                    <td>{{ bold ? 'group_stats.subtotal'|trans({}, 'admin') : r.label }}</td>
+                    <td>{{ r.registered }}</td>
+                    <td>{{ r.open }}</td>
+                    <td>{{ r.closed }}{% if r.closed > 0 %} <span class="cell-sub">({{ r.solved }}/{{ r.notApplicable }}/{{ r.duplicate }})</span>{% endif %}</td>
+                    <td>{{ r.overdue }}</td>
+                    <td>{{ r.avgCloseSeconds|report_duration }}</td>
+                    <td>{{ r.avgFirstManagementSeconds|report_duration }}</td>
+                    <td>{{ r.onTimeMaxPercent is null ? '—' : r.onTimeMaxPercent ~ ' %' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}
+
+{% block content %}
+    {% import _self as m %}
+    {% set totals = report.totals %}
+    <p class="section-title">
+        {{ 'issue_stats.title'|trans({}, 'admin') }} · {{ year.name }} · {{ from|date('format.date'|trans) }} – {{ to|date('format.date'|trans) }}
+    </p>
+
+    {% if totals.registered == 0 %}
+        <p class="cell-sub">{{ 'issue_stats.empty'|trans({}, 'admin') }}</p>
+    {% else %}
+        <table class="data-table">
+            <tbody>
+                <tr style="font-weight:bold;background-color:#dcdef2;">
+                    <td>{{ 'issue_stats.summary.registered'|trans({}, 'admin') }}: {{ totals.registered }}</td>
+                    <td>{{ 'issue_stats.summary.closed'|trans({}, 'admin') }}: {{ totals.closed }} ({{ totals.closedPercent ?? 0 }} %)</td>
+                    <td>{{ 'issue_stats.summary.open'|trans({}, 'admin') }}: {{ totals.open }}</td>
+                    <td>{{ 'issue_stats.summary.overdue'|trans({}, 'admin') }}: {{ totals.overdue }}</td>
+                </tr>
+                <tr style="font-weight:bold;background-color:#dcdef2;">
+                    <td>{{ 'issue_stats.summary.average_close'|trans({}, 'admin') }}: {{ totals.avgCloseSeconds|report_duration }}</td>
+                    <td>{{ 'issue_stats.summary.median_close'|trans({}, 'admin') }}: {{ totals.medianCloseSeconds|report_duration }}</td>
+                    <td>{{ 'issue_stats.summary.first_management'|trans({}, 'admin') }}: {{ totals.avgFirstManagementSeconds|report_duration }}</td>
+                    <td>{{ 'issue_stats.summary.on_time_max'|trans({}, 'admin') }}: {{ totals.onTimeMaxPercent is null ? '—' : totals.onTimeMaxPercent ~ ' %' }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="subsection-title">{{ 'issue_stats.closure.title'|trans({}, 'admin') }}</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'issue_stats.column.closure'|trans({}, 'admin') }}</th>
+                    <th>{{ 'issue_stats.column.count'|trans({}, 'admin') }}</th>
+                    <th>% {{ 'issue_stats.column.of_closed'|trans({}, 'admin') }}</th>
+                    <th>{{ 'issue_stats.column.average_close'|trans({}, 'admin') }}</th>
+                    <th>{{ 'issue_stats.column.median_close'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in report.byClosure %}
+                    <tr>
+                        <td>{{ r.label }}</td>
+                        <td>{{ r.registered }}</td>
+                        <td>{{ totals.closed > 0 ? (r.registered * 100 / totals.closed)|round(1) ~ ' %' : '—' }}</td>
+                        <td>{{ r.avgCloseSeconds|report_duration }}</td>
+                        <td>{{ r.medianCloseSeconds|report_duration }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <p class="subsection-title">{{ 'issue_stats.deadlines.title'|trans({}, 'admin') }}</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'issue_stats.column.deadline'|trans({}, 'admin') }}</th>
+                    <th>{{ 'issue_stats.column.closed_with_deadline'|trans({}, 'admin') }}</th>
+                    <th>{{ 'issue_stats.column.on_time'|trans({}, 'admin') }}</th>
+                    <th>%</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ 'issue_stats.deadlines.max'|trans({}, 'admin') }}</td>
+                    <td>{{ totals.closedWithMaxDue }}</td>
+                    <td>{{ totals.closedOnTimeMax }}</td>
+                    <td>{{ totals.onTimeMaxPercent is null ? '—' : totals.onTimeMaxPercent ~ ' %' }}</td>
+                </tr>
+                <tr>
+                    <td>{{ 'issue_stats.deadlines.recommended'|trans({}, 'admin') }}</td>
+                    <td>{{ totals.closedWithRecommendedDue }}</td>
+                    <td>{{ totals.closedOnTimeRecommended }}</td>
+                    <td>{{ totals.onTimeRecommendedPercent is null ? '—' : totals.onTimeRecommendedPercent ~ ' %' }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="cell-sub">{{ 'issue_stats.deadlines.note'|trans({'%count%': totals.overdue}, 'admin') }}</p>
+
+        <p class="subsection-title">{{ 'issue_stats.highlights.title'|trans({}, 'admin') }}</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'issue_stats.highlights.frequent'|trans({}, 'admin') }}</th>
+                    <th>{{ 'issue_stats.highlights.slowest'|trans({}, 'admin') }}</th>
+                    <th>{{ 'issue_stats.highlights.late'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{% for r in report.mostFrequent %}{{ loop.index }}. {{ r.label }} <span class="cell-sub">({{ r.registered }})</span><br>{% else %}—{% endfor %}</td>
+                    <td>{% for r in report.slowest %}{{ loop.index }}. {{ r.label }} <span class="cell-sub">({{ r.avgCloseSeconds|report_duration }})</span><br>{% else %}—{% endfor %}</td>
+                    <td>{% for r in report.mostLate %}{{ loop.index }}. {{ r.label }} <span class="cell-sub">({{ r.late }})</span><br>{% else %}—{% endfor %}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        {{ m.rows_table('issue_stats.by_priority.title'|trans({}, 'admin'), 'issue_stats.column.priority'|trans({}, 'admin'), report.byPriority, null) }}
+
+        {% for branch in report.branches %}
+            {{ m.rows_table('issue_stats.by_type.title'|trans({}, 'admin') ~ ' · ' ~ branch.rootName, 'issue_stats.column.type'|trans({}, 'admin'), branch.rows, branch.rows|length > 1 ? branch.total : null) }}
+        {% endfor %}
+
+        {{ m.rows_table('issue_stats.by_location.title'|trans({}, 'admin'), 'issue_stats.column.location'|trans({}, 'admin'), report.byLocation, null) }}
+        {{ m.rows_table('issue_stats.monthly.title'|trans({}, 'admin'), 'issue_stats.column.month'|trans({}, 'admin'), report.monthly, null) }}
+
+        <p class="cell-sub">{{ 'issue_stats.legend'|trans({}, 'admin') }}</p>
+    {% endif %}
+{% endblock %}

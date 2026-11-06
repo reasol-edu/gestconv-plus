@@ -179,6 +179,33 @@ También se ven sin salir de la aplicación:
 
   ![El buscador global con una incidencia](img/incidencias/incidencias-buscador.png)
 
+## Informe de incidencias {#informe-de-incidencias}
+
+**Informes › Incidencias**, para quienes administran el centro, ayuda a ver **cuáles son los
+problemas más frecuentes y los más difíciles de arreglar**. Analiza las incidencias **registradas**
+en un rango de fechas del curso visualizado:
+
+- **Resumen**: registradas, cerradas (con su porcentaje), abiertas, **abiertas y vencidas**,
+  **tiempo medio** y **mediana** de cierre, tiempo medio hasta la **primera gestión** (la primera
+  prioridad, estado o asignación) y porcentaje de cerradas **dentro del plazo máximo**.
+- **Cómo se han cerrado**: solucionadas, *no procede* y cerradas por duplicidad, con su porcentaje
+  y su tiempo de cierre.
+- **Cumplimiento de plazos**: de las incidencias cerradas con plazo, cuántas se cerraron a tiempo
+  respecto al **plazo máximo** y al **recomendado** de su prioridad, y cuántas abiertas ya lo han
+  superado.
+- **Qué problemas pesan más**: los tipos con más incidencias, los que más tardan en cerrarse y los
+  que más se salen de plazo.
+- **Por prioridad** y **por tipo** (agrupado por tipo raíz, con subtotales), con las mismas
+  cifras en cada fila.
+- **Dependencias con más incidencias** y **evolución por mes** de registro, con lo que ha pasado
+  con las registradas cada mes.
+
+Los tiempos cuentan desde el registro y solo de las incidencias cerradas. Se exporta a **PDF**
+(vertical, con encabezado y plantilla personalizables, ver
+[Personalización de informes](13-administrar-la-plataforma.md#personalizacion-de-informes)) y a
+**hoja de cálculo**, con una fila por tipo. El informe desaparece si el módulo de Incidencias está
+desactivado.
+
 ## Configurar los tipos y las prioridades {#incidencias-del-centro}
 
 **Centro educativo › Incidencias** (administración del centro) configura cómo se registran y se atienden las

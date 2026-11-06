@@ -64,6 +64,29 @@ se consulta el curso activo, y cada eliminación queda en el registro de activid
 
 ![Pestaña Historial de la sección Salidas](img/salidas/salidas-historial.png)
 
+## Informe de salidas {#informe-de-salidas}
+
+**Informes › Salidas del aula**, para quienes administran el centro, resume las salidas de un
+rango de fechas del curso visualizado. Se piden las fechas de inicio y fin (con rangos rápidos) y
+el informe muestra:
+
+- **Resumen**: salidas, estudiantes y grupos distintos, **tiempo medio fuera**, la salida más larga
+  y cuántas están **sin regreso registrado**.
+- **Por tipo de salida** (motivo): salidas de cada tipo y su porcentaje, estudiantes y grupos
+  distintos, tiempo medio y máximo, y salidas sin regreso.
+- **Detalle de cada tipo**: los **grupos** y el **alumnado** que más lo usan.
+- **Por grupo y tipo de salida**, agrupado por curso: para cada grupo, estudiantes con salidas,
+  salidas totales, cuántas de cada tipo y tiempo medio. Los grupos sin salidas aparecen con ceros,
+  y cada curso lleva su subtotal.
+- **Alumnado con más salidas** (los diez primeros): grupo, número de salidas, tiempo fuera en
+  total y motivo más frecuente.
+
+El tiempo fuera solo cuenta las salidas con regreso registrado. Los botones **Exportar a PDF**
+(apaisado, con el encabezado y la plantilla personalizables, ver
+[Personalización de informes](13-administrar-la-plataforma.md#personalizacion-de-informes)) y
+**Exportar a hoja de cálculo** descargan el mismo contenido. El informe desaparece, con el resto de
+la sección, si el módulo de Salidas está desactivado.
+
 ## Configurar los motivos de salida {#motivos-de-salida-del-aula}
 
 En **Centro educativo › Motivos de salida del aula** (administración del centro) se configura la lista —plana, sin

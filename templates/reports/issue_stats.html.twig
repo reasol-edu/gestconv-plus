@@ -1,0 +1,203 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'issue_stats.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{# Una tabla de filas del informe de incidencias. `total` (opcional) es la fila de subtotal. #}
+{% macro rows_table(title, label_header, rows, total) %}
+    <section class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden overflow-x-auto">
+        {% if title %}<h2 class="px-4 py-3 text-sm font-semibold text-gray-700 border-b border-gray-100">{{ title }}</h2>{% endif %}
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th scope="col" class="text-left px-4 py-3">{{ label_header }}</th>
+                    <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.registered'|trans({}, 'admin') }}</th>
+                    <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.open'|trans({}, 'admin') }}</th>
+                    <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.closed'|trans({}, 'admin') }}</th>
+                    <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.overdue'|trans({}, 'admin') }}</th>
+                    <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.average_close'|trans({}, 'admin') }}</th>
+                    <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.first_management'|trans({}, 'admin') }}</th>
+                    <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.on_time_max'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for r in total ? rows|merge([total]) : rows %}
+                    {% set bold = total and loop.last %}
+                    <tr class="[&>td]:px-4 [&>td]:py-2.5 {{ bold ? 'font-semibold bg-gray-50 border-t border-gray-200' : '' }}">
+                        <td class="{{ bold ? '' : 'text-gray-900' }}">{{ bold ? 'group_stats.subtotal'|trans({}, 'admin') : r.label }}</td>
+                        <td class="text-right">{{ r.registered }}</td>
+                        <td class="text-right">{{ r.open }}</td>
+                        <td class="text-right">{{ r.closed }}{% if r.closed > 0 %} <span class="text-xs text-gray-400 font-normal">({{ r.solved }}/{{ r.notApplicable }}/{{ r.duplicate }})</span>{% endif %}</td>
+                        <td class="text-right {{ r.overdue > 0 ? 'text-red-600' : '' }}">{{ r.overdue }}</td>
+                        <td class="text-right">{{ r.avgCloseSeconds|report_duration }}</td>
+                        <td class="text-right">{{ r.avgFirstManagementSeconds|report_duration }}</td>
+                        <td class="text-right">{{ r.onTimeMaxPercent is null ? '—' : r.onTimeMaxPercent ~ ' %' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endmacro %}
+
+{# Una lista corta (ranking) de tipos. #}
+{% macro ranking(title, rows, kind) %}
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-xs">
+        <h3 class="text-sm font-semibold text-forest-700">{{ title }}</h3>
+        {% if rows is empty %}
+            <p class="mt-2 text-sm text-gray-400">{{ 'issue_stats.ranking.empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <ol class="mt-2 text-sm text-gray-700 space-y-1 list-decimal list-inside">
+                {% for r in rows %}
+                    <li>
+                        <span>{{ r.label }}</span>
+                        <span class="text-gray-500">·
+                            {% if kind == 'frequent' %}{{ 'issue_stats.ranking.registered'|trans({'%count%': r.registered}, 'admin') }}
+                            {% elseif kind == 'slowest' %}{{ r.avgCloseSeconds|report_duration }}
+                            {% else %}{{ 'issue_stats.ranking.late'|trans({'%count%': r.late}, 'admin') }}{% endif %}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% block content %}
+{% import _self as m %}
+<div class="px-6 py-8 max-w-6xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_reports_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'reports'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'issue_stats.title'|trans({}, 'admin') }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'issue_stats.title'|trans({}, 'admin') }}</h1>
+        {% if year %}
+            <p class="mt-1 text-sm text-gray-500">{{ year.name }}</p>
+        {% endif %}
+    </div>
+
+    {% if year is null %}
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {{ 'group_stats.no_active_year'|trans({}, 'admin') }}
+        </div>
+    {% else %}
+        {% include 'reports/_range_form.html.twig' with {prefix: 'issue-stats', hasReport: report is not null, pdfRoute: 'app_reports_issue_stats_pdf', xlsxRoute: 'app_reports_issue_stats_xlsx'} %}
+
+        {% if report %}
+            {% set totals = report.totals %}
+
+            {% if totals.registered == 0 %}
+                <div class="rounded-xl border border-gray-200 bg-white px-4 py-6 text-center text-sm text-gray-500">
+                    {{ 'issue_stats.empty'|trans({}, 'admin') }}
+                </div>
+            {% else %}
+                {# ── Resumen ── #}
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {% for tile in [
+                        {label: 'issue_stats.summary.registered', value: totals.registered},
+                        {label: 'issue_stats.summary.closed', value: totals.closed ~ ' (' ~ (totals.closedPercent ?? 0) ~ ' %)'},
+                        {label: 'issue_stats.summary.open', value: totals.open},
+                        {label: 'issue_stats.summary.overdue', value: totals.overdue},
+                        {label: 'issue_stats.summary.average_close', value: totals.avgCloseSeconds|report_duration},
+                        {label: 'issue_stats.summary.median_close', value: totals.medianCloseSeconds|report_duration},
+                        {label: 'issue_stats.summary.first_management', value: totals.avgFirstManagementSeconds|report_duration},
+                        {label: 'issue_stats.summary.on_time_max', value: totals.onTimeMaxPercent is null ? '—' : totals.onTimeMaxPercent ~ ' %'},
+                    ] %}
+                        <div class="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-xs">
+                            <p class="text-xl font-bold text-gray-900">{{ tile.value }}</p>
+                            <p class="text-xs text-gray-500">{{ tile.label|trans({}, 'admin') }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {# ── Cómo se han cerrado ── #}
+                <section class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden overflow-x-auto">
+                    <h2 class="px-4 py-3 text-sm font-semibold text-gray-700 border-b border-gray-100">{{ 'issue_stats.closure.title'|trans({}, 'admin') }}</h2>
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                <th scope="col" class="text-left px-4 py-3">{{ 'issue_stats.column.closure'|trans({}, 'admin') }}</th>
+                                <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.count'|trans({}, 'admin') }}</th>
+                                <th scope="col" class="text-right px-4 py-3">% {{ 'issue_stats.column.of_closed'|trans({}, 'admin') }}</th>
+                                <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.average_close'|trans({}, 'admin') }}</th>
+                                <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.median_close'|trans({}, 'admin') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for r in report.byClosure %}
+                                <tr class="[&>td]:px-4 [&>td]:py-2.5">
+                                    <td class="font-medium text-gray-900">{{ r.label }}</td>
+                                    <td class="text-right">{{ r.registered }}</td>
+                                    <td class="text-right text-gray-500">{{ totals.closed > 0 ? (r.registered * 100 / totals.closed)|round(1) ~ ' %' : '—' }}</td>
+                                    <td class="text-right">{{ r.avgCloseSeconds|report_duration }}</td>
+                                    <td class="text-right">{{ r.medianCloseSeconds|report_duration }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+
+                {# ── Cumplimiento de plazos ── #}
+                <section class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden overflow-x-auto">
+                    <h2 class="px-4 py-3 text-sm font-semibold text-gray-700 border-b border-gray-100">{{ 'issue_stats.deadlines.title'|trans({}, 'admin') }}</h2>
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                <th scope="col" class="text-left px-4 py-3">{{ 'issue_stats.column.deadline'|trans({}, 'admin') }}</th>
+                                <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.closed_with_deadline'|trans({}, 'admin') }}</th>
+                                <th scope="col" class="text-right px-4 py-3">{{ 'issue_stats.column.on_time'|trans({}, 'admin') }}</th>
+                                <th scope="col" class="text-right px-4 py-3">%</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="[&>td]:px-4 [&>td]:py-2.5">
+                                <td class="font-medium text-gray-900">{{ 'issue_stats.deadlines.max'|trans({}, 'admin') }}</td>
+                                <td class="text-right">{{ totals.closedWithMaxDue }}</td>
+                                <td class="text-right">{{ totals.closedOnTimeMax }}</td>
+                                <td class="text-right">{{ totals.onTimeMaxPercent is null ? '—' : totals.onTimeMaxPercent ~ ' %' }}</td>
+                            </tr>
+                            <tr class="[&>td]:px-4 [&>td]:py-2.5">
+                                <td class="font-medium text-gray-900">{{ 'issue_stats.deadlines.recommended'|trans({}, 'admin') }}</td>
+                                <td class="text-right">{{ totals.closedWithRecommendedDue }}</td>
+                                <td class="text-right">{{ totals.closedOnTimeRecommended }}</td>
+                                <td class="text-right">{{ totals.onTimeRecommendedPercent is null ? '—' : totals.onTimeRecommendedPercent ~ ' %' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="px-4 py-3 text-xs text-gray-500 border-t border-gray-100">{{ 'issue_stats.deadlines.note'|trans({'%count%': totals.overdue}, 'admin') }}</p>
+                </section>
+
+                {# ── Qué problemas pesan más ── #}
+                <section class="space-y-3">
+                    <h2 class="text-sm font-semibold text-gray-700">{{ 'issue_stats.highlights.title'|trans({}, 'admin') }}</h2>
+                    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                        {{ m.ranking('issue_stats.highlights.frequent'|trans({}, 'admin'), report.mostFrequent, 'frequent') }}
+                        {{ m.ranking('issue_stats.highlights.slowest'|trans({}, 'admin'), report.slowest, 'slowest') }}
+                        {{ m.ranking('issue_stats.highlights.late'|trans({}, 'admin'), report.mostLate, 'late') }}
+                    </div>
+                </section>
+
+                {# ── Por prioridad ── #}
+                {{ m.rows_table('issue_stats.by_priority.title'|trans({}, 'admin'), 'issue_stats.column.priority'|trans({}, 'admin'), report.byPriority, null) }}
+
+                {# ── Por tipo, agrupado por tipo raíz ── #}
+                <h2 class="text-sm font-semibold text-gray-700">{{ 'issue_stats.by_type.title'|trans({}, 'admin') }}</h2>
+                {% for branch in report.branches %}
+                    {{ m.rows_table(branch.rootName, 'issue_stats.column.type'|trans({}, 'admin'), branch.rows, branch.rows|length > 1 ? branch.total : null) }}
+                {% endfor %}
+
+                {# ── Por dependencia ── #}
+                {{ m.rows_table('issue_stats.by_location.title'|trans({}, 'admin'), 'issue_stats.column.location'|trans({}, 'admin'), report.byLocation, null) }}
+
+                {# ── Evolución mensual ── #}
+                {{ m.rows_table('issue_stats.monthly.title'|trans({}, 'admin'), 'issue_stats.column.month'|trans({}, 'admin'), report.monthly, null) }}
+
+                <p class="text-xs text-gray-500">{{ 'issue_stats.legend'|trans({}, 'admin') }}</p>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -204,8 +204,12 @@ global, controla también la retención del
 [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
 ## Informes
 
-La sección **Informes** del menú lateral reúne los informes agregados de convivencia. Solo la ven
-quienes tienen acceso a la sección Centro educativo, y requiere un curso académico activo.
+La sección **Informes** del menú lateral reúne los informes agregados del centro: las estadísticas
+de convivencia por grupo (que se explican aquí), el [informe de salidas](07-salidas.md#informe-de-salidas)
+y el [informe de incidencias](10-incidencias.md#informe-de-incidencias), que aparecen mientras sus
+módulos estén activados. Solo la ven quienes tienen acceso a la sección Centro educativo, y requiere
+un curso académico activo. Todos se piden por un rango de fechas, con rangos rápidos (última semana,
+último mes…), y se pueden exportar a PDF y a hoja de cálculo.
 
 ### Estadísticas por grupo
 

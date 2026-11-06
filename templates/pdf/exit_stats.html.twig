@@ -1,0 +1,133 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+    {% set totals = report.totals %}
+    <p class="section-title">
+        {{ 'exit_stats.title'|trans({}, 'admin') }} · {{ year.name }} · {{ from|date('format.date'|trans) }} – {{ to|date('format.date'|trans) }}
+    </p>
+
+    {% if totals.exits == 0 %}
+        <p class="cell-sub">{{ 'exit_stats.empty'|trans({}, 'admin') }}</p>
+    {% else %}
+        <table class="data-table">
+            <tbody>
+                <tr style="font-weight:bold;background-color:#dcdef2;">
+                    <td>{{ 'exit_stats.summary.exits'|trans({}, 'admin') }}: {{ totals.exits }}</td>
+                    <td>{{ 'exit_stats.summary.students'|trans({}, 'admin') }}: {{ totals.students }}</td>
+                    <td>{{ 'exit_stats.summary.groups'|trans({}, 'admin') }}: {{ totals.groups }}</td>
+                    <td>{{ 'exit_stats.summary.average'|trans({}, 'admin') }}: {{ totals.averageSeconds|report_duration }}</td>
+                    <td>{{ 'exit_stats.summary.max'|trans({}, 'admin') }}: {{ totals.returned > 0 ? totals.secondsMax|report_duration : '—' }}</td>
+                    <td>{{ 'exit_stats.summary.not_returned'|trans({}, 'admin') }}: {{ totals.notReturned }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="subsection-title">{{ 'exit_stats.by_reason.title'|trans({}, 'admin') }}</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'exit_stats.column.reason'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.exits'|trans({}, 'admin') }}</th>
+                    <th>%</th>
+                    <th>{{ 'exit_stats.column.students'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.groups'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.average'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.max'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.not_returned'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in report.reasons %}
+                    <tr>
+                        <td>{{ r.reason.name }}</td>
+                        <td>{{ r.totals.exits }}</td>
+                        <td>{{ (r.totals.exits * 100 / totals.exits)|round(1) }}</td>
+                        <td>{{ r.totals.students }}</td>
+                        <td>{{ r.totals.groups }}</td>
+                        <td>{{ r.totals.averageSeconds|report_duration }}</td>
+                        <td>{{ r.totals.returned > 0 ? r.totals.secondsMax|report_duration : '—' }}</td>
+                        <td>{{ r.totals.notReturned }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <p class="subsection-title">{{ 'exit_stats.detail.title'|trans({}, 'admin') }}</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'exit_stats.column.reason'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.detail.top_groups'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.detail.top_students'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in report.reasons %}
+                    <tr>
+                        <td>{{ r.reason.name }}</td>
+                        <td>{% for g in r.topGroups %}{{ g.group.name }} <span class="cell-sub">({{ g.exits }})</span>{{ not loop.last ? ', ' : '' }}{% endfor %}</td>
+                        <td>{% for s in r.topStudents %}{{ s.student.name.full }} <span class="cell-sub">({{ s.group.name }}, {{ s.exits }})</span>{{ not loop.last ? ', ' : '' }}{% endfor %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% for course in report.courses %}
+            <p class="subsection-title">{{ 'exit_stats.by_group.title'|trans({}, 'admin') }} · {{ course.course.name }}</p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'exit_stats.column.group'|trans({}, 'admin') }}</th>
+                        <th>{{ 'exit_stats.column.students'|trans({}, 'admin') }}</th>
+                        <th>{{ 'exit_stats.column.exits'|trans({}, 'admin') }}</th>
+                        {% for r in report.reasons %}<th>{{ r.reason.name }}</th>{% endfor %}
+                        <th>{{ 'exit_stats.column.average'|trans({}, 'admin') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in course.rows %}
+                        <tr>
+                            <td>{{ row.group.name }}</td>
+                            <td>{{ row.totals.students }}</td>
+                            <td>{{ row.totals.exits }}</td>
+                            {% for r in report.reasons %}<td>{{ row.byReason[r.reason.id.toRfc4122] ?? 0 }}</td>{% endfor %}
+                            <td>{{ row.totals.averageSeconds|report_duration }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr style="font-weight:bold;background-color:#eef0fa;">
+                        <td>{{ 'group_stats.subtotal'|trans({}, 'admin') }}</td>
+                        <td>{{ course.total.totals.students }}</td>
+                        <td>{{ course.total.totals.exits }}</td>
+                        {% for r in report.reasons %}<td>{{ course.total.byReason[r.reason.id.toRfc4122] ?? 0 }}</td>{% endfor %}
+                        <td>{{ course.total.totals.averageSeconds|report_duration }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endfor %}
+
+        <p class="subsection-title">{{ 'exit_stats.top_students.title'|trans({'%count%': report.topStudents|length}, 'admin') }}</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'exit_stats.column.student'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.group'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.exits'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.total_time'|trans({}, 'admin') }}</th>
+                    <th>{{ 'exit_stats.column.top_reason'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in report.topStudents %}
+                    <tr>
+                        <td>{{ s.student.name.full }}</td>
+                        <td>{{ s.group.name }}</td>
+                        <td>{{ s.exits }}</td>
+                        <td>{{ s.seconds|report_duration }}</td>
+                        <td>{{ s.topReason ? s.topReason.name : '' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="cell-sub">{{ 'exit_stats.legend'|trans({}, 'admin') }}</p>
+    {% endif %}
+{% endblock %}
