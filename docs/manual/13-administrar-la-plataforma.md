@@ -65,7 +65,11 @@ la renovación de una contraseña que se sospeche comprometida.
 
 El segundo bloque de **Usuarios** lista todas las cuentas de [personal no docente](12-administrar-el-centro.md#personal-no-docente)
 del servidor, con los **centros** a los que pertenece cada una. Los docentes no aparecen en él y estas
-cuentas no aparecen entre los docentes. Desde aquí se puede:
+cuentas no aparecen entre los docentes.
+
+![Bloque de personal no docente en Usuarios, con los centros de cada persona](img/admin/admin-usuarios-no-docentes.png)
+
+Desde aquí se puede:
 
 - **Crear** una cuenta (**Nuevo personal no docente**): nombre, apellidos, usuario, correo electrónico
   (obligatorio) y los **centros** a los que pertenecerá, que pueden quedar vacíos y asociarse más
@@ -73,6 +77,8 @@ cuentas no aparecen entre los docentes. Desde aquí se puede:
   o un **enlace de invitación** por correo, válido 7 días.
 - **Editar** nombre, usuario, correo, contraseña, estado y **centros**. Si se le quita un centro, deja
   de ser responsable de sus tipos de incidencia; sus incidencias se conservan.
+![Formulario de alta de personal no docente, con los centros y el acceso inicial](img/admin/admin-no-docente-formulario.png)
+
 - **Enviar la invitación** otra vez, si caducó o no llegó.
 - **Eliminar** la cuenta. Si tiene incidencias u otros datos asociados no se puede eliminar: en ese
   caso, se desactiva.

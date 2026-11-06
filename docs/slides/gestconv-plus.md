@@ -1147,6 +1147,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   recibir las que se les **asignen**.
 - Si el módulo de **Incidencias** está desactivado, **no pueden entrar** en el
   centro: se les explica el motivo.
+- La administración de la plataforma también las gestiona en **Administración
+  › Usuarios**, en un bloque aparte de los docentes y con sus centros.
 
 
 ---
