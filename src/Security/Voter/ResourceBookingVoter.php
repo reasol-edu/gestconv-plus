@@ -24,7 +24,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  *  - EDIT (sujeto ResourceBooking): editar o eliminar la reserva: su docente, los responsables de la categoría y la dirección.
  *  - MANAGE (sujeto ResourceBooking): gestionar las reservas ajenas y validarlas: responsables de la categoría y dirección.
  *  - REPORT_ISSUE (sujeto ResourceBooking): registrar una incidencia (del módulo de incidencias) sobre la reserva: solo el
- *    docente de la reserva aprobada. No depende de la fecha: las incidencias se suelen registrar después de usar el recurso.
+ *    docente de la reserva aprobada, los responsables de su categoría y la dirección. No depende de la fecha: las incidencias se suelen registrar después de usar el recurso.
  *
  * Con las reservas desactivadas en el centro, nadie.
  *
@@ -88,7 +88,7 @@ final class ResourceBookingVoter extends Voter
 
         return match ($attribute) {
             self::MANAGE        => $this->access->managesBooking($user, $subject),
-            self::REPORT_ISSUE  => $subject->isApproved() && $subject->getTeacher()->getId()->equals($user->getId()),
+            self::REPORT_ISSUE  => $subject->isApproved() && $this->access->canEdit($user, $subject),
             default             => $this->access->canEdit($user, $subject),
         };
     }

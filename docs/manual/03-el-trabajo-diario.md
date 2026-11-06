@@ -791,9 +791,9 @@ listado. Las series se pueden aprobar o rechazar enteras.
 ### Incidencias {#incidencias-de-las-reservas}
 
 Si algo falla al usar un recurso (un proyector que no enciende, portátiles que no arrancan…), el docente
-que hizo la reserva puede **registrar una incidencia** desde la ficha de esa reserva con el botón
-**Registrar incidencia**. Solo se puede en reservas **aprobadas**, y también después de usar el
-recurso, aunque la fecha ya haya pasado. Es una incidencia del módulo general de
+que hizo la reserva, los **responsables de su categoría** y la **dirección** pueden **registrar una
+incidencia** desde la ficha de esa reserva con el botón **Registrar incidencia**. Solo se puede en
+reservas **aprobadas**, y también después de usar el recurso, aunque la fecha ya haya pasado. Es una incidencia del módulo general de
 [Incidencias](#incidencias): la reserva ya indica el recurso, así que no se pide la dependencia, y
 la ficha de la reserva lista las incidencias que tiene.
 
@@ -865,7 +865,8 @@ Al registrarla se avisa a las personas **responsables** del tipo (ver [Avisos](#
 Una incidencia recién registrada está **Abierta** y **sin prioridad**.
 
 Si la incidencia es sobre un recurso reservado, se registra desde la **ficha de la reserva** (botón
-**Registrar incidencia**, solo quien hizo la reserva aprobada): queda asociada a la reserva, que ya
+**Registrar incidencia** de una reserva aprobada, para quien la hizo, los responsables de su categoría
+y la dirección): queda asociada a la reserva, que ya
 incluye el recurso, y no se pide la dependencia. Ver
 [Incidencias de las reservas](#incidencias-de-las-reservas).
 
@@ -906,8 +907,11 @@ incidencias abiertas que ya lo han **vencido**.
 
 Quien es **responsable** del tipo (propio o heredado de un tipo superior) y la dirección ven en la
 ficha el panel **Gestionar**: prioridad, estado, tipo y dependencia. Para cerrar por duplicidad se
-indica el número de la incidencia original (**#12**); una incidencia cerrada **se puede reabrir** si
-se es responsable.
+elige la incidencia original en un **desplegable con buscador** (por número, tipo o texto); una
+incidencia cerrada **se puede reabrir** si se es responsable. La **dirección** (administradores del
+centro y de la plataforma) tiene además el botón **Eliminar incidencia**, que la borra con sus
+observaciones, adjuntos e historial (pide confirmación y no se puede deshacer; las que estaban
+cerradas como duplicadas de ella se quedan cerradas, sin enlace).
 
 ![Panel Gestionar de la ficha, con la prioridad, el estado, el tipo y la dependencia](img/incidencias/incidencias-gestionar.png)
 

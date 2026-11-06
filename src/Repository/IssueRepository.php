@@ -212,6 +212,31 @@ class IssueRepository extends ServiceEntityRepository
     }
 
     /**
+     * Las incidencias que se pueden indicar como original al cerrar esta por duplicidad: las del centro, salvo ella misma y
+     * las que se cerraron como duplicadas de ella; las más recientes primero.
+     *
+     * @return list<Issue>
+     */
+    public function findDuplicateCandidates(EducationalCentre $centre, Issue $issue, int $limit = 500): array
+    {
+        /** @var list<Issue> $result */
+        $result = $this->createQueryBuilder('i')
+            ->addSelect('t')
+            ->join('i.type', 't')
+            ->where('i.educationalCentre = :centre')
+            ->andWhere('i.id != :self')
+            ->andWhere('i.duplicateOf IS NULL OR i.duplicateOf != :self')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('self', $issue->getId(), 'uuid')
+            ->orderBy('i.number', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
      * Las incidencias del centro asociadas a una reserva, de la más antigua a la más reciente.
      *
      * @return list<Issue>

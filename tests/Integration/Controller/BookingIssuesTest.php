@@ -38,15 +38,35 @@ class BookingIssuesTest extends ControllerTestCase
         self::assertCount(1, $crawler->filter('a[href="/incidencias/nueva?booking=' . $w['booking']->getId()->toRfc4122() . '"]'));
     }
 
-    public function testNobodyElseIsOfferedIt(): void
+    public function testTheCategoryManagerAndManagementAreOfferedItToo(): void
     {
         $w = $this->scenario();
 
-        foreach (['other', 'manager', 'admin'] as $who) {
+        foreach (['manager' => 1, 'admin' => 1, 'other' => 0] as $who => $count) {
             $this->loginAs($w[$who], $w['centre']);
             $crawler = $this->client->request('GET', '/reservas/' . $w['booking']->getId()->toRfc4122());
-            self::assertCount(0, $crawler->filter('a[href^="/incidencias/nueva"]'), $who);
+            self::assertCount($count, $crawler->filter('a[href^="/incidencias/nueva"]'), $who);
         }
+    }
+
+    public function testAResponsibleCanCreateTheIssueFromSomeoneElsesBookingAndIsItsReporter(): void
+    {
+        $w  = $this->scenario();
+        $id = $w['booking']->getId()->toRfc4122();
+        $this->loginAs($w['manager'], $w['centre']);
+
+        $crawler = $this->client->request('GET', '/incidencias/nueva?booking=' . $id);
+        self::assertCount(0, $crawler->filter('select[name="location"]'));
+        $token = (string) $crawler->filter('form[method="post"] [name="_token"]')->attr('value');
+        $this->client->request('POST', '/incidencias/nueva', [
+            '_token' => $token, 'booking' => $id, 'type' => $w['type']->getId()->toRfc4122(), 'description' => '<p>Teclado roto</p>',
+        ]);
+
+        $this->em->clear();
+        $issues = $this->em->getRepository(Issue::class)->findAll();
+        self::assertCount(1, $issues);
+        self::assertSame($id, $issues[0]->getBooking()?->getId()->toRfc4122());
+        self::assertSame($w['manager']->getId()->toRfc4122(), $issues[0]->getReporter()->getId()->toRfc4122());
     }
 
     public function testAnIssueCreatedFromTheBookingIsLinkedToItAndDoesNotAskForALocation(): void
@@ -70,7 +90,7 @@ class BookingIssuesTest extends ControllerTestCase
         self::assertNull($issues[0]->getLocation());
     }
 
-    public function testAnotherTeachersBookingIsIgnoredWhenReporting(): void
+    public function testAnUnrelatedTeachersBookingIsIgnoredWhenReporting(): void
     {
         $w = $this->scenario();
         $this->loginAs($w['other'], $w['centre']);

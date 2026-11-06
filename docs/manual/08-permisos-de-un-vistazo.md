@@ -185,7 +185,7 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 | Editar y eliminar | Solo las suyas | Las de los recursos de su categoría | Todas | Todas |
 | Aprobar o rechazar las reservas pendientes | — | Las de su categoría | Todas | Todas |
 | Recibir el aviso de una solicitud pendiente | — | Las de su categoría | Si la categoría no tiene responsables | — |
-| Registrar una [incidencia sobre la reserva](03-el-trabajo-diario.md#incidencias-de-las-reservas) | Solo en sus reservas aprobadas | Solo en sus reservas aprobadas | Solo en sus reservas aprobadas | Solo en sus reservas aprobadas |
+| Registrar una [incidencia sobre la reserva](03-el-trabajo-diario.md#incidencias-de-las-reservas) | Solo en sus reservas aprobadas | En las reservas aprobadas de su categoría | Todas las aprobadas | Todas las aprobadas |
 | Ver la marca de incidencia de una reserva | Las de sus reservas | Las de los tipos que gestiona | Todas | Todas |
 
 ### Incidencias
@@ -202,6 +202,7 @@ en la lista jerárquica.
 | Modificar la descripción | En las suyas, mientras estén abiertas | En las de su tipo | Todas | Todas |
 | Asignar prioridad y cambiar el estado, el tipo o la dependencia (también en bloque) | — | En las de su tipo | Todas | Todas |
 | Cerrar por duplicidad y reabrir una cerrada | — | En las de su tipo | Todas | Todas |
+| Eliminar una incidencia | — | — | Todas | Todas |
 | Recibir el aviso de una incidencia nueva y el recordatorio de las vencidas | — | Las de su tipo | Si el tipo no tiene responsables | — |
 | Recibir los avisos de cambios | En las suyas | En las de su tipo | Si el tipo no tiene responsables | — |
 | Configurar los tipos y las prioridades, con su importación y exportación | — | — | ✓ | ✓ |

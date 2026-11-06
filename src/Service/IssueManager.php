@@ -247,6 +247,21 @@ class IssueManager
         return null;
     }
 
+    /**
+     * Elimina la incidencia con sus observaciones, adjuntos e historial. Las que se cerraron por duplicidad de esta se
+     * quedan cerradas, sin enlace a la original. Queda constancia en el registro de actividad.
+     */
+    public function delete(Issue $issue): void
+    {
+        $this->activityLog->log('issue.deleted', [
+            'entityId' => $issue->getId()->toRfc4122(),
+            'number'   => $issue->getNumber(),
+            'type'     => $issue->getType()->getPath(),
+        ]);
+        $this->em->remove($issue);
+        $this->em->flush();
+    }
+
     /** La original ha de ser de este centro, otra incidencia y no estar cerrada como duplicada de esta. */
     private function validDuplicate(Issue $issue, ?Issue $original): bool
     {

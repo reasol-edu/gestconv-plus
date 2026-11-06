@@ -154,7 +154,7 @@
                             </div>
                             <div>
                                 <label for="observation-duplicate" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'issue.duplicate_of'|trans({}, 'admin') }}</label>
-                                <input type="text" id="observation-duplicate" name="duplicate" inputmode="numeric" placeholder="#12" class="{{ inputClass }}">
+                                {% include 'issue/_duplicate_select.html.twig' with {id: 'observation-duplicate', candidates: candidates, current: null} only %}
                                 <p class="mt-1 text-xs text-gray-500">{{ 'issue.duplicate_help'|trans({}, 'admin') }}</p>
                             </div>
                         </div>
@@ -283,7 +283,7 @@
                         </div>
                         <div>
                             <label for="manage-duplicate" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.duplicate_of'|trans({}, 'admin') }}</label>
-                            <input type="text" id="manage-duplicate" name="duplicate" inputmode="numeric" placeholder="#12" value="{{ issue.duplicateOf ? '#' ~ issue.duplicateOf.number : '' }}" class="{{ inputClass }}">
+                            {% include 'issue/_duplicate_select.html.twig' with {id: 'manage-duplicate', candidates: candidates, current: issue.duplicateOf} only %}
                         </div>
                         <div>
                             <label for="manage-type" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.type'|trans({}, 'admin') }}</label>
@@ -317,8 +317,40 @@
                     </form>
                 </section>
             {% endif %}
+
+            {% if canDelete %}
+                <form method="post" action="{{ path('app_issues_delete', {id: id}) }}" class="js-confirm-form"
+                      data-confirm="{{ 'issue.delete_confirm'|trans({'%number%': issue.number}, 'admin')|e('html_attr') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_issue_' ~ id) }}">
+                    <button type="submit" class="js-confirm-trigger inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                        {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}{{ 'issue.delete'|trans({}, 'admin') }}
+                    </button>
+                </form>
+            {% endif %}
         </aside>
     </div>
 
 </div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+{% if canManage %}
+<script type="module">
+import TomSelect from 'tom-select';
+
+// Original de una duplicada: desplegable con buscador por número, tipo o texto (sobre <body> para que no lo recorte la tarjeta).
+for (const el of document.querySelectorAll('select.ts-duplicate')) {
+    new TomSelect(el, {
+        create:           false,
+        maxOptions:       200,
+        dropdownParent:   'body',
+        placeholder:      el.dataset.placeholder ?? '',
+        allowEmptyOption: true,
+        render: {
+            no_results: () => `<div class="no-results px-3 py-2 text-sm">${el.dataset.noResults ?? ''}</div>`,
+        },
+    });
+}
+</script>
+{% endif %}
 {% endblock %}

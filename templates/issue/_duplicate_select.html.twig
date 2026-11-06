@@ -1,0 +1,12 @@
+{#
+   Desplegable con buscador para elegir la incidencia original al cerrar por duplicidad. El valor enviado es su número.
+   Variables: id, candidates (las incidencias elegibles), current (la original actual, o null).
+#}
+<select id="{{ id }}" name="duplicate" class="w-full text-sm ts-duplicate"
+        data-placeholder="{{ 'issue.duplicate_placeholder'|trans({}, 'admin')|e('html_attr') }}"
+        data-no-results="{{ 'tom_select.no_results'|trans({}, 'admin')|e('html_attr') }}">
+    <option value="">—</option>
+    {% for candidate in candidates %}
+        <option value="{{ candidate.number }}" {{ current and current.id.equals(candidate.id) ? 'selected' : '' }}>#{{ candidate.number }} · {{ candidate.type.name }} · {{ candidate.description|striptags|slice(0, 70) }}</option>
+    {% endfor %}
+</select>

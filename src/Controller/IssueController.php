@@ -21,6 +21,7 @@ use App\Repository\IssueTypeRepository;
 use App\Repository\LocationOptionRepository;
 use App\Repository\ResourceBookingRepository;
 use App\Security\Voter\IssueVoter;
+use App\Security\Voter\ResourceBookingVoter;
 use App\Service\AttachmentDownloadResponder;
 use App\Service\IssueAttachmentFactory;
 use App\Service\IssueManager;
@@ -80,7 +81,7 @@ class IssueController extends AbstractController
         $year  = $this->requireYear($centre);
         $actor = $this->requireTeacher();
 
-        $booking = $this->usableBooking($request->query->getString('booking') ?: $request->request->getString('booking'), $actor, $centre, $year);
+        $booking = $this->usableBooking($request->query->getString('booking') ?: $request->request->getString('booking'), $centre, $year);
         $values  = ['type' => $request->query->getString('type'), 'location' => '', 'description' => ''];
         $errors  = [];
 
@@ -153,6 +154,8 @@ class IssueController extends AbstractController
             'issue'      => $issue,
             'canManage'  => $canManage,
             'canEdit'    => $this->isGranted(IssueVoter::EDIT, $issue),
+            'canDelete'  => $this->isGranted(IssueVoter::DELETE, $issue),
+            'candidates' => $canManage ? $this->issues->findDuplicateCandidates($centre, $issue) : [],
             'priorities' => $canManage ? $this->priorities->findByCentreOrdered($centre) : [],
             'types'      => $canManage ? $this->selectableTypes($centre, $issue->getType()) : [],
             'locations'  => $canManage ? $this->locations->findByCentreActive($centre) : [],
@@ -322,6 +325,22 @@ class IssueController extends AbstractController
         return $this->redirectToRoute('app_issues_show', ['id' => $id]);
     }
 
+    // ── Eliminación ───────────────────────────────────────────────────────────
+
+    /** Solo la dirección: elimina la incidencia con todo lo suyo. */
+    #[Route('/{id}/eliminar', name: 'app_issues_delete', requirements: ['id' => '[0-9a-fA-F-]{36}'], methods: ['POST'])]
+    public function delete(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
+    {
+        $issue = $this->requireWritableIssue($id, $centre, $request, 'delete_issue_');
+        $this->denyAccessUnlessGranted(IssueVoter::DELETE, $issue);
+
+        $number = $issue->getNumber();
+        $this->manager->delete($issue);
+        $this->addFlash('success', $this->translator->trans('issue.flash.deleted', ['%number%' => $number], 'admin'));
+
+        return $this->redirectToRoute('app_issues_index');
+    }
+
     // ── Ayudas ────────────────────────────────────────────────────────────────
 
     private function inline(string $content, string $mimeType): Response
@@ -400,7 +419,7 @@ class IssueController extends AbstractController
     }
 
     /** La reserva de la que nace la incidencia, solo si es del docente, del centro y del curso, y está aprobada. */
-    private function usableBooking(string $id, Teacher $actor, EducationalCentre $centre, AcademicYear $year): ?ResourceBooking
+    private function usableBooking(string $id, EducationalCentre $centre, AcademicYear $year): ?ResourceBooking
     {
         if (!Uuid::isValid($id)) {
             return null;
@@ -408,10 +427,11 @@ class IssueController extends AbstractController
         $booking = $this->bookings->findById($id);
         if (
             $booking === null
-            || !$booking->getTeacher()->getId()->equals($actor->getId())
             || !$booking->getResource()->getCategory()->getEducationalCentre()->getId()->equals($centre->getId())
             || !$booking->getAcademicYear()->getId()->equals($year->getId())
             || $booking->getStatus() !== ResourceBookingStatus::Approved
+            // Quien hizo la reserva, los responsables de su categoría y la dirección.
+            || !$this->isGranted(ResourceBookingVoter::REPORT_ISSUE, $booking)
         ) {
             return null;
         }

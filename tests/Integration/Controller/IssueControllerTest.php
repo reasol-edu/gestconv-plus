@@ -266,6 +266,53 @@ class IssueControllerTest extends ControllerTestCase
         self::assertNull($reopened->getClosedAt());
     }
 
+    public function testManagementCanDeleteAnIssueWithEverythingItHas(): void
+    {
+        $w     = $this->makeWorld();
+        $issue = $this->report($w);
+        $other = $this->report($w);
+        $id    = $issue->getId()->toRfc4122();
+        self::getContainer()->get(IssueManager::class)->addObservation($issue, $w['ana'], 'Una observación');
+        $this->loginAs($w['admin'], $w['centre']);
+
+        $token = $this->token("delete_issue_$id");
+        $this->client->request('POST', "/incidencias/$id/eliminar", ['_token' => $token]);
+
+        self::assertResponseRedirects('/incidencias');
+        $this->em->clear();
+        self::assertNull($this->em->getRepository(Issue::class)->find($issue->getId()));
+        self::assertNotNull($this->em->getRepository(Issue::class)->find($other->getId()), 'solo se elimina esa');
+    }
+
+    public function testAResponsibleOrTheReporterCannotDeleteAnIssue(): void
+    {
+        $w     = $this->makeWorld();
+        $issue = $this->report($w);
+        $id    = $issue->getId()->toRfc4122();
+
+        foreach (['ana', 'rita'] as $who) {
+            $this->loginAs($w[$who], $w['centre']);
+            $crawler = $this->client->request('GET', "/incidencias/$id");
+            self::assertCount(0, $crawler->filter('form[action$="/eliminar"]'), $who);
+        }
+        self::assertNotNull($this->em->getRepository(Issue::class)->find($issue->getId()));
+    }
+
+    public function testTheOriginalOfADuplicateIsPickedFromADropdownThatLeavesOutTheIssueItself(): void
+    {
+        $w        = $this->makeWorld();
+        $original = $this->report($w);
+        $copy     = $this->report($w);
+        $this->loginAs($w['ana'], $w['centre']);
+
+        $crawler = $this->client->request('GET', '/incidencias/' . $copy->getId()->toRfc4122());
+
+        $options = $crawler->filter('select#manage-duplicate option')->each(static fn ($node): string => $node->attr('value') ?? '');
+        self::assertContains((string) $original->getNumber(), $options);
+        self::assertNotContains((string) $copy->getNumber(), $options);
+        self::assertCount(1, $crawler->filter('select#observation-duplicate'));
+    }
+
     public function testTheReporterCannotManageTheIssue(): void
     {
         $w     = $this->makeWorld();
@@ -360,7 +407,7 @@ class IssueControllerTest extends ControllerTestCase
             return (string) $this->client->request('GET', '/incidencias/nueva')->filter('form[method="post"] [name="_token"]')->attr('value');
         }
 
-        foreach (['observe_issue_' => 'observacion', 'edit_issue_' => 'descripcion', 'manage_issue_' => 'gestionar'] as $prefix => $action) {
+        foreach (['observe_issue_' => 'observacion', 'edit_issue_' => 'descripcion', 'manage_issue_' => 'gestionar', 'delete_issue_' => 'eliminar'] as $prefix => $action) {
             if (str_starts_with($id, $prefix)) {
                 $crawler = $this->client->request('GET', '/incidencias/' . substr($id, strlen($prefix)));
 
