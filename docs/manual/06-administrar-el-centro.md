@@ -77,6 +77,8 @@ gestionar la oferta formativa. El paso a paso completo está en
 Los botones **Exportar** e **Importar** de la cabecera permiten llevar la oferta de un curso académico a otro
 (por ejemplo, del curso que acaba al nuevo) o de un centro a otro, sin volver a montarla a mano.
 
+![Cabecera de la oferta formativa con los botones Importar y Exportar](img/centro/centro-oferta-botones.png)
+
 - **Exportar** descarga un fichero JSON con la oferta del curso que se está viendo, también si es un curso
   pasado: los cursos, y en cada uno sus grupos con su **color**, sus **tutores** y sus **materias** (con el
   docente que imparte cada una). No incluye el alumnado, que tiene su propia
@@ -90,10 +92,18 @@ Los botones **Exportar** e **Importar** de la cabecera permiten llevar la oferta
 
 En la **vista previa** se ve qué contiene el fichero, curso por curso y grupo por grupo, con una etiqueta que
 indica si cada uno es **Nuevo** o **Ya existe** en el curso de destino (se emparejan por nombre, sin distinguir
-mayúsculas), y los docentes que faltan marcados con ⚠. Ahí se elige:
+mayúsculas), y los docentes que faltan marcados con ⚠. Si hay docentes del fichero que no existen en el curso de
+destino, un aviso en la parte superior los lista.
+
+![Vista previa de la importación: aviso de docentes que faltan, información que se importa y modo](img/centro/centro-oferta-importar.png)
+
+Ahí se elige:
 
 - **Qué cursos y grupos** importar: todos vienen marcados. Marcar un curso marca sus grupos y marcar un grupo
   marca también su curso.
+
+  ![Árbol de cursos y grupos de la vista previa, con las etiquetas Nuevo y Ya existe](img/centro/centro-oferta-seleccion.png)
+
 - **Qué información**: **tutores**, **materias** y **color**. Lo que se desmarque no se toca en los grupos que
   ya existen y queda vacío en los nuevos.
 - **Qué hacer con lo que ya existe**: **ignorarlo** (por defecto: no se toca y solo se crea lo que falta) o
