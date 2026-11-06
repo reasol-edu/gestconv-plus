@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\Teacher;
 use App\Entity\TimeSlot;
@@ -71,7 +72,9 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
 /** @return Teacher[] */
     public function findAllOrderedByName(): array
     {
+        // El personal no docente no sale en los listados de docentes: se gestiona en su propia sección del centro.
         return $this->createQueryBuilder('t')
+            ->where('t.nonTeaching = false')
             ->orderBy('t.name.lastName', 'ASC')
             ->addOrderBy('t.name.firstName', 'ASC')
             ->getQuery()
@@ -88,12 +91,13 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
     public function createFilteredOrderedByNameQuery(string $search = ''): Query
     {
         $qb = $this->createQueryBuilder('t')
+            ->where('t.nonTeaching = false')
             ->orderBy('t.name.lastName', 'ASC')
             ->addOrderBy('t.name.firstName', 'ASC');
 
         if ($search !== '') {
             $q = '%' . $search . '%';
-            $qb->where(
+            $qb->andWhere(
                 $qb->expr()->orX(
                     'UNACCENT(LOWER(t.name.firstName)) LIKE UNACCENT(LOWER(:q))',
                     'UNACCENT(LOWER(t.name.lastName)) LIKE UNACCENT(LOWER(:q))',
@@ -196,6 +200,48 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         return $this->findOneBy(['username' => $username]);
     }
 
+    /**
+     * Una cuenta por su identificador (usuario) o por su correo electrónico, sin distinguir mayúsculas y por coincidencia
+     * exacta (no se sugieren cuentas parecidas).
+     */
+    public function findByUsernameOrEmail(string $value): ?Teacher
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        /** @var Teacher|null $result */
+        $result = $this->createQueryBuilder('t')
+            ->where('LOWER(t.username) = LOWER(:v) OR LOWER(t.email) = LOWER(:v)')
+            ->setParameter('v', $value)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result;
+    }
+
+    /**
+     * El personal no docente asociado al centro, por apellidos.
+     *
+     * @return list<Teacher>
+     */
+    public function findNonTeachingByCentre(EducationalCentre $centre): array
+    {
+        /** @var list<Teacher> $result */
+        $result = $this->createQueryBuilder('t')
+            ->join(EducationalCentre::class, 'c', 'WITH', 'c.id = :centre')
+            ->where('t MEMBER OF c.nonTeachingStaff')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->orderBy('t.name.lastName', 'ASC')
+            ->addOrderBy('t.name.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
     public function findByEmailVerificationToken(string $token): ?Teacher
     {
         return $this->findOneBy(['emailVerificationToken' => Teacher::hashToken($token)]);
@@ -230,6 +276,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         $result = $this->createQueryBuilder('t')
             ->where('LOWER(t.name.firstName) = LOWER(:firstName)')
             ->andWhere('LOWER(t.name.lastName) = LOWER(:lastName)')
+            ->andWhere('t.nonTeaching = false')
             ->setParameter('firstName', $firstName)
             ->setParameter('lastName', $lastName)
             ->setMaxResults(1)
@@ -259,6 +306,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->where('UNACCENT(LOWER(t.name.firstName)) LIKE UNACCENT(LOWER(:q))')
             ->orWhere('UNACCENT(LOWER(t.name.lastName)) LIKE UNACCENT(LOWER(:q))')
             ->orWhere('UNACCENT(LOWER(t.username)) LIKE UNACCENT(LOWER(:q))')
+            ->andWhere('t.nonTeaching = false')
             ->setParameter('q', $q)
             ->orderBy('t.name.lastName', 'ASC')
             ->addOrderBy('t.name.firstName', 'ASC')
@@ -271,6 +319,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
     {
         return (int) $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
+            ->where('t.nonTeaching = false')
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -280,6 +329,7 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         return (int) $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->where('t.active = true')
+            ->andWhere('t.nonTeaching = false')
             ->getQuery()
             ->getSingleScalarResult();
     }

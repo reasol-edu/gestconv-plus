@@ -1,0 +1,108 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% set title_key = account ? 'non_teaching.edit.title' : 'non_teaching.register.title' %}
+
+{% block title %}{{ title_key|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% macro field(id, name, label, value, errors, type = 'text', mono = false, autocomplete = 'off') %}
+    <div>
+        <label for="{{ id }}" class="block text-sm font-medium text-gray-700 mb-1.5">{{ label }}</label>
+        <input id="{{ id }}" type="{{ type }}" name="{{ name }}" value="{{ value }}" autocomplete="{{ autocomplete }}"
+               class="block w-full rounded-xl border py-2.5 px-3.5 text-sm {{ mono ? 'font-mono' : '' }} text-gray-900
+                      transition-colors focus:outline-none focus:ring-3
+                      {{ errors[name] is defined
+                          ? 'border-red-300 bg-red-50 focus:border-red-400 focus:ring-red-400/20'
+                          : 'border-gray-200 bg-gray-50 focus:border-forest-500 focus:bg-white focus:ring-forest-500/20' }}">
+        {% if errors[name] is defined %}
+            <p class="mt-1.5 text-xs text-red-600">{{ errors[name] }}</p>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% block content %}
+{% import _self as f %}
+<div class="px-6 py-8 max-w-2xl mx-auto">
+
+    <div class="mb-6">
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <a href="{{ path('app_non_teaching_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'non_teaching.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ title_key|trans({}, 'admin') }}</h1>
+    </div>
+
+    {% if not account and identifier %}
+        <div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4.5 w-4.5 shrink-0 text-amber-500 mt-0.5'}) }}
+            <p class="text-sm text-amber-800">{{ 'non_teaching.register.not_found_info'|trans({'%identifier%': identifier}, 'admin') }}</p>
+        </div>
+    {% endif %}
+
+    {% if account %}
+        <div class="mb-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            {{ 'non_teaching.edit.shared_notice'|trans({}, 'admin') }}
+        </div>
+    {% endif %}
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        <form method="post" class="px-6 py-6 space-y-5">
+            <input type="hidden" name="_token" value="{{ csrf_token(account ? 'edit_non_teaching' : 'register_non_teaching') }}">
+
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {{ f.field('first_name', 'first_name', 'teacher.field.first_name'|trans({}, 'admin'), values.first_name, errors) }}
+                {{ f.field('last_name', 'last_name', 'teacher.field.last_name'|trans({}, 'admin'), values.last_name, errors) }}
+            </div>
+            {{ f.field('username', 'username', 'teacher.field.username'|trans({}, 'admin'), values.username, errors, 'text', true, 'username') }}
+            {{ f.field('email', 'email', 'teacher.field.email'|trans({}, 'admin'), values.email, errors, 'email') }}
+
+            {% if account %}
+                {{ f.field('password', 'password', 'teacher.field.password'|trans({}, 'admin'), '', errors, 'password', false, 'new-password') }}
+                <p class="-mt-3 text-xs text-gray-500">{{ 'non_teaching.edit.password_help'|trans({}, 'admin') }}</p>
+
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="active" value="1" {{ active ? 'checked' : '' }}
+                           class="h-4 w-4 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                    <span class="text-sm text-gray-700">{{ 'teacher.field.active'|trans({}, 'admin') }}</span>
+                </label>
+            {% else %}
+                <div data-controller="non-teaching-mode">
+                    <span class="block text-sm font-medium text-gray-700 mb-2">{{ 'non_teaching.register.mode'|trans({}, 'admin') }}</span>
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <twig:Form:RadioCard name="mode" value="password"
+                            label="{{ 'non_teaching.register.mode_password'|trans({}, 'admin') }}"
+                            :checked="mode == 'password'"
+                            data-non-teaching-mode-target="radio"
+                            data-action="change->non-teaching-mode#toggle" />
+                        <twig:Form:RadioCard name="mode" value="invitation"
+                            label="{{ 'non_teaching.register.mode_invitation'|trans({}, 'admin') }}"
+                            :checked="mode == 'invitation'"
+                            data-non-teaching-mode-target="radio"
+                            data-action="change->non-teaching-mode#toggle" />
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">{{ 'non_teaching.register.mode_help'|trans({}, 'admin') }}</p>
+
+                    <div data-non-teaching-mode-target="passwordBlock" class="mt-4 {{ mode == 'invitation' ? 'hidden' : '' }}">
+                        {{ f.field('password', 'password', 'teacher.field.password'|trans({}, 'admin'), values.password, errors, 'password', false, 'new-password') }}
+                        <p class="mt-1.5 text-xs text-gray-500">{{ 'non_teaching.register.password_help'|trans({}, 'admin') }}</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <a href="{{ path('app_non_teaching_index', {centreId: centre.id}) }}"
+                   class="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    {{ 'teacher.cancel'|trans({}, 'admin') }}
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:user-plus', {class: 'h-4 w-4'}) }}
+                    {{ (account ? 'non_teaching.edit.submit' : 'non_teaching.register.submit')|trans({}, 'admin') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

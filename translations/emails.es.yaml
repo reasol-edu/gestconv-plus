@@ -121,6 +121,12 @@ emails.password_reset.intro: 'Hemos recibido una solicitud para restablecer la c
 emails.password_reset.cta: 'Restablecer contraseña'
 emails.password_reset.expiry_notice: 'Si no has solicitado este cambio, puedes ignorar este mensaje. Tu contraseña actual seguirá siendo válida.'
 
+emails.invitation.subject: 'Te damos acceso a las incidencias de «%centre%»'
+emails.invitation.intro: 'Se ha creado una cuenta para ti en GestConv+ como personal no docente de «%centre%». Con ella podrás registrar y seguir incidencias del centro. Haz clic en el botón para establecer tu contraseña.'
+emails.invitation.username: 'Tu nombre de usuario es: %username%'
+emails.invitation.cta: 'Establecer mi contraseña'
+emails.invitation.expiry_notice: 'El enlace es válido durante 7 días. Si caduca, pide a la dirección del centro que te envíe otra invitación.'
+
 emails.email_verification.subject: 'Verifica tu nueva dirección de correo'
 emails.email_verification.intro: 'Has solicitado cambiar tu dirección de correo electrónico. Haz clic en el botón para confirmar el cambio. El enlace es válido durante 24 horas.'
 emails.email_verification.cta: 'Verificar dirección de correo'

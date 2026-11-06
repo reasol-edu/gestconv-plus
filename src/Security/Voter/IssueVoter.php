@@ -72,6 +72,10 @@ final class IssueVoter extends Voter
             if ($this->access->isManagement($user, $subject)) {
                 return true;
             }
+            // El personal no docente se asocia al centro sin curso académico.
+            if ($user->isNonTeaching() && $subject->getNonTeachingStaff()->contains($user)) {
+                return true;
+            }
             $year = $this->tenant->getViewYear($subject);
 
             return $year !== null && $this->roles->belongsToYear($user, $year);

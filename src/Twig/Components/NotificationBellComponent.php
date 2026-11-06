@@ -85,6 +85,8 @@ class NotificationBellComponent extends AbstractController
 
         $sections = array_fill_keys(self::SECTIONS, []);
 
+        // El personal no docente solo ve lo de las incidencias (más abajo).
+        if (!$user->isNonTeaching()) {
         // Lo próximo a prescribir va arriba, y no se repite en las secciones de pendientes.
         $prescribing = [];
         if (!$this->tenantContext->isViewingNonActiveYear($centre)) {
@@ -145,6 +147,8 @@ class NotificationBellComponent extends AbstractController
             foreach ($this->resourceBookings->findUnseenResolutionsFor($user, $year) as $booking) {
                 $sections['booking_resolved'][] = ['type' => 'booking_' . $booking->getStatus()->value, 'entity' => $booking, 'date' => $booking->getDate(), 'daysLeft' => null];
             }
+        }
+
         }
 
         // Incidencias: a quien las gestiona, las nuevas por atender y las vencidas; a quien las registró, las novedades recientes.

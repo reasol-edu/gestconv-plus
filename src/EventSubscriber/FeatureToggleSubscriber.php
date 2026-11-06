@@ -22,7 +22,7 @@ use Symfony\Component\Uid\Uuid;
  * El enlace público de tareas (/t/…) no se trata aquí: no tiene centro en la sesión, así que lo
  * comprueba su propio controlador con el centro de la sanción.
  */
-#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 3)]
+#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 2)]
 final class FeatureToggleSubscriber
 {
     public function __construct(

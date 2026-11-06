@@ -1,0 +1,23 @@
+{% extends 'email/_layout.html.twig' %}
+
+{% block content %}
+<p style="margin: 0 0 16px;">
+    {{ 'emails.greeting'|trans({'%name%': teacher.name.firstName}, 'emails') }}
+</p>
+<p style="margin: 0 0 16px;">
+    {{ 'emails.invitation.intro'|trans({'%centre%': centre.name}, 'emails') }}
+</p>
+<p style="margin: 0 0 24px;">
+    {{ 'emails.invitation.username'|trans({'%username%': teacher.username}, 'emails') }}
+</p>
+<p style="margin: 0 0 24px; text-align: center;">
+    <a href="{{ invite_url }}"
+       style="display: inline-block; background-color: #677dae; color: #ffffff; font-size: 14px;
+              font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none;">
+        {{ 'emails.invitation.cta'|trans({}, 'emails') }}
+    </a>
+</p>
+<p style="margin: 0; color: #6b7280; font-size: 13px;">
+    {{ 'emails.invitation.expiry_notice'|trans({}, 'emails') }}
+</p>
+{% endblock %}

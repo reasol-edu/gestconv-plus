@@ -7,6 +7,7 @@ namespace App\Twig;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Teacher;
+use App\Service\NonTeachingAccess;
 use App\Service\TeacherYearRoles;
 use App\Service\TenantContext;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -19,11 +20,14 @@ final class TenantContextExtension extends AbstractExtension
         private readonly TenantContext $context,
         private readonly Security $security,
         private readonly TeacherYearRoles $roles,
+        private readonly NonTeachingAccess $nonTeaching,
     ) {}
 
     public function getFunctions(): array
     {
         return [
+            // Personal no docente: solo accede a Incidencias (el menú y los accesos se limitan a ellas).
+            new TwigFunction('is_non_teaching', fn (): bool => $this->nonTeaching->isRestricted($this->security->getUser())),
             new TwigFunction('active_centre', $this->getActiveCentre(...)),
             new TwigFunction('can_switch_centre', $this->canSwitchCentre(...)),
             new TwigFunction('view_year', $this->getViewYear(...)),

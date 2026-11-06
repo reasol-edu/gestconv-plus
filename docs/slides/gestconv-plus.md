@@ -638,6 +638,12 @@ el centro**, no solo de sus propios grupos:
   también puede **eliminar** las marcadas).
 - Todo se avisa por **correo** (o en el resumen diario), en la **campana** y
   en el **panel**, con un **recordatorio diario de las vencidas**.
+- Una incidencia puede **asignarse a una persona** (docente o personal no
+  docente), que podrá observarla y cambiar su prioridad y estado, y tiene su
+  **informe en PDF**, personalizable como los demás.
+- El **personal no docente** (conserjería, administración…) tiene cuenta propia
+  en el centro, sin curso académico, y **solo accede a las Incidencias**: puede
+  registrarlas, atenderlas como responsable y recibir las asignadas.
 - La dirección configura **tipos y prioridades**, con exportación e
   importación en JSON.
 

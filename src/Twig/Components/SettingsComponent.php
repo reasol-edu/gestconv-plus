@@ -8,6 +8,7 @@ use App\Entity\EducationalCentre;
 use App\Entity\SettingDefinition;
 use App\Entity\Teacher;
 use App\Service\AppSettings;
+use App\Service\NonTeachingAccess;
 use App\Service\SettingsManager;
 use App\Service\SettingsSaveOutcome;
 use App\Service\TenantContext;
@@ -23,6 +24,14 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 class SettingsComponent extends AbstractController
 {
     use DefaultActionTrait;
+
+    /** Categorías de ajustes personales que ve el personal no docente. */
+    private const NON_TEACHING_CATEGORIES = [
+        'settings.category.display',
+        'settings.category.email',
+        'settings.category.email_alerts',
+        'settings.category.email_receive_issues',
+    ];
 
     /** 'global' | 'centre' | 'teacher' */
     #[LiveProp]
@@ -41,6 +50,7 @@ class SettingsComponent extends AbstractController
         private readonly TenantContext $tenant,
         private readonly Security $security,
         private readonly AppSettings $appSettings,
+        private readonly NonTeachingAccess $nonTeaching,
     ) {}
 
     /**
@@ -52,7 +62,17 @@ class SettingsComponent extends AbstractController
      */
     public function getRows(): array
     {
-        return $this->settingsManager->getRows($this->scope, $this->centreForScope(), $this->teacherForScope());
+        $rows = $this->settingsManager->getRows($this->scope, $this->centreForScope(), $this->teacherForScope());
+
+        // El personal no docente solo configura lo que le afecta: el correo y los avisos de incidencias.
+        if ($this->scope === 'teacher' && $this->nonTeaching->isRestricted($this->security->getUser())) {
+            $rows = array_values(array_filter(
+                $rows,
+                static fn (array $row): bool => \in_array($row['definition']->getCategory(), self::NON_TEACHING_CATEGORIES, true),
+            ));
+        }
+
+        return $rows;
     }
 
     /**

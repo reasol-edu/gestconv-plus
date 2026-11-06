@@ -157,6 +157,7 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 |---|:---:|:---:|:---:|
 | Ver el panel del centro | — | ✓ | ✓ |
 | Gestionar docentes del curso | — | ✓ | ✓ |
+| Gestionar el [personal no docente](06-administrar-el-centro.md#personal-no-docente) del centro | — | ✓ | ✓ |
 | Gestionar oferta formativa | — | ✓ | ✓ |
 | Gestionar estudiantes | — | ✓ | ✓ |
 | Gestionar conductas, medidas y métodos de comunicación | — | ✓ | ✓ |
@@ -196,7 +197,7 @@ en la lista jerárquica.
 
 | Acción | Docente | Responsable del tipo | Admin de centro | Admin global |
 |---|:---:|:---:|:---:|:---:|
-| Registrar una incidencia | ✓ | ✓ | ✓ | ✓ |
+| Registrar una incidencia (también el personal no docente del centro, que no accede a nada más) | ✓ | ✓ | ✓ | ✓ |
 | Ver una incidencia | Las que ha registrado | Las de su tipo y los de debajo | Todas | Todas |
 | Añadir observaciones y adjuntos | En las suyas | En las de su tipo | Todas | Todas |
 | Modificar la descripción | En las suyas, mientras estén abiertas | En las de su tipo | Todas | Todas |

@@ -12,6 +12,7 @@ use App\Repository\TeacherRepository;
 use App\Security\Voter\IssueVoter;
 use App\Service\IssueAccess;
 use App\Service\IssueListFilter;
+use App\Service\NonTeachingAccess;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -31,6 +32,7 @@ class SearchController extends AbstractController
         private readonly TeacherRepository $teacherRepository,
         private readonly IssueRepository $issues,
         private readonly IssueAccess $issueAccess,
+        private readonly NonTeachingAccess $nonTeaching,
         private readonly TranslatorInterface $translator,
         #[Target('search')]
         private readonly RateLimiterFactoryInterface $searchLimiter,
@@ -58,8 +60,10 @@ class SearchController extends AbstractController
         $user   = $this->getUser();
         $viewer = $user instanceof Teacher ? $user : null;
 
-        $year     = $centre->getActiveAcademicYear();
-        $students = $year !== null ? $this->studentRepository->searchByCentre($centre, $q, 30) : [];
+        $year = $centre->getActiveAcademicYear();
+        // El personal no docente solo busca incidencias: nada de estudiantes ni de docentes.
+        $restricted = $this->nonTeaching->isRestricted($user);
+        $students   = $year !== null && !$restricted ? $this->studentRepository->searchByCentre($centre, $q, 30) : [];
         if ($students !== []) {
             $taught = [];
             $other  = [];
@@ -101,7 +105,7 @@ class SearchController extends AbstractController
             }
         }
 
-        if ($this->isGranted('educational_centre.section', $centre)) {
+        if (!$restricted && $this->isGranted('educational_centre.section', $centre)) {
             $year = $this->tenantContext->getViewYear($centre);
             if ($year !== null) {
                 $teachers = $this->teacherRepository->searchByAcademicYear($year, $q);

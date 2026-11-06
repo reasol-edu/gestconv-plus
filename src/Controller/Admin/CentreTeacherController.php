@@ -76,6 +76,13 @@ class CentreTeacherController extends AbstractController
 
         $replacesId = trim($request->request->getString('replaces'));
 
+        // Las cuentas de personal no docente no se incorporan como docentes (se gestionan en su propia sección).
+        if ($teacher !== null && $teacher->isNonTeaching()) {
+            $this->addFlash('error', $this->t('centre_teachers.flash.is_non_teaching'));
+
+            return $this->redirectToRoute('app_centre_teachers_index', ['centreId' => $centre->getId()]);
+        }
+
         if ($teacher === null) {
             return $this->redirectToRoute('app_centre_teachers_register', [
                 'centreId' => $centre->getId(),

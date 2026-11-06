@@ -5,3 +5,4 @@ no_centres_admin: 'Todavía no hay ningún centro educativo creado en el servido
 create_centre: 'Crear centro educativo'
 manage_centres: 'Administrar centros'
 logout: 'Cerrar sesión'
+blocked.issues_disabled: 'No puedes entrar en «%centre%»: el módulo de Incidencias está desactivado en ese centro y tu cuenta es de personal no docente, que solo da acceso a ese módulo. Cuando la dirección lo vuelva a activar podrás entrar.'

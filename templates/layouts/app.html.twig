@@ -26,7 +26,10 @@
 {% set viewing_past = is_viewing_past_year() %}
 <div data-controller="sidebar command-palette confirm"
      data-command-palette-url-value="{{ path('app_search') }}"
-     data-command-palette-actions-value="{{ (
+     data-command-palette-actions-value="{{ (is_non_teaching() ? [
+             {label: 'actions.new_issue'|trans({}, 'search'), url: path('app_issues_new')},
+             {label: 'actions.issues'|trans({}, 'search'), url: path('app_issues_index')},
+         ] : (
          [{label: 'actions.new_incident'|trans({}, 'search'), url: path('app_incidents_new')}]
          |merge(feature_enabled('exits') ? [
              {label: 'actions.new_exit'|trans({}, 'search'), url: path('app_exits_new')},
@@ -45,7 +48,7 @@
              {label: 'actions.notifications'|trans({}, 'search'), url: path('app_notifications_index')},
              {label: 'actions.change_year'|trans({}, 'search'), url: path('app_select_year_page')},
          ])
-     )|json_encode }}"
+     ))|json_encode }}"
      data-confirm-cancel-value="{{ 'ui.cancel'|trans }}"
      data-confirm-confirm-value="{{ 'ui.confirm_delete'|trans }}"
      data-confirm-close-value="{{ 'ui.close'|trans }}"
@@ -104,7 +107,7 @@
                         {{ ux_icon('heroicons:arrows-right-left', {class: 'h-3.5 w-3.5'}) }}
                     </a>
                 {% endif %}
-                {% if can_switch_year() %}
+                {% if can_switch_year() and not is_non_teaching() %}
                     <a href="{{ path('app_select_year_page', {'return_to': app.request.pathInfo}) }}"
                        title="{{ 'switch_year'|trans({}, 'navigation') }}"
                        aria-label="{{ 'switch_year'|trans({}, 'navigation') }}"
@@ -118,6 +121,11 @@
 
         {# Navegación principal #}
         <nav class="flex-1 overflow-y-auto px-3 py-4">
+
+            {# El personal no docente solo ve Incidencias #}
+            {% if is_non_teaching() %}
+                {{ _self.nav_item('issues'|trans({}, 'navigation'), path('app_issues_index'), 'heroicons:wrench-screwdriver', current_route, 'app_issues') }}
+            {% else %}
 
             {# Inicio #}
             {{ _self.nav_item(
@@ -233,6 +241,7 @@
                     <span class="truncate">{{ 'administration'|trans({}, 'navigation') }}</span>
                 </a>
             {% endif %}
+            {% endif %}{# /no docente #}
 
         </nav>
 

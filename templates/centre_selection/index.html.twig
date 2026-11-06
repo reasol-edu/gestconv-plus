@@ -27,6 +27,13 @@
                 </p>
             </div>
 
+            {# Motivo por el que no se puede entrar en un centro (p. ej. el personal no docente sin el módulo de incidencias) #}
+            {% for message in errors|default([]) %}
+                <div role="alert" class="mx-6 mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                    {{ ux_icon('heroicons:exclamation-circle', {class: 'h-5 w-5 shrink-0 mt-0.5'}) }}<span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
             {# Lista de centros #}
             {% if centres is empty %}
                 <div class="px-6 py-10 text-center">
@@ -46,6 +53,17 @@
             {% else %}
                 <ul class="divide-y divide-gray-100">
                     {% for centre in centres %}
+                        {% if blocked[centre.id.toRfc4122]|default(null) is not null %}
+                            <li class="flex items-start gap-4 px-6 py-4 bg-gray-50/60">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-400">
+                                    {{ ux_icon('heroicons:lock-closed', {class: 'h-5 w-5'}) }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-semibold text-gray-500">{{ centre.name }}</p>
+                                    <p class="mt-0.5 text-xs text-red-700">{{ blocked[centre.id.toRfc4122]|trans({'%centre%': centre.name}, 'centre_selection') }}</p>
+                                </div>
+                            </li>
+                        {% else %}
                         <li>
                             <form method="post"
                                   action="{{ path('app_select_centre_choose', {id: centre.id}) }}">
@@ -72,6 +90,7 @@
                                 </button>
                             </form>
                         </li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             {% endif %}

@@ -84,6 +84,9 @@ Dependencia o material del centro que el profesorado puede reservar por tramos h
 **Incidencia**
 Aviso de una avería, desperfecto o problema del centro (una luz fundida, un aula sin wifi…), que se sigue hasta cerrarla: abierta, en proceso, solucionada, no procede o cerrada por duplicidad. Tiene un tipo (que decide quién la atiende), una prioridad que asigna el responsable, observaciones, adjuntos e historial. Distinta del *parte* de convivencia, que es sobre el alumnado.
 
+**Personal no docente**
+Cuenta de quien trabaja en el centro sin dar clase (conserjería, administración, mantenimiento…). Pertenece al centro sin depender del curso académico, no autentica en Séneca, no aparece entre los docentes y solo accede a las Incidencias. Se gestiona en Centro educativo › Personal no docente.
+
 **Prioridad (de una incidencia)**
 Importancia que el responsable asigna a una incidencia (por defecto Crítica, Alta, Media o Baja), con un color y un plazo recomendado y otro máximo en días lectivos. Asignarla permite poner la incidencia «en proceso».
 

@@ -10,9 +10,9 @@ automáticos por correo.
 
 La sección **Centro educativo** del menú lateral es el panel de configuración del centro,
 reservado a los administradores. Sus tarjetas dan acceso a los cursos académicos, los docentes,
-la oferta formativa, los estudiantes, los tramos horarios, los días no lectivos, los catálogos del
-centro, las incidencias (tipos y prioridades), los perfiles especiales, los ajustes y el registro de
-avisos por correo.
+el personal no docente, la oferta formativa, los estudiantes, los tramos horarios, los días no
+lectivos, los catálogos del centro, las incidencias (tipos y prioridades), los perfiles especiales,
+los ajustes y el registro de avisos por correo.
 
 Las tarjetas de **Docentes** y **Estudiantes** —altas e importaciones desde Séneca— se explican
 paso a paso en [Preparar el curso académico](02-preparar-el-curso-academico.md); el resto, a
@@ -193,6 +193,35 @@ curso académico activo. Ninguno concede acceso al resto del panel del centro (o
 formativa, estudiantes, catálogos…): solo amplían la visibilidad y los permisos sobre partes y
 sanciones, o sobre las actividades (ver [Permisos de un vistazo](08-permisos-de-un-vistazo.md)).
 
+### Personal no docente {#personal-no-docente}
+
+La tarjeta **Personal no docente** gestiona las cuentas de quienes trabajan en el centro sin dar
+clase (conserjería, administración, mantenimiento…) y necesitan registrar o atender incidencias.
+
+- **Qué pueden hacer.** Solo acceden al módulo de [Incidencias](03-el-trabajo-diario.md#incidencias):
+  registran las suyas, ven las que han registrado o tienen asignadas, y pueden ser **responsables de
+  tipos de incidencia** y **asignadas a** una incidencia. No ven ningún otro módulo (estudiantes,
+  partes, sanciones, calendario…) ni aparecen en los listados ni en los buscadores de docentes.
+- **Sin curso académico.** Pertenecen al centro, no a un curso: siguen en él al cambiar de curso.
+  Tampoco autentican en Séneca: tienen usuario y contraseña propios de GestConv+.
+- **Módulo desactivado.** Si el módulo de Incidencias está desactivado en el centro, su cuenta no puede
+  entrar en él aunque esté autenticada: en la pantalla de selección de centro aparece bloqueado, con
+  un mensaje que explica el motivo. Podrán entrar cuando se vuelva a activar.
+- **Incorporar.** Escribe el **identificador o el correo electrónico** (coincidencia exacta) de una
+  cuenta existente de personal no docente —por ejemplo, la de alguien que ya trabaja en otro
+  centro— y pulsa **Añadir**. Las cuentas de docentes y de administración global no se pueden
+  incorporar como personal no docente.
+- **Registrar una cuenta nueva.** Si no existe, la pantalla ofrece registrarla con nombre, apellidos,
+  usuario y correo electrónico (obligatorio), y elegir cómo recibirá su acceso:
+  - *Establecer una contraseña ahora*: la persona deberá cambiarla en su primer acceso.
+  - *Enviar un enlace de invitación*: recibe un correo, válido durante 7 días, para establecer ella
+    misma su contraseña. Desde el listado se puede **reenviar la invitación** cuando caduca.
+- **Editar.** Se pueden modificar nombre, correo, usuario, contraseña y estado (activo/inactivo) en
+  cualquier momento. La cuenta es global: si la persona pertenece a más de un centro, los cambios
+  se aplican en todos.
+- **Quitar del centro.** La persona deja de pertenecer al centro y de ser responsable de sus tipos
+  de incidencia; las incidencias que registró se conservan. La cuenta no se elimina.
+
 ## Catálogos del centro
 
 Al crear el centro se configuran automáticamente siete catálogos con valores por defecto,
@@ -368,7 +397,7 @@ poner las incidencias en proceso.
 wifi*). Cada tipo tiene:
 
 - **Nombre** y **Cuelga de**: el tipo del que depende en la lista (o el nivel superior).
-- **Responsables**: uno o varios docentes del curso, elegidos en un buscador. Reciben el aviso de las
+- **Responsables**: uno o varios docentes del curso o personas del [personal no docente](#personal-no-docente) del centro, elegidos en un buscador. Reciben el aviso de las
   incidencias de ese tipo y de **todos los que cuelgan de él**, y las gestionan. Los **responsables de
   un tipo son los suyos más los de todos sus ascendentes**: quien gestiona *Mantenimiento* gestiona
   también *Electricidad*. Si en una rama no hay ningún responsable, el aviso va a la dirección del

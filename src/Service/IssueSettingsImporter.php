@@ -10,7 +10,6 @@ use App\Entity\IssueType;
 use App\Entity\Teacher;
 use App\Repository\IssuePriorityRepository;
 use App\Repository\IssueTypeRepository;
-use App\Repository\TeacherRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -36,7 +35,7 @@ class IssueSettingsImporter
         private readonly EntityManagerInterface $em,
         private readonly IssueTypeRepository $types,
         private readonly IssuePriorityRepository $priorities,
-        private readonly TeacherRepository $teachers,
+        private readonly IssueAssignees $assignees,
     ) {}
 
     /**
@@ -280,12 +279,11 @@ class IssueSettingsImporter
         return $existing;
     }
 
-    /** @return array<string, Teacher> docentes del curso activo por usuario en minúsculas */
+    /** @return array<string, Teacher> docentes del curso activo y personal no docente del centro, por usuario en minúsculas */
     private function availableTeachers(EducationalCentre $centre): array
     {
-        $year      = $centre->getActiveAcademicYear();
         $available = [];
-        foreach ($year !== null ? $this->teachers->findByAcademicYearOrderedByName($year) : [] as $teacher) {
+        foreach ($this->assignees->candidates($centre) as $teacher) {
             $available[mb_strtolower($teacher->getUsername())] = $teacher;
         }
 

@@ -61,12 +61,22 @@ class EducationalCentre
     #[ORM\JoinTable(name: 'educational_centre_activity_coordinators')]
     private Collection $activityCoordinators;
 
+    /**
+     * Personal no docente del centro: solo accede a Incidencias y se asocia al centro sin curso académico.
+     *
+     * @var Collection<int, Teacher>
+     */
+    #[ORM\ManyToMany(targetEntity: Teacher::class)]
+    #[ORM\JoinTable(name: 'educational_centre_non_teaching_staff')]
+    private Collection $nonTeachingStaff;
+
     public function __construct()
     {
         $this->admins = new ArrayCollection();
         $this->committeeMembers = new ArrayCollection();
         $this->counselors = new ArrayCollection();
         $this->activityCoordinators = new ArrayCollection();
+        $this->nonTeachingStaff     = new ArrayCollection();
     }
 
     /**
@@ -75,6 +85,30 @@ class EducationalCentre
     public function getActivityCoordinators(): Collection
     {
         return $this->activityCoordinators;
+    }
+
+    /**
+     * @return Collection<int, Teacher>
+     */
+    public function getNonTeachingStaff(): Collection
+    {
+        return $this->nonTeachingStaff;
+    }
+
+    public function addNonTeachingStaff(Teacher $teacher): static
+    {
+        if (!$this->nonTeachingStaff->contains($teacher)) {
+            $this->nonTeachingStaff->add($teacher);
+        }
+
+        return $this;
+    }
+
+    public function removeNonTeachingStaff(Teacher $teacher): static
+    {
+        $this->nonTeachingStaff->removeElement($teacher);
+
+        return $this;
     }
 
     public function addActivityCoordinator(Teacher $teacher): static

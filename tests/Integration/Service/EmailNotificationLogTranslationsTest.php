@@ -14,7 +14,7 @@ use Symfony\Component\Translation\TranslatorBagInterface;
 class EmailNotificationLogTranslationsTest extends KernelTestCase
 {
     /** Correos que no se envían desde IncidentEmailNotifier y por tanto no quedan en el registro. */
-    private const NOT_LOGGED = ['password_reset', 'email_verification'];
+    private const NOT_LOGGED = ['password_reset', 'email_verification', 'invitation'];
 
     public function testEveryLoggedEmailEventHasALabel(): void
     {

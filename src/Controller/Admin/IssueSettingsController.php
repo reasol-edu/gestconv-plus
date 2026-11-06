@@ -13,7 +13,7 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\IssuePriorityRepository;
 use App\Repository\IssueRepository;
 use App\Repository\IssueTypeRepository;
-use App\Repository\TeacherRepository;
+use App\Service\IssueAssignees;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Service\ActivityLogService;
 use App\Service\IssueSettingsExporter;
@@ -49,7 +49,7 @@ class IssueSettingsController extends AbstractController
         private readonly IssueTypeRepository $types,
         private readonly IssuePriorityRepository $priorities,
         private readonly IssueRepository $issues,
-        private readonly TeacherRepository $teachers,
+        private readonly IssueAssignees $assignees,
         private readonly IssueSettingsExporter $exporter,
         private readonly IssueSettingsImporter $importer,
         private readonly UploadLimits $uploadLimits,
@@ -482,15 +482,15 @@ class IssueSettingsController extends AbstractController
     }
 
     /**
-     * Los docentes del curso activo que pueden ser responsables, y los que ya lo son aunque ya no estén en el curso.
+     * Los docentes del curso activo y el personal no docente del centro que pueden ser responsables, y los que ya lo son
+     * aunque ya no estén en el curso.
      *
      * @return array<string, Teacher>
      */
     private function selectableTeachers(EducationalCentre $centre, IssueType $type): array
     {
-        $year     = $centre->getActiveAcademicYear();
         $teachers = [];
-        foreach ($year !== null ? $this->teachers->findByAcademicYearOrderedByName($year) : [] as $teacher) {
+        foreach ($this->assignees->candidates($centre) as $teacher) {
             $teachers[$teacher->getId()->toRfc4122()] = $teacher;
         }
         foreach ($type->getManagers() as $manager) {

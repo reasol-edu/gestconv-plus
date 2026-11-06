@@ -1,0 +1,113 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'non_teaching.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-7xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'non_teaching.title'|trans({}, 'admin') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 max-w-3xl">{{ 'non_teaching.intro'|trans({}, 'admin') }}</p>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('info') %}
+        <div class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ message }}</div>
+    {% endfor %}
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        {% if staff is empty %}
+            <p class="px-6 py-8 text-sm text-gray-500 text-center">{{ 'non_teaching.empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-100 text-sm">
+                    <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        <tr>
+                            <th class="px-6 py-3">{{ 'centre_teachers.col.name'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3">{{ 'centre_teachers.col.username'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3">{{ 'centre_teachers.col.email'|trans({}, 'admin') }}</th>
+                            <th class="px-6 py-3 text-right">{{ 'centre_teachers.col.actions'|trans({}, 'admin') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for member in staff %}
+                            <tr>
+                                <td class="px-6 py-3 font-medium text-gray-900">
+                                    {{ member.name.lastName }}, {{ member.name.firstName }}
+                                    {% if not member.active %}
+                                        <span class="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{{ 'non_teaching.inactive'|trans({}, 'admin') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-3 font-mono text-gray-700">{{ member.username }}</td>
+                                <td class="px-6 py-3 text-gray-700">{{ member.email }}</td>
+                                <td class="px-6 py-3">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ path('app_non_teaching_edit', {centreId: centre.id, id: member.id}) }}"
+                                           class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                            {{ 'non_teaching.action.edit'|trans({}, 'admin') }}
+                                        </a>
+                                        {% if member.email %}
+                                            <form method="post" action="{{ path('app_non_teaching_invite', {centreId: centre.id, id: member.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('invite_non_teaching_' ~ member.id) }}">
+                                                <button type="submit"
+                                                        class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                                    {{ 'non_teaching.action.invite'|trans({}, 'admin') }}
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        <form method="post" action="{{ path('app_non_teaching_remove', {centreId: centre.id, id: member.id}) }}"
+                                              onsubmit="return confirm({{ 'non_teaching.remove_confirm'|trans({}, 'admin')|json_encode|e('html_attr') }});">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('remove_non_teaching_' ~ member.id) }}">
+                                            <button type="submit"
+                                                    class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors">
+                                                {{ 'non_teaching.action.remove'|trans({}, 'admin') }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-sm font-semibold text-gray-700">{{ 'non_teaching.add.title'|trans({}, 'admin') }}</h2>
+            <p class="mt-0.5 text-xs text-gray-500">{{ 'non_teaching.add.hint'|trans({}, 'admin') }}</p>
+        </div>
+        <form method="post" action="{{ path('app_non_teaching_add', {centreId: centre.id}) }}" class="px-6 py-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('add_non_teaching') }}">
+            <label for="non-teaching-identifier" class="block text-xs font-medium text-gray-600 mb-1.5">
+                {{ 'non_teaching.add.label'|trans({}, 'admin') }}
+            </label>
+            <div class="flex gap-3">
+                <input id="non-teaching-identifier" type="text" name="identifier" required autocomplete="off"
+                       placeholder="{{ 'non_teaching.add.placeholder'|trans({}, 'admin') }}"
+                       class="flex-1 min-w-0 rounded-xl border border-gray-200 bg-gray-50 py-2.5 px-3.5 text-sm text-gray-900
+                              placeholder-gray-400 focus:border-forest-500 focus:bg-white focus:outline-none
+                              focus:ring-3 focus:ring-forest-500/20 transition-colors">
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl border border-forest-600 bg-forest-600 px-4 text-sm font-semibold text-white
+                               hover:border-forest-700 hover:bg-forest-700 transition-colors shadow-xs shrink-0">
+                    {{ ux_icon('heroicons:user-plus', {class: 'h-4 w-4'}) }}
+                    {{ 'centre_teachers.add.submit'|trans({}, 'admin') }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

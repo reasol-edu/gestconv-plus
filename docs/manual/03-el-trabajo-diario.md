@@ -842,9 +842,11 @@ eliminar sobre las de otros.
 La sección **Incidencias** (grupo **Día a día**) sirve para avisar de **averías, desperfectos y
 problemas del centro** —una luz fundida, un grifo que gotea, un aula sin wifi, un proyector
 estropeado— y seguir su arreglo hasta que se cierran. Es distinta de los **partes** de convivencia,
-que son sobre el alumnado. Cualquier docente del curso visualizado puede registrar incidencias; el
-equipo directivo puede desactivar la sección (ver
-[Secciones de la aplicación](07-administrar-la-plataforma.md#secciones-de-la-aplicacion)).
+que son sobre el alumnado. Cualquier docente del curso visualizado puede registrar incidencias, y
+también el [personal no docente](06-administrar-el-centro.md#personal-no-docente) del centro, que
+solo ve esta sección; el equipo directivo puede desactivarla (ver
+[Secciones de la aplicación](07-administrar-la-plataforma.md#secciones-de-la-aplicacion)): en ese
+caso el personal no docente no puede entrar en el centro.
 
 ### Registrar una incidencia
 

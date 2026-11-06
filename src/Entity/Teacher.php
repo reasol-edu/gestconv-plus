@@ -41,6 +41,14 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $external = false;
 
+    /**
+     * Personal no docente: no autentica en Séneca (usa contraseña propia), no sale en los listados de docentes y solo
+     * accede a Incidencias. Se asocia a los centros sin curso académico (ver EducationalCentre::getNonTeachingStaff()).
+     * No confundir con `external`, que significa «autentica en Séneca».
+     */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $nonTeaching = false;
+
     #[ORM\Column]
     private bool $active = true;
 
@@ -149,6 +157,18 @@ class Teacher implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     public function eraseCredentials(): void {}
+
+    public function isNonTeaching(): bool
+    {
+        return $this->nonTeaching;
+    }
+
+    public function setNonTeaching(bool $nonTeaching): static
+    {
+        $this->nonTeaching = $nonTeaching;
+
+        return $this;
+    }
 
     public function isExternal(): bool
     {

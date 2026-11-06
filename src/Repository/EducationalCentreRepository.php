@@ -131,6 +131,9 @@ class EducationalCentreRepository extends ServiceEntityRepository
                              WHERE ecA.id = ec.id AND adm.id = :tid)')
             ->orWhere('EXISTS (SELECT 1 FROM ' . AcademicYear::class . ' ayT JOIN ayT.teachers tch
                                WHERE ayT.id = IDENTITY(ec.activeAcademicYear) AND tch.id = :tid)')
+            // Personal no docente asociado al centro (sin curso académico).
+            ->orWhere('EXISTS (SELECT 1 FROM ' . EducationalCentre::class . ' ecN JOIN ecN.nonTeachingStaff nts
+                               WHERE ecN.id = ec.id AND nts.id = :tid)')
             ->orWhere('EXISTS (SELECT 1 FROM ' . Group::class . ' g
                                JOIN g.course c JOIN c.academicYear ayG
                                LEFT JOIN g.groupTeachers ggt LEFT JOIN g.tutors gtu
