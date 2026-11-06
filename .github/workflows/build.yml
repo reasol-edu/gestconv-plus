@@ -106,23 +106,23 @@ jobs:
           # vuelve a fijarlas justo antes de etiquetar.
           - platform: linux-x86_64
             fp_asset:   frankenphp-linux-x86_64
-            fp_sha256:  5c33da36b76a9173200ce0d49356aee013473be149ee3df6c38fd6e2b5a0e580
+            fp_sha256:  88e4229fb48167418e50bc29b94df5a4f83801ec70ea6637ed44bf0527e74c29
             binary:     frankenphp
             archive:    tar.gz
           - platform: linux-aarch64
             fp_asset:   frankenphp-linux-aarch64
-            fp_sha256:  2957e4a99592169aa136ec492e849f1ce591d3e9e216cd7713165c42656656e0
+            fp_sha256:  c405bbb9c6561381109a12c5707ec71109f098423c3c935667543c2c443e37f8
             binary:     frankenphp
             archive:    tar.gz
           # Sin binario para Mac con procesador Intel: FrankenPHP solo lo publica para Apple Silicon desde la 1.13.2.
           - platform: macos-arm64
             fp_asset:   frankenphp-mac-arm64
-            fp_sha256:  660e802d87762361282e274ddca5e2d67344247673bc452353eaaf0aa5cce393
+            fp_sha256:  8c767bc3b8d1bfac287748aff4d62ade240f7e2cd1984196e5d5a84fd3a47629
             binary:     frankenphp
             archive:    tar.gz
           - platform: windows-x86_64
             fp_asset:   frankenphp-windows-x86_64.zip
-            fp_sha256:  d2873471e918e762ff4207c6e403fcacc0083ea6c5165512107215e4d2576ace
+            fp_sha256:  22e92d1465437480ca3b6c0618a6f1d2377f7ecd5ae212ba705ed035478d72d1
             binary:     frankenphp.exe
             archive:    zip
 
