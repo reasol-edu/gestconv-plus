@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.24.0] - 2026-11-06
+
+### Added
+
+- **Informe de salidas del aula**, en **Informes › Salidas del aula**. Para un rango de fechas muestra el resumen (salidas, estudiantes y grupos distintos, tiempo medio fuera, la salida más larga y las salidas sin regreso registrado), el desglose por **tipo de salida** con los grupos y el alumnado que más lo usan, el reparto por grupo y tipo agrupado por curso, y el alumnado con más salidas, con su tiempo fuera y su motivo más frecuente.
+- **Informe de incidencias**, en **Informes › Incidencias**, para ver cuáles son los problemas más frecuentes o los más difíciles de arreglar. Para un rango de fechas muestra el tiempo medio y la mediana de cierre, el tiempo hasta la primera gestión, cómo se han cerrado (solucionadas, no procede, duplicadas), el cumplimiento del plazo máximo y del recomendado, el desglose por tipo (agrupado por tipo raíz) y por prioridad, las dependencias con más incidencias, la evolución por mes y los tipos más frecuentes, más lentos en cerrarse y con más retrasos.
+- Los dos informes se exportan a **PDF** (el de salidas, apaisado) y a **hoja de cálculo**, y su encabezado, margen y plantilla de fondo se personalizan como los demás informes, en los ajustes de informes. Cada informe solo aparece si su módulo está activado.
+
+### Changed
+
+- La presentación recoge los dos informes y se ajustan las diapositivas cuyo texto se salía por abajo.
+
 ## [1.23.0] - 2026-11-06
 
 ### Added
