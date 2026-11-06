@@ -106,7 +106,8 @@ class IssueController extends AbstractController
             $location = null;
             if ($booking === null && $values['location'] !== '') {
                 $location = $this->locations->findById($values['location']);
-                if ($location === null || !$location->getEducationalCentre()->getId()->equals($centre->getId())) {
+                // Solo las ubicaciones del centro disponibles para todos los sitios (no las «solo para partes»).
+                if ($location === null || !$location->getEducationalCentre()->getId()->equals($centre->getId()) || !$location->getCategory()->isForAllPlaces()) {
                     $location = null;
                 }
             }
@@ -135,7 +136,7 @@ class IssueController extends AbstractController
             'errors'    => $errors,
             'booking'   => $booking,
             'types'     => $this->selectableTypes($centre),
-            'locations' => $this->locations->findByCentreActive($centre),
+            'locations' => $this->locations->findByCentreActive($centre, true),
         ]);
     }
 
@@ -158,7 +159,7 @@ class IssueController extends AbstractController
             'candidates' => $canManage ? $this->issues->findDuplicateCandidates($centre, $issue) : [],
             'priorities' => $canManage ? $this->priorities->findByCentreOrdered($centre) : [],
             'types'      => $canManage ? $this->selectableTypes($centre, $issue->getType()) : [],
-            'locations'  => $canManage ? $this->locations->findByCentreActive($centre) : [],
+            'locations'  => $canManage ? $this->locations->findByCentreActive($centre, true) : [],
             'today'      => $this->clockNow(),
         ]);
     }
@@ -237,7 +238,9 @@ class IssueController extends AbstractController
         if ($issue->getBooking() === null) {
             $locationId = $request->request->getString('location');
             $location   = $locationId !== '' ? $this->locations->findById($locationId) : null;
-            if ($locationId === '' || ($location !== null && $location->getEducationalCentre()->getId()->equals($centre->getId()))) {
+            // Se puede dejar la actual (aunque sea de una categoría «solo para partes») o elegir una disponible para todos los sitios.
+            $keepsCurrent = $location !== null && $issue->getLocation()?->getId()->equals($location->getId()) === true;
+            if ($locationId === '' || ($location !== null && $location->getEducationalCentre()->getId()->equals($centre->getId()) && ($keepsCurrent || $location->getCategory()->isForAllPlaces()))) {
                 $this->manager->changeLocation($issue, $actor, $location);
             }
         }

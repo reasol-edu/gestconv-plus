@@ -222,6 +222,15 @@ organizado en categorías. Se usa en tres sitios:
   [actividad](05-calendario-y-tablon.md#actividades-de-centro), que es un texto libre: se puede elegir
   una ubicación del catálogo o escribir cualquier otro lugar.
 
+**Dónde se ofrecen.** Cada **categoría** tiene un selector de dos opciones, **Solo en los partes** o
+**En todos los sitios**. Las ubicaciones de una categoría «solo en los partes» aparecen únicamente en
+el campo **Dónde sucedió** de un parte, y no en las incidencias ni en las actividades. Se elige al
+crear o editar la categoría, y las que son solo para partes llevan la etiqueta **Solo partes** en el
+listado. Una categoría nueva es, por defecto, para todos los sitios; la categoría **General** que
+trae cada centro —con las ubicaciones propias de un parte: *En clase*, *Recreo*…— viene **solo para
+partes**. Si cambias una categoría que ya usan incidencias, estas conservan su dependencia, aunque
+ya no se ofrezca a otras. El ámbito va incluido al exportar e importar el catálogo.
+
 Una ubicación desactivada deja de ofrecerse en los formularios nuevos, pero se conserva en lo ya
 registrado. El catálogo por
 defecto incluye las ubicaciones más habituales: *En clase*, *En el intercambio de clases*,

@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Controller\TranslatorTrait;
 use App\Entity\LocationOptionCategory;
+use App\Entity\LocationScope;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\LocationOptionCategoryRepository;
 use App\Security\Voter\EducationalCentreVoter;
@@ -24,7 +25,7 @@ class LocationOptionCategoryController extends AbstractController
     use TranslatorTrait;
 
     /** @var list<string> */
-    private const LOGGED_FIELDS = ['name'];
+    private const LOGGED_FIELDS = ['name', 'scope'];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -57,7 +58,8 @@ class LocationOptionCategoryController extends AbstractController
                 $category = (new LocationOptionCategory())
                     ->setEducationalCentre($centre)
                     ->setName($name)
-                    ->setPosition($position);
+                    ->setPosition($position)
+                    ->setScope(LocationScope::tryFrom($request->request->getString('scope')) ?? LocationScope::All);
 
                 $this->em->persist($category);
                 $this->em->flush();
@@ -104,6 +106,10 @@ class LocationOptionCategoryController extends AbstractController
                 $before = $this->changeTracker->snapshot($category, self::LOGGED_FIELDS);
 
                 $category->setName($name);
+                $scope = LocationScope::tryFrom($request->request->getString('scope'));
+                if ($scope !== null) {
+                    $category->setScope($scope);
+                }
                 $this->em->flush();
 
                 $changes = $this->changeTracker->diff($before, $category, self::LOGGED_FIELDS);

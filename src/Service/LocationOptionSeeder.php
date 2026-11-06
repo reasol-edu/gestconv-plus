@@ -9,6 +9,7 @@ use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
 use App\Entity\LocationOption;
 use App\Entity\LocationOptionCategory;
+use App\Entity\LocationScope;
 use App\Service\Catalog\AbstractCatalogSeeder;
 
 final class LocationOptionSeeder extends AbstractCatalogSeeder
@@ -34,6 +35,15 @@ final class LocationOptionSeeder extends AbstractCatalogSeeder
             ->setEducationalCentre($centre)
             ->setName($name)
             ->setPosition($position);
+    }
+
+    protected function applyCategoryExtra(CatalogCategoryInterface $category, array $catData): void
+    {
+        assert($category instanceof LocationOptionCategory);
+
+        // En el catálogo por defecto, «General» (las ubicaciones propias de un parte) es solo para partes.
+        $raw = $catData['scope'] ?? null;
+        $category->setScope((is_string($raw) ? LocationScope::tryFrom($raw) : null) ?? LocationScope::All);
     }
 
     protected function createItem(

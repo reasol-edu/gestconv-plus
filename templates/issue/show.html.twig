@@ -127,6 +127,10 @@
                                 <label for="manage-location" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.location'|trans({}, 'admin') }}</label>
                                 <select id="manage-location" name="location" class="{{ inputClass }}">
                                     <option value="">—</option>
+                                    {# La dependencia actual se conserva aunque su categoría sea «solo para partes» (ya no se ofrece a otras). #}
+                                    {% if issue.location and not issue.location.category.forAllPlaces %}
+                                        <option value="{{ issue.location.id.toRfc4122 }}" selected>{{ issue.location.name }}</option>
+                                    {% endif %}
                                     {% set lastCategory = null %}
                                     {% for location in locations %}
                                         {% if location.category.id.toRfc4122 != lastCategory %}

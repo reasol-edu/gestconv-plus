@@ -9,6 +9,7 @@ use App\Entity\Catalog\CatalogEntryInterface;
 use App\Entity\EducationalCentre;
 use App\Entity\LocationOption;
 use App\Entity\LocationOptionCategory;
+use App\Entity\LocationScope;
 use App\Repository\LocationOptionCategoryRepository;
 use App\Repository\LocationOptionRepository;
 use App\Service\Catalog\AbstractCatalogImporter;
@@ -50,6 +51,18 @@ class LocationOptionImporter extends AbstractCatalogImporter
             ->setEducationalCentre($centre)
             ->setName($name)
             ->setPosition($position);
+    }
+
+    protected function applyCategoryExtra(CatalogCategoryInterface $category, array $catData): void
+    {
+        assert($category instanceof LocationOptionCategory);
+
+        // Un fichero anterior a este ajuste no lo trae: la categoría conserva el suyo.
+        $raw   = $catData['scope'] ?? null;
+        $scope = is_string($raw) ? LocationScope::tryFrom($raw) : null;
+        if ($scope !== null) {
+            $category->setScope($scope);
+        }
     }
 
     protected function findExistingItemsForCategory(CatalogCategoryInterface $category): iterable

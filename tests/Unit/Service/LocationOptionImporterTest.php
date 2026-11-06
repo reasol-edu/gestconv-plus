@@ -48,6 +48,23 @@ class LocationOptionImporterTest extends TestCase
         self::assertSame(2, $stats['options']);
     }
 
+    public function testImportReadsWhereACategoryIsOfferedAndKeepsItWhenTheFileDoesNotSayIt(): void
+    {
+        $existing = (new \App\Entity\LocationOptionCategory())->setEducationalCentre($this->centre)->setName('General')->setScope(\App\Entity\LocationScope::Reports);
+        $this->categoryRepo->method('findByCentreOrdered')->willReturn([$existing]);
+        $this->categoryRepo->method('countByCentre')->willReturn(1);
+        $this->optionRepo->method('findByCategoryOrdered')->willReturn([]);
+        $this->optionRepo->method('countByCategory')->willReturn(0);
+
+        // Sin el dato (fichero anterior a este ajuste), la categoría existente conserva el suyo.
+        $this->importer->import(['categories' => [['name' => 'General', 'options' => []]]], $this->centre);
+        self::assertSame(\App\Entity\LocationScope::Reports, $existing->getScope());
+
+        // Con el dato, se aplica; y una categoría nueva sin él queda para todos los sitios.
+        $this->importer->import(['categories' => [['name' => 'General', 'scope' => 'all', 'options' => []], ['name' => 'Nueva', 'options' => []]]], $this->centre);
+        self::assertSame(\App\Entity\LocationScope::All, $existing->getScope());
+    }
+
     public function testImportSkipsEmptyCategoryName(): void
     {
         $this->categoryRepo->method('findByCentreOrdered')->willReturn([]);

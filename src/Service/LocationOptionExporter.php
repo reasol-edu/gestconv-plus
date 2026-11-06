@@ -43,4 +43,11 @@ class LocationOptionExporter extends AbstractCatalogExporter
 
         return $this->options->findByCategoryOrdered($category);
     }
+
+    protected function categoryExtra(CatalogCategoryInterface $category): array
+    {
+        assert($category instanceof LocationOptionCategory);
+
+        return ['scope' => $category->getScope()->value];
+    }
 }

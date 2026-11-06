@@ -28,6 +28,10 @@ class LocationOptionCategory implements CatalogCategoryInterface
     #[ORM\Column]
     private int $position = 0;
 
+    /** Dónde se ofrecen sus ubicaciones: solo en los partes o en todos los sitios. */
+    #[ORM\Column(length: 10, enumType: LocationScope::class, options: ['default' => 'all'])]
+    private LocationScope $scope = LocationScope::All;
+
     public function getId(): Uuid
     {
         return $this->id;
@@ -67,5 +71,23 @@ class LocationOptionCategory implements CatalogCategoryInterface
         $this->position = $position;
 
         return $this;
+    }
+
+    public function getScope(): LocationScope
+    {
+        return $this->scope;
+    }
+
+    public function setScope(LocationScope $scope): static
+    {
+        $this->scope = $scope;
+
+        return $this;
+    }
+
+    /** Sus ubicaciones se ofrecen también fuera de los partes (incidencias y actividades). */
+    public function isForAllPlaces(): bool
+    {
+        return $this->scope === LocationScope::All;
     }
 }

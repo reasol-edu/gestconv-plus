@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\EducationalCentre;
 use App\Entity\LocationOption;
 use App\Entity\LocationOptionCategory;
+use App\Entity\LocationScope;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -46,19 +47,24 @@ class LocationOptionRepository extends ServiceEntityRepository
      *
      * @return list<LocationOption>
      */
-    public function findByCentreActive(EducationalCentre $centre): array
+    public function findByCentreActive(EducationalCentre $centre, bool $forAllPlacesOnly = false): array
     {
-        /** @var list<LocationOption> $result */
-        $result = $this->createQueryBuilder('o')
+        $qb = $this->createQueryBuilder('o')
             ->addSelect('c')
             ->join('o.category', 'c')
             ->where('o.educationalCentre = :centre')
             ->andWhere('o.active = true')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->orderBy('c.position', 'ASC')
-            ->addOrderBy('o.position', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->addOrderBy('o.position', 'ASC');
+
+        // Fuera de los partes (incidencias, actividades) no se ofrecen las categorías «solo para partes».
+        if ($forAllPlacesOnly) {
+            $qb->andWhere('c.scope = :scope')->setParameter('scope', LocationScope::All->value);
+        }
+
+        /** @var list<LocationOption> $result */
+        $result = $qb->getQuery()->getResult();
 
         return $result;
     }

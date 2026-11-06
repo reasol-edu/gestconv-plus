@@ -61,6 +61,39 @@ class LocationOptionCategoryControllerTest extends ControllerTestCase
         self::assertSame('Categoría de prueba', $categories[0]->getName());
     }
 
+    public function testANewCategoryIsForAllPlacesByDefaultAndTheScopeCanBeChosenAndChanged(): void
+    {
+        [$cadmin, $centre] = $this->makeScenario();
+        $this->loginAs($cadmin);
+        $centreId = $centre->getId()->toRfc4122();
+
+        // El formulario ofrece los dos radios, con «todos los sitios» marcado.
+        $crawler = $this->client->request('GET', '/centro/' . $centreId . '/ubicaciones/categorias/nueva');
+        self::assertCount(2, $crawler->filter('input[type="radio"][name="scope"]'));
+        self::assertCount(1, $crawler->filter('input[type="radio"][name="scope"][value="all"][checked]'));
+        $token = $crawler->filter('[name="_token"]')->first()->attr('value');
+
+        $this->client->request('POST', '/centro/' . $centreId . '/ubicaciones/categorias/nueva', ['_token' => $token, 'name' => 'Solo partes', 'scope' => 'reports']);
+        $this->client->request('POST', '/centro/' . $centreId . '/ubicaciones/categorias/nueva', ['_token' => $token, 'name' => 'Sin elegir']);
+
+        $this->em->clear();
+        $byName = [];
+        foreach ($this->em->getRepository(LocationOptionCategory::class)->findBy(['educationalCentre' => $centre->getId()]) as $category) {
+            $byName[$category->getName()] = $category;
+        }
+        self::assertSame(\App\Entity\LocationScope::Reports, $byName['Solo partes']->getScope());
+        self::assertSame(\App\Entity\LocationScope::All, $byName['Sin elegir']->getScope());
+
+        // Editar: se cambia el ámbito (y sin enviarlo se conserva).
+        $id      = $byName['Solo partes']->getId()->toRfc4122();
+        $crawler = $this->client->request('GET', '/centro/' . $centreId . '/ubicaciones/categorias/' . $id . '/editar');
+        self::assertCount(1, $crawler->filter('input[type="radio"][name="scope"][value="reports"][checked]'));
+        $editToken = $crawler->filter('[name="_token"]')->first()->attr('value');
+        $this->client->request('POST', '/centro/' . $centreId . '/ubicaciones/categorias/' . $id . '/editar', ['_token' => $editToken, 'name' => 'Solo partes', 'scope' => 'all']);
+        $this->em->clear();
+        self::assertSame(\App\Entity\LocationScope::All, $this->em->getRepository(LocationOptionCategory::class)->find($byName['Solo partes']->getId())?->getScope());
+    }
+
     public function testCreateWithInvalidCsrfIsDenied(): void
     {
         [$cadmin, $centre] = $this->makeScenario();

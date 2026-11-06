@@ -61,6 +61,17 @@ class LocationOptionExporterTest extends TestCase
         self::assertSame([], $data['categories']);
     }
 
+    public function testExportIncludesWhereTheCategoryIsOffered(): void
+    {
+        $category = $this->makeCategory('General')->setScope(\App\Entity\LocationScope::Reports);
+        $this->categoryRepo->method('findByCentreOrdered')->willReturn([$category]);
+        $this->optionRepo->method('findByCategoryOrdered')->willReturn([]);
+
+        $data = $this->exporter->export($this->centre);
+
+        self::assertSame('reports', $data['categories'][0]['scope']);
+    }
+
     public function testExportIncludesCategoryName(): void
     {
         $category = $this->makeCategory('General');

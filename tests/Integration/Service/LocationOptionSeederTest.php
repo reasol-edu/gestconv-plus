@@ -47,6 +47,19 @@ class LocationOptionSeederTest extends RepositoryTestCase
         self::assertSame('General', $categories[0]->getName());
     }
 
+    public function testTheDefaultGeneralCategoryIsOnlyForReports(): void
+    {
+        $centre = $this->makeCentre('41200009');
+        $this->persist($centre);
+
+        $this->seeder->seedForCentre($centre);
+        $this->flush();
+
+        $categories = $this->categoryRepo->findByCentreOrdered($centre);
+        self::assertSame(\App\Entity\LocationScope::Reports, $categories[0]->getScope());
+        self::assertFalse($categories[0]->isForAllPlaces());
+    }
+
     public function testSeedCreates6Options(): void
     {
         $centre = $this->makeCentre('41200002');

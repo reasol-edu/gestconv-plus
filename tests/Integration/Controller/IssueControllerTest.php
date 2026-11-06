@@ -296,6 +296,36 @@ class IssueControllerTest extends ControllerTestCase
         self::assertSame(['issue-data-title', 'issue-manage-title', 'issue-description-title', 'issue-attachments-title', 'issue-observations-title', 'issue-history-title'], $sections);
     }
 
+    public function testLocationsOfAReportsOnlyCategoryAreNotOfferedNorAcceptedForAnIssue(): void
+    {
+        $w       = $this->makeWorld();
+        $centre  = $this->em->getRepository(EducationalCentre::class)->find($w['centre']->getId());
+        $general = (new \App\Entity\LocationOptionCategory())->setEducationalCentre($centre)->setName('General')->setPosition(0)->setScope(\App\Entity\LocationScope::Reports);
+        $edif    = (new \App\Entity\LocationOptionCategory())->setEducationalCentre($centre)->setName('Edificio')->setPosition(1);
+        $this->persist($general, $edif);
+        $recreo = (new \App\Entity\LocationOption())->setEducationalCentre($centre)->setCategory($general)->setName('Recreo')->setPosition(0);
+        $aula   = (new \App\Entity\LocationOption())->setEducationalCentre($centre)->setCategory($edif)->setName('Aula 12')->setPosition(0);
+        $this->persist($recreo, $aula);
+        $this->flush();
+        $this->loginAs($w['rita'], $w['centre']);
+
+        // El formulario solo ofrece las de las categorías para todos los sitios.
+        $crawler = $this->client->request('GET', '/incidencias/nueva');
+        $names   = $crawler->filter('select#location option')->each(static fn ($n): string => trim($n->text()));
+        self::assertContains('Aula 12', $names);
+        self::assertNotContains('Recreo', $names);
+
+        // Y aunque se fuerce el identificador, la dependencia no se guarda.
+        $token = (string) $crawler->filter('form[method="post"] [name="_token"]')->attr('value');
+        $this->client->request('POST', '/incidencias/nueva', [
+            '_token' => $token, 'type' => $w['electricidad']->getId()->toRfc4122(), 'description' => '<p>Sin luz</p>', 'location' => $recreo->getId()->toRfc4122(),
+        ]);
+        $this->em->clear();
+        $issues = $this->em->getRepository(Issue::class)->findAll();
+        self::assertCount(1, $issues);
+        self::assertNull($issues[0]->getLocation());
+    }
+
     public function testManagementCanDeleteAnIssueWithEverythingItHas(): void
     {
         $w     = $this->makeWorld();

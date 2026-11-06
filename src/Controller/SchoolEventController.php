@@ -120,7 +120,7 @@ class SchoolEventController extends AbstractController
             'selectedGroupIds'     => $selectedGroupIds,
             'availableTypes'       => $this->types->findActiveByCentreOrdered($centre),
             'availableTeachers'    => $this->teachers->findByAcademicYearOrderedByName($year),
-            'availableLocations'   => $this->locations->findByCentreActive($centre),
+            'availableLocations'   => $this->locations->findByCentreActive($centre, true),
             'selectedCompanionIds' => $selectedCompanionIds,
         ]);
     }
@@ -192,7 +192,7 @@ class SchoolEventController extends AbstractController
             'selectedGroupIds'     => $selectedGroupIds,
             'availableTypes'       => $this->selectableTypes($centre, $event),
             'availableTeachers'    => $this->selectableTeachers($year, $event),
-            'availableLocations'   => $this->locations->findByCentreActive($centre),
+            'availableLocations'   => $this->locations->findByCentreActive($centre, true),
             'selectedCompanionIds' => $selectedCompanionIds,
         ]);
     }

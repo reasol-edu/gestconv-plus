@@ -1,5 +1,7 @@
 categories:
   - name: 'General'
+    # Solo se ofrece al registrar partes (no en incidencias ni actividades). Valores: reports | all
+    scope: reports
     options:
       - 'En clase'
       - 'En el intercambio de clases'

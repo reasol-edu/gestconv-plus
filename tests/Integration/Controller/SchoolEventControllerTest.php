@@ -43,6 +43,10 @@ class SchoolEventControllerTest extends ControllerTestCase
         $this->persist($category);
         $this->persist((new \App\Entity\LocationOption())->setEducationalCentre($centre)->setCategory($category)->setName('Salón de actos')->setPosition(0));
         $this->persist((new \App\Entity\LocationOption())->setEducationalCentre($centre)->setCategory($category)->setName('Gimnasio')->setPosition(1)->setActive(false));
+        // Una categoría «solo para partes» no se sugiere en las actividades.
+        $reportsOnly = (new \App\Entity\LocationOptionCategory())->setEducationalCentre($centre)->setName('General')->setPosition(1)->setScope(\App\Entity\LocationScope::Reports);
+        $this->persist($reportsOnly);
+        $this->persist((new \App\Entity\LocationOption())->setEducationalCentre($centre)->setCategory($reportsOnly)->setName('En clase')->setPosition(0));
         $event = $this->makeEvent($year, 'Excursión')->setLocation('Teatro Lope de Vega');
         $this->flush();
         $this->loginAs($admin, $centre);
@@ -53,6 +57,7 @@ class SchoolEventControllerTest extends ControllerTestCase
         $crawler = $this->client->request('GET', '/actividades/nuevo');
         self::assertContains('Salón de actos', $options($crawler));
         self::assertNotContains('Gimnasio', $options($crawler), 'una ubicación inactiva no se sugiere');
+        self::assertNotContains('En clase', $options($crawler), 'una categoría solo para partes no se sugiere');
         self::assertSame('Edificio principal', $crawler->filter('select#location optgroup')->attr('label'));
 
         // Editar: un lugar escrito a mano (que no es del catálogo) se conserva seleccionado.

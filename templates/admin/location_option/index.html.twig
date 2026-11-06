@@ -79,6 +79,9 @@
                         </div>
 
                         <h2 class="text-sm font-semibold text-gray-800 truncate">{{ cat.name }}</h2>
+                        {% if not cat.forAllPlaces %}
+                            <span class="shrink-0 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs font-medium text-gray-600">{{ 'location_category.badge.reports'|trans({}, 'admin') }}</span>
+                        {% endif %}
                     </div>
 
                     <div class="flex items-center gap-2 shrink-0">
