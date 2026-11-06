@@ -113,7 +113,7 @@ jobs:
             archive:    tar.gz
           - platform: linux-aarch64
             fp_asset:   frankenphp-linux-aarch64
-            fp_sha256:  4d0311de6986c4fe9dc9bc3467d9549d26b89ab7ac6804cbe68fbb5352f8b153
+            fp_sha256:  4d0311de6986d4fe9dc9bc3467d9549d26b89ab7ac6804cbe68fbb5352f8b153
             binary:     frankenphp
             archive:    tar.gz
           # Sin binario para Mac con procesador Intel: FrankenPHP solo lo publica para Apple Silicon desde la 1.13.2.
