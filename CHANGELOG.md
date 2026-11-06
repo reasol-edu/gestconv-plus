@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0] - 2026-11-06
+
+### Added
+
+- **Exportar e importar la oferta formativa en JSON** (Centro educativo › Oferta formativa). El fichero lleva los cursos y, en cada uno, sus grupos con el color, los tutores y las materias con su docente; no incluye alumnado. Al importar se abre una **vista previa** en la que se elige qué cursos y grupos importar, qué información (tutores, materias, color) y si lo que ya existe se **ignora** o se **sustituye**; cada curso y grupo indica si es nuevo o ya existe. Se importa siempre en el curso activo. Nunca se borran cursos ni grupos que no estén en el fichero, y al sustituir las materias se conservan las que tienen tareas de sanción.
+- Los **docentes** de la exportación se identifican por su **usuario IdEA** (con su nombre solo como referencia), de modo que el fichero sirve entre cursos académicos y entre despliegues distintos. Al importar se buscan entre los docentes del curso de destino; los que no existen se omiten y se avisa de ello.
+
+### Changed
+
+- El catálogo de recursos compartidos exporta ahora a sus responsables de la misma forma (usuario y nombre). Los ficheros anteriores, con solo el usuario, se siguen importando.
+
 ## [1.18.1] - 2026-11-06
 
 ### Fixed
