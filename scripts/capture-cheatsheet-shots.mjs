@@ -464,5 +464,60 @@ async function fillQuill(page, mountSelector, text) {
     await page.close();
 }
 
+// ── Reservar un recurso (roberto.guerrero) ───────────────────────────────────────────────────
+// Rellena el formulario sin guardarlo: no crea nada. Necesita las categorías, los recursos y los tramos de tmp:seed-shots.
+{
+    const page = await browser.newPage({ ...iphone, locale: 'es-ES' });
+    await login(page, 'roberto.guerrero', 'ejemplo');
+
+    // 1. El calendario de Reservas, con el botón para reservar.
+    await page.goto(`${baseUrl}/reservas`);
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    // Solo la cabecera (título, botón Reservar, pestañas y navegación): la ficha es de una página.
+    await page.screenshot({ path: `${root}/reservar-recurso-1.png`, clip: { x: 0, y: 0, width: 390, height: 330 } });
+
+    // 2. El formulario: el recurso se busca escribiendo.
+    await page.goto(`${baseUrl}/reservas/nueva`);
+    await page.waitForLoadState('networkidle');
+    await hideToolbar(page);
+    await page.locator('#resource ~ .ts-wrapper .ts-control').click();
+    await page.keyboard.type('salon', { delay: 30 });
+    await page.waitForTimeout(400);
+    await hideToolbar(page);
+    const resourceBox = await page.locator('#resource ~ .ts-wrapper').boundingBox();
+    await page.screenshot({ path: `${root}/reservar-recurso-2.png`, clip: { x: 0, y: resourceBox.y - 56, width: 390, height: 210 } });
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
+
+    // 3. La fecha y los tramos horarios (solo los del día elegido).
+    const slots = page.locator('input[name="slots[]"]:not([disabled])');
+    await slots.first().check();
+    await hideToolbar(page);
+    // Desde la fecha hasta los tramos (sin los grupos ni la descripción, que van en el paso siguiente).
+    const dateBox  = await page.locator('#date').boundingBox();
+    const slotsBox = await page.locator('fieldset', { hasText: 'Tramos horarios' }).boundingBox();
+    const scrollY  = await page.evaluate(() => window.scrollY);
+    await page.screenshot({
+        path: `${root}/reservar-recurso-3.png`,
+        fullPage: true,
+        clip: { x: 0, y: dateBox.y + scrollY - 40, width: 390, height: slotsBox.y + slotsBox.height - dateBox.y + 52 },
+    });
+
+    // 4. Repetir cada semana (opcional) y guardar.
+    await page.locator('input[name="repeat"]').scrollIntoViewIfNeeded();
+    await hideToolbar(page);
+    // Desde la tarjeta «Repetir cada semana» hasta los botones.
+    const repeatCard = await page.locator('input[name="repeat"]').locator('xpath=ancestor::div[contains(@class,"rounded-2xl")][1]').boundingBox();
+    const saveButton = await page.locator('form button[type="submit"]').first().boundingBox();
+    await page.screenshot({
+        path: `${root}/reservar-recurso-4.png`,
+        fullPage: true,
+        clip: { x: 0, y: repeatCard.y + await page.evaluate(() => window.scrollY) - 12, width: 390, height: saveButton.y + saveButton.height - repeatCard.y + 28 },
+    });
+
+    await page.close();
+}
+
 await browser.close();
 console.log('Capturas guardadas en', root);

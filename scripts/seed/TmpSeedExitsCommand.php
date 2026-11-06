@@ -35,9 +35,9 @@ final class TmpSeedExitsCommand extends Command
         $teacher = fn (string $u) => $this->em->createQuery('SELECT t FROM App\Entity\Teacher t WHERE t.username = :u')->setParameter('u', $u)->getSingleResult();
         $roberto = $teacher('roberto.guerrero');
         $others  = $this->em->createQuery('SELECT t FROM App\Entity\Teacher t JOIN t.academicYears y WHERE y = :y AND t.username NOT IN (:ex) ORDER BY t.username')
-            ->setParameter('y', $year)->setParameter('ex', ['roberto.guerrero', 'carmen.diaz', 'admin'])->setMaxResults(3)->getResult();
+            ->setParameter('y', $year->getId(), 'uuid')->setParameter('ex', ['roberto.guerrero', 'carmen.diaz', 'admin'])->setMaxResults(3)->getResult();
 
-        $groups = $this->em->createQuery('SELECT g FROM App\Entity\Group g JOIN g.course c WHERE c.academicYear = :y ORDER BY g.name')->setParameter('y', $year)->getResult();
+        $groups = $this->em->createQuery('SELECT g FROM App\Entity\Group g JOIN g.course c WHERE c.academicYear = :y ORDER BY g.name')->setParameter('y', $year->getId(), 'uuid')->getResult();
         $pairs  = [];
         foreach ($groups as $group) {
             $taken = 0;
@@ -52,7 +52,7 @@ final class TmpSeedExitsCommand extends Command
             }
         }
 
-        $reasons = $this->em->createQuery('SELECT r FROM App\Entity\ExitReason r WHERE r.educationalCentre = :c ORDER BY r.position')->setParameter('c', $centre)->getResult();
+        $reasons = $this->em->createQuery('SELECT r FROM App\Entity\ExitReason r WHERE r.educationalCentre = :c ORDER BY r.position')->setParameter('c', $centre->getId(), 'uuid')->getResult();
 
         // Pase prioritario para el 4.º estudiante (sigue fuera: sale con el distintivo en las listas).
         $this->em->persist((new StudentPriorityPass())->setStudent($pairs[3][0])->setAcademicYear($year)->setGrantedBy($teacher('carmen.diaz'))

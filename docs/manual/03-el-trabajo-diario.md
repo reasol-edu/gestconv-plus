@@ -862,7 +862,7 @@ genera automáticamente una **tarea de sanción** por cada docente que le impart
 ese grupo, para que cada uno deje constancia del trabajo que le corresponde asignar — o indique
 que no procede — y el estudiante no se quede atrás. Quien registra la sanción puede elegir
 **No solicitar tareas a los docentes** (ver
-[Sanciones sin tareas](04-sanciones-y-comision.md#tareas-de-sancion)): en ese caso no se crea ninguna
+[Sanciones sin tareas](04-sanciones-y-comision.md#sanciones-sin-tareas)): en ese caso no se crea ninguna
 tarea ni se avisa al profesorado.
 
 La sección **Tareas de sanción** del menú lateral aparece para cualquier docente que imparta

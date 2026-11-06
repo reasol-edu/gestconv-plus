@@ -227,7 +227,8 @@ async function fillQuill(page, mountSelector, text) {
     await hideToolbar(page);
     await page.screenshot({ path: `${root}/ajustes/ajustes-candados.png` });
 
-    await page.locator('text=Personalización de informes').scrollIntoViewIfNeeded();
+    // El encabezado de la categoría (no la pestaña con el mismo nombre de la barra de ajustes).
+    await page.locator('h3', { hasText: 'Personalización de informes' }).scrollIntoViewIfNeeded();
     await page.waitForTimeout(200);
     await page.screenshot({ path: `${root}/ajustes/ajustes-informes.png` });
 

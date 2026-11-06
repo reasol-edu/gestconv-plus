@@ -37,7 +37,8 @@ if (page.url().includes('/seleccion/centro')) {
 await page.goto(`${baseUrl}/centro/${centreId}/ajustes`);
 await page.waitForLoadState('networkidle');
 await hideToolbar();
-await page.locator('text=Notificaciones a familias')
+// El encabezado de la categoría (no la pestaña con el mismo nombre de la barra de ajustes).
+await page.locator('h3', { hasText: 'Notificaciones a familias' })
     .evaluate(el => el.scrollIntoView({ block: 'start' }));
 await page.waitForTimeout(300);
 await page.screenshot({ path: `${outDir}/ajustes-notificaciones.png` });
