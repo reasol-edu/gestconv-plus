@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.25.0] - 2026-11-06
+
+### Added
+
+- **La administración de la plataforma gestiona el personal no docente**, en **Administración › Usuarios**. La lista de usuarios separa los **docentes** del **personal no docente**, que tiene su propio bloque, con otro color, y muestra los **centros** a los que pertenece cada persona. Desde ahí se puede crear una cuenta (con contraseña inicial o con enlace de invitación, y marcando a qué centros pertenece, que pueden quedar vacíos), editarla (datos, estado, contraseña y centros), reenviar la invitación y eliminarla. Si a una persona se le quita un centro, deja de ser responsable de sus tipos de incidencia; sus incidencias se conservan. Una cuenta con incidencias u otros datos asociados no se puede eliminar: se desactiva.
+
+### Changed
+
+- La tarjeta y la pantalla **Docentes** de Administración pasan a llamarse **Usuarios**, y la tarjeta cuenta también el personal no docente. La ficha de un docente que en realidad es personal no docente lleva a la ficha de este.
+- El correo de invitación nombra los centros de la persona.
+
 ## [1.24.0] - 2026-11-06
 
 ### Added
