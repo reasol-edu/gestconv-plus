@@ -10,16 +10,19 @@ se ejecutan desde la raíz del repositorio con `make`, no directamente desde est
 - `registrar-parte.md`, `notificar-parte.md`, `registrar-ausencia.md`, `tareas-sancion.md`,
   `mis-guardias.md`, `editar-contacto.md`, `registrar-sancion.md`, `instalar-app.md`,
   `busqueda-rapida.md`, `registrar-nota.md`, `autorizar-salida.md`, `quien-esta-fuera.md`,
-  `reservar-recurso.md`, `registrar-incidencia.md` — una ficha [Marp](https://marp.app) por función del profesorado, con
+  `reservar-recurso.md`, `registrar-incidencia.md`, `atender-incidencia.md` (para responsables de
+  incidencias), `crear-actividad.md` — una ficha [Marp](https://marp.app) por función del profesorado, con
   capturas móviles.
 - `tareas-alumnado.md` — ficha para el alumnado y las familias sobre cómo consultar las tareas de una
   sanción con el enlace o el código; sin capturas (clase `.sin-capturas`), pensada para entregarse
   junto con el enlace.
+- `alta-personal-no-docente.md` — ficha para el equipo directivo, sin capturas (clase `.sin-capturas`),
+  sobre cómo incorporar o registrar personal no docente.
 - `curso-nuevo.md` — ficha para el equipo directivo, con capturas de escritorio (a diferencia de
   las demás, pensadas para el móvil), usando la clase `.captura-escritorio` de `theme.css`.
-- Las 16 fichas comparten el mismo mecanismo de versión/fecha que `docs/slides/gestconv-plus.md`
+- Las 19 fichas comparten el mismo mecanismo de versión/fecha que `docs/slides/gestconv-plus.md`
   (marcadores `{{VERSION}}`/`{{PUB_DATE}}` sustituidos por `make cheatsheets`).
-- `theme.css` — tema Marp compartido por las 16 fichas (página A4 vertical, paleta de marca).
+- `theme.css` — tema Marp compartido por las 19 fichas (página A4 vertical, paleta de marca).
 - `img/` — capturas de pantalla referenciadas desde las fichas (móviles, salvo las de
   `curso-nuevo.md`).
 - `ficha-*.pdf` y `_build.md` — salidas generadas por `make cheatsheets` (ver abajo); no se editan
@@ -56,6 +59,10 @@ crean nada. Necesitan las categorías, los recursos y los tramos que siembra `tm
 Las de `registrar-incidencia.md` salen de `node scripts/capture-issues-cheatsheet-shots.mjs`, que rellena el
 formulario sin guardarlo (no crea nada). Necesita los tipos de incidencia que siembra `tmp:seed-issues`
 (ver `scripts/seed/README.md`).
+
+Las de `atender-incidencia.md` y `crear-actividad.md` salen de `node scripts/capture-cheatsheets-extra-shots.mjs`
+(también sin guardar nada): la primera necesita `tmp:seed-issues` (responsable: `beatriz.alonso`) y la segunda, el
+usuario `admin`, que siempre puede publicar actividades.
 
 Las capturas de `autorizar-salida.md` y `quien-esta-fuera.md` salen de
 `node scripts/capture-exits-shots.mjs`, que además **prueba** la sección Salidas en un navegador real

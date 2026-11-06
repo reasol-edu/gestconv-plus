@@ -154,6 +154,9 @@ no por pantallas sueltas:
 
 Cada bloque solo añade lo que ese rol tiene **de más** sobre el anterior.
 
+Aparte está el **personal no docente** (conserjería, administración…): una
+cuenta del centro que solo accede a las **Incidencias** y no ve nada más.
+
 ---
 
 ## Cómo moverte por la aplicación
@@ -168,7 +171,8 @@ Cada bloque solo añade lo que ese rol tiene **de más** sobre el anterior.
 - Si tienes acceso a **varios centros educativos**, un selector en la cabecera
   permite cambiar de centro sin cerrar sesión.
 - El menú lateral se adapta a tu rol: solo muestra las secciones que puedes
-  usar, agrupadas en **Día a día** (salidas, guardias, ausencias, calendario),
+  usar, agrupadas en **Día a día** (salidas, guardias, ausencias, reservas,
+  incidencias, calendario),
   **Convivencia** (partes, notas, sanciones, tareas, notificaciones, mi
   tutoría) y **Gestión** (informes y centro, solo dirección).
 - Los **accesos rápidos** del inicio siguen esos mismos grupos: en el móvil,
@@ -199,6 +203,9 @@ Sin ningún rol especial, todo docente puede:
 - Ver su **calendario** y las **notificaciones pendientes** que le afectan.
 - **Planificar sus ausencias previstas**, con instrucciones y material para
   quien cubra sus clases.
+- **Reservar recursos compartidos** (aulas, carros de portátiles…).
+- **Registrar incidencias** (averías, desperfectos) y seguirlas hasta que se
+  resuelven.
 
 Todo lo que sigue en este bloque está disponible para cualquier docente, sin
 necesidad de ser tutor/a ni de pertenecer a la comisión de convivencia.
@@ -376,6 +383,65 @@ El parte pasa a **"Notificado"** y queda en el historial.
 - Cuando hay varios adjuntos que descargar juntos (de un tramo, una
   actividad o una sanción), un botón los agrupa en un único **`.zip`**.
 - Acceso rápido desde el panel de inicio, junto a **Registrar un parte**.
+
+---
+
+## Reservas de recursos
+
+![bg right:40% fit](../manual/img/reservas/reservas-calendario.png)
+
+- La sección **Reservas** muestra un **calendario semanal o mensual** de los
+  recursos compartidos del centro (aulas, carros de portátiles, salón de
+  actos), con filtros por categoría, recurso, docente y grupo. Marca el tramo
+  en curso y **se actualiza sola** con las reservas de otras personas.
+- **Reservar**: recurso, fecha, tramos, grupos y descripción, con
+  **periodicidad semanal** y previsualización de las fechas libres.
+- Un recurso solo admite una reserva por día y tramo. Algunas categorías
+  piden **validación**: la reserva queda **pendiente** —y ocupa el tramo—
+  hasta que un responsable la aprueba o la rechaza, con aviso en la campana,
+  el inicio y el correo.
+- Un **listado** paginado recoge tus reservas (los responsables y la dirección
+  ven también las ajenas).
+- Si algo falla, registras una **incidencia** desde tu reserva: la marca solo
+  la ven tú, los responsables y la dirección.
+
+---
+
+## Incidencias del centro
+
+![bg right:40% fit](../manual/img/incidencias/incidencias-nueva.png)
+
+- Para avisar de **averías y desperfectos** (una luz fundida, un aula sin
+  wifi): **Incidencias** del menú, **Nueva incidencia** o el buscador.
+- Eliges un **tipo** de una lista jerárquica (que decide **quién la atiende**),
+  una dependencia opcional, una **descripción** con formato y **adjuntos**.
+  Desde la ficha de una **reserva** se asocia a ella.
+- Ves las **que has registrado** (y las que te asignen), con su estado,
+  prioridad y plazo. Puedes añadir **observaciones**, y todo cambio queda en
+  el **historial**.
+- Te avisan por **correo** (o en el resumen diario), en la **campana** y en el
+  **panel** cuando alguien la atiende o la cierra.
+- Cualquier docente puede registrarlas, y también el **personal no docente**
+  del centro, que solo accede a este módulo.
+
+---
+
+## Atender incidencias: responsables y asignadas
+
+![bg right:40% fit](../manual/img/incidencias/incidencias-ficha.png)
+
+- Los **responsables** de un tipo (los suyos y los de los tipos superiores)
+  reciben el aviso, asignan una **prioridad** —con plazos en días lectivos— y
+  la ponen **en proceso** o la cierran: **solucionada**, **no procede** o
+  **duplicada** (enlazando la original).
+- Pueden **asignarla a una persona** (docente o personal no docente), que
+  podrá observarla y cambiar su prioridad y estado.
+- El **listado** (solo las abiertas por defecto) tiene cifras, filtros que se
+  recuerdan, búsqueda, orden y **cambio de estado en bloque**; la dirección
+  también puede **eliminar** las marcadas.
+- Cada incidencia tiene su **informe en PDF**, con observaciones e historial,
+  personalizable como los demás informes.
+- Un **recordatorio diario** avisa de las vencidas.
 
 ---
 
@@ -657,65 +723,6 @@ el centro**, no solo de sus propios grupos:
 
 ---
 
-## Reservas de recursos
-
-![bg right:40% fit](../manual/img/reservas/reservas-calendario.png)
-
-- La dirección define en **Centro educativo › Recursos compartidos** las
-  **categorías** (dependencias, carros de portátiles…) y sus recursos. Cada
-  categoría tiene **responsables**, que gestionan las reservas de sus
-  recursos, y reglas propias: restringida, con **validación**, antelación
-  máxima. El catálogo se **exporta e importa en JSON** para copiarlo a otro
-  centro.
-- La sección **Reservas** muestra un **calendario semanal o mensual** con
-  filtros **con buscador** (recursos agrupados por categoría) por categoría,
-  recurso, docente y grupo, un acceso directo a **Gestionar recursos
-  compartidos** para la dirección, que **marca el tramo en
-  curso** y **se actualiza solo** con las reservas de otras personas, y un **listado** paginado
-  de tus reservas (los responsables y la dirección ven también las ajenas).
-- **Reservar**: recurso, fecha, tramos, grupos y descripción, con
-  **periodicidad semanal** y previsualización de las fechas libres.
-- Un recurso solo admite una reserva por día y tramo. Con validación, la
-  reserva queda **pendiente** —y ocupa el tramo— hasta que un responsable la
-  aprueba o la rechaza, con aviso en la campana, el inicio y el correo.
-- Si algo falla, el docente registra una **incidencia** desde su reserva (ver
-  la diapositiva siguiente): la marca del calendario y del listado solo la
-  ven él, los responsables y la dirección.
-- Se pueden **activar o desactivar** de golpe, global o por centro.
-
----
-
-## Incidencias del centro
-
-![bg right:40% fit](../manual/img/incidencias/incidencias-listado.png)
-
-- Para avisar de **averías y desperfectos** (una luz fundida, un aula sin
-  wifi): **Incidencias** del menú, **Nueva incidencia** o el buscador. Se
-  elige un **tipo** de una lista jerárquica (que decide **quién la atiende**),
-  una dependencia opcional, una **descripción** con formato y **adjuntos**
-  (las imágenes, en miniatura). Desde la ficha de una **reserva** se asocia a
-  ella, sin pedir la dependencia.
-- Los **responsables** del tipo (los suyos y los de los tipos superiores)
-  asignan una **prioridad** —con plazos en días lectivos— y la ponen
-  **en proceso** o la cierran: **solucionada**, **no procede** o **duplicada**
-  (enlazando la original). Cualquiera de los implicados añade
-  **observaciones**, y todo cambio queda en el **historial**.
-- El **listado** (solo las abiertas por defecto) tiene cifras, filtros que se
-  recuerdan, búsqueda, orden y **cambio de estado en bloque** (la dirección
-  también puede **eliminar** las marcadas).
-- Todo se avisa por **correo** (o en el resumen diario), en la **campana** y
-  en el **panel**, con un **recordatorio diario de las vencidas**.
-- Una incidencia puede **asignarse a una persona** (docente o personal no
-  docente), que podrá observarla y cambiar su prioridad y estado, y tiene su
-  **informe en PDF**, personalizable como los demás.
-- El **personal no docente** (conserjería, administración…) tiene cuenta propia
-  en el centro, sin curso académico, y **solo accede a las Incidencias**: puede
-  registrarlas, atenderlas como responsable y recibir las asignadas.
-- La dirección configura **tipos y prioridades**, con exportación e
-  importación en JSON.
-
----
-
 ## Modo tablón
 
 ![bg right:40% fit](../manual/img/calendario/calendario-tablon.png)
@@ -951,9 +958,44 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Los cuatro catálogos se pueden **exportar e importar en JSON** para copiar
   la configuración entre centros, con la opción de vaciar lo existente antes
   de importar.
-- **Salidas, Ausencias, Notas, tareas de sanción y Actividades** se pueden
-  desactivar por centro o para toda la plataforma; vienen activadas y los
-  datos se conservan.
+- **Salidas, Ausencias, Notas, tareas de sanción, Actividades, Reservas e
+  Incidencias** se pueden desactivar por centro o para toda la plataforma;
+  vienen activadas y los datos se conservan.
+
+---
+
+## Configurar los módulos: reservas e incidencias
+
+![bg right:40% fit](../manual/img/incidencias/incidencias-ajustes.png)
+
+- **Incidencias** — en **Centro educativo › Incidencias**: los **tipos**
+  (una lista jerárquica, con sus **responsables**) y las **prioridades**
+  (color y plazos recomendado y máximo). Se **exportan e importan en JSON**.
+- **Reservas** — en **Centro educativo › Recursos compartidos**: las
+  **categorías** (aulas, carros de portátiles…), sus recursos y sus
+  **responsables**, con reglas propias: restringida, con validación,
+  antelación máxima.
+- **Salidas** (motivos), **Actividades** (tipos) y **Convivencia** (conductas,
+  medidas, métodos de comunicación, notas) tienen también su catálogo.
+- Cada módulo tiene en el manual un capítulo con su uso diario **y** su
+  configuración.
+
+---
+
+## Personal no docente
+
+- Cuentas de quienes trabajan en el centro sin dar clase (**conserjería,
+  administración, mantenimiento…**), en **Centro educativo › Personal no
+  docente**.
+- Pertenecen al centro **sin curso académico**, no autentican en Séneca y **no
+  aparecen** entre los docentes: solo ven **Incidencias**.
+- **Incorporar**: por identificador o correo electrónico. Si no existe, se
+  **registra** con contraseña inicial (cambio forzado) o con un **enlace de
+  invitación** por correo, válido 7 días.
+- Pueden ser **responsables de tipos** de incidencia, registrar las suyas y
+  recibir las que se les **asignen**.
+- Si el módulo de **Incidencias** está desactivado, **no pueden entrar** en el
+  centro: se les explica el motivo.
 
 ---
 
