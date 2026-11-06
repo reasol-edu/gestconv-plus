@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.23.0] - 2026-11-06
+
+### Added
+
+- **Incidencias asignadas a una persona.** Quien gestiona una incidencia puede asignarla a cualquier docente del curso o a una persona del personal no docente del centro. La persona asignada la ve, puede añadir observaciones y cambiar su prioridad y su estado, pero no el tipo, la dependencia ni la asignación, ni eliminarla. Recibe un aviso al asignársela (se puede desactivar en sus ajustes personales, junto a los demás avisos de incidencias), y en el listado hay un filtro **Las asignadas a mí**.
+- **Informe PDF de una incidencia**, con todos sus datos, los adjuntos, las observaciones y el historial. Se genera desde la ficha con **Informe PDF** y se personaliza como los demás informes: encabezado a izquierda y derecha, margen, pie y plantilla de fondo, en los ajustes de informes.
+- **Personal no docente.** Cuentas de quienes trabajan en el centro sin dar clase (conserjería, administración, mantenimiento…), en **Centro educativo › Personal no docente**. Pertenecen al centro sin depender del curso académico, no autentican en Séneca y no aparecen entre los docentes. Solo acceden al módulo de **Incidencias**: pueden registrarlas, ser responsables de tipos y recibir las que se les asignen; no ven ningún otro módulo. Se incorporan por identificador o correo electrónico; si la cuenta no existe, se registra con una contraseña inicial (que deberán cambiar en su primer acceso) o con un **enlace de invitación** por correo, válido 7 días. Si el módulo de Incidencias está desactivado en el centro, no pueden entrar en él: la pantalla de selección de centro lo muestra bloqueado y explica el motivo.
+- **Tres fichas rápidas nuevas**: «Atender una incidencia», «Crear una actividad de centro» y «Dar de alta personal no docente».
+
+### Changed
+
+- **El manual está organizado por módulos**: Usar la aplicación, Convivencia (el trabajo del profesorado, la comisión y las sanciones, y la administración), Salidas, Ausencias y guardias, Reservas, Incidencias y Calendario, actividades y tablón. Cada módulo reúne su uso diario y su configuración, que antes estaba repartida en «Administrar el centro».
+- **La presentación está organizada en seis bloques** (convivencia por perfiles, salidas, ausencias y guardias, reservas, incidencias y calendario), con una introducción de cada módulo y su configuración al final. Se corrigen las diapositivas cuyo texto se salía por abajo.
+
 ## [1.22.0] - 2026-11-06
 
 ### Added
