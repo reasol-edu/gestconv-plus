@@ -102,7 +102,12 @@ abstract class ControllerTestCase extends WebTestCase
             ['reports.school_event_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 180, null],
             ['reports.school_event_footer', SettingType::RichText, '<p>En {city} a {current_day} de {current_month_name} de {current_year}</p>', true, true, false, 0, 5000, 'settings.category.reports', 60, 190, null],
             ['reports.school_event_pdf_template', SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 70, null],
-            ['bookings.max_advance_days',        SettingType::Integer, '0',  true,  true,  false, 0, 365,  'settings.category.bookings', 37, 10, null],
+            ['reports.issue_header_left',   SettingType::RichText, '<p><strong>{title}</strong></p>', true, true, false, 0,  5000, 'settings.category.reports', 60, 200, null],
+            ['reports.issue_header_right',  SettingType::RichText, '<p>{centre_name}</p>',            true, true, false, 0,  5000, 'settings.category.reports', 60, 210, null],
+            ['reports.issue_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 220, null],
+            ['reports.issue_footer', SettingType::RichText, '<p>En {city} a {current_day} de {current_month_name} de {current_year}</p>', true, true, false, 0, 5000, 'settings.category.reports', 60, 230, null],
+            ['reports.issue_pdf_template', SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 80, null],
+            ['bookings.max_advance_days',       SettingType::Integer, '0',  true,  true,  false, 0, 365,  'settings.category.bookings', 37, 10, null],
             ['uploads.max_file_size_mb',         SettingType::Integer, '10', true, false, false, 1, 1024, 'settings.category.uploads', 90, 10, null],
             ['uploads.max_total_size_mb',        SettingType::Integer, '50', true, false, false, 1, 2048, 'settings.category.uploads', 90, 20, null],
         ];

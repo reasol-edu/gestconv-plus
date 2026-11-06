@@ -23,6 +23,10 @@
                     {{ ux_icon('heroicons:clock', {class: 'h-3.5 w-3.5'}) }}{{ 'issue.overdue'|trans({}, 'admin') }}
                 </span>
             {% endif %}
+            <a href="{{ path('app_issues_report', {id: id}) }}" target="_blank" rel="noopener"
+               class="ml-auto inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                {{ ux_icon('heroicons:document-arrow-down', {class: 'h-4 w-4'}) }}{{ 'issue.report'|trans({}, 'admin') }}
+            </a>
         </div>
         <p class="mt-1 text-sm text-gray-500">{{ issue.type.path }}</p>
     </div>

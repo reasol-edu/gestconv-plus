@@ -1,0 +1,154 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{# Informe de una incidencia: todos sus datos, la descripción, los adjuntos, las observaciones y el historial. #}
+{% block content %}
+    {% set statusTone = {open: 'badge-amber', in_progress: 'badge-blue', solved: 'badge-green', duplicate: 'badge-gray', not_applicable: 'badge-gray'} %}
+    <p class="section-title">{{ 'issue.number'|trans({'%number%': issue.number}, 'admin') }}</p>
+
+    <p style="font-size:14pt;font-weight:bold;color:#111827;margin-bottom:6px;">{{ issue.type.path }}</p>
+
+    <table class="data-table">
+        <tbody>
+            <tr>
+                <td style="width:50%;">
+                    <span class="cell-sub">{{ 'issue.field.status'|trans({}, 'admin') }}</span><br>
+                    <span class="badge {{ statusTone[issue.status.value] }}">{{ ('issue.status.' ~ issue.status.value)|trans({}, 'admin') }}</span>
+                    {% if overdue %}<span class="badge badge-red">{{ 'issue.overdue'|trans({}, 'admin') }}</span>{% endif %}
+                </td>
+                <td>
+                    <span class="cell-sub">{{ 'issue.field.priority'|trans({}, 'admin') }}</span><br>
+                    {% if issue.priority %}{{ issue.priority.name }}{% else %}{{ 'issue.priority.none'|trans({}, 'admin') }}{% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td><span class="cell-sub">{{ 'issue.field.reporter'|trans({}, 'admin') }}</span><br>{{ issue.reporter.name.full() }}</td>
+                <td><span class="cell-sub">{{ 'issue.field.created_at'|trans({}, 'admin') }}</span><br>{{ issue.createdAt|date('format.datetime'|trans) }}</td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="cell-sub">{{ 'issue.field.assignee'|trans({}, 'admin') }}</span><br>
+                    {% if issue.assignee %}{{ issue.assignee.name.full() }}{% else %}{{ 'issue.field.assignee_none'|trans({}, 'admin') }}{% endif %}
+                </td>
+                <td>
+                    {% if issue.booking %}
+                        <span class="cell-sub">{{ 'issue.field.booking'|trans({}, 'admin') }}</span><br>{{ issue.booking.resource.name }} · {{ issue.booking.date|date('format.date'|trans) }}
+                    {% else %}
+                        <span class="cell-sub">{{ 'issue.field.location'|trans({}, 'admin') }}</span><br>{{ issue.location ? issue.location.name : '—' }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% if issue.recommendedDue or issue.maxDue %}
+                <tr>
+                    <td>
+                        <span class="cell-sub">{{ 'issue.pdf.recommended_due'|trans({}, 'admin') }}</span><br>
+                        {{ issue.recommendedDue ? issue.recommendedDue|date('format.date'|trans) : '—' }}
+                    </td>
+                    <td>
+                        <span class="cell-sub">{{ 'issue.pdf.max_due'|trans({}, 'admin') }}</span><br>
+                        {{ issue.maxDue ? issue.maxDue|date('format.date'|trans) : '—' }}
+                    </td>
+                </tr>
+            {% endif %}
+            {% if issue.closedAt or issue.duplicateOf %}
+                <tr>
+                    <td>
+                        {% if issue.closedAt %}
+                            <span class="cell-sub">{{ 'issue.field.closed_at'|trans({}, 'admin') }}</span><br>{{ issue.closedAt|date('format.datetime'|trans) }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if issue.duplicateOf %}
+                            <span class="cell-sub">{{ 'issue.duplicate_of'|trans({}, 'admin') }}</span><br>{{ 'issue.number'|trans({'%number%': issue.duplicateOf.number}, 'admin') }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <p class="subsection-title">{{ 'issue.field.description'|trans({}, 'admin') }}</p>
+    <div class="prose-block">{{ issue.description|sanitize_html('app.rich_text') }}</div>
+
+    <p class="subsection-title">{{ 'issue.attachments.title'|trans({}, 'admin') }} ({{ issue.attachments|length }})</p>
+    {% if issue.attachments is empty %}
+        <p class="cell-sub">{{ 'issue.attachments.empty'|trans({}, 'admin') }}</p>
+    {% else %}
+        <table class="data-table">
+            <tbody>
+                {% for attachment in issue.attachments %}
+                    <tr>
+                        <td style="width:70px;text-align:center;">
+                            {% if thumbnails[attachment.id.toRfc4122] is defined %}
+                                <img src="data:image/jpeg;base64,{{ thumbnails[attachment.id.toRfc4122] }}" style="width:60px;" alt="">
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ attachment.filename }}<br>
+                            <span class="cell-sub">{{ attachment.uploadedBy ? attachment.uploadedBy.name.full() : '—' }} · {{ attachment.createdAt|date('format.datetime'|trans) }} · {{ upload_limits().formatSize(attachment.size) }}</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <p class="subsection-title">{{ 'issue.observations.title'|trans({}, 'admin') }} ({{ issue.observations|length }})</p>
+    {% if issue.observations is empty %}
+        <p class="cell-sub">{{ 'issue.observations.empty'|trans({}, 'admin') }}</p>
+    {% else %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:22%;">{{ 'issue.pdf.date'|trans({}, 'admin') }}</th>
+                    <th style="width:24%;">{{ 'issue.pdf.author'|trans({}, 'admin') }}</th>
+                    <th>{{ 'issue.pdf.observation'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for observation in issue.observations %}
+                    <tr>
+                        <td>{{ observation.createdAt|date('format.datetime'|trans) }}</td>
+                        <td>{{ observation.author.name.full() }}</td>
+                        <td>{{ observation.content|nl2br }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <p class="subsection-title">{{ 'issue.history.title'|trans({}, 'admin') }}</p>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:22%;">{{ 'issue.pdf.date'|trans({}, 'admin') }}</th>
+                <th style="width:24%;">{{ 'issue.pdf.author'|trans({}, 'admin') }}</th>
+                <th style="width:16%;">{{ 'issue.pdf.field'|trans({}, 'admin') }}</th>
+                <th>{{ 'issue.pdf.change'|trans({}, 'admin') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for change in issue.changes %}
+                <tr>
+                    <td>{{ change.createdAt|date('format.datetime'|trans) }}</td>
+                    <td>{{ change.author ? change.author.name.full() : '—' }}</td>
+                    <td>{{ ('issue.history.field.' ~ change.field)|trans({}, 'admin') }}</td>
+                    <td>
+                        {% if change.field == 'description' %}
+                            {{ 'issue.pdf.description_changed'|trans({}, 'admin') }}
+                        {% elseif change.field == 'created' %}
+                            {{ 'issue.history.created'|trans({'%type%': change.newValue ?? '—'}, 'admin') }}
+                        {% else %}
+                            {% set old = change.oldValue is null ? '—' : (change.field == 'status' ? ('issue.status.' ~ change.oldValue)|trans({}, 'admin') : change.oldValue) %}
+                            {% set new = change.newValue is null ? '—' : (change.field == 'status' ? ('issue.status.' ~ change.newValue)|trans({}, 'admin') : change.newValue) %}
+                            {{ old }} → {{ new }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if footerHtml %}
+        <div class="prose-block">{{ footerHtml|raw }}</div>
+    {% endif %}
+{% endblock %}

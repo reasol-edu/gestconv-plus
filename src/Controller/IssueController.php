@@ -26,6 +26,8 @@ use App\Service\AttachmentDownloadResponder;
 use App\Service\IssueAssignees;
 use App\Service\IssueAttachmentFactory;
 use App\Service\IssueManager;
+use App\Service\PdfHeaderBuilder;
+use App\Service\PdfRenderer;
 use App\Service\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -54,6 +56,8 @@ class IssueController extends AbstractController
         private readonly ResourceBookingRepository $bookings,
         private readonly IssueManager $manager,
         private readonly IssueAssignees $assignees,
+        private readonly PdfRenderer $pdfRenderer,
+        private readonly PdfHeaderBuilder $pdfHeaderBuilder,
         private readonly IssueAttachmentFactory $attachmentFactory,
         private readonly AttachmentDownloadResponder $downloads,
     ) {}
@@ -346,6 +350,50 @@ class IssueController extends AbstractController
         $this->addFlash('success', $this->t('issue.flash.attachment_removed'));
 
         return $this->redirectToRoute('app_issues_show', ['id' => $id]);
+    }
+
+    // ── Informe PDF ───────────────────────────────────────────────────────────
+
+    /** Informe en PDF con todos los datos de la incidencia, sus observaciones y su historial (quien puede verla). */
+    #[Route('/{id}/informe', name: 'app_issues_report', requirements: ['id' => '[0-9a-fA-F-]{36}'], methods: ['GET'])]
+    public function report(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
+    {
+        $issue = $this->requireIssue($id, $centre);
+        $this->denyAccessUnlessGranted(IssueVoter::VIEW, $issue);
+
+        $thumbnails = [];
+        foreach ($issue->getAttachments() as $attachment) {
+            $thumbnail = $attachment->getThumbnail();
+            if ($thumbnail !== null) {
+                $thumbnails[$attachment->getId()->toRfc4122()] = base64_encode($thumbnail);
+            }
+        }
+
+        $title        = $this->t('issue.pdf.title');
+        $placeholders = [
+            'title'         => $title,
+            'issue_nr'      => $issue->getNumber(),
+            'issue_type'    => $issue->getType()->getPath(),
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $issue->getAcademicYear()->getName(),
+        ];
+
+        return $this->pdfRenderer->render(
+            'pdf/issue.html.twig',
+            [
+                'centre'     => $centre,
+                'issue'      => $issue,
+                'overdue'    => $issue->isOverdue($this->clockNow()),
+                'thumbnails' => $thumbnails,
+                'footerHtml' => $this->pdfHeaderBuilder->buildFooter('issue', $centre, $placeholders),
+            ],
+            $title . ' #' . $issue->getNumber(),
+            sprintf('incidencia-%d.pdf', $issue->getNumber()),
+            inline: !$request->query->getBoolean('descargar'),
+            header: $this->pdfHeaderBuilder->build('issue', $centre, $placeholders),
+            centre: $centre,
+            reportType: 'issue',
+        );
     }
 
     // ── Eliminación ───────────────────────────────────────────────────────────

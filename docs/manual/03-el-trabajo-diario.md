@@ -909,7 +909,7 @@ incidencias abiertas que ya lo han **vencido**.
 ### Gestionar una incidencia
 
 Quien es **responsable** del tipo (propio o heredado de un tipo superior) y la dirección ven en la
-ficha el panel **Gestionar**: prioridad, estado, tipo y dependencia. Para cerrar por duplicidad se
+ficha el panel **Gestionar**: prioridad, estado, **asignada a**, tipo y dependencia. Para cerrar por duplicidad se
 elige la incidencia original en un **desplegable con buscador** (por número, tipo o texto); una
 incidencia cerrada **se puede reabrir** si se es responsable. La **dirección** (administradores del
 centro y de la plataforma) tiene además el botón **Eliminar incidencia**, que la borra con sus
@@ -922,6 +922,25 @@ Para cerrarla con un comentario, en un solo paso, el responsable puede escribir 
 elegir el **estado** en el mismo formulario:
 
 ![Formulario de observación con el selector para cambiar el estado a la vez](img/incidencias/incidencias-observacion.png)
+
+**Asignar la incidencia a una persona.** El campo opcional **Asignada a** (solo para responsables y
+dirección) permite elegir, en un desplegable con buscador, a **cualquier docente del curso** (y, cuando
+el centro los tenga, al personal no docente asociado). La persona asignada recibe un aviso, **ve la
+incidencia** aunque no la haya registrado ni sea responsable, y puede **añadir observaciones y cambiar
+su prioridad y su estado** (también cerrarla o reabrirla), pero no el tipo, la dependencia ni la
+asignación, ni eliminarla. Las incidencias asignadas a cada persona salen en el filtro **Las asignadas
+a mí** del listado, en la campana (**Incidencias asignadas a ti**) y en el recordatorio de las vencidas.
+
+### Informe de una incidencia {#informe-de-una-incidencia}
+
+El botón **Informe PDF** de la ficha genera un documento con **todos los datos** de la incidencia:
+tipo, estado, prioridad, quién la registró y cuándo, a quién está asignada, la dependencia o la
+reserva, los plazos y el cierre; su **descripción**; la lista de **adjuntos** (con la miniatura de las
+imágenes); todas las **observaciones**, con su autor y su fecha y hora; y el **historial** de cambios.
+Lo puede generar quien puede ver la incidencia. Se abre en una pestaña nueva (con `?descargar=1`
+en la dirección se descarga) y se personaliza como los demás informes: encabezado, margen, pie y plantilla
+PDF de fondo, en Ajustes › Personalización de informes y Plantillas de informes (ver
+[Personalización de informes](07-administrar-la-plataforma.md#personalizacion-de-informes)).
 
 ### El listado
 
@@ -964,6 +983,7 @@ Cada novedad se avisa por correo a las personas **afectadas**, salvo a quien la 
 | Aviso | A quién llega |
 |---|---|
 | Nueva incidencia | A los responsables del tipo. Si el tipo no tiene ninguno en su rama, a la dirección. |
+| Incidencia asignada | A la persona a quien se asigna. Quien la registró, los responsables y la persona asignada antes reciben el aviso de cambio de datos. |
 | Cambio de estado | A quien la registró y a los responsables. |
 | Prioridad asignada | A quien la registró y a los responsables. |
 | Nueva observación | A quien la registró y a los responsables, con el texto. |

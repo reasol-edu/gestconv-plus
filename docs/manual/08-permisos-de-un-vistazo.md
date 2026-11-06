@@ -202,6 +202,9 @@ en la lista jerárquica.
 | Modificar la descripción | En las suyas, mientras estén abiertas | En las de su tipo | Todas | Todas |
 | Asignar prioridad y cambiar el estado, el tipo o la dependencia (también en bloque) | — | En las de su tipo | Todas | Todas |
 | Cerrar por duplicidad y reabrir una cerrada | — | En las de su tipo | Todas | Todas |
+| Asignar una incidencia a una persona | — | En las de su tipo | Todas | Todas |
+| Ver la incidencia, observar y cambiar su prioridad y su estado, si está **asignada** a esa persona | ✓ | ✓ | ✓ | ✓ |
+| Generar el informe PDF de una incidencia | Las que puede ver | Las que puede ver | Todas | Todas |
 | Eliminar incidencias, una a una o marcadas en el listado | — | — | Todas | Todas |
 | Recibir el aviso de una incidencia nueva y el recordatorio de las vencidas | — | Las de su tipo | Si el tipo no tiene responsables | — |
 | Recibir los avisos de cambios | En las suyas | En las de su tipo | Si el tipo no tiene responsables | — |

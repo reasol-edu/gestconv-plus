@@ -130,6 +130,43 @@ class IssueAssigneeTest extends ControllerTestCase
         self::assertNull($this->em->getRepository(Issue::class)->find($issue->getId())?->getAssignee());
     }
 
+    public function testTheReportIsAPdfForWhoCanSeeTheIssueAndNobodyElse(): void
+    {
+        $w     = $this->world();
+        $issue = $this->report($w);
+        $id    = $issue->getId()->toRfc4122();
+        $manager = self::getContainer()->get(IssueManager::class);
+        $manager->addObservation($issue, $w['ana'], 'Pedido el material');
+        $manager->changeAssignee($issue, $w['ana'], $w['marta']);
+
+        foreach (['rita', 'ana', 'marta', 'admin'] as $who) {
+            $this->loginAs($w[$who], $w['centre']);
+            $this->client->request('GET', "/incidencias/$id/informe");
+            self::assertResponseIsSuccessful($who);
+            self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'), $who);
+            self::assertStringStartsWith('%PDF', (string) $this->client->getResponse()->getContent(), $who);
+            self::assertStringContainsString('incidencia-' . $issue->getNumber() . '.pdf', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+        }
+
+        $this->loginAs($w['otro'], $w['centre']);
+        $this->client->request('GET', "/incidencias/$id/informe");
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testTheReportCanBeDownloadedAndTheDetailOffersIt(): void
+    {
+        $w     = $this->world();
+        $issue = $this->report($w);
+        $id    = $issue->getId()->toRfc4122();
+        $this->loginAs($w['rita'], $w['centre']);
+
+        $crawler = $this->client->request('GET', "/incidencias/$id");
+        self::assertCount(1, $crawler->filter('a[href="/incidencias/' . $id . '/informe"]'));
+
+        $this->client->request('GET', "/incidencias/$id/informe?descargar=1");
+        self::assertStringContainsString('attachment', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────────
 
     /**

@@ -356,13 +356,13 @@ booleano anterior.
 
 Cada **tipo de aviso por correo** tiene un interruptor **Sí / No** (activado por defecto) que decide
 si el aviso llega a una persona, ya sea como correo o como línea del
-[resumen diario](06-administrar-el-centro.md#resumen-diario). Son 25 ajustes, uno por tipo, con los
+[resumen diario](06-administrar-el-centro.md#resumen-diario). Son 26 ajustes, uno por tipo, con los
 mismos nombres que en el registro de correos: parte registrado, notificado, modificado, eliminado,
 prescrito (a mano y automático), incorporado a una sanción y sancionable (comisión de convivencia);
 sanción notificada, prescrita (a mano y automática); tarea de sanción asignada y su recordatorio;
 nota que implica registro de parte; aviso de parte o sanción próximos a prescribir; reserva pendiente
 de validar, aprobada y rechazada; e incidencias: nueva, cambio de estado, prioridad asignada, nueva
-observación, cambios en los datos y recordatorio de las vencidas.
+observación, cambios en los datos, incidencia asignada a ti y recordatorio de las vencidas.
 
 Se pueden fijar en **los tres niveles** (ámbito global, de centro y de docente), con la misma regla
 que el resto de ajustes:
@@ -403,6 +403,10 @@ incidencias…): son un recuento de trabajo, no un correo.
 | Encabezado derecho (informe de actividad) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de actividad) | Global, centro | Entero (mm) | 10-80 | 22 |
 | Pie de contenido (informe de actividad) | Global, centro | Texto enriquecido | 0-5000 caracteres | `En {city} a {current_day} de {current_month_name} de {current_year}` |
+| Encabezado izquierdo (informe de incidencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (informe de incidencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (informe de incidencia) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Pie de contenido (informe de incidencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `En {city} a {current_day} de {current_month_name} de {current_year}` |
 | Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
 Los ajustes de **encabezado** controlan el contenido que se repite en cada página de los PDF de
@@ -426,7 +430,9 @@ cuanto se registra la notificación. También se aplica al informe de una [activ
 mientras esté en borrador.
 
 En los encabezados y pies del informe de actividad hay además dos marcadores propios: `{event_name}`
-(nombre de la actividad) y `{event_date}` (su fecha).
+(nombre de la actividad) y `{event_date}` (su fecha). El informe de una
+[incidencia](03-el-trabajo-diario.md#informe-de-una-incidencia) tiene los suyos: `{issue_nr}` (su
+número) y `{issue_type}` (su tipo, con la ruta completa).
 
 ![Ajustes de personalización de informes](img/ajustes/ajustes-informes.png)
 
@@ -438,13 +444,15 @@ texto enriquecido de la categoría.
 
 | Marcador | Se sustituye por | Disponible en |
 |---|---|---|
-| `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo» / «Profesorado de guardia») | Todos |
+| `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo» / «Profesorado de guardia» / «Informe de incidencia») | Todos |
 | `{report_nr}` | Número del parte | Solo partes |
 | `{student_name}` | Nombre completo del estudiante | Partes y sanciones |
 | `{group_name}` | Nombre del grupo | Partes y sanciones |
 | `{centre_name}` | Nombre del centro educativo | Todos |
 | `{academic_year}` | Nombre del curso académico | Todos |
 | `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado | Solo estadísticas por grupo |
+| `{issue_nr}` | Número de la incidencia | Solo incidencias |
+| `{issue_type}` | Tipo de la incidencia, con su ruta completa | Solo incidencias |
 | `{city}` | Ciudad del centro educativo | Todos |
 | `{current_date}` | Fecha de generación del PDF (dd/mm/aaaa) | Todos |
 | `{current_time}` | Hora de generación del PDF (hh:mm) | Todos |
@@ -463,6 +471,7 @@ texto enriquecido de la categoría.
 | Plantilla PDF de estadísticas por grupo | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de profesorado de guardia | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de informe de actividad | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF de informe de incidencia | Centro | Fichero PDF | Sin plantilla |
 
 Además del encabezado, el pie y el margen, cada centro puede subir un **PDF de una sola página**
 que se usa como fondo de cada página de sus informes — por ejemplo, un membrete oficial ya
