@@ -29,6 +29,28 @@ class StudentControllerTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testIndexShowsEachStudentsGroupInTheColourOfTheGroup(): void
+    {
+        [$admin, $centre, $year] = $this->makeCentreWithYear();
+        [$course, $group] = $this->makeCourseWithGroup($year, '1ºA');
+        $group->setColor('#d97706');
+        $student = $this->makeStudent('NIE-COLOR');
+        $group->addStudent($student);
+        $this->persist($admin, $centre, $year, $course, $group, $student);
+        $centre->setActiveAcademicYear($year);
+        $this->flush();
+        $this->loginAs($admin);
+
+        $crawler = $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/estudiantes');
+
+        self::assertResponseIsSuccessful();
+        $chip = $crawler->filter('tbody span:contains("1ºA")')->first();
+        self::assertCount(1, $chip, 'el grupo del estudiante aparece como etiqueta');
+        // Con color propio, la etiqueta lo lleva en su estilo (no el verde fijo de antes).
+        self::assertNotEmpty($chip->attr('style'));
+        self::assertStringNotContainsString('bg-forest-50', (string) $chip->attr('class'));
+    }
+
     public function testIndexIsAccessibleToEquipoDirectivo(): void
     {
         [$admin, $centre, $year] = $this->makeCentreWithYear();

@@ -89,9 +89,7 @@
                             <td data-label="{{ 'students.col.groups'|trans({}, 'admin')|e('html_attr') }}" class="px-6 py-4">
                                 <div class="flex flex-wrap gap-1 sm:justify-start justify-end">
                                     {% for group in student.groups|filter(g => g.id.toRfc4122 in activeGroupIds) %}
-                                        <span class="inline-flex items-center rounded-full bg-forest-50 px-2 py-0.5 text-xs font-medium text-forest-700">
-                                            {{ group.name }}
-                                        </span>
+                                        <twig:GroupChip :group="group" />
                                     {% else %}
                                         <span class="text-xs text-gray-400">—</span>
                                     {% endfor %}
