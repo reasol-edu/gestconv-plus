@@ -33,11 +33,12 @@ class ResourceCatalogExporter
 
         $categories = [];
         foreach ($this->categories->findByCentreOrdered($centre) as $category) {
+            // Cada responsable como {username, name}: el usuario IdEA lo identifica en otro curso o despliegue.
             $managers = array_map(
-                static fn (Teacher $teacher): string => $teacher->getUsername(),
+                static fn (Teacher $teacher): array => TeacherReference::export($teacher),
                 $category->getManagers()->toArray(),
             );
-            sort($managers);
+            usort($managers, static fn (array $a, array $b): int => strcmp($a['username'], $b['username']));
 
             $categories[] = [
                 'name'              => $category->getName(),

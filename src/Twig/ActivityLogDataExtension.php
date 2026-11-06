@@ -22,6 +22,7 @@ final class ActivityLogDataExtension extends AbstractExtension
         'result'         => ['notification.result.', 'notifications'],
         'source'         => ['activity_log.value.source.', 'admin'],
         'tasksCompleted' => ['incident.tasks_completed.', 'admin'],
+        'mode'           => ['activity_log.value.mode.', 'admin'],
     ];
 
     public function __construct(

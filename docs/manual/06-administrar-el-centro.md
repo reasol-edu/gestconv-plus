@@ -72,6 +72,39 @@ Si el centro no tiene un curso académico activo, la sección muestra un aviso y
 gestionar la oferta formativa. El paso a paso completo está en
 [Preparar el curso académico](02-preparar-el-curso-academico.md#la-oferta-formativa-a-mano).
 
+#### Exportar e importar la oferta {#exportar-e-importar-la-oferta}
+
+Los botones **Exportar** e **Importar** de la cabecera permiten llevar la oferta de un curso académico a otro
+(por ejemplo, del curso que acaba al nuevo) o de un centro a otro, sin volver a montarla a mano.
+
+- **Exportar** descarga un fichero JSON con la oferta del curso que se está viendo, también si es un curso
+  pasado: los cursos, y en cada uno sus grupos con su **color**, sus **tutores** y sus **materias** (con el
+  docente que imparte cada una). No incluye el alumnado, que tiene su propia
+  [importación](02-preparar-el-curso-academico.md).
+- Los **docentes** van identificados por su **usuario IdEA** (y su nombre, solo como referencia), no por un
+  identificador interno: por eso el fichero sirve entre cursos académicos y entre despliegues distintos. Al
+  importar, cada usuario se busca entre los docentes del **curso de destino**; los que no existan allí no se
+  crean (importa antes el profesorado del curso) y se omiten, con un aviso que los lista.
+- **Importar** escribe siempre en el **curso activo**, así que el botón no aparece mientras se mira otro curso.
+  Se hace en tres pasos: elegir el fichero, revisar la **vista previa** y confirmar.
+
+En la **vista previa** se ve qué contiene el fichero, curso por curso y grupo por grupo, con una etiqueta que
+indica si cada uno es **Nuevo** o **Ya existe** en el curso de destino (se emparejan por nombre, sin distinguir
+mayúsculas), y los docentes que faltan marcados con ⚠. Ahí se elige:
+
+- **Qué cursos y grupos** importar: todos vienen marcados. Marcar un curso marca sus grupos y marcar un grupo
+  marca también su curso.
+- **Qué información**: **tutores**, **materias** y **color**. Lo que se desmarque no se toca en los grupos que
+  ya existen y queda vacío en los nuevos.
+- **Qué hacer con lo que ya existe**: **ignorarlo** (por defecto: no se toca y solo se crea lo que falta) o
+  **sustituirlo** (se actualiza con los datos del fichero y la información elegida; las materias que no estén
+  en el fichero se quitan).
+
+Ningún modo **borra** cursos ni grupos que no estén en el fichero: tienen partes, sanciones, salidas y reservas
+asociados. Al sustituir las materias, las asignaciones que tienen **tareas de sanción** se conservan (el aviso
+final indica cuántas), igual que al quitarlas a mano desde el editor. La importación queda anotada en el
+[registro de actividad](07-administrar-la-plataforma.md#registro-de-actividad).
+
 ### Tramos horarios
 
 La tarjeta **Tramos horarios** define los tramos en los que se organiza la jornada (1ª hora,
@@ -280,9 +313,9 @@ desactívalo en su lugar. Esta tarjeta solo aparece si las **Reservas** están a
 
 Como los demás catálogos, este tiene **Exportar configuración** e **Importar configuración** (ver
 [Copiar catálogos entre centros](#copiar-catalogos-entre-centros)). El fichero incluye las categorías con
-sus reglas, los **usuarios** de sus responsables y sus recursos. Al importar, los responsables se
-buscan por usuario entre los docentes del curso activo del centro de destino y los que no estén
-allí se omiten. Si se marca **vaciar el catálogo existente**, se conservan las categorías y los
+sus reglas, los **responsables** (cada uno con su usuario IdEA y su nombre) y sus recursos. Al importar, los
+responsables se buscan por usuario entre los docentes del curso activo del centro de destino y los que no estén
+allí se omiten (los ficheros exportados antes de la 1.18, con solo el usuario, se siguen leyendo). Si se marca **vaciar el catálogo existente**, se conservan las categorías y los
 recursos que ya tienen reservas.
 
 ### Copiar catálogos entre centros {#copiar-catalogos-entre-centros}

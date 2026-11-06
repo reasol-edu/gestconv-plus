@@ -671,6 +671,11 @@ el centro**, no solo de sus propios grupos:
   ejemplo, 2º ESO A, 1º Bachillerato B…).
 - Los tutores y docentes se asignan directamente desde el panel de edición
   del grupo.
+- La **oferta formativa** (cursos, grupos, colores, tutores y materias) se
+  **exporta e importa en JSON** para pasarla al curso nuevo o a otro centro:
+  una vista previa permite elegir qué cursos y grupos, qué información y si
+  se **sustituye o se ignora** lo existente. Los docentes se identifican por
+  su **usuario IdEA**.
 
 ---
 

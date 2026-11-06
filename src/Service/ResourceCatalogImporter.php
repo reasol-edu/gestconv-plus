@@ -148,9 +148,11 @@ class ResourceCatalogImporter
     private function applyManagers(ResourceCategory $category, array $usernames, array $available): void
     {
         $wanted = [];
-        foreach ($usernames as $username) {
-            if (is_string($username) && isset($available[mb_strtolower(trim($username))])) {
-                $teacher = $available[mb_strtolower(trim($username))];
+        foreach ($usernames as $reference) {
+            // Acepta {username, name} y el formato anterior (solo el usuario, como texto).
+            $username = TeacherReference::username($reference);
+            if ($username !== null && isset($available[mb_strtolower($username)])) {
+                $teacher = $available[mb_strtolower($username)];
                 $wanted[$teacher->getId()->toRfc4122()] = $teacher;
             }
         }

@@ -1,0 +1,162 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'offer.import.preview_title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set statusClass = {new: 'bg-forest-50 text-forest-700 border-forest-200', exists: 'bg-amber-50 text-amber-800 border-amber-200'} %}
+<div class="px-6 py-8 max-w-4xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <a href="{{ path('app_centre_offer_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'offer.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'offer.import.preview_title'|trans({}, 'admin') }}</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            {{ 'offer.import.target'|trans({'%year%': year.name}, 'admin') }}
+            {% if file.academic_year %}· {{ 'offer.import.source'|trans({'%year%': file.academic_year, '%centre%': file.centre ?? '—'}, 'admin') }}{% endif %}
+        </p>
+    </div>
+
+    <form method="post" action="{{ path('app_centre_offer_import_confirm', {centreId: centre.id}) }}" class="space-y-6"
+          data-controller="offer-import">
+        <input type="hidden" name="_token" value="{{ csrf_token('import_offer_confirm') }}">
+        <input type="hidden" name="import_id" value="{{ importId }}">
+
+        {# ── Docentes que no existen en el curso de destino ──────────────────── #}
+        {% if preview.unresolved is not empty %}
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900" role="status">
+                <p class="flex items-center gap-2 font-medium">
+                    {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4 w-4 shrink-0'}) }}
+                    {{ 'offer.import.unresolved_title'|trans({'%count%': preview.unresolved|length}, 'admin') }}
+                </p>
+                <p class="mt-1 text-xs text-amber-800">{{ 'offer.import.unresolved_help'|trans({'%year%': year.name}, 'admin') }}</p>
+                <ul class="mt-2 flex flex-wrap gap-1.5">
+                    {% for username, name in preview.unresolved %}
+                        <li class="rounded-md border border-amber-300 bg-white px-2 py-0.5 text-xs">{{ username }}{% if name %} · {{ name }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {# ── Qué información se importa ──────────────────────────────────────── #}
+        <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'offer.import.options_title'|trans({}, 'admin') }}</h2>
+            <p class="text-sm text-gray-500">{{ 'offer.import.options_help'|trans({}, 'admin') }}</p>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {% for option in ['tutors', 'subjects', 'color'] %}
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer hover:border-gray-300
+                                  has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50 transition-colors">
+                        <input type="checkbox" name="include_{{ option }}" value="1" checked
+                               class="mt-0.5 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-700">{{ ('offer.import.include.' ~ option)|trans({}, 'admin') }}</span>
+                            <span class="block text-xs text-gray-500">{{ ('offer.import.include.' ~ option ~ '_help')|trans({}, 'admin') }}</span>
+                        </span>
+                    </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        {# ── Qué hacer con lo que ya existe ──────────────────────────────────── #}
+        <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'offer.import.mode_title'|trans({}, 'admin') }}</h2>
+            <p class="text-sm text-gray-500">{{ 'offer.import.mode_help'|trans({}, 'admin') }}</p>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <twig:Form:RadioCard name="mode" value="ignore" :checked="true"
+                    label="{{ 'offer.import.mode.ignore'|trans({}, 'admin') }}" help="{{ 'offer.import.mode.ignore_help'|trans({}, 'admin') }}" />
+                <twig:Form:RadioCard name="mode" value="replace" tone="red"
+                    label="{{ 'offer.import.mode.replace'|trans({}, 'admin') }}" help="{{ 'offer.import.mode.replace_help'|trans({}, 'admin') }}" />
+            </div>
+        </section>
+
+        {# ── Qué cursos y grupos se importan ─────────────────────────────────── #}
+        <section class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-4">
+                <div>
+                    <h2 class="text-base font-semibold text-gray-900">{{ 'offer.import.selection_title'|trans({}, 'admin') }}</h2>
+                    <p class="text-sm text-gray-500">{{ 'offer.import.selection_help'|trans({}, 'admin') }}</p>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                    <button type="button" data-action="offer-import#all" class="font-medium text-forest-700 hover:text-forest-800">{{ 'offer.import.select_all'|trans({}, 'admin') }}</button>
+                    <button type="button" data-action="offer-import#none" class="font-medium text-gray-500 hover:text-gray-700">{{ 'offer.import.select_none'|trans({}, 'admin') }}</button>
+                </div>
+            </div>
+
+            <ul class="divide-y divide-gray-100">
+                {% for course in file.courses %}
+                    {% set ci = loop.index0 %}
+                    {% set coursePreview = preview.courses[ci] %}
+                    <li class="px-6 py-4">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" name="courses[]" value="{{ ci }}" checked
+                                   data-offer-import-target="course" data-course="{{ ci }}" data-action="offer-import#courseToggled"
+                                   class="rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                            <span class="font-semibold text-gray-900">{{ course.name }}</span>
+                            <span class="rounded-full border px-2 py-0.5 text-xs font-medium {{ statusClass[coursePreview.status] }}">{{ ('offer.import.status.' ~ coursePreview.status)|trans({}, 'admin') }}</span>
+                            <span class="text-xs text-gray-400">{{ 'offer.import.group_count'|trans({'%count%': course.groups|length}, 'admin') }}</span>
+                        </label>
+
+                        {% if course.groups is not empty %}
+                            <ul class="mt-3 ml-7 space-y-2">
+                                {% for group in course.groups %}
+                                    {% set gi = loop.index0 %}
+                                    {% set groupPreview = coursePreview.groups[gi] %}
+                                    <li class="rounded-xl border border-gray-200 px-4 py-3">
+                                        <label class="flex flex-wrap items-center gap-2.5 cursor-pointer">
+                                            <input type="checkbox" name="groups[{{ ci }}][]" value="{{ gi }}" checked
+                                                   data-offer-import-target="group" data-course="{{ ci }}" data-action="offer-import#groupToggled"
+                                                   class="rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                                            {% if group.color %}<span class="h-3 w-3 rounded-full border border-black/10" style="background-color: {{ group.color }}" title="{{ group.color }}"></span>{% endif %}
+                                            <span class="font-medium text-gray-900">{{ group.name }}</span>
+                                            <span class="rounded-full border px-2 py-0.5 text-xs font-medium {{ statusClass[groupPreview.status] }}">{{ ('offer.import.status.' ~ groupPreview.status)|trans({}, 'admin') }}</span>
+                                        </label>
+
+                                        {% if group.tutors is not empty or group.subjects is not empty %}
+                                            <dl class="mt-2 ml-7 grid grid-cols-1 gap-x-6 gap-y-1 text-xs text-gray-600 sm:grid-cols-2">
+                                                {% if group.tutors is not empty %}
+                                                    <div>
+                                                        <dt class="font-semibold uppercase tracking-wide text-gray-400">{{ 'offer.import.tutors'|trans({}, 'admin') }}</dt>
+                                                        <dd>
+                                                            {% for tutor in groupPreview.tutors %}
+                                                                <span class="{{ tutor.resolved ? '' : 'text-amber-700' }}" title="{{ tutor.resolved ? '' : 'offer.import.not_in_year'|trans({}, 'admin') }}">{{ tutor.name ?? tutor.username }}{% if not tutor.resolved %} ⚠{% endif %}</span>{{ not loop.last ? ', ' : '' }}
+                                                            {% endfor %}
+                                                        </dd>
+                                                    </div>
+                                                {% endif %}
+                                                {% if group.subjects is not empty %}
+                                                    <div>
+                                                        <dt class="font-semibold uppercase tracking-wide text-gray-400">{{ 'offer.import.subjects'|trans({}, 'admin') }} ({{ group.subjects|length }})</dt>
+                                                        <dd>
+                                                            {% for subject in groupPreview.subjects %}
+                                                                <span class="{{ subject.resolved ? '' : 'text-amber-700' }}" title="{{ subject.resolved ? '' : 'offer.import.not_in_year'|trans({}, 'admin') }}">{{ subject.subject }} — {{ subject.name ?? subject.username }}{% if not subject.resolved %} ⚠{% endif %}</span>{{ not loop.last ? '; ' : '' }}
+                                                            {% endfor %}
+                                                        </dd>
+                                                    </div>
+                                                {% endif %}
+                                            </dl>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <div class="flex items-center justify-between">
+            <a href="{{ path('app_centre_offer_import', {centreId: centre.id}) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">{{ 'offer.import.cancel'|trans({}, 'admin') }}</a>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}
+                {{ 'offer.import.confirm_button'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

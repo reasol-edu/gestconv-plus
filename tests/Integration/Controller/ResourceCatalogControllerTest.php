@@ -216,9 +216,34 @@ class ResourceCatalogControllerTest extends ControllerTestCase
         self::assertStringContainsString('attachment', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
         self::assertSame('Dependencias', $data['categories'][0]['name']);
-        self::assertSame([$w['manager']->getUsername()], $data['categories'][0]['managers']);
+        // Cada responsable va como {usuario IdEA, nombre}: el usuario lo identifica en otro curso o despliegue.
+        self::assertSame(
+            [['username' => $w['manager']->getUsername(), 'name' => 'Marta Responsable']],
+            $data['categories'][0]['managers'],
+        );
         self::assertSame('Aula de informática', $data['categories'][0]['resources'][0]['name']);
         self::assertSame('Planta 2', $data['categories'][0]['resources'][0]['location']);
+    }
+
+    public function testImportAcceptsManagersAsUsernameObjectsAndAsPlainStrings(): void
+    {
+        $w = $this->makeBookingWorld();
+        $this->loginAs($w['admin'], $w['centre']);
+        $centreId = $w['centre']->getId()->toRfc4122();
+
+        // El formato nuevo ({username, name}, con el usuario en otra capitalización) y el antiguo (solo el usuario).
+        $this->importJson($centreId, ['categories' => [
+            ['name' => 'Nuevas', 'managers' => [['username' => strtoupper($w['owner']->getUsername()), 'name' => 'Otro nombre']]],
+            ['name' => 'Antiguas', 'managers' => [$w['other']->getUsername()]],
+        ]]);
+
+        $this->em->clear();
+        $byName = [];
+        foreach ($this->em->getRepository(ResourceCategory::class)->findAll() as $category) {
+            $byName[$category->getName()] = $category;
+        }
+        self::assertSame($w['owner']->getUsername(), $byName['Nuevas']->getManagers()->first()->getUsername());
+        self::assertSame($w['other']->getUsername(), $byName['Antiguas']->getManagers()->first()->getUsername());
     }
 
     public function testImportCreatesAndUpdatesByNameAndResolvesManagers(): void
