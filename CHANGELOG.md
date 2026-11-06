@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.0] - 2026-11-06
+
+### Added
+
+- **Incidencias en las reservas.** El docente que hizo una reserva aprobada puede registrar una incidencia (un proyector que no enciende, portátiles que no arrancan…), también después de usar el recurso. Los responsables de la categoría y la dirección la marcan como **recibida** o **solucionada**, siempre con un comentario, y el docente recibe el estado y el comentario. La incidencia y su marca (un icono en el calendario y en el listado) solo las ven el docente de la reserva, los responsables de la categoría y la dirección. Aparecen en la campana y en el panel de inicio, y el listado tiene un filtro de incidencias. Los avisos por correo se agrupan en el resumen diario si así se prefiere.
+- **Avisos por correo configurables a nivel global, de centro y de docente.** Cada uno de los 22 tipos de aviso tiene un interruptor «recibir este aviso», con el bloqueo desde los niveles superiores de siempre. Quien lo desactiva no recibe ni el correo ni la línea del resumen diario (la campana y el panel siguen mostrando lo pendiente). Se reparten en cuatro categorías de ajustes: partes, sanciones, tareas y notas, y reservas.
+- **Barra de búsqueda y navegación en los ajustes**: buscador instantáneo (sin distinguir tildes, en el nombre, la descripción, la categoría y la clave), acceso directo a cada categoría con su recuento y resaltado de la que se lee, y «solo los modificados», con una etiqueta en los ajustes personalizados.
+- **Sanciones con fechas: «No solicitar tareas a los docentes».** Un grupo de opciones (por defecto, solicitarlas) permite no pedir tareas al profesorado. Con «no solicitar» no se crean tareas, no se avisa a nadie y no se ofrece el enlace de tareas para el alumno ni el refresco de materias. Al editar, dejar de solicitar retira las tareas vacías y no se permite si algún docente ya ha cumplimentado alguna.
+- Accesos rápidos **Reservar recurso** y **Ver el calendario de reservas** en la búsqueda global, con las reservas habilitadas.
+- Ficha rápida **Reservar un recurso** y captura de las nuevas pantallas en el manual.
+
+### Fixed
+
+- En instalaciones con **SQLite**, los cinco ajustes del informe PDF de las actividades (1.16.0) se habían sembrado con un identificador que el ORM no localiza, de modo que se listaban pero no se podían guardar. Una migración los repara.
+
 ## [1.17.1] - 2026-11-05
 
 ### Changed
