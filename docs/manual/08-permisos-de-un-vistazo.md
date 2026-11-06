@@ -202,7 +202,7 @@ en la lista jerárquica.
 | Modificar la descripción | En las suyas, mientras estén abiertas | En las de su tipo | Todas | Todas |
 | Asignar prioridad y cambiar el estado, el tipo o la dependencia (también en bloque) | — | En las de su tipo | Todas | Todas |
 | Cerrar por duplicidad y reabrir una cerrada | — | En las de su tipo | Todas | Todas |
-| Eliminar una incidencia | — | — | Todas | Todas |
+| Eliminar incidencias, una a una o marcadas en el listado | — | — | Todas | Todas |
 | Recibir el aviso de una incidencia nueva y el recordatorio de las vencidas | — | Las de su tipo | Si el tipo no tiene responsables | — |
 | Recibir los avisos de cambios | En las suyas | En las de su tipo | Si el tipo no tiene responsables | — |
 | Configurar los tipos y las prioridades, con su importación y exportación | — | — | ✓ | ✓ |

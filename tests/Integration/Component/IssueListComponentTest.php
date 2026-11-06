@@ -152,6 +152,51 @@ class IssueListComponentTest extends ControllerTestCase
         self::assertStringContainsString('Cambiadas: 1. Sin cambiar: 1', $render->crawler()->text());
     }
 
+    public function testManagementDeletesTheMarkedIssuesOnlyAfterConfirming(): void
+    {
+        $w    = $this->makeWorld();
+        $one  = $this->report($w, 'rita', 'Primera');
+        $two  = $this->report($w, 'rita', 'Segunda');
+        $keep = $this->report($w, 'rita', 'Tercera');
+        $this->loginAs($w['admin'], $w['centre']);
+
+        $component = $this->createLiveComponent('IssueListComponent', ['centre' => $w['centre']], $this->client);
+        $component->set('selected', [$one->getId()->toRfc4122(), $two->getId()->toRfc4122()]);
+
+        // Sin confirmar no se borra nada.
+        $component->call('bulkDelete');
+        $this->em->clear();
+        self::assertCount(3, $this->em->getRepository(Issue::class)->findAll());
+
+        $asked = $component->call('askBulkDelete')->render();
+        self::assertStringContainsString('¿Eliminar las 2 incidencias marcadas', $asked->crawler()->text());
+        $render = $component->call('bulkDelete')->render();
+
+        $this->em->clear();
+        $left = $this->em->getRepository(Issue::class)->findAll();
+        self::assertCount(1, $left);
+        self::assertSame($keep->getId()->toRfc4122(), $left[0]->getId()->toRfc4122());
+        self::assertStringContainsString('2 incidencias eliminadas', $render->crawler()->text());
+    }
+
+    public function testAResponsibleSeesNoDeleteButtonAndCannotDeleteInBulk(): void
+    {
+        $w   = $this->makeWorld();
+        $one = $this->report($w, 'rita', 'Primera');
+        $this->loginAs($w['ana'], $w['centre']);
+
+        $component = $this->createLiveComponent('IssueListComponent', ['centre' => $w['centre']], $this->client);
+        $component->set('selected', [$one->getId()->toRfc4122()]);
+        $render = $component->render();
+        self::assertStringContainsString('1 incidencia marcada', $render->crawler()->text());
+        self::assertCount(0, $render->crawler()->filter('button[data-live-action-param="askBulkDelete"]'));
+
+        $component->call('askBulkDelete')->call('bulkDelete');
+
+        $this->em->clear();
+        self::assertNotNull($this->em->getRepository(Issue::class)->find($one->getId()));
+    }
+
     public function testAReporterCannotChangeStatusInBulk(): void
     {
         $w   = $this->makeWorld();

@@ -943,7 +943,9 @@ todas.
 
 **Cambio en bloque.** Los responsables marcan varias incidencias y pulsan **Poner en proceso**,
 **Cerrar: solucionada**, **Cerrar: no procede** o **Reabrir**. Las que no se pueden cambiar (por
-ejemplo, poner en proceso una sin prioridad) se dejan como están y se cuentan en el aviso.
+ejemplo, poner en proceso una sin prioridad) se dejan como están y se cuentan en el aviso. La
+**dirección** ve además un botón rojo **Eliminar**, que borra las marcadas con sus observaciones,
+adjuntos e historial tras pedir confirmación (no se puede deshacer).
 
 ![Varias incidencias marcadas, con las acciones en bloque](img/incidencias/incidencias-lote.png)
 

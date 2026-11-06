@@ -69,6 +69,10 @@ class IssueListComponent extends AbstractController
     #[LiveProp(writable: true)]
     public array $selected = [];
 
+    /** Se ha pedido eliminar las marcadas y falta confirmarlo. */
+    #[LiveProp]
+    public bool $confirmingDelete = false;
+
     #[LiveProp]
     public string $message = '';
 
@@ -154,6 +158,12 @@ class IssueListComponent extends AbstractController
     public function getToday(): \DateTimeImmutable
     {
         return \Symfony\Component\Clock\now();
+    }
+
+    /** Puede eliminar incidencias: solo la dirección (administradores del centro y de la plataforma). */
+    public function getCanDelete(): bool
+    {
+        return $this->access->isManagement($this->getViewer(), $this->centre);
     }
 
     public function canManage(Issue $issue): bool
@@ -246,6 +256,43 @@ class IssueListComponent extends AbstractController
         $this->selected    = [];
         $this->messageKind = $failed > 0 ? 'warning' : 'success';
         $this->message     = $this->translator->trans('issue.list.bulk_result', ['%done%' => $done, '%failed%' => $failed], 'admin');
+    }
+
+    /** Pide confirmación para eliminar las marcadas (no borra nada todavía). */
+    #[LiveAction]
+    public function askBulkDelete(): void
+    {
+        $this->confirmingDelete = $this->getCanDelete() && $this->selected !== [];
+    }
+
+    #[LiveAction]
+    public function cancelBulkDelete(): void
+    {
+        $this->confirmingDelete = false;
+    }
+
+    /** Elimina las marcadas, con todo lo suyo. Solo la dirección; el resto se ignora. */
+    #[LiveAction]
+    public function bulkDelete(): void
+    {
+        $confirmed              = $this->confirmingDelete;
+        $this->confirmingDelete = false;
+        if (!$confirmed || $this->selected === []) {
+            return;
+        }
+
+        $deleted = 0;
+        foreach ($this->issues->findByCentreAndIds($this->centre, $this->selected) as $issue) {
+            if ($this->isGranted(IssueVoter::DELETE, $issue)) {
+                $this->manager->delete($issue);
+                ++$deleted;
+            }
+        }
+
+        $this->selected    = [];
+        $this->page        = 1;
+        $this->messageKind = $deleted > 0 ? 'success' : 'warning';
+        $this->message     = $this->translator->trans('issue.list.bulk_deleted', ['%count%' => $deleted], 'admin');
     }
 
     // ── Ayudas ────────────────────────────────────────────────────────────────

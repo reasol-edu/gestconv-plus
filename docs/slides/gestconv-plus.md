@@ -634,7 +634,8 @@ el centro**, no solo de sus propios grupos:
   (enlazando la original). Cualquiera de los implicados añade
   **observaciones**, y todo cambio queda en el **historial**.
 - El **listado** (solo las abiertas por defecto) tiene cifras, filtros que se
-  recuerdan, búsqueda, orden y **cambio de estado en bloque**.
+  recuerdan, búsqueda, orden y **cambio de estado en bloque** (la dirección
+  también puede **eliminar** las marcadas).
 - Todo se avisa por **correo** (o en el resumen diario), en la **campana** y
   en el **panel**, con un **recordatorio diario de las vencidas**.
 - La dirección configura **tipos y prioridades**, con exportación e
