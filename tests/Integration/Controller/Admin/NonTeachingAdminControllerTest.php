@@ -156,6 +156,25 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         self::assertNull($this->em->getRepository(Teacher::class)->find($w['paco']->getId()));
     }
 
+    public function testTheAdminCanImpersonateANonTeachingAccountFromTheList(): void
+    {
+        $w = $this->world();
+        $this->loginAs($w['admin']);
+
+        $crawler = $this->client->request('GET', '/admin/docentes');
+        $link    = $crawler->filter('a[href*="_switch_user=' . $w['paco']->getUsername() . '"]');
+        self::assertCount(1, $link, 'hay un botón «Acceder como»');
+        self::assertCount(1, $crawler->filter('section:nth-of-type(2) form[action$="/eliminar"] button svg'), 'con icono, igual que el listado de docentes');
+
+        // Al acceder como esa cuenta solo se ve el módulo de incidencias.
+        $this->client->request('GET', '/?_switch_user=' . $w['paco']->getUsername());
+        $this->client->followRedirects();
+        $this->client->request('GET', '/partes');
+        self::assertResponseStatusCodeSame(403);
+        $this->client->request('GET', '/incidencias');
+        self::assertResponseIsSuccessful();
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────────
 
     /** @return array<string, mixed> */
