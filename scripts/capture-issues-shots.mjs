@@ -69,9 +69,12 @@ function expect(condition, message) {
 async function shootLocator(page, locator, path, margin = 16) {
     const box = await locator.boundingBox();
     expect(box !== null, `no se encuentra la región de ${path}`);
+    // La región puede quedar fuera de la ventana: se captura la página entera con coordenadas de documento.
+    const scrollY = await page.evaluate(() => window.scrollY);
     await page.screenshot({
         path,
-        clip: { x: Math.max(0, box.x - margin), y: Math.max(0, box.y - margin), width: box.width + 2 * margin, height: box.height + 2 * margin },
+        fullPage: true,
+        clip: { x: Math.max(0, box.x - margin), y: Math.max(0, box.y + scrollY - margin), width: box.width + 2 * margin, height: box.height + 2 * margin },
     });
 }
 
@@ -132,7 +135,7 @@ if (await palette.isVisible()) {
 
 // ── La incidencia de la reserva ────────────────────────────────────────────────────────────────────────
 await openIssue(roberto, 2);
-const bookingLink = roberto.locator('aside a[href^="/reservas/"]').first();
+const bookingLink = roberto.locator('dl a[href^="/reservas/"]').first();
 expect(await bookingLink.count() === 1, 'la incidencia debe enlazar con su reserva');
 const bookingHref = await bookingLink.getAttribute('href');
 await goto(roberto, `${baseUrl}${bookingHref}`);

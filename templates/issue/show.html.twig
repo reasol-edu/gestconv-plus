@@ -27,10 +27,139 @@
         <p class="mt-1 text-sm text-gray-500">{{ issue.type.path }}</p>
     </div>
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    {# ── Fila superior: los datos y, para quien la gestiona, el panel de gestión ───────────────────── #}
+    <div class="grid grid-cols-1 items-start gap-6 {{ canManage ? 'lg:grid-cols-2' : '' }}">
+        <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5" aria-labelledby="issue-data-title">
+            <h2 id="issue-data-title" class="sr-only">{{ 'issue.data'|trans({}, 'admin') }}</h2>
+            <dl class="space-y-3 text-sm">
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.reporter'|trans({}, 'admin') }}</dt>
+                    <dd class="mt-0.5 text-gray-900">{{ issue.reporter.name.full() }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.created_at'|trans({}, 'admin') }}</dt>
+                    <dd class="mt-0.5 text-gray-900">{{ issue.createdAt|date('format.datetime'|trans) }}</dd>
+                </div>
+                {% if issue.booking %}
+                    <div>
+                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.booking'|trans({}, 'admin') }}</dt>
+                        <dd class="mt-0.5 text-gray-900">
+                            {% if is_granted('resource_booking.edit', issue.booking) %}
+                                <a href="{{ path('app_bookings_show', {id: issue.booking.id}) }}" class="font-medium text-forest-700 hover:underline">{{ issue.booking.resource.name }}</a>
+                            {% else %}
+                                {{ issue.booking.resource.name }}
+                            {% endif %}
+                            · {{ issue.booking.date|date('format.date'|trans) }}
+                        </dd>
+                    </div>
+                {% elseif issue.location %}
+                    <div>
+                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.location'|trans({}, 'admin') }}</dt>
+                        <dd class="mt-0.5 text-gray-900">{{ issue.location.name }} <span class="text-xs text-gray-400">({{ issue.location.category.name }})</span></dd>
+                    </div>
+                {% endif %}
+                {% if issue.maxDue or issue.recommendedDue %}
+                    <div>
+                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.deadlines'|trans({}, 'admin') }}</dt>
+                        <dd class="mt-0.5 space-y-0.5 text-gray-900">
+                            {% if issue.recommendedDue %}<p>{{ 'issue.deadline.recommended'|trans({'%date%': issue.recommendedDue|date('format.date'|trans)}, 'admin') }}</p>{% endif %}
+                            {% if issue.maxDue %}<p class="{{ overdue ? 'font-semibold text-red-700' : '' }}">{{ 'issue.deadline.max'|trans({'%date%': issue.maxDue|date('format.date'|trans)}, 'admin') }}</p>{% endif %}
+                        </dd>
+                    </div>
+                {% endif %}
+                {% if issue.closedAt %}
+                    <div>
+                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.closed_at'|trans({}, 'admin') }}</dt>
+                        <dd class="mt-0.5 text-gray-900">{{ issue.closedAt|date('format.datetime'|trans) }}</dd>
+                    </div>
+                {% endif %}
+                {% if issue.duplicateOf %}
+                    <div>
+                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.duplicate_of'|trans({}, 'admin') }}</dt>
+                        <dd class="mt-0.5"><a href="{{ path('app_issues_show', {id: issue.duplicateOf.id}) }}" class="font-medium text-forest-700 hover:underline">{{ 'issue.number'|trans({'%number%': issue.duplicateOf.number}, 'admin') }}</a></dd>
+                    </div>
+                {% endif %}
+            </dl>
+        </section>
 
-        {# ── Columna principal ────────────────────────────────────────────── #}
-        <div class="space-y-6 lg:col-span-2">
+        {% if canManage %}
+            <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5" aria-labelledby="issue-manage-title">
+                <h2 id="issue-manage-title" class="text-sm font-semibold text-gray-900 mb-3">{{ 'issue.manage.title'|trans({}, 'admin') }}</h2>
+                <form method="post" action="{{ path('app_issues_manage', {id: id}) }}" class="space-y-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('manage_issue_' ~ id) }}">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label for="manage-priority" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.priority'|trans({}, 'admin') }}</label>
+                            <select id="manage-priority" name="priority" class="{{ inputClass }}">
+                                <option value="">{{ 'issue.priority.none'|trans({}, 'admin') }}</option>
+                                {% for priority in priorities %}
+                                    <option value="{{ priority.id.toRfc4122 }}" {{ issue.priority and issue.priority.id.equals(priority.id) ? 'selected' : '' }}>{{ priority.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="manage-status" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.status'|trans({}, 'admin') }}</label>
+                            <select id="manage-status" name="status" class="{{ inputClass }}">
+                                {% for status in ['open', 'in_progress', 'solved', 'not_applicable', 'duplicate'] %}
+                                    {# «En proceso» exige prioridad: sin ella no se ofrece (se habilita al elegir una). #}
+                                    <option value="{{ status }}" {{ issue.status.value == status ? 'selected' : '' }}
+                                            {% if status == 'in_progress' %}data-needs-priority="1"{% if issue.priority is null %} disabled{% endif %}{% endif %}>{{ ('issue.status.' ~ status)|trans({}, 'admin') }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">{{ 'issue.manage.status_help'|trans({}, 'admin') }}</p>
+                    <div>
+                        <label for="manage-duplicate" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.duplicate_of'|trans({}, 'admin') }}</label>
+                        {% include 'issue/_duplicate_select.html.twig' with {id: 'manage-duplicate', candidates: candidates, current: issue.duplicateOf} only %}
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label for="manage-type" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.type'|trans({}, 'admin') }}</label>
+                            <select id="manage-type" name="type" class="{{ inputClass }}">
+                                {% for type in types %}
+                                    <option value="{{ type.id.toRfc4122 }}" {{ issue.type.id.equals(type.id) ? 'selected' : '' }}>{{ type.path }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% if not issue.booking %}
+                            <div>
+                                <label for="manage-location" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.location'|trans({}, 'admin') }}</label>
+                                <select id="manage-location" name="location" class="{{ inputClass }}">
+                                    <option value="">—</option>
+                                    {% set lastCategory = null %}
+                                    {% for location in locations %}
+                                        {% if location.category.id.toRfc4122 != lastCategory %}
+                                            {% if lastCategory is not null %}</optgroup>{% endif %}
+                                            <optgroup label="{{ location.category.name }}">
+                                            {% set lastCategory = location.category.id.toRfc4122 %}
+                                        {% endif %}
+                                        <option value="{{ location.id.toRfc4122 }}" {{ issue.location and issue.location.id.equals(location.id) ? 'selected' : '' }}>{{ location.name }}</option>
+                                        {% if loop.last %}</optgroup>{% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                        {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}{{ 'issue.manage.save'|trans({}, 'admin') }}
+                    </button>
+                </form>
+
+                {% if canDelete %}
+                    <form method="post" action="{{ path('app_issues_delete', {id: id}) }}" class="js-confirm-form mt-3 border-t border-gray-100 pt-3"
+                          data-confirm="{{ 'issue.delete_confirm'|trans({'%number%': issue.number}, 'admin')|e('html_attr') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_issue_' ~ id) }}">
+                        <button type="submit" class="js-confirm-trigger inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                            {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}{{ 'issue.delete'|trans({}, 'admin') }}
+                        </button>
+                    </form>
+                {% endif %}
+            </section>
+        {% endif %}
+    </div>
+
+    <div class="space-y-6">
 
             <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6" aria-labelledby="issue-description-title">
                 <h2 id="issue-description-title" class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ 'issue.field.description'|trans({}, 'admin') }}</h2>
@@ -147,7 +276,8 @@
                                     <option value="">{{ 'issue.observations.keep_status'|trans({}, 'admin') }}</option>
                                     {% for status in ['in_progress', 'solved', 'not_applicable', 'duplicate', 'open'] %}
                                         {% if status != issue.status.value %}
-                                            <option value="{{ status }}">{{ ('issue.status.action.' ~ status)|trans({}, 'admin') }}</option>
+                                            {# «Poner en proceso» exige prioridad: sin ella no se ofrece. #}
+                                            <option value="{{ status }}" {{ status == 'in_progress' and issue.priority is null ? 'disabled' : '' }}>{{ ('issue.status.action.' ~ status)|trans({}, 'admin') }}</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
@@ -203,132 +333,6 @@
             </section>
         </div>
 
-        {# ── Columna lateral ──────────────────────────────────────────────── #}
-        <aside class="space-y-6">
-            <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5" aria-labelledby="issue-data-title">
-                <h2 id="issue-data-title" class="sr-only">{{ 'issue.data'|trans({}, 'admin') }}</h2>
-                <dl class="space-y-3 text-sm">
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.reporter'|trans({}, 'admin') }}</dt>
-                        <dd class="mt-0.5 text-gray-900">{{ issue.reporter.name.full() }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.created_at'|trans({}, 'admin') }}</dt>
-                        <dd class="mt-0.5 text-gray-900">{{ issue.createdAt|date('format.datetime'|trans) }}</dd>
-                    </div>
-                    {% if issue.booking %}
-                        <div>
-                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.booking'|trans({}, 'admin') }}</dt>
-                            <dd class="mt-0.5 text-gray-900">
-                                {% if is_granted('resource_booking.edit', issue.booking) %}
-                                    <a href="{{ path('app_bookings_show', {id: issue.booking.id}) }}" class="font-medium text-forest-700 hover:underline">{{ issue.booking.resource.name }}</a>
-                                {% else %}
-                                    {{ issue.booking.resource.name }}
-                                {% endif %}
-                                · {{ issue.booking.date|date('format.date'|trans) }}
-                            </dd>
-                        </div>
-                    {% elseif issue.location %}
-                        <div>
-                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.location'|trans({}, 'admin') }}</dt>
-                            <dd class="mt-0.5 text-gray-900">{{ issue.location.name }} <span class="text-xs text-gray-400">({{ issue.location.category.name }})</span></dd>
-                        </div>
-                    {% endif %}
-                    {% if issue.maxDue or issue.recommendedDue %}
-                        <div>
-                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.deadlines'|trans({}, 'admin') }}</dt>
-                            <dd class="mt-0.5 space-y-0.5 text-gray-900">
-                                {% if issue.recommendedDue %}<p>{{ 'issue.deadline.recommended'|trans({'%date%': issue.recommendedDue|date('format.date'|trans)}, 'admin') }}</p>{% endif %}
-                                {% if issue.maxDue %}<p class="{{ overdue ? 'font-semibold text-red-700' : '' }}">{{ 'issue.deadline.max'|trans({'%date%': issue.maxDue|date('format.date'|trans)}, 'admin') }}</p>{% endif %}
-                            </dd>
-                        </div>
-                    {% endif %}
-                    {% if issue.closedAt %}
-                        <div>
-                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.field.closed_at'|trans({}, 'admin') }}</dt>
-                            <dd class="mt-0.5 text-gray-900">{{ issue.closedAt|date('format.datetime'|trans) }}</dd>
-                        </div>
-                    {% endif %}
-                    {% if issue.duplicateOf %}
-                        <div>
-                            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue.duplicate_of'|trans({}, 'admin') }}</dt>
-                            <dd class="mt-0.5"><a href="{{ path('app_issues_show', {id: issue.duplicateOf.id}) }}" class="font-medium text-forest-700 hover:underline">{{ 'issue.number'|trans({'%number%': issue.duplicateOf.number}, 'admin') }}</a></dd>
-                        </div>
-                    {% endif %}
-                </dl>
-            </section>
-
-            {% if canManage %}
-                <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-5" aria-labelledby="issue-manage-title">
-                    <h2 id="issue-manage-title" class="text-sm font-semibold text-gray-900 mb-3">{{ 'issue.manage.title'|trans({}, 'admin') }}</h2>
-                    <form method="post" action="{{ path('app_issues_manage', {id: id}) }}" class="space-y-3">
-                        <input type="hidden" name="_token" value="{{ csrf_token('manage_issue_' ~ id) }}">
-                        <div>
-                            <label for="manage-priority" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.priority'|trans({}, 'admin') }}</label>
-                            <select id="manage-priority" name="priority" class="{{ inputClass }}">
-                                <option value="">{{ 'issue.priority.none'|trans({}, 'admin') }}</option>
-                                {% for priority in priorities %}
-                                    <option value="{{ priority.id.toRfc4122 }}" {{ issue.priority and issue.priority.id.equals(priority.id) ? 'selected' : '' }}>{{ priority.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div>
-                            <label for="manage-status" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.status'|trans({}, 'admin') }}</label>
-                            <select id="manage-status" name="status" class="{{ inputClass }}">
-                                {% for status in ['open', 'in_progress', 'solved', 'not_applicable', 'duplicate'] %}
-                                    <option value="{{ status }}" {{ issue.status.value == status ? 'selected' : '' }}>{{ ('issue.status.' ~ status)|trans({}, 'admin') }}</option>
-                                {% endfor %}
-                            </select>
-                            <p class="mt-1 text-xs text-gray-500">{{ 'issue.manage.status_help'|trans({}, 'admin') }}</p>
-                        </div>
-                        <div>
-                            <label for="manage-duplicate" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.duplicate_of'|trans({}, 'admin') }}</label>
-                            {% include 'issue/_duplicate_select.html.twig' with {id: 'manage-duplicate', candidates: candidates, current: issue.duplicateOf} only %}
-                        </div>
-                        <div>
-                            <label for="manage-type" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.type'|trans({}, 'admin') }}</label>
-                            <select id="manage-type" name="type" class="{{ inputClass }}">
-                                {% for type in types %}
-                                    <option value="{{ type.id.toRfc4122 }}" {{ issue.type.id.equals(type.id) ? 'selected' : '' }}>{{ type.path }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        {% if not issue.booking %}
-                            <div>
-                                <label for="manage-location" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.location'|trans({}, 'admin') }}</label>
-                                <select id="manage-location" name="location" class="{{ inputClass }}">
-                                    <option value="">—</option>
-                                    {% set lastCategory = null %}
-                                    {% for location in locations %}
-                                        {% if location.category.id.toRfc4122 != lastCategory %}
-                                            {% if lastCategory is not null %}</optgroup>{% endif %}
-                                            <optgroup label="{{ location.category.name }}">
-                                            {% set lastCategory = location.category.id.toRfc4122 %}
-                                        {% endif %}
-                                        <option value="{{ location.id.toRfc4122 }}" {{ issue.location and issue.location.id.equals(location.id) ? 'selected' : '' }}>{{ location.name }}</option>
-                                        {% if loop.last %}</optgroup>{% endif %}
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% endif %}
-                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-forest-600 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
-                            {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}{{ 'issue.manage.save'|trans({}, 'admin') }}
-                        </button>
-                    </form>
-                </section>
-            {% endif %}
-
-            {% if canDelete %}
-                <form method="post" action="{{ path('app_issues_delete', {id: id}) }}" class="js-confirm-form"
-                      data-confirm="{{ 'issue.delete_confirm'|trans({'%number%': issue.number}, 'admin')|e('html_attr') }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete_issue_' ~ id) }}">
-                    <button type="submit" class="js-confirm-trigger inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-                        {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}{{ 'issue.delete'|trans({}, 'admin') }}
-                    </button>
-                </form>
-            {% endif %}
-        </aside>
-    </div>
 
 </div>
 {% endblock %}
@@ -350,6 +354,22 @@ for (const el of document.querySelectorAll('select.ts-duplicate')) {
             no_results: () => `<div class="no-results px-3 py-2 text-sm">${el.dataset.noResults ?? ''}</div>`,
         },
     });
+}
+
+// «En proceso» solo se ofrece con prioridad: al elegir una en el panel de gestión se habilita, y al quitarla se retira.
+const priority = document.getElementById('manage-priority');
+const status   = document.getElementById('manage-status');
+if (priority && status) {
+    const sync = () => {
+        for (const option of status.querySelectorAll('option[data-needs-priority]')) {
+            option.disabled = priority.value === '';
+        }
+        if (status.selectedOptions[0]?.disabled) {
+            status.value = 'open';
+        }
+    };
+    priority.addEventListener('change', sync);
+    sync();
 }
 </script>
 {% endif %}

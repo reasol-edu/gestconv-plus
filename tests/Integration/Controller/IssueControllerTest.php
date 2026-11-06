@@ -266,6 +266,36 @@ class IssueControllerTest extends ControllerTestCase
         self::assertNull($reopened->getClosedAt());
     }
 
+    public function testWithoutPriorityTheInProgressStatusIsNotOffered(): void
+    {
+        $w     = $this->makeWorld();
+        $issue = $this->report($w);
+        $url   = '/incidencias/' . $issue->getId()->toRfc4122();
+        $this->loginAs($w['ana'], $w['centre']);
+
+        $crawler = $this->client->request('GET', $url);
+        self::assertCount(1, $crawler->filter('select#manage-status option[value="in_progress"][disabled]'));
+        self::assertCount(1, $crawler->filter('select#observation-status option[value="in_progress"][disabled]'));
+        self::assertCount(1, $crawler->filter('select#manage-status option[value="solved"]:not([disabled])'), 'cerrarla no exige prioridad');
+
+        self::getContainer()->get(IssueManager::class)->setPriority($this->reload($issue), $this->em->getRepository(Teacher::class)->find($w['ana']->getId()), $this->priority($w['centre'], 'Alta'));
+        $crawler = $this->client->request('GET', $url);
+        self::assertCount(0, $crawler->filter('select#manage-status option[value="in_progress"][disabled]'));
+        self::assertCount(0, $crawler->filter('select#observation-status option[value="in_progress"][disabled]'));
+    }
+
+    public function testTheDetailPutsTheDataAndManagementPanelsInOneRowAboveTheRest(): void
+    {
+        $w     = $this->makeWorld();
+        $issue = $this->report($w);
+        $this->loginAs($w['ana'], $w['centre']);
+
+        $crawler = $this->client->request('GET', '/incidencias/' . $issue->getId()->toRfc4122());
+
+        $sections = $crawler->filter('main section[aria-labelledby], section[aria-labelledby]')->each(static fn ($n): string => (string) $n->attr('aria-labelledby'));
+        self::assertSame(['issue-data-title', 'issue-manage-title', 'issue-description-title', 'issue-attachments-title', 'issue-observations-title', 'issue-history-title'], $sections);
+    }
+
     public function testManagementCanDeleteAnIssueWithEverythingItHas(): void
     {
         $w     = $this->makeWorld();

@@ -872,10 +872,11 @@ incluye el recurso, y no se pide la dependencia. Ver
 
 ### La ficha de la incidencia
 
-Cada incidencia tiene un número (**Incidencia #12**) y una ficha con la descripción, las miniaturas y
-los adjuntos, las **observaciones**, el **historial** de cambios y, a la derecha, los datos: quién la
-registró y cuándo, la dependencia o la reserva, los plazos y, si se cerró, la incidencia original
-de la que es duplicada.
+Cada incidencia tiene un número (**Incidencia #12**) y una ficha. Arriba, en una sola fila, van los
+**datos** (quién la registró y cuándo, la dependencia o la reserva, los plazos y, si se cerró, la
+incidencia original de la que es duplicada) y, para quien la gestiona, el panel **Gestionar**. Debajo,
+uno bajo otro: la **descripción**, los **adjuntos** (con sus miniaturas), las **observaciones** y el
+**historial** de cambios.
 
 ![Ficha de una incidencia vista por quien la registró](img/incidencias/incidencias-ficha.png)
 
@@ -898,7 +899,9 @@ de la que es duplicada.
 
 La **prioridad** la asigna el responsable (una incidencia nueva no tiene). Las del centro, de más a
 menos importante, son por defecto *Crítica*, *Alta*, *Media* y *Baja*, con su color. **Asignar una
-prioridad es lo que permite poner la incidencia «en proceso»**; para cerrarla no hace falta. Cada
+prioridad es lo que permite poner la incidencia «en proceso»**: mientras no la tiene, ese estado no se
+ofrece en el panel **Gestionar** ni en el formulario de observación (se habilita al elegir una
+prioridad en el panel); para cerrarla no hace falta. Cada
 prioridad puede tener un **plazo recomendado** y un **plazo máximo**, en días lectivos desde que se
 asigna: la ficha muestra las dos fechas, y el listado marca en rojo el plazo máximo de las
 incidencias abiertas que ya lo han **vencido**.
