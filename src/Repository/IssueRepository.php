@@ -38,6 +38,20 @@ class IssueRepository extends ServiceEntityRepository
         return $result;
     }
 
+    public function findByCentreAndNumber(EducationalCentre $centre, int $number): ?Issue
+    {
+        /** @var Issue|null $result */
+        $result = $this->createQueryBuilder('i')
+            ->where('i.educationalCentre = :centre')
+            ->andWhere('i.number = :number')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('number', $number)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result;
+    }
+
     public function nextNumber(EducationalCentre $centre): int
     {
         return 1 + (int) $this->createQueryBuilder('i')

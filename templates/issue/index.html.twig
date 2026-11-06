@@ -1,0 +1,25 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'issue.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-5xl mx-auto space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'issue.title'|trans({}, 'admin') }}</h1>
+        <a href="{{ path('app_issues_new') }}" class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+            {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}{{ 'issue.new.title'|trans({}, 'admin') }}
+        </a>
+    </div>
+
+    <ul class="divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white shadow-xs">
+        {% for issue in issues %}
+            <li class="flex flex-wrap items-center gap-3 px-5 py-3">
+                <a href="{{ path('app_issues_show', {id: issue.id.toRfc4122}) }}" class="font-semibold text-forest-700 hover:underline">#{{ issue.number }}</a>
+                <span class="min-w-0 flex-1 truncate text-sm text-gray-700">{{ issue.type.path }}</span>
+                {% include 'issue/_priority_badge.html.twig' with {priority: issue.priority} only %}
+                {% include 'issue/_status_badge.html.twig' with {status: issue.status} only %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

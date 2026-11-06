@@ -1,0 +1,9 @@
+{# Estado de una incidencia. Variables: status (IssueStatus). #}
+{% set tones = {
+    open:           'bg-amber-50 text-amber-800 border-amber-200',
+    in_progress:    'bg-sky-50 text-sky-800 border-sky-200',
+    solved:         'bg-forest-50 text-forest-800 border-forest-200',
+    duplicate:      'bg-gray-100 text-gray-600 border-gray-200',
+    not_applicable: 'bg-gray-100 text-gray-600 border-gray-200',
+} %}
+<span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap {{ tones[status.value] }}">{{ ('issue.status.' ~ status.value)|trans({}, 'admin') }}</span>

@@ -1,0 +1,6 @@
+{# Prioridad de una incidencia con su color, o «Sin prioridad». Variables: priority (IssuePriority|null). #}
+{% if priority %}
+    <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap" style="{{ hex_color(priority.color).style }}">{{ priority.name }}</span>
+{% else %}
+    <span class="inline-flex items-center rounded-full border border-dashed border-gray-300 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-gray-500">{{ 'issue.priority.none'|trans({}, 'admin') }}</span>
+{% endif %}
