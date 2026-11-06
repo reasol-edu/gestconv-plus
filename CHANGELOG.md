@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.22.0] - 2026-11-06
+
+### Added
+
+- **Cada categoría de ubicaciones indica dónde se ofrece**, con dos opciones al crearla o editarla: **Solo en los partes** (aparece únicamente en «Dónde sucedió» de un parte) o **En todos los sitios** (también como dependencia de las incidencias y como sugerencia del lugar de las actividades). Las categorías solo para partes llevan la etiqueta «Solo partes» en el listado, y el ámbito va incluido al exportar e importar el catálogo. Una categoría nueva es para todos los sitios; la categoría **General** que trae cada centro, con las ubicaciones propias de un parte (*En clase*, *Recreo*…), viene **solo para partes**.
+- **El lugar de realización de una actividad sugiere las ubicaciones del centro.** Es un desplegable con buscador que ofrece las ubicaciones disponibles para todos los sitios, pero el valor sigue siendo **texto libre**: se puede escribir cualquier lugar y se guarda tal cual, sin enlazarlo con el catálogo.
+
+### Changed
+
+- «Ubicaciones para los partes» pasa a llamarse **«Ubicaciones del centro»**, porque ya no sirven solo para los partes.
+- Al actualizar, la categoría llamada exactamente **General** de cada centro pasa a ser solo para partes, así que sus ubicaciones (*En clase*, *Recreo*…) dejan de ofrecerse como dependencia de una incidencia nueva. Las incidencias que ya las tienen conservan su dependencia. Si un centro quiere seguir ofreciéndolas en las incidencias, basta con cambiar el ámbito de esa categoría a «En todos los sitios» en Centro educativo › Ubicaciones del centro. Una categoría que se renombrara no cambia.
+
 ## [1.21.2] - 2026-11-06
 
 ### Changed
