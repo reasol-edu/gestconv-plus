@@ -85,7 +85,11 @@ final class CentreTeacherImporter
 
         foreach ($parsedRows as $row) {
             $teacher = $this->teachers->findByUsername($row['username']);
-            $status  = match (true) {
+            // Una cuenta de personal no docente nunca se incorpora como docente (se gestiona en su propia sección).
+            if ($teacher !== null && $teacher->isNonTeaching()) {
+                continue;
+            }
+            $status = match (true) {
                 $teacher === null                         => TeacherImportRow::NEW,
                 !$year->getTeachers()->contains($teacher) => TeacherImportRow::ADD,
                 default                                   => TeacherImportRow::IN_YEAR,

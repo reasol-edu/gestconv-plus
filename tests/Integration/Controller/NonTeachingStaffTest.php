@@ -36,10 +36,35 @@ class NonTeachingStaffTest extends ControllerTestCase
         self::assertResponseIsSuccessful();
 
         // Ningún otro módulo.
-        foreach (['/estudiantes', '/partes', '/sanciones', '/calendario'] as $url) {
+        foreach (['/partes', '/partes/nuevo', '/partes/creados', '/partes/buscar-alumnos'] as $url) {
             $this->client->request('GET', $url);
-            self::assertContains($this->client->getResponse()->getStatusCode(), [403, 404], $url);
+            self::assertResponseStatusCodeSame(403, $url);
         }
+    }
+
+    public function testTheyRegisterAnIssueWithAnAttachmentAndOpenIt(): void
+    {
+        $w = $this->world();
+        $this->loginAs($w['paco'], $w['centre']);
+
+        $crawler = $this->client->request('GET', '/incidencias/nueva');
+        $token   = (string) $crawler->filter('form [name="_token"]')->attr('value');
+        $path    = tempnam(sys_get_temp_dir(), 'nd') . '.txt';
+        file_put_contents($path, 'adjunto de prueba');
+        $this->client->request(
+            'POST',
+            '/incidencias/nueva',
+            ['_token' => $token, 'type' => $w['type']->getId()->toRfc4122(), 'location' => '', 'description' => '<p>Persiana rota</p>'],
+            ['attachments' => [new \Symfony\Component\HttpFoundation\File\UploadedFile($path, 'nota.txt', 'text/plain', null, true)]],
+        );
+        self::assertResponseRedirects();
+
+        $crawler = $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        $link = $crawler->filter('a[href*="/adjuntos/"]')->first();
+        self::assertCount(1, $link, 'la ficha lista el adjunto');
+        $this->client->request('GET', (string) $link->attr('href'));
+        self::assertResponseIsSuccessful();
     }
 
     public function testItCannotEnterTheCentreWhenTheModuleIsOffAndTheReasonIsExplained(): void
@@ -196,6 +221,54 @@ class NonTeachingStaffTest extends ControllerTestCase
         $crawler = $this->client->request('GET', "/centro/$centreId/incidencias");
         self::assertResponseIsSuccessful();
         self::assertStringContainsString($w['paco']->getName()->getLastName(), $crawler->html());
+    }
+
+    public function testTheTeacherImportNeverPicksUpANonTeachingAccount(): void
+    {
+        $w = $this->world();
+
+        $plan = self::getContainer()->get(\App\Service\CentreTeacherImporter::class)->plan($w['year'], [
+            ['username' => $w['paco']->getUsername(), 'firstName' => 'Paco', 'lastName' => 'Conserje', 'email' => null],
+            ['username' => 'docente.nuevo.' . $w['year']->getId()->toRfc4122(), 'firstName' => 'Nueva', 'lastName' => 'Docente', 'email' => null],
+        ]);
+
+        self::assertCount(1, $plan);
+        self::assertSame('new', $plan[0]->status);
+        self::assertFalse($w['year']->getTeachers()->contains($w['paco']));
+    }
+
+    public function testAResponsibleWithoutACourseGetsAccessAndNoticesForTheirType(): void
+    {
+        $w = $this->world();
+        $rita = (new Teacher(new PersonName('Rita', 'Informante')))->setUsername('rita.nd.' . self::$seq);
+        $w['year']->addTeacher($rita);
+        $this->persist($rita);
+        $issue = self::getContainer()->get(\App\Service\IssueManager::class)->create($w['centre'], $w['year'], $rita, $w['type'], null, null, '<p>Gotera</p>', []);
+        $id    = $issue->getId()->toRfc4122();
+
+        // Se le avisa como responsable del tipo.
+        $recipients = array_map(static fn (\App\Entity\EmailDigestItem $i): string => $i->getRecipient()->getUsername(), $this->em->getRepository(\App\Entity\EmailDigestItem::class)->findAll());
+        self::assertContains($w['paco']->getUsername(), $recipients);
+
+        // La ve, la gestiona (prioridad) y descarga su informe, sin pertenecer a ningún curso.
+        self::getContainer()->get(\App\Service\IssuePrioritySeeder::class)->seedForCentre($w['centre']);
+        $this->flush();
+        $this->loginAs($w['paco'], $w['centre']);
+        $crawler = $this->client->request('GET', "/incidencias/$id");
+        self::assertResponseIsSuccessful();
+        $priority = $this->em->getRepository(\App\Entity\IssuePriority::class)->findOneBy(['educationalCentre' => $w['centre'], 'name' => 'Alta']);
+        self::assertNotNull($priority);
+        $token = (string) $crawler->filter('form[action$="/gestionar"] [name="_token"]')->attr('value');
+        $this->client->request('POST', "/incidencias/$id/gestionar", [
+            '_token' => $token, 'type' => $w['type']->getId()->toRfc4122(), 'priority' => $priority->getId()->toRfc4122(), 'status' => 'open', 'location' => '',
+        ]);
+        self::assertResponseRedirects();
+        $this->em->clear();
+        self::assertSame('Alta', $this->em->getRepository(\App\Entity\Issue::class)->find($issue->getId())?->getPriority()?->getName());
+
+        $this->client->request('GET', "/incidencias/$id/informe");
+        self::assertResponseIsSuccessful();
+        self::assertStringStartsWith('%PDF', (string) $this->client->getResponse()->getContent());
     }
 
     public function testTheirPersonalSettingsOnlyOfferIssueNoticesAndEmailDelivery(): void
