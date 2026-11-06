@@ -9,7 +9,6 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\ResourceBooking;
 use App\Entity\ResourceBookingStatus;
-use App\Entity\BookingIssueStatus;
 use App\Entity\SharedResource;
 use App\Entity\Teacher;
 use App\Entity\TimeSlot;
@@ -23,6 +22,7 @@ use App\Repository\TimeSlotRepository;
 use App\Security\Voter\EducationalCentreVoter;
 use App\Security\Voter\ResourceBookingVoter;
 use App\Service\BookingDateCheck;
+use App\Service\BookingIssues;
 use App\Service\BookingInput;
 use App\Service\NonWorkingDayChecker;
 use App\Service\ResourceBookingAccess;
@@ -58,6 +58,7 @@ class ResourceBookingController extends AbstractController
         private readonly GroupRepository $groups,
         private readonly TeacherRepository $teachers,
         private readonly ResourceBookingAccess $access,
+        private readonly BookingIssues $bookingIssues,
         private readonly ResourceBookingPlanner $planner,
         private readonly ResourceBookingInputReader $reader,
         private readonly ResourceBookingManager $manager,
@@ -134,7 +135,7 @@ class ResourceBookingController extends AbstractController
             'canBook' => $this->canBookAnything($centre),
             'scope'   => $request->query->getString('scope') === 'managed' ? 'managed' : 'mine',
             'status'  => ResourceBookingStatus::tryFrom($status) !== null ? $status : '',
-            'issue'   => in_array($request->query->getString('issue'), ['to_receive', 'open', 'any'], true) ? $request->query->getString('issue') : '',
+            'issue'   => in_array($request->query->getString('issue'), ['open', 'any'], true) ?$request->query->getString('issue') : '',
             'from'    => $request->query->getString('from') === 'all' ? '' : $this->planner->today()->format('Y-m-d'),
         ]);
     }
@@ -214,67 +215,13 @@ class ResourceBookingController extends AbstractController
         if ($user instanceof Teacher && !$booking->isResolutionSeen() && $booking->getTeacher()->getId()->equals($user->getId())) {
             $this->bookings->markResolutionsSeen($user, $booking->getAcademicYear(), $booking);
         }
-        // Y lo mismo con la respuesta a su incidencia.
-        if ($user instanceof Teacher && !$booking->isIssueResponseSeen() && $booking->getTeacher()->getId()->equals($user->getId())) {
-            $this->bookings->markIssueResponsesSeen($user, $booking->getAcademicYear(), $booking);
-        }
 
         return $this->render('resource_booking/show.html.twig', [
             'centre'      => $centre,
             'booking'     => $booking,
             'hasSiblings' => $this->manager->hasSiblings($booking),
+            'issues'      => $this->bookingIssues->visibleFor($booking),
         ]);
-    }
-
-    // ── Incidencias ───────────────────────────────────────────────────────────
-
-    /** El docente de la reserva registra una incidencia (se avisa a los responsables de la categoría). */
-    #[Route('/{id}/incidencia', name: 'app_bookings_issue_report', requirements: ['id' => '[0-9a-fA-F-]{36}'], methods: ['POST'])]
-    public function reportIssue(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
-    {
-        $this->denyAccessUnlessGranted(EducationalCentreVoter::BOOKINGS, $centre);
-        $booking = $this->requireBooking($id, $centre);
-        $this->denyAccessUnlessGranted(ResourceBookingVoter::REPORT_ISSUE, $booking);
-
-        if (!$this->isCsrfTokenValid('report_booking_issue_' . $id, $request->request->getString('_token'))) {
-            throw $this->createAccessDeniedException();
-        }
-
-        $description = trim($request->request->getString('description'));
-        if ($description === '') {
-            $this->addFlash('error', $this->t('booking.issue.error.description_required'));
-        } else {
-            $this->manager->reportIssue($booking, $description, $this->requireTeacher());
-            $this->addFlash('success', $this->t('booking.issue.flash.reported'));
-        }
-
-        return $this->redirectToRoute('app_bookings_show', ['id' => $id]);
-    }
-
-    /** Quien gestiona el recurso marca la incidencia como recibida o solucionada, con un comentario obligatorio. */
-    #[Route('/{id}/incidencia/responder', name: 'app_bookings_issue_respond', requirements: ['id' => '[0-9a-fA-F-]{36}'], methods: ['POST'])]
-    public function respondToIssue(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
-    {
-        $this->denyAccessUnlessGranted(EducationalCentreVoter::BOOKINGS, $centre);
-        $booking = $this->requireBooking($id, $centre);
-        $this->denyAccessUnlessGranted(ResourceBookingVoter::RESPOND_ISSUE, $booking);
-
-        if (!$this->isCsrfTokenValid('respond_booking_issue_' . $id, $request->request->getString('_token'))) {
-            throw $this->createAccessDeniedException();
-        }
-
-        $status  = BookingIssueStatus::tryFrom($request->request->getString('status'));
-        $comment = trim($request->request->getString('comment'));
-        if ($status === null || $status === BookingIssueStatus::Reported) {
-            $this->addFlash('error', $this->t('booking.issue.error.status_invalid'));
-        } elseif ($comment === '') {
-            $this->addFlash('error', $this->t('booking.issue.error.comment_required'));
-        } else {
-            $this->manager->respondToIssue($booking, $status, $comment, $this->requireTeacher());
-            $this->addFlash('success', $this->t($status === BookingIssueStatus::Resolved ? 'booking.issue.flash.resolved' : 'booking.issue.flash.received'));
-        }
-
-        return $this->redirectToRoute('app_bookings_show', ['id' => $id]);
     }
 
     // ── Edición ───────────────────────────────────────────────────────────────

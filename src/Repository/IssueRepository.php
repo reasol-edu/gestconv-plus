@@ -212,6 +212,28 @@ class IssueRepository extends ServiceEntityRepository
     }
 
     /**
+     * Las incidencias del centro asociadas a una reserva, de la más antigua a la más reciente.
+     *
+     * @return list<Issue>
+     */
+    public function findWithBooking(EducationalCentre $centre): array
+    {
+        /** @var list<Issue> $result */
+        $result = $this->createQueryBuilder('i')
+            ->addSelect('t', 'r')
+            ->join('i.type', 't')
+            ->join('i.reporter', 'r')
+            ->where('i.educationalCentre = :centre')
+            ->andWhere('i.booking IS NOT NULL')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->orderBy('i.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
      * Las incidencias abiertas del centro que han pasado su plazo máximo (para el recordatorio diario).
      *
      * @return list<Issue>

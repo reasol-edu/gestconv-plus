@@ -99,8 +99,7 @@
                         : (section.key starts with 'issue_' ? path('app_issues_index')
                         : (section.key == 'note_threshold' ? path('app_daily_notes_index', {tab: 'students'})
                         : (section.key == 'booking_validation' ? path('app_bookings_list', {scope: 'managed', status: 'pending', from: 'all'})
-                        : (section.key == 'booking_issue_open' ? path('app_bookings_list', {scope: 'managed', issue: 'to_receive', from: 'all'})
-                        : (section.key in ['booking_resolved', 'booking_issue_answered'] ? path('app_bookings_list', section.key == 'booking_issue_answered' ? {issue: 'any', from: 'all'} : {}) : path('app_notifications_index')))))) %}
+                        : (section.key == 'booking_resolved' ? path('app_bookings_list') : path('app_notifications_index'))))) %}
                     <li>
                         <a href="{{ moreHref }}" class="block px-4 py-1.5 text-xs font-medium text-forest-700 hover:bg-gray-50 transition-colors">
                             {{ 'bell.more'|trans({'%count%': section.hidden}, 'notifications') }}

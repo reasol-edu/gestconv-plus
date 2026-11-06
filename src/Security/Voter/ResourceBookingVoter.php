@@ -23,12 +23,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  *    restringidas (solo sus responsables y la dirección); nunca un recurso o categoría inactivos.
  *  - EDIT (sujeto ResourceBooking): editar o eliminar la reserva: su docente, los responsables de la categoría y la dirección.
  *  - MANAGE (sujeto ResourceBooking): gestionar las reservas ajenas y validarlas: responsables de la categoría y dirección.
- *  - REPORT_ISSUE (sujeto ResourceBooking): registrar una incidencia: solo el docente de la reserva aprobada, y si no tiene
- *    ya una sin solucionar. No depende de la fecha: las incidencias se suelen registrar después de usar el recurso.
- *  - RESPOND_ISSUE (sujeto ResourceBooking): marcar como recibida o solucionada la incidencia abierta de una reserva:
- *    responsables de la categoría y dirección.
- *  - VIEW_ISSUE (sujeto ResourceBooking): ver la marca y el detalle de la incidencia: el docente de la reserva, los
- *    responsables de la categoría y la dirección (el resto del calendario no la ve).
+ *  - REPORT_ISSUE (sujeto ResourceBooking): registrar una incidencia (del módulo de incidencias) sobre la reserva: solo el
+ *    docente de la reserva aprobada. No depende de la fecha: las incidencias se suelen registrar después de usar el recurso.
  *
  * Con las reservas desactivadas en el centro, nadie.
  *
@@ -39,9 +35,7 @@ final class ResourceBookingVoter extends Voter
     public const BOOK   = 'resource_booking.book';
     public const EDIT   = 'resource_booking.edit';
     public const MANAGE = 'resource_booking.manage';
-    public const REPORT_ISSUE  = 'resource_booking.report_issue';
-    public const RESPOND_ISSUE = 'resource_booking.respond_issue';
-    public const VIEW_ISSUE    = 'resource_booking.view_issue';
+    public const REPORT_ISSUE = 'resource_booking.report_issue';
 
     public function __construct(
         private readonly ResourceBookingAccess $access,
@@ -54,7 +48,7 @@ final class ResourceBookingVoter extends Voter
     {
         return match ($attribute) {
             self::BOOK            => $subject instanceof SharedResource,
-            self::EDIT, self::MANAGE, self::REPORT_ISSUE, self::RESPOND_ISSUE, self::VIEW_ISSUE => $subject instanceof ResourceBooking,
+            self::EDIT, self::MANAGE, self::REPORT_ISSUE => $subject instanceof ResourceBooking,
             default               => false,
         };
     }
@@ -94,11 +88,7 @@ final class ResourceBookingVoter extends Voter
 
         return match ($attribute) {
             self::MANAGE        => $this->access->managesBooking($user, $subject),
-            self::REPORT_ISSUE  => $subject->isApproved()
-                && $subject->getTeacher()->getId()->equals($user->getId())
-                && !$subject->hasOpenIssue(),
-            self::RESPOND_ISSUE => $subject->hasOpenIssue() && $this->access->managesBooking($user, $subject),
-            // Quien ve la reserva como propia o la gestiona es quien puede ver su incidencia.
+            self::REPORT_ISSUE  => $subject->isApproved() && $subject->getTeacher()->getId()->equals($user->getId()),
             default             => $this->access->canEdit($user, $subject),
         };
     }

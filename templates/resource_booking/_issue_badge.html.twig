@@ -1,14 +1,14 @@
 {#
-   Marca de la incidencia de una reserva: un icono (con el color de su estado) y, si `label` es verdadero, su estado en texto.
-   Solo se pinta para quien puede ver la incidencia (el docente de la reserva, los responsables de la categoría y la
-   dirección); el resto del calendario no la ve. Variables: booking, label (opcional).
+   Marca de las incidencias de una reserva: un icono (ámbar si alguna sigue abierta, verde si todas están cerradas) y, si
+   `label` es verdadero, su recuento en texto. Solo se pinta para quien puede ver alguna incidencia (el docente de la reserva,
+   los responsables del tipo y la dirección); el resto del calendario no la ve. Variables: booking, label (opcional).
 #}
-{% if booking.hasIssue and is_granted('resource_booking.view_issue', booking) %}
-    {% set status = booking.issueStatus.value %}
-    {% set tone = {reported: 'text-amber-600', received: 'text-sky-600', resolved: 'text-forest-600'}[status] %}
-    {% set text = ('booking.issue.status.' ~ status)|trans({}, 'admin') %}
-    <span class="inline-flex items-center gap-1 {{ tone }}" title="{{ 'booking.issue.title'|trans({}, 'admin') }}: {{ text }}">
-        {{ ux_icon(status == 'resolved' ? 'heroicons:check-circle' : 'heroicons:exclamation-triangle', {class: 'h-4 w-4 shrink-0'}) }}
-        {% if label ?? false %}<span class="text-xs font-semibold">{{ text }}</span>{% else %}<span class="sr-only">{{ 'booking.issue.title'|trans({}, 'admin') }}: {{ text }}</span>{% endif %}
+{% set issues = booking_issues(booking) %}
+{% if issues is not empty %}
+    {% set open = booking_has_open_issue(booking) %}
+    {% set text = (open ? 'booking.issue.badge_open' : 'booking.issue.badge_closed')|trans({'%count%': issues|length}, 'admin') %}
+    <span class="inline-flex items-center gap-1 {{ open ? 'text-amber-600' : 'text-forest-600' }}" title="{{ text }}">
+        {{ ux_icon(open ? 'heroicons:exclamation-triangle' : 'heroicons:check-circle', {class: 'h-4 w-4 shrink-0'}) }}
+        {% if label ?? false %}<span class="text-xs font-semibold">{{ text }}</span>{% else %}<span class="sr-only">{{ text }}</span>{% endif %}
     </span>
 {% endif %}

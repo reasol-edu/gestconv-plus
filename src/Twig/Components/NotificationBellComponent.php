@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Twig\Components;
 
-use App\Entity\BookingIssueStatus;
 use App\Entity\EducationalCentre;
 use App\Entity\IncidentReport;
 use App\Entity\Issue;
@@ -44,7 +43,7 @@ class NotificationBellComponent extends AbstractController
     public const MAX_PER_SECTION = 4;
 
     /** Orden de las secciones, de más a menos urgente. */
-    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold', 'booking_validation', 'booking_issue_open', 'booking_resolved', 'booking_issue_answered', 'issue_overdue', 'issue_attend', 'issue_news'];
+    public const SECTIONS = ['prescription', 'report', 'sanction', 'task', 'note_threshold', 'booking_validation', 'booking_resolved', 'issue_overdue', 'issue_attend', 'issue_news'];
 
     /** @var array<string, list<array{type: string, entity: IncidentReport|Sanction|SanctionTask|ResourceBooking|Issue|array<string, mixed>, date: \DateTimeImmutable, daysLeft: ?int}>>|null */
     private ?array $grouped = null;
@@ -142,14 +141,6 @@ class NotificationBellComponent extends AbstractController
                 foreach ($this->resourceBookings->findPendingForCategories($year, $categories) as $booking) {
                     $sections['booking_validation'][] = ['type' => 'booking_validation', 'entity' => $booking, 'date' => $booking->getDate(), 'daysLeft' => null];
                 }
-                // Incidencias registradas en reservas de sus recursos que nadie ha recibido aún.
-                foreach ($this->resourceBookings->findIssuesToReceive($year, $categories) as $booking) {
-                    $sections['booking_issue_open'][] = ['type' => 'booking_issue_reported', 'entity' => $booking, 'date' => $booking->getIssueReportedAt() ?? $booking->getDate(), 'daysLeft' => null];
-                }
-            }
-            // Respuestas (recibida o solucionada) a las incidencias que el docente registró y aún no ha visto.
-            foreach ($this->resourceBookings->findUnseenIssueResponsesFor($user, $year) as $booking) {
-                $sections['booking_issue_answered'][] = ['type' => $booking->getIssueStatus() === BookingIssueStatus::Resolved ? 'booking_issue_resolved' : 'booking_issue_received', 'entity' => $booking, 'date' => $booking->getIssueRespondedAt() ?? $booking->getDate(), 'daysLeft' => null];
             }
             foreach ($this->resourceBookings->findUnseenResolutionsFor($user, $year) as $booking) {
                 $sections['booking_resolved'][] = ['type' => 'booking_' . $booking->getStatus()->value, 'entity' => $booking, 'date' => $booking->getDate(), 'daysLeft' => null];

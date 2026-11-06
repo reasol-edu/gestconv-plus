@@ -96,7 +96,6 @@
                 <span class="mb-1 block text-xs font-medium text-gray-500">{{ 'booking.filter.issue'|trans({}, 'admin') }}</span>
                 <select data-model="norender|issue" data-action="change->live#action" data-live-action-param="resetPage" class="{{ selectClass }}">
                     <option value="">{{ 'booking.filter.issue_all'|trans({}, 'admin') }}</option>
-                    <option value="to_receive" {{ issue == 'to_receive' ? 'selected' : '' }}>{{ 'booking.filter.issue_to_receive'|trans({}, 'admin') }}</option>
                     <option value="open" {{ issue == 'open' ? 'selected' : '' }}>{{ 'booking.filter.issue_open'|trans({}, 'admin') }}</option>
                     <option value="any" {{ issue == 'any' ? 'selected' : '' }}>{{ 'booking.filter.issue_any'|trans({}, 'admin') }}</option>
                 </select>

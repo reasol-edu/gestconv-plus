@@ -90,8 +90,6 @@ class DashboardController extends AbstractController
                 'noteThresholdCount'                => 0,
                 'todayEvents'                       => [],
                 'pendingBookingsCount'              => 0,
-                'issuesToReceiveCount'              => 0,
-                'issueAnswersCount'                 => 0,
                 'today'                             => $this->clock->now()->format('Y-m-d'),
             ]);
         }
@@ -144,17 +142,11 @@ class DashboardController extends AbstractController
 
         // Solicitudes de reserva que le toca validar: todas a la dirección, las de sus categorías a un responsable.
         $pendingBookingsCount = 0;
-        $issuesToReceiveCount = 0;
-        $issueAnswersCount    = 0;
         if ($this->features->isEnabledForCentre(Feature::Bookings, $centre)) {
             if ($this->bookingAccess->hasManagerRole($viewer, $centre)) {
                 $categories           = $this->bookingAccess->isManagement($viewer, $centre) ? null : $this->bookingAccess->managedCategories($viewer, $centre);
                 $pendingBookingsCount = count($this->resourceBookings->findPendingForCategories($year, $categories));
-                // Incidencias registradas en reservas de sus recursos que nadie ha recibido aún.
-                $issuesToReceiveCount = count($this->resourceBookings->findIssuesToReceive($year, $categories));
             }
-            // Respuestas a las incidencias que el propio docente registró y aún no ha visto.
-            $issueAnswersCount = count($this->resourceBookings->findUnseenIssueResponsesFor($viewer, $year));
         }
 
         // Incidencias: las cifras de lo que el docente puede ver (si gestiona, lo pendiente de atender y lo vencido).
@@ -228,8 +220,6 @@ class DashboardController extends AbstractController
             'noteThresholdCount'                => $noteThresholdCount,
             'todayEvents'                       => $todayEvents,
             'pendingBookingsCount'              => $pendingBookingsCount,
-            'issuesToReceiveCount'              => $issuesToReceiveCount,
-            'issueAnswersCount'                 => $issueAnswersCount,
             'issueStats'                        => $issueStats,
             'issueIsManager'                    => $issueIsManager,
             'today'                             => $today->format('Y-m-d'),
