@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.2] - 2026-11-06
+
+### Changed
+
+- **Nuevo diseño de la ficha de la incidencia.** Arriba, en una sola fila, van los datos de la incidencia y, para quien la gestiona, el panel **Gestionar**; debajo, uno bajo otro y a todo el ancho: la descripción, los adjuntos, las observaciones y el historial.
+- Los binarios descargables pasan a **FrankenPHP 1.13.5**, otra versión de seguridad que corrige diecisiete vulnerabilidades, entre ellas una de gravedad alta que permitía ejecutar como PHP un fichero subido bajo la raíz web, e incorpora Caddy 2.11.9. Mantiene el PHP 8.5.12. No hace falta ningún paso al actualizar.
+
+### Fixed
+
+- En una incidencia **sin prioridad** ya no se ofrece el estado «en proceso» (en el panel Gestionar ni al añadir una observación), que exige una prioridad; se habilita al elegir una en el panel. Antes se podía elegir y la aplicación lo rechazaba después.
+
 ## [1.21.1] - 2026-11-06
 
 ### Fixed
