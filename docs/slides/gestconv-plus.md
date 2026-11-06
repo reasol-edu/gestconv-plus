@@ -74,6 +74,73 @@ un flujo único:
 
 ---
 
+## Los módulos de GestConv+
+
+GestConv+ se organiza en **módulos independientes**. El centro puede
+**activar o desactivar** cada uno, y cada perfil solo ve los que puede usar.
+
+| Módulo | Para qué sirve |
+|---|---|
+| **Convivencia** | Partes, notas, notificación a las familias, sanciones y tareas |
+| **Salidas** | Saber quién está fuera del aula, y adónde ha ido |
+| **Ausencias y guardias** | Dejar trabajo para las clases que se pierden y cubrir los tramos |
+| **Reservas** | Reservar aulas, carros de portátiles y otros recursos compartidos |
+| **Incidencias** | Avisar de averías y desperfectos y seguirlas hasta cerrarlas |
+| **Calendario** | Sanciones, ausencias y actividades de centro, con modo tablón |
+
+El **personal no docente** (conserjería, administración…) solo accede a las
+Incidencias.
+
+---
+
+## Módulo Convivencia
+
+![bg right:42% fit](../manual/img/partes/partes-listado.png)
+
+- El **parte** recoge qué ha pasado, con qué conductas y quién estaba implicado.
+- **Notas diarias**: avisos del día a día que, al llegar a un umbral, derivan en parte.
+- **Notificación a la familia**: **sin ella no hay sanción**.
+- **Sanciones** y **tareas de sanción**: la comisión sanciona y cada docente deja trabajo.
+
+---
+
+## Módulo Salidas
+
+![bg right:35% fit](../manual/img/salidas/salidas-ahora.png)
+
+- Saber **quién está fuera del aula** ahora, con qué permiso y desde cuándo.
+- Pensado para el **móvil**: se autoriza en tres toques.
+- El **historial** permite revisar las salidas del centro.
+
+---
+
+## Módulos Ausencias y Guardias
+
+![bg right:40% fit](../manual/img/guardias/guardias-tramo.png)
+
+- **Ausencias**: se deja trabajo e instrucciones para cada clase que se pierde.
+- **Guardias**: quien cubre ve qué grupos hay y qué ha dejado el docente ausente.
+
+---
+
+## Módulos Reservas e Incidencias
+
+![bg right:40% fit](../manual/img/reservas/reservas-calendario.png)
+
+- **Reservas**: calendario de **recursos compartidos** (aulas, portátiles) por tramos.
+- **Incidencias**: aviso de una **avería**, que se asigna y se sigue hasta cerrarla.
+
+---
+
+## Módulo Calendario
+
+![bg right:40% fit](../manual/img/calendario/calendario.png)
+
+- Una vista mensual con **sanciones**, **ausencias** y **actividades de centro**.
+- El **modo tablón** lo lleva a una pantalla de la sala de profesorado.
+
+---
+
 ## Los cuatro perfiles de esta guía
 
 Esta presentación está organizada por lo que **necesita saber cada perfil**,
