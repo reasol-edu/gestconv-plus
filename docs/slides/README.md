@@ -1,14 +1,17 @@
 # Presentación de GestConv+
 
 Guía práctica de GestConv+ para el profesorado, escrita en [Marp]
-(Markdown → diapositivas). Organizada en cuatro bloques según el rol de quien la lee
-—docente normal, tutor/a de grupo, comisión de convivencia y orientación, y
-administradores de centro/equipo directivo—, cada uno añadiendo solo lo que ese perfil
-tiene de más sobre el anterior.
+(Markdown → diapositivas). Organizada en seis bloques, uno por módulo: **Convivencia**
+(dividido por perfiles —docente normal, tutoría de grupo, comisión de convivencia y orientación,
+y equipo directivo—, cada uno añadiendo solo lo que ese perfil tiene de más sobre el anterior),
+**Salidas**, **Ausencias y guardias**, **Reservas**, **Incidencias** y **Calendario**. Cada módulo
+cierra con su configuración.
 
 ## Ficheros
 
 - `gestconv-plus.md` — fuente de las diapositivas (Marp).
+- `marp.config.mjs` — configuración de Marp: desactiva que cada salto de línea sea un `<br>`, para
+  poder partir las líneas del Markdown sin que las diapositivas crezcan en vertical.
 - `img/` — capturas del entorno de pruebas incrustadas en la presentación.
 
 ## Generar el PDF

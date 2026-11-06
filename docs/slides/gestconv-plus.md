@@ -37,13 +37,16 @@ style: |
   section.tight { font-size: 23px; }
 ---
 
+
 <!-- _class: lead -->
 
 # GestConv+
 
 ## Guía práctica para el profesorado
 
+
 ---
+
 
 ## El problema
 
@@ -56,7 +59,9 @@ style: |
 - El seguimiento de sanciones y medidas disciplinarias se pierde entre correos
   y documentos sin relacionar.
 
+
 ---
+
 
 ## ¿Qué es GestConv+?
 
@@ -72,7 +77,9 @@ un flujo único:
 - Incluye calendario, búsqueda global, notificaciones pendientes e informes en
   PDF listos para imprimir o archivar.
 
+
 ---
+
 
 ## Los módulos de GestConv+
 
@@ -91,7 +98,9 @@ GestConv+ se organiza en **módulos independientes**. El centro puede
 El **personal no docente** (conserjería, administración…) solo accede a las
 Incidencias.
 
+
 ---
+
 
 ## Módulo Convivencia
 
@@ -102,7 +111,9 @@ Incidencias.
 - **Notificación a la familia**: **sin ella no hay sanción**.
 - **Sanciones** y **tareas de sanción**: la comisión sanciona y cada docente deja trabajo.
 
+
 ---
+
 
 ## Módulo Salidas
 
@@ -112,7 +123,9 @@ Incidencias.
 - Pensado para el **móvil**: se autoriza en tres toques.
 - El **historial** permite revisar las salidas del centro.
 
+
 ---
+
 
 ## Módulos Ausencias y Guardias
 
@@ -121,7 +134,9 @@ Incidencias.
 - **Ausencias**: se deja trabajo e instrucciones para cada clase que se pierde.
 - **Guardias**: quien cubre ve qué grupos hay y qué ha dejado el docente ausente.
 
+
 ---
+
 
 ## Módulos Reservas e Incidencias
 
@@ -130,7 +145,9 @@ Incidencias.
 - **Reservas**: calendario de **recursos compartidos** (aulas, portátiles) por tramos.
 - **Incidencias**: aviso de una **avería**, que se asigna y se sigue hasta cerrarla.
 
+
 ---
+
 
 ## Módulo Calendario
 
@@ -139,44 +156,46 @@ Incidencias.
 - Una vista mensual con **sanciones**, **ausencias** y **actividades de centro**.
 - El **modo tablón** lo lleva a una pantalla de la sala de profesorado.
 
----
-
-## Los cuatro perfiles de esta guía
-
-Esta presentación está organizada por lo que **necesita saber cada perfil**,
-no por pantallas sueltas:
-
-1. **Docente normal** — registra partes de sus grupos y notifica a familias.
-2. **Tutor/a de grupo** — además, ve todo lo de su grupo, incluidas sus sanciones.
-3. **Comisión de convivencia y orientación** — visión de todo el centro.
-4. **Administradores de centro / equipo directivo** — configuran el curso y
-   los ajustes de convivencia.
-
-Cada bloque solo añade lo que ese rol tiene **de más** sobre el anterior.
-
-Aparte está el **personal no docente** (conserjería, administración…): una
-cuenta del centro que solo accede a las **Incidencias** y no ve nada más.
 
 ---
+
+## Cómo está organizada esta guía
+
+La guía va **por módulos**; el de convivencia, además, **por perfiles**:
+
+1. **Convivencia**: 1.1 docente normal · 1.2 tutoría de grupo ·
+   1.3 comisión de convivencia y orientación · 1.4 equipo directivo.
+2. **Salidas**
+3. **Ausencias y guardias**
+4. **Reservas**
+5. **Incidencias**
+6. **Calendario**
+
+Cada módulo termina con su **configuración**, que es cosa del equipo directivo.
+Los perfiles suman permisos: cada subbloque solo añade lo que ese rol tiene
+**de más**.
+
+El **personal no docente** (conserjería, administración…) solo accede a las
+**Incidencias** y no ve nada más.
+
+---
+
 
 ## Cómo moverte por la aplicación
 
 ![bg right:40% fit](../manual/img/inicio.png)
 
-- El **panel de inicio** muestra tarjetas con lo pendiente: partes sin
-  notificar, tareas de seguimiento, avisos del centro.
-- La **búsqueda global** (`⌘K` / `Ctrl+K`) encuentra un estudiante, un grupo o un
-  parte en segundos, sin navegar por menús, y ofrece accesos rápidos como
-  **Reservar recurso**.
-- Si tienes acceso a **varios centros educativos**, un selector en la cabecera
-  permite cambiar de centro sin cerrar sesión.
-- El menú lateral se adapta a tu rol: solo muestra las secciones que puedes
-  usar, agrupadas en **Día a día** (salidas, guardias, ausencias, reservas,
-  incidencias, calendario),
-  **Convivencia** (partes, notas, sanciones, tareas, notificaciones, mi
-  tutoría) y **Gestión** (informes y centro, solo dirección).
-- Los **accesos rápidos** del inicio siguen esos mismos grupos: en el móvil,
-  baldosas de un toque.
+- El **panel de inicio** muestra tarjetas con lo pendiente y **accesos
+  rápidos** (en el móvil, baldosas de un toque).
+- La **búsqueda global** (`⌘K` / `Ctrl+K`) encuentra un estudiante, un grupo o
+  un parte sin navegar por menús.
+- Con **varios centros**, un selector permite cambiar de centro sin cerrar
+  sesión.
+- El menú se adapta a tu rol y se agrupa en **Día a día** (salidas, guardias,
+  ausencias, reservas, incidencias, calendario), **Convivencia** (partes,
+  notas, sanciones, tareas, notificaciones, mi tutoría) y **Gestión**
+  (informes y centro, solo dirección).
+
 
 ---
 
@@ -184,7 +203,15 @@ cuenta del centro que solo accede a las **Incidencias** y no ve nada más.
 
 # Bloque 1
 
-## Docente normal
+## Convivencia
+
+---
+
+<!-- _class: sep -->
+
+# 1.1 Docente normal
+
+## Bloque 1 · Convivencia
 
 ---
 
@@ -193,24 +220,20 @@ cuenta del centro que solo accede a las **Incidencias** y no ve nada más.
 Sin ningún rol especial, todo docente puede:
 
 - **Registrar partes de convivencia** de los estudiantes de sus grupos.
-- **Registrar notas diarias** (retraso, uso del móvil…) sin necesidad de un parte formal.
-- **Autorizar salidas del aula** desde el móvil y controlar quién está fuera.
+- **Registrar notas diarias** (retraso, uso del móvil…) sin abrir un parte.
 - Consultar y filtrar **los partes que él mismo ha registrado**.
 - **Notificar a la familia** los partes cuyo aviso le corresponde (según el
   ajuste "quién notifica" del centro).
-- Consultar la **ficha del estudiante** con la información básica de su historial
-  de convivencia.
-- Ver su **calendario** y las **notificaciones pendientes** que le afectan.
-- **Planificar sus ausencias previstas**, con instrucciones y material para
-  quien cubra sus clases.
-- **Reservar recursos compartidos** (aulas, carros de portátiles…).
-- **Registrar incidencias** (averías, desperfectos) y seguirlas hasta que se
-  resuelven.
+- Consultar la **ficha del estudiante** con su historial de convivencia.
+- Ver las **notificaciones pendientes** que le afectan.
+- Cumplimentar sus **tareas de sanción**.
 
-Todo lo que sigue en este bloque está disponible para cualquier docente, sin
-necesidad de ser tutor/a ni de pertenecer a la comisión de convivencia.
+El resto de módulos (salidas, ausencias y guardias, reservas, incidencias y
+calendario) tiene su propio bloque. Todo lo que sigue está disponible para
+cualquier docente, sin ser tutor/a ni de la comisión de convivencia.
 
 ---
+
 
 <!-- _class: tight -->
 
@@ -228,7 +251,9 @@ necesidad de ser tutor/a ni de pertenecer a la comisión de convivencia.
 Un mismo parte puede implicar a **varios estudiantes** a la vez si el
 incidente los afecta conjuntamente.
 
+
 ---
+
 
 ## Notas diarias: avisos sin abrir un parte
 
@@ -245,24 +270,9 @@ incidente los afecta conjuntamente.
   tutor/a del grupo o administración, desde la pestaña **Listado de
   estudiantes**, no cualquier docente.
 
----
-
-## Salidas del aula: quién está fuera ahora
-
-- Sección **Salidas**, pensada para el **móvil**: el botón **Autorizar
-  salida** queda fijo abajo y también está en la pantalla de inicio.
-- Tres toques: **grupo** (primero los tuyos) → **estudiante** → **motivo**
-  (cuadrícula de botones, configurable por el centro) y, si quieres, una
-  observación.
-- La pantalla muestra **en tiempo real** quién está fuera, con "Hace 12
-  minutos"; a partir de los **10 minutos** el tiempo se pone ámbar, naranja y
-  rojo.
-- Tus salidas van aparte y primero, con el botón **Ha regresado**; en las de
-  otros solo lo tienen tutores del grupo, dirección y administración.
-- El distintivo **PASE** marca a los estudiantes con **pase prioritario**
-  (justificación visible al autorizar su salida).
 
 ---
+
 
 ## Consultar y filtrar "Mis partes"
 
@@ -275,7 +285,9 @@ incidente los afecta conjuntamente.
   notificar.
 - Desde aquí se accede al detalle de cada parte con un clic.
 
+
 ---
+
 
 ## Ver el detalle de un parte y añadir observaciones
 
@@ -288,7 +300,9 @@ incidente los afecta conjuntamente.
 - Cualquier cambio queda **fechado y registrado**.
 - Desde aquí también se genera el **informe en PDF** del parte.
 
+
 ---
+
 
 ## Notificar un parte a la familia
 
@@ -302,7 +316,9 @@ incidente los afecta conjuntamente.
 
 El parte pasa a **"Notificado"** y queda en el historial.
 
+
 ---
+
 
 <!-- _class: tight -->
 
@@ -319,7 +335,9 @@ El parte pasa a **"Notificado"** y queda en el historial.
   cualquier docente con permiso de notificación sobre esos partes o
   sanciones, según el ajuste "quién notifica" configurado por el centro.
 
+
 ---
+
 
 ## Ficha del estudiante: qué ve un docente normal
 
@@ -331,119 +349,9 @@ El parte pasa a **"Notificado"** y queda en el historial.
 - Para el resto del alumnado, la ficha se reduce a esos datos básicos y las
   notas diarias.
 
----
-
-## Ausencias: planificar las clases que vas a perder
-
-- Cualquier docente puede registrar sus propias **ausencias previstas** (días
-  fuera del aula) desde el menú lateral, sección **Ausencias**.
-- Cada ausencia tiene un **rango de fechas** y, dentro de ella, una o varias
-  **actividades**: qué trabajar, en qué grupo y en qué tramo horario.
-- Puedes editar o eliminar tus ausencias hasta que pase su fecha de fin;
-  después solo quedan consultables. Nadie más ve tus ausencias, salvo la
-  administración del centro, que puede registrar, editar o eliminar la
-  ausencia de cualquier docente en cualquier momento desde la pestaña
-  **Ausencias del centro**.
-- Si hay **docente sustituto/a**, se marca en la ausencia: deja de mostrarse
-  en calendario, guardias y tablón y no se piden actividades; solo sale en el
-  listado de ausencias.
 
 ---
 
-<!-- _class: tight -->
-
-## Actividades y ficheros adjuntos
-
-- Cada actividad indica **fecha**, **tramo horario** (filtrado según el día de
-  la semana), **grupo** opcional (de entre los que impartes) y una
-  **descripción** con las instrucciones para quien cubra la clase.
-- Se pueden adjuntar **ficheros** de hasta 10 MB cada uno (configurable) (PDF, imágenes,
-  Word, Excel, PowerPoint, OpenDocument, texto o ZIP) con el material necesario.
-- Los adjuntos se conservan solo un tiempo limitado tras la fecha de la
-  actividad; pasado ese plazo se eliminan automáticamente y queda una nota en
-  la descripción con lo que se eliminó y cuándo.
-
----
-
-## Guardias: qué hacer al cubrir un tramo horario
-
-- Sección **Mis guardias** en el menú lateral, visible para cualquier
-  docente que tenga guardia en algún tramo horario del curso —
-  **Guardias** a secas para la administración, que ve todos los tramos.
-- Navegación día a día, con el tramo en curso resaltado en vivo al
-  visualizar el día de hoy, igual que en el modo tablón.
-- Para cada tramo: el **profesorado de guardia** asignado y las
-  **ausencias del día** con la actividad encomendada (descripción y
-  adjuntos descargables) o un aviso de que no hay nada registrado. La
-  administración puede modificar los datos del tramo con un botón junto
-  a su título, sin salir de la pantalla.
-- Al final, una sola vez para todo el día: el **alumnado sancionado**,
-  agrupado por grupo, con sus **tareas de sanción** desplegables (materia,
-  estado, detalle y adjuntos) — para poder entregárselas sobre la marcha.
-- Cuando hay varios adjuntos que descargar juntos (de un tramo, una
-  actividad o una sanción), un botón los agrupa en un único **`.zip`**.
-- Acceso rápido desde el panel de inicio, junto a **Registrar un parte**.
-
----
-
-## Reservas de recursos
-
-![bg right:40% fit](../manual/img/reservas/reservas-calendario.png)
-
-- La sección **Reservas** muestra un **calendario semanal o mensual** de los
-  recursos compartidos del centro (aulas, carros de portátiles, salón de
-  actos), con filtros por categoría, recurso, docente y grupo. Marca el tramo
-  en curso y **se actualiza sola** con las reservas de otras personas.
-- **Reservar**: recurso, fecha, tramos, grupos y descripción, con
-  **periodicidad semanal** y previsualización de las fechas libres.
-- Un recurso solo admite una reserva por día y tramo. Algunas categorías
-  piden **validación**: la reserva queda **pendiente** —y ocupa el tramo—
-  hasta que un responsable la aprueba o la rechaza, con aviso en la campana,
-  el inicio y el correo.
-- Un **listado** paginado recoge tus reservas (los responsables y la dirección
-  ven también las ajenas).
-- Si algo falla, registras una **incidencia** desde tu reserva: la marca solo
-  la ven tú, los responsables y la dirección.
-
----
-
-## Incidencias del centro
-
-![bg right:40% fit](../manual/img/incidencias/incidencias-nueva.png)
-
-- Para avisar de **averías y desperfectos** (una luz fundida, un aula sin
-  wifi): **Incidencias** del menú, **Nueva incidencia** o el buscador.
-- Eliges un **tipo** de una lista jerárquica (que decide **quién la atiende**),
-  una dependencia opcional, una **descripción** con formato y **adjuntos**.
-  Desde la ficha de una **reserva** se asocia a ella.
-- Ves las **que has registrado** (y las que te asignen), con su estado,
-  prioridad y plazo. Puedes añadir **observaciones**, y todo cambio queda en
-  el **historial**.
-- Te avisan por **correo** (o en el resumen diario), en la **campana** y en el
-  **panel** cuando alguien la atiende o la cierra.
-- Cualquier docente puede registrarlas, y también el **personal no docente**
-  del centro, que solo accede a este módulo.
-
----
-
-## Atender incidencias: responsables y asignadas
-
-![bg right:40% fit](../manual/img/incidencias/incidencias-ficha.png)
-
-- Los **responsables** de un tipo (los suyos y los de los tipos superiores)
-  reciben el aviso, asignan una **prioridad** —con plazos en días lectivos— y
-  la ponen **en proceso** o la cierran: **solucionada**, **no procede** o
-  **duplicada** (enlazando la original).
-- Pueden **asignarla a una persona** (docente o personal no docente), que
-  podrá observarla y cambiar su prioridad y estado.
-- El **listado** (solo las abiertas por defecto) tiene cifras, filtros que se
-  recuerdan, búsqueda, orden y **cambio de estado en bloque**; la dirección
-  también puede **eliminar** las marcadas.
-- Cada incidencia tiene su **informe en PDF**, con observaciones e historial,
-  personalizable como los demás informes.
-- Un **recordatorio diario** avisa de las vencidas.
-
----
 
 <!-- _class: tight -->
 
@@ -463,15 +371,17 @@ El parte pasa a **"Notificado"** y queda en el historial.
   docentes** (por defecto se solicitan): entonces no se crean tareas ni se
   avisa al profesorado.
 
+
 ---
 
 <!-- _class: sep -->
 
-# Bloque 2
+# 1.2 Tutoría de grupo
 
-## Tutor/a de grupo
+## Bloque 1 · Convivencia
 
 ---
+
 
 ## Qué añade el rol de tutor/a de grupo
 
@@ -488,7 +398,9 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 - Tiene una sección propia, **Mi tutoría**, con el listado de su alumnado y
   la posibilidad de editar sus datos de contacto.
 
+
 ---
+
 
 ## Visión de grupo: partes y sanciones de mis estudiantes
 
@@ -500,7 +412,9 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 - Desde este listado se accede igual que un docente normal al detalle de
   cada parte y a su notificación.
 
+
 ---
+
 
 ## Mi tutoría: alumnado y datos de contacto
 
@@ -517,7 +431,9 @@ completa de su grupo**, no solo de los partes que él mismo registra:
   —y solo el tutor/a del grupo— puede **editar los datos de contacto**
   (tutores legales, teléfonos y observaciones).
 
+
 ---
+
 
 ## Historial de notificaciones del grupo
 
@@ -530,7 +446,9 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 - Sirve como evidencia documental ante cualquier consulta posterior de la
   familia, la dirección o la inspección educativa.
 
+
 ---
+
 
 ## Seguimiento de tareas pendientes
 
@@ -545,7 +463,9 @@ completa de su grupo**, no solo de los partes que él mismo registra:
   notificaciones, que los agrupa por prioridad: primero lo **próximo a
   prescribir**, después partes, sanciones y tareas de sanción.
 
+
 ---
+
 
 ## Sanciones de mi alumnado: seguimiento, no creación
 
@@ -561,7 +481,9 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 - Ante un caso que lo requiera, el tutor/a traslada la situación a la
   comisión para que valore la sanción.
 
+
 ---
+
 
 ## En resumen: el día a día de un tutor/a
 
@@ -574,15 +496,17 @@ completa de su grupo**, no solo de los partes que él mismo registra:
 - Usar la **notificación conjunta** cuando un estudiante tenga varios partes
   del mismo periodo.
 
+
 ---
 
 <!-- _class: sep -->
 
-# Bloque 3
+# 1.3 Comisión de convivencia y orientación
 
-## Comisión de convivencia y orientación
+## Bloque 1 · Convivencia
 
 ---
+
 
 ## Qué ven la comisión y orientación
 
@@ -596,7 +520,9 @@ el centro**, no solo de sus propios grupos:
 - Acceso a **informes y exportaciones** para preparar reuniones de
   seguimiento.
 
+
 ---
+
 
 ## Consultar y filtrar todos los partes del centro
 
@@ -607,7 +533,9 @@ el centro**, no solo de sus propios grupos:
 - El acceso de solo consulta no impide que, si el perfil también es docente
   de algún grupo, pueda además registrar partes propios.
 
+
 ---
+
 
 ## Registrar y editar sanciones
 
@@ -618,7 +546,9 @@ el centro**, no solo de sus propios grupos:
 - Las sanciones quedan enlazadas a los partes que las motivaron, de forma que
   el historial del estudiante se lee como un relato completo.
 
+
 ---
+
 
 <!-- _class: tight -->
 
@@ -635,7 +565,9 @@ el centro**, no solo de sus propios grupos:
 - Se puede **regenerar** (el anterior deja de valer) o **eliminar**. El PDF
   de la sanción incluye la dirección si el enlace ya existe.
 
+
 ---
+
 
 <!-- _class: tight -->
 
@@ -653,7 +585,9 @@ el centro**, no solo de sus propios grupos:
   —avisando si alguna baja tiene ya trabajo cumplimentado— antes de
   confirmar.
 
+
 ---
+
 
 ## Historial completo de notificaciones
 
@@ -664,7 +598,9 @@ el centro**, no solo de sus propios grupos:
 - Los mismos filtros de búsqueda, tipo y resultado que en la vista de grupo
   del tutor/a, pero sin restricción de grupo.
 
+
 ---
+
 
 ## Informes y exportaciones
 
@@ -679,77 +615,17 @@ el centro**, no solo de sus propios grupos:
 - Útil para expedientes, reuniones con familias o traslados de expediente
   entre centros.
 
----
-
-## El calendario
-
-![bg right:40% fit](../manual/img/calendario/calendario.png)
-
-- Vista mensual unificada: **sanciones** ya comunicadas (para todo el
-  profesorado), **ausencias** del profesorado (solo administradores) y
-  **actividades de centro**, cada tipo con su icono y su color.
-- Solo días lectivos (lunes a viernes), con el día actual resaltado.
-- Al hacer clic en un día se abre su **vista de detalle**, con navegación al
-  día anterior/siguiente y el desglose completo: tramos horarios y guardias,
-  sanciones, ausencias y actividades de ese día.
-
----
-
-## Actividades de centro
-
-- Se gestionan desde la entrada **Actividades** del menú lateral:
-  listado paginado con búsqueda y filtros por grupo y por tipo. Quién puede
-  publicarlas es un ajuste: **equipo directivo** (por defecto) o **todos**
-  (cada docente solo gestiona las suyas). La **coordinación de actividades**,
-  un perfil del centro, gestiona todas como un administrador.
-- Cada actividad tiene fecha, horario, nombre, **tipo** (complementaria,
-  extraescolar u otros, editable por centro y con color), y opcionalmente
-  descripción, enlace, **lugar**, **departamento organizador**,
-  **coordinador/a**, profesorado acompañante y **grupos asociados**: sin
-  grupos es general; con grupos, **general** (todo el profesorado) o
-  **restringida** (solo quien los imparte o tutoriza).
-- Opcionalmente, **estudiantes asociados** de entre los de sus grupos (pantalla
-  propia con buscador y «seleccionar todos» por curso y grupo), y un
-  **estado** *Publicada* o *Borrador*: en borrador no se muestra en ningún sitio.
-- Desde su ficha se genera un **informe en PDF** con todos sus datos y el
-  alumnado por grupos (el número siempre; los nombres, de los grupos que se
-  marquen), con encabezado, pie, margen y plantilla configurables.
-- Se muestra en el calendario, la vista de día, las guardias, el modo tablón
-  y el panel de inicio, y dentro del **tramo horario** con el que coincide.
-- Cada grupo tiene un **color** (calculado o personalizado en la oferta
-  formativa) que se usa, como etiqueta, en todo lo relacionado con él.
-- Las Actividades se pueden **activar o desactivar** de golpe, global o por
-  centro.
-
----
-
-## Modo tablón
-
-![bg right:40% fit](../manual/img/calendario/calendario-tablon.png)
-
-- Vista a pantalla completa, pensada para dejarse fija en una pantalla del
-  centro (por ejemplo, la sala de profesorado). Solo lo activan los
-  administradores, y pide confirmación antes de entrar.
-- Rota entre dos pantallas — **Hoy** y **Próximos días** — con botones para
-  avanzar o retroceder sin esperar a la rotación.
-- La pantalla **Hoy** reparte en paneles el **alumnado sancionado** y el
-  **profesorado ausente por tramos horarios** (con el tramo actual resaltado
-  en vivo; quien no dejó tareas sale en todos los tramos), y debajo las
-  **actividades** de hoy y de los próximos días.
-- **Próximos días** muestra, en cinco columnas, las 5 jornadas lectivas
-  siguientes con sus sanciones, ausencias y actividades.
-- Es una sesión sin salida: solo se puede abandonar cerrando sesión con el
-  botón de encendido/apagado.
 
 ---
 
 <!-- _class: sep -->
 
-# Bloque 4
+# 1.4 Equipo directivo
 
-## Administradores de centro / equipo directivo
+## Bloque 1 · Convivencia
 
 ---
+
 
 ## Preparar el curso: año académico y oferta formativa
 
@@ -759,29 +635,28 @@ el centro**, no solo de sus propios grupos:
   «1º ESO», «2º Bachillerato») y los **grupos** de cada curso.
 - Cada grupo pertenece a un único curso.
 
+
 ---
+
 
 ## Importar docentes y estructurar grupos
 
-- Los **docentes** se dan de alta importando el listado exportado de Séneca
-  en formato CSV, evitando la introducción manual uno a uno.
-- Antes de importar hay una **vista previa** donde se elige qué docentes
-  entran, si se rellena su correo (columna «Cuenta Google/Microsoft») y si se
-  retira del curso a quienes ya no figuran y no tienen ninguna vinculación.
-- Un docente nuevo puede **sustituir a otro** (también al darlo de alta a
-  mano, o con el botón **Sustituir** del listado): hereda una copia de sus
+- Los **docentes** se dan de alta importando el CSV exportado de Séneca, sin
+  introducirlos uno a uno.
+- Una **vista previa** permite elegir qué docentes entran, si se rellena su
+  correo y si se retira del curso a quienes ya no figuran y no tienen
+  ninguna vinculación.
+- Un docente nuevo puede **sustituir a otro**: hereda una copia de sus
   perfiles, tutorías, materias y guardias.
-- A partir de la oferta formativa se crean los **grupos** del curso (por
-  ejemplo, 2º ESO A, 1º Bachillerato B…).
-- Los tutores y docentes se asignan directamente desde el panel de edición
-  del grupo.
-- La **oferta formativa** (cursos, grupos, colores, tutores y materias) se
-  **exporta e importa en JSON** para pasarla al curso nuevo o a otro centro:
-  una vista previa permite elegir qué cursos y grupos, qué información y si
-  se **sustituye o se ignora** lo existente. Los docentes se identifican por
-  su **usuario IdEA**.
+- A partir de la oferta formativa se crean los **grupos** (2º ESO A, 1º
+  Bachillerato B…); tutores y docentes se asignan desde el panel del grupo.
+- La **oferta formativa** se **exporta e importa en JSON** para pasarla al
+  curso nuevo o a otro centro, eligiendo qué importar y si se **sustituye o se
+  ignora** lo existente.
+
 
 ---
+
 
 ## Importar estudiantes
 
@@ -792,7 +667,9 @@ el centro**, no solo de sus propios grupos:
   cursos y grupos nuevos que se van a crear, y si un grupo aparece en
   varios cursos distintos pide elegir a cuál se asignará.
 
+
 ---
+
 
 ## Asignar tutores y docentes a grupos
 
@@ -803,42 +680,26 @@ el centro**, no solo de sus propios grupos:
 - Estas asignaciones son las que determinan qué ve cada docente al entrar en
   la aplicación.
 
----
-
-## Tramos horarios y docentes de guardia
-
-![bg right:35% fit](../manual/img/centro/centro-tramos.png)
-
-- Tablero de cinco columnas (lunes a viernes) para definir los **tramos horarios** del curso: 1ª
-  hora, recreo, 2ª hora…
-- El botón **Añadir todos los días** crea el mismo tramo en los cinco días a la vez, sin repetir
-  el alta.
-- Cada tramo admite asignar varios **docentes de guardia**, mostrados en el tablero como avatares
-  con iniciales; a partir de seis se resumen en una burbuja **+N**.
-- El botón **Generar PDF** exporta el profesorado de guardia de toda la semana en una tabla
-  apaisada, con encabezado personalizable como el resto de informes.
 
 ---
+
 
 ## Días no lectivos
 
 ![bg right:35% fit](../manual/img/centro/centro-dias-no-lectivos.png)
 
-- Catálogo de festivos, puentes y demás jornadas sin clase del curso académico, con fecha y
-  descripción opcional.
-- Alta, edición y borrado manual, uno a uno.
-- **Importar días no lectivos** por dos vías:
-  - *CSV de Séneca* (recomendado) — exporta desde Séneca «Días festivos»; solo se cargan los
-    días que afectan al personal docente.
-  - *iCal* — descarga el `.ics` desde la Secretaría Virtual de la Consejería de Educación.
-- Las fechas ya existentes se detectan y no se duplican: el mismo fichero se puede reimportar sin
-  riesgo.
-- Una vez declarados, se reflejan en toda la aplicación: se marcan en el calendario y el tablón,
-  guardias los avisa y salta el fin de semana al navegar día a día, la sanción muestra un contador
-  de días lectivos entre inicio y fin, y ningún selector de fecha (sanciones, ausencias,
-  actividades) permite ya elegir un día no lectivo.
+- Catálogo de festivos, puentes y demás jornadas sin clase del curso, con
+  alta y edición manual.
+- **Importar** por dos vías: *CSV de Séneca* (recomendado; solo se cargan los
+  días que afectan al profesorado) o *iCal* de la Secretaría Virtual.
+- Las fechas ya existentes no se duplican: se puede reimportar sin riesgo.
+- Se reflejan en toda la aplicación: se marcan en el calendario y el tablón,
+  y ningún selector de fecha (sanciones, ausencias, actividades) permite
+  elegir un día no lectivo.
+
 
 ---
+
 
 ## Configurar quién notifica partes y sanciones
 
@@ -854,7 +715,9 @@ familias:
 Este ajuste es el que determina si la notificación conjunta de varios partes
 está disponible para un docente normal, para el tutor/a, o para ambos.
 
+
 ---
+
 
 ## Métodos de comunicación con las familias
 
@@ -867,7 +730,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Si el centro no tiene ningún método activo, no se puede registrar ninguna
   comunicación hasta configurarlo.
 
+
 ---
+
 
 ## Tipos de notas diarias
 
@@ -881,7 +746,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Exportable e importable en JSON, igual que el resto de catálogos del
   centro.
 
+
 ---
+
 
 <!-- _class: tight -->
 
@@ -899,7 +766,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Se puede **exportar a PDF** (con el mismo encabezado personalizable que
   partes y sanciones) o a una **hoja de cálculo Excel**.
 
+
 ---
+
 
 <!-- _class: tight -->
 
@@ -921,7 +790,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - El ajuste admite un valor **global** (para todos los centros) y uno
   **de centro**, que lo sobrescribe si está definido.
 
+
 ---
+
 
 <!-- _class: tight -->
 
@@ -939,7 +810,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Ajuste exclusivo de centro, sin equivalente global: el membrete es propio
   de cada centro educativo.
 
+
 ---
+
 
 <!-- _class: tight -->
 
@@ -962,53 +835,22 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   Incidencias** se pueden desactivar por centro o para toda la plataforma;
   vienen activadas y los datos se conservan.
 
----
-
-## Configurar los módulos: reservas e incidencias
-
-![bg right:40% fit](../manual/img/incidencias/incidencias-ajustes.png)
-
-- **Incidencias** — en **Centro educativo › Incidencias**: los **tipos**
-  (una lista jerárquica, con sus **responsables**) y las **prioridades**
-  (color y plazos recomendado y máximo). Se **exportan e importan en JSON**.
-- **Reservas** — en **Centro educativo › Recursos compartidos**: las
-  **categorías** (aulas, carros de portátiles…), sus recursos y sus
-  **responsables**, con reglas propias: restringida, con validación,
-  antelación máxima.
-- **Salidas** (motivos), **Actividades** (tipos) y **Convivencia** (conductas,
-  medidas, métodos de comunicación, notas) tienen también su catálogo.
-- Cada módulo tiene en el manual un capítulo con su uso diario **y** su
-  configuración.
 
 ---
 
-## Personal no docente
 
-- Cuentas de quienes trabajan en el centro sin dar clase (**conserjería,
-  administración, mantenimiento…**), en **Centro educativo › Personal no
-  docente**.
-- Pertenecen al centro **sin curso académico**, no autentican en Séneca y **no
-  aparecen** entre los docentes: solo ven **Incidencias**.
-- **Incorporar**: por identificador o correo electrónico. Si no existe, se
-  **registra** con contraseña inicial (cambio forzado) o con un **enlace de
-  invitación** por correo, válido 7 días.
-- Pueden ser **responsables de tipos** de incidencia, registrar las suyas y
-  recibir las que se les **asignen**.
-- Si el módulo de **Incidencias** está desactivado, **no pueden entrar** en el
-  centro: se les explica el motivo.
-
----
-
-## Ajustes de centro: avisos y modo tablón
+## Ajustes de centro: avisos por correo
 
 - Los **avisos por correo** (nueva tutoría asignada, puestos creados,
   recordatorio de firma…) se activan o desactivan por centro.
 - Los avisos de parte y de sanción pueden llevar además el **PDF adjunto**,
   con un ajuste independiente para cada uno.
-- El **modo tablón** del calendario también se configura desde aquí, por si
-  el centro prefiere no mostrarlo en pantallas compartidas.
+- Cada módulo tiene sus propios avisos (incidencias, reservas…), que cada
+  persona puede activar o desactivar en sus ajustes personales.
+
 
 ---
+
 
 ## Perfiles y roles especiales
 
@@ -1022,7 +864,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Un mismo docente puede combinar varios roles a la vez (por ejemplo, ser
   tutor/a de un grupo y además miembro de la comisión).
 
+
 ---
+
 
 ## Registro de actividad y avisos por correo
 
@@ -1039,28 +883,360 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   centro y de docente** (Mi perfil › Ajustes), y un nivel superior puede
   bloquear el valor para los inferiores.
 
+
 ---
+
+<!-- _class: sep -->
+
+# Bloque 2
+
+## Salidas
+
+---
+
+
+## Salidas del aula: quién está fuera ahora
+
+- Sección **Salidas**, pensada para el **móvil**: el botón **Autorizar
+  salida** queda fijo abajo y también está en la pantalla de inicio.
+- Tres toques: **grupo** (primero los tuyos) → **estudiante** → **motivo**
+  (cuadrícula de botones, configurable por el centro) y, si quieres, una
+  observación.
+- La pantalla muestra **en tiempo real** quién está fuera, con "Hace 12
+  minutos"; a partir de los **10 minutos** el tiempo se pone ámbar, naranja y
+  rojo.
+- Tus salidas van aparte y primero, con el botón **Ha regresado**; en las de
+  otros solo lo tienen tutores del grupo, dirección y administración.
+- El distintivo **PASE** marca a los estudiantes con **pase prioritario**
+  (justificación visible al autorizar su salida).
+
+
+---
+
+## Salidas: historial, motivos y pase prioritario
+
+![bg right:40% fit](../manual/img/salidas/salidas-historial.png)
+
+- La pestaña **Historial** (dirección y administración) lista todas las
+  salidas del curso, con filtros y el tiempo fuera de cada una; la
+  administración puede **eliminarlas**.
+- En **Centro educativo › Motivos de salida** se configura la lista de
+  motivos que ve el profesorado.
+- El **pase prioritario** se concede desde la ficha del estudiante.
+- El módulo se puede **desactivar** por centro o para toda la plataforma.
+
+---
+
+<!-- _class: sep -->
+
+# Bloque 3
+
+## Ausencias y guardias
+
+---
+
+
+## Ausencias: planificar las clases que vas a perder
+
+- Cualquier docente puede registrar sus propias **ausencias previstas** (días
+  fuera del aula) desde el menú lateral, sección **Ausencias**.
+- Cada ausencia tiene un **rango de fechas** y, dentro de ella, una o varias
+  **actividades**: qué trabajar, en qué grupo y en qué tramo horario.
+- Puedes editar o eliminar tus ausencias hasta que pase su fecha de fin;
+  después solo quedan consultables. Nadie más ve tus ausencias, salvo la
+  administración del centro, que puede registrar, editar o eliminar la
+  ausencia de cualquier docente en cualquier momento desde la pestaña
+  **Ausencias del centro**.
+- Si hay **docente sustituto/a**, se marca en la ausencia: deja de mostrarse
+  en calendario, guardias y tablón y no se piden actividades; solo sale en el
+  listado de ausencias.
+
+
+---
+
+
+<!-- _class: tight -->
+
+## Actividades y ficheros adjuntos
+
+- Cada actividad indica **fecha**, **tramo horario** (filtrado según el día de
+  la semana), **grupo** opcional (de entre los que impartes) y una
+  **descripción** con las instrucciones para quien cubra la clase.
+- Se pueden adjuntar **ficheros** de hasta 10 MB cada uno (configurable) (PDF, imágenes,
+  Word, Excel, PowerPoint, OpenDocument, texto o ZIP) con el material necesario.
+- Los adjuntos se conservan solo un tiempo limitado tras la fecha de la
+  actividad; pasado ese plazo se eliminan automáticamente y queda una nota en
+  la descripción con lo que se eliminó y cuándo.
+
+
+---
+
+
+## Guardias: qué hacer al cubrir un tramo horario
+
+- Sección **Mis guardias** (cualquier docente con guardia en algún tramo del
+  curso) o **Guardias** (administración, que ve todos los tramos).
+- Navegación día a día, con el tramo en curso resaltado en vivo.
+- Para cada tramo: el **profesorado de guardia** y las **ausencias del día**
+  con la actividad encomendada (descripción y adjuntos) o un aviso de que no
+  hay nada registrado.
+- Al final, el **alumnado sancionado** del día, agrupado por grupo, con sus
+  **tareas de sanción** desplegables para entregárselas sobre la marcha.
+- Varios adjuntos se descargan juntos en un único **`.zip`**.
+- Acceso rápido desde el panel de inicio.
+
+
+---
+
+
+## Tramos horarios y docentes de guardia
+
+![bg right:35% fit](../manual/img/centro/centro-tramos.png)
+
+- Tablero de cinco columnas (lunes a viernes) para definir los **tramos horarios** del curso: 1ª
+  hora, recreo, 2ª hora…
+- El botón **Añadir todos los días** crea el mismo tramo en los cinco días a la vez, sin repetir
+  el alta.
+- Cada tramo admite asignar varios **docentes de guardia**, mostrados en el tablero como avatares
+  con iniciales; a partir de seis se resumen en una burbuja **+N**.
+- El botón **Generar PDF** exporta el profesorado de guardia de toda la semana en una tabla
+  apaisada, con encabezado personalizable como el resto de informes.
+
+
+---
+
+<!-- _class: sep -->
+
+# Bloque 4
+
+## Reservas
+
+---
+
+
+## Reservas de recursos
+
+![bg right:40% fit](../manual/img/reservas/reservas-calendario.png)
+
+- La sección **Reservas** muestra un **calendario semanal o mensual** de los
+  recursos compartidos (aulas, carros de portátiles, salón de actos), con
+  filtros por categoría, recurso, docente y grupo. Se **actualiza sola**.
+- **Reservar**: recurso, fecha, tramos, grupos y descripción, con
+  **periodicidad semanal** y previsualización de las fechas libres.
+- Un recurso solo admite una reserva por día y tramo.
+- Un **listado** recoge tus reservas (los responsables y la dirección ven
+  también las ajenas).
+
+
+---
+
+## Reservas: validación y configuración
+
+![bg right:40% fit](../manual/img/centro/centro-recursos.png)
+
+- Algunas categorías piden **validación**: la reserva queda **pendiente** —y
+  ocupa el tramo— hasta que un responsable la aprueba o la rechaza.
+- Si algo falla, se registra una **incidencia** desde la reserva.
+
+- En **Centro educativo › Recursos compartidos** la dirección define las
+  **categorías** y sus recursos, cada una con **responsables** y reglas:
+  **restringida**, con **validación**, antelación máxima.
+- El catálogo se **exporta e importa en JSON**.
+- El módulo se puede **activar o desactivar**.
+
+---
+
+<!-- _class: sep -->
+
+# Bloque 5
+
+## Incidencias
+
+---
+
+
+## Incidencias del centro
+
+![bg right:40% fit](../manual/img/incidencias/incidencias-nueva.png)
+
+- Para avisar de **averías y desperfectos** (una luz fundida, un aula sin
+  wifi): **Nueva incidencia**, desde el menú o el buscador.
+- Eliges un **tipo** (que decide **quién la atiende**), una dependencia
+  opcional, una **descripción** y **adjuntos**. Desde una **reserva** se
+  asocia a ella.
+- Ves las que has registrado (y las que te asignen), con estado, prioridad y
+  plazo; puedes añadir **observaciones**.
+- Te avisan por **correo**, en la **campana** y en el **panel**.
+- Pueden registrarlas los docentes y el **personal no docente**, que solo
+  accede a este módulo.
+
+
+---
+
+
+## Atender incidencias: responsables y asignadas
+
+![bg right:40% fit](../manual/img/incidencias/incidencias-ficha.png)
+
+- Los **responsables** del tipo reciben el aviso, asignan una **prioridad** y
+  la ponen **en proceso** o la cierran: **solucionada**, **no procede** o
+  **duplicada**.
+- Pueden **asignarla a una persona** (docente o personal no docente), que
+  podrá observarla y cambiar su prioridad y estado.
+- El **listado** tiene cifras, filtros, búsqueda y **cambio de estado en
+  bloque**; la dirección también puede **eliminar**.
+- Cada incidencia tiene su **informe en PDF**, personalizable.
+- Un **recordatorio diario** avisa de las vencidas.
+
+
+---
+
+## Incidencias: configurar tipos y prioridades
+
+![bg right:40% fit](../manual/img/incidencias/incidencias-ajustes.png)
+
+- En **Centro educativo › Incidencias**, la dirección define los **tipos**
+  (lista jerárquica) con sus **responsables**; sin ellos, las atiende la
+  dirección.
+- Las **prioridades** tienen color y plazos recomendado y máximo.
+- Todo se **exporta e importa en JSON**.
+- El módulo se puede **desactivar**.
+
+---
+
+
+## Personal no docente
+
+- Cuentas de quienes trabajan en el centro sin dar clase (**conserjería,
+  administración, mantenimiento…**), en **Centro educativo › Personal no
+  docente**.
+- Pertenecen al centro **sin curso académico**, no autentican en Séneca y **no
+  aparecen** entre los docentes: solo ven **Incidencias**.
+- **Incorporar**: por identificador o correo electrónico. Si no existe, se
+  **registra** con contraseña inicial (cambio forzado) o con un **enlace de
+  invitación** por correo, válido 7 días.
+- Pueden ser **responsables de tipos** de incidencia, registrar las suyas y
+  recibir las que se les **asignen**.
+- Si el módulo de **Incidencias** está desactivado, **no pueden entrar** en el
+  centro: se les explica el motivo.
+
+
+---
+
+<!-- _class: sep -->
+
+# Bloque 6
+
+## Calendario
+
+---
+
+
+## El calendario
+
+![bg right:40% fit](../manual/img/calendario/calendario.png)
+
+- Vista mensual unificada: **sanciones** ya comunicadas (para todo el
+  profesorado), **ausencias** del profesorado (solo administradores) y
+  **actividades de centro**, cada tipo con su icono y su color.
+- Solo días lectivos (lunes a viernes), con el día actual resaltado.
+- Al hacer clic en un día se abre su **vista de detalle**, con navegación al
+  día anterior/siguiente y el desglose completo: tramos horarios y guardias,
+  sanciones, ausencias y actividades de ese día.
+
+
+---
+
+
+## Actividades de centro
+
+- Se gestionan desde **Actividades** en el menú: listado con búsqueda y
+  filtros por grupo y por tipo.
+- Cada actividad tiene fecha, horario, nombre y **tipo** (complementaria,
+  extraescolar u otros, con color), y opcionalmente descripción, enlace,
+  **lugar**, **departamento organizador**, **coordinador/a** y profesorado
+  acompañante.
+- Con **grupos asociados** puede ser **general** (la ve todo el profesorado)
+  o **restringida** (solo quien los imparte o tutoriza); sin grupos es general.
+- Un **estado** *Publicada* o *Borrador*: en borrador no se muestra en ningún
+  sitio.
+
+---
+
+## Actividades: alumnado, informe y dónde se ve
+
+- Opcionalmente, **estudiantes asociados** de entre los de sus grupos, con
+  buscador y «seleccionar todos» por curso y grupo.
+- Desde su ficha se genera un **informe en PDF** con todos sus datos y el
+  alumnado por grupos, con encabezado, pie, margen y plantilla configurables.
+- Se muestra en el calendario, la vista de día, las guardias, el modo tablón,
+  el panel de inicio y dentro del **tramo horario** con el que coincide.
+- Cada grupo tiene un **color** (calculado o personalizado en la oferta
+  formativa) que se usa como etiqueta en todo lo relacionado con él.
+
+
+---
+
+
+## Modo tablón
+
+![bg right:40% fit](../manual/img/calendario/calendario-tablon.png)
+
+- Vista a pantalla completa, pensada para dejarse fija en la sala de
+  profesorado. Solo lo activan los administradores, con confirmación.
+- Rota entre **Hoy** y **Próximos días**, con botones para avanzar sin esperar.
+- **Hoy**: el **alumnado sancionado**, el **profesorado ausente** por tramos
+  (con el tramo actual resaltado) y las **actividades**.
+- **Próximos días**: las cinco jornadas lectivas siguientes, con sanciones,
+  ausencias y actividades.
+- Es una sesión sin salida: solo se abandona cerrando sesión.
+
+
+---
+
+## Calendario: configuración
+
+![bg right:40% fit](../manual/img/centro/centro-tipos-actividad.png)
+
+- **Quién publica actividades** es un ajuste: el **equipo directivo** (por
+  defecto) o **todo el profesorado**. La **coordinación de actividades** es un
+  perfil del centro que las gestiona todas.
+- Los **tipos de actividad** (complementaria, extraescolar…) se editan en
+  **Centro educativo › Tipos de actividad**, con su color.
+- El **modo tablón** se configura desde los ajustes del centro (duraciones,
+  tema), por si no se quiere mostrar en pantallas compartidas.
+- Las **Actividades** se pueden desactivar por centro o para toda la
+  plataforma.
+
+---
+
 
 <!-- _class: sep -->
 
 # En resumen
 
-## Un flujo, cuatro perfiles
+## Seis módulos, un mismo centro
+
 
 ---
 
-## En resumen: un flujo, cuatro perfiles
 
-- **Parte → Notificación → Sanción**: el mismo flujo para todo el centro.
-- Cada perfil ve exactamente lo que necesita:
+## En resumen: seis módulos, un mismo centro
+
+- **Convivencia**: parte → notificación → sanción, el mismo flujo para todo el
+  centro. Cada perfil ve exactamente lo que necesita:
   - Docente normal: sus grupos.
   - Tutor/a: todo su grupo.
   - Comisión y orientación: todo el centro.
-  - Administración: la configuración de todo lo anterior.
+  - Equipo directivo: la configuración de todo lo anterior.
+- **Salidas**, **ausencias y guardias**, **reservas**, **incidencias** y
+  **calendario**: cada uno con su uso diario y su configuración.
 - Todo queda **registrado, fechado y trazable**, sin depender de cuadernos ni
   hojas sueltas.
 
+
 ---
+
 
 ## Añadir la aplicación al móvil
 
@@ -1073,7 +1249,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   inicio**. Imprescindible usar Safari; ningún otro navegador puede hacerlo
   en iOS.
 
+
 ---
+
 
 ## Recursos y soporte
 
@@ -1093,7 +1271,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - El equipo del centro que administra GestConv+ es el primer punto de
   contacto para incidencias o solicitudes de cambio de configuración.
 
+
 ---
+
 
 <!-- _class: lead -->
 

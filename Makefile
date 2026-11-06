@@ -65,7 +65,7 @@ dev-stop:
 slides:
 	@command -v npx >/dev/null 2>&1 || { echo "Necesitas Node.js/npx para generar la presentación. Instala Node y reintenta."; exit 1; }
 	sed -e 's/{{VERSION}}/$(VERSION)/g' -e 's#{{PUB_DATE}}#$(PUB_DATE)#g' docs/slides/gestconv-plus.md > docs/slides/_build.md
-	npx --yes @marp-team/marp-cli docs/slides/_build.md --allow-local-files -o docs/slides/gestconv-plus.pdf
+	npx --yes @marp-team/marp-cli docs/slides/_build.md --config docs/slides/marp.config.mjs --allow-local-files -o docs/slides/gestconv-plus.pdf
 	rm -f docs/slides/_build.md
 
 ## Genera las fichas de referencia rápida (docs/cheatsheets/ficha-*.pdf), una por función básica
