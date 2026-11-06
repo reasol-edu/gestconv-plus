@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.0] - 2026-11-06
+
+### Added
+
+- **Eliminar incidencias.** La dirección (administradores del centro y de la plataforma) tiene en la ficha de la incidencia el botón **Eliminar incidencia**, con confirmación: borra la incidencia con sus observaciones, adjuntos e historial. Las que estaban cerradas como duplicadas de ella se quedan cerradas, sin enlace a la original. Queda constancia en el registro de actividad.
+- **Registrar una incidencia desde una reserva** también pueden hacerlo los **responsables de la categoría del recurso** y la **dirección**, no solo quien hizo la reserva. La incidencia queda asociada a la reserva y quien la registra figura como su autor.
+- **Zona horaria configurable** con la variable de entorno `APP_TIMEZONE` (`Europe/Madrid` por defecto; para Canarias, `Atlantic/Canary`).
+
+### Changed
+
+- Al cerrar una incidencia por **duplicidad**, la original se elige en un **desplegable con buscador** (por número, tipo o texto) en vez de escribir su número.
+- **La aplicación muestra y calcula con la hora local.** Hasta ahora trabajaba en UTC aunque el servidor tuviera bien su zona horaria, porque PHP ignora la del sistema operativo: las horas de registro, los avisos y los resúmenes salían una o dos horas adelantadas o atrasadas, y «hoy» y el tramo horario en curso se calculaban con la hora UTC. Las fechas con hora se siguen guardando en UTC, así que no hace falta ningún paso al actualizar. Hay dos efectos a tener en cuenta: los avisos y recordatorios diarios programados (resumen diario, prescripciones, recordatorio de tareas y de incidencias vencidas) se disparan a su hora en hora local en lugar de en UTC, y en los campos que escribe una persona (hora de un parte, de una comunicación o de una observación) los registros antiguos que se escribieron a mano pueden salir con una o dos horas de diferencia; las fechas no cambian.
+
 ## [1.20.0] - 2026-11-06
 
 ### Added
