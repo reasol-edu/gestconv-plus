@@ -16,6 +16,7 @@ enum Feature: string
     case SanctionTasks = 'sanction_tasks';
     case Events        = 'events';
     case Bookings      = 'bookings';
+    case Issues        = 'issues';
 
     public function setting(): string
     {
@@ -36,6 +37,7 @@ enum Feature: string
             self::SanctionTasks => ['app_sanction_tasks'],
             self::Events        => ['app_events'],
             self::Bookings      => ['app_bookings'],
+            self::Issues        => ['app_issues'],
         };
     }
 
@@ -52,6 +54,7 @@ enum Feature: string
             self::DailyNotes    => ['app_centre_daily_note_types'],
             self::Events        => ['app_centre_school_event_types'],
             self::Bookings      => ['app_centre_resources'],
+            self::Issues        => ['app_centre_issue'],
             self::Absences,
             self::SanctionTasks => [],
         };
@@ -72,6 +75,7 @@ enum Feature: string
             self::SanctionTasks => [],
             self::Events        => ['SchoolEventListComponent'],
             self::Bookings      => ['ResourceBookingListComponent'],
+            self::Issues        => ['IssueListComponent'],
         };
     }
 }

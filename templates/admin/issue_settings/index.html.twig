@@ -1,0 +1,166 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'issue_settings.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set inputClass = 'block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900 focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors' %}
+<div class="px-6 py-8 max-w-5xl mx-auto space-y-8">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+                {% include 'components/_breadcrumb_home.html.twig' %}
+                <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+                {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ 'issue_settings.title'|trans({}, 'admin') }}</h1>
+            <p class="mt-1 text-sm text-gray-500 max-w-3xl">{{ 'issue_settings.intro'|trans({}, 'admin') }}</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ path('app_centre_issue_import', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-4 w-4'}) }}
+                {{ 'issue_settings.import.button'|trans({}, 'admin') }}
+            </a>
+            <a href="{{ path('app_centre_issue_export', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700
+                      hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-4 w-4'}) }}
+                {{ 'issue_settings.export.button'|trans({}, 'admin') }}
+            </a>
+        </div>
+    </div>
+
+    {# ── Prioridades ───────────────────────────────────────────────────────── #}
+    <section class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden" aria-labelledby="priorities-title">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 id="priorities-title" class="text-base font-semibold text-gray-900">{{ 'issue_settings.priorities.title'|trans({}, 'admin') }}</h2>
+            <p class="mt-1 text-sm text-gray-500">{{ 'issue_settings.priorities.help'|trans({}, 'admin') }}</p>
+        </div>
+        {% if priorities is empty %}
+            <p class="px-6 py-8 text-sm text-gray-500">{{ 'issue_settings.priorities.empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <ul class="divide-y divide-gray-100">
+                {% for priority in priorities %}
+                    <li class="flex flex-wrap items-center gap-4 px-6 py-3">
+                        <span class="h-4 w-4 shrink-0 rounded-full border border-black/10" style="background-color: {{ priority.color }}" aria-hidden="true"></span>
+                        <div class="min-w-0 flex-1">
+                            <p class="font-medium text-gray-900">{{ priority.name }}</p>
+                            <p class="text-xs text-gray-500">
+                                {{ 'issue_settings.priorities.recommended'|trans({}, 'admin') }}:
+                                {{ priority.recommendedDays > 0 ? 'issue_settings.days'|trans({'%count%': priority.recommendedDays}, 'admin') : '—' }}
+                                · {{ 'issue_settings.priorities.max'|trans({}, 'admin') }}:
+                                {{ priority.maxDays > 0 ? 'issue_settings.days'|trans({'%count%': priority.maxDays}, 'admin') : '—' }}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            {% for direction, icon in {subir: 'heroicons:arrow-up', bajar: 'heroicons:arrow-down'} %}
+                                <form method="post" action="{{ path('app_centre_issue_priority_move', {centreId: centre.id, id: priority.id, direction: direction}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('move_issue_priority_' ~ priority.id) }}">
+                                    <button type="submit" {{ (direction == 'subir' and loop.parent.loop.first) or (direction == 'bajar' and loop.parent.loop.last) ? 'disabled' : '' }}
+                                            class="rounded-lg border border-gray-200 p-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                            title="{{ ('issue_settings.priorities.move_' ~ direction)|trans({}, 'admin') }}" aria-label="{{ ('issue_settings.priorities.move_' ~ direction)|trans({}, 'admin') }}">
+                                        {{ ux_icon(icon, {class: 'h-3.5 w-3.5'}) }}
+                                    </button>
+                                </form>
+                            {% endfor %}
+                            <a href="{{ path('app_centre_issue_priority_edit', {centreId: centre.id, id: priority.id}) }}"
+                               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}{{ 'issue_settings.edit'|trans({}, 'admin') }}
+                            </a>
+                            <form method="post" action="{{ path('app_centre_issue_priority_delete', {centreId: centre.id, id: priority.id}) }}" class="js-confirm-form"
+                                  data-confirm="{{ 'issue_settings.priorities.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_issue_priority_' ~ priority.id) }}">
+                                <button type="submit" class="js-confirm-trigger rounded-lg border border-red-200 p-1.5 text-red-600 hover:bg-red-50 transition-colors"
+                                        title="{{ 'issue_settings.delete'|trans({}, 'admin') }}" aria-label="{{ 'issue_settings.delete'|trans({}, 'admin') }}">
+                                    {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <form method="post" action="{{ path('app_centre_issue_priority_create', {centreId: centre.id}) }}" class="flex flex-wrap items-end gap-3 border-t border-gray-100 bg-gray-50/60 px-6 py-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('create_issue_priority') }}">
+            <div class="min-w-[14rem] flex-1">
+                <label for="priority-name" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue_settings.priorities.new'|trans({}, 'admin') }}</label>
+                <input type="text" id="priority-name" name="name" required maxlength="100" class="{{ inputClass }}">
+            </div>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}{{ 'issue_settings.add'|trans({}, 'admin') }}
+            </button>
+        </form>
+    </section>
+
+    {# ── Tipos (árbol) ─────────────────────────────────────────────────────── #}
+    <section class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden" aria-labelledby="types-title">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 id="types-title" class="text-base font-semibold text-gray-900">{{ 'issue_settings.types.title'|trans({}, 'admin') }}</h2>
+            <p class="mt-1 text-sm text-gray-500">{{ 'issue_settings.types.help'|trans({}, 'admin') }}</p>
+        </div>
+        {% if rows is empty %}
+            <p class="px-6 py-8 text-sm text-gray-500">{{ 'issue_settings.types.empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <ul class="divide-y divide-gray-100">
+                {% for row in rows %}
+                    {% set type = row.type %}
+                    <li class="flex flex-wrap items-center gap-3 py-3 pr-6" style="padding-left: {{ 1.5 + row.depth * 1.75 }}rem">
+                        {% if row.depth > 0 %}<span class="text-gray-300" aria-hidden="true">└</span>{% endif %}
+                        <div class="min-w-0 flex-1">
+                            <p class="flex flex-wrap items-center gap-2">
+                                <span class="font-medium {{ type.active ? 'text-gray-900' : 'text-gray-400 line-through' }}">{{ type.name }}</span>
+                                {% if not type.active %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">{{ 'issue_settings.types.inactive'|trans({}, 'admin') }}</span>{% endif %}
+                            </p>
+                            <p class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
+                                {% for manager in type.managers %}
+                                    <span class="rounded-md bg-forest-50 px-1.5 py-0.5 font-medium text-forest-700">{{ manager.name.full() }}</span>
+                                {% endfor %}
+                                {% for manager in row.inherited %}
+                                    <span class="rounded-md border border-dashed border-gray-300 px-1.5 py-0.5 text-gray-500" title="{{ 'issue_settings.types.inherited'|trans({}, 'admin') }}">{{ manager.name.full() }}</span>
+                                {% endfor %}
+                                {% if type.managers is empty and row.inherited is empty %}<span class="text-amber-700">{{ 'issue_settings.types.no_managers'|trans({}, 'admin') }}</span>{% endif %}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <a href="{{ path('app_centre_issue_type_edit', {centreId: centre.id, id: type.id}) }}"
+                               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                {{ ux_icon('heroicons:pencil-square', {class: 'h-3.5 w-3.5'}) }}{{ 'issue_settings.edit'|trans({}, 'admin') }}
+                            </a>
+                            <form method="post" action="{{ path('app_centre_issue_type_delete', {centreId: centre.id, id: type.id}) }}" class="js-confirm-form"
+                                  data-confirm="{{ 'issue_settings.types.delete_confirm'|trans({}, 'admin')|e('html_attr') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_issue_type_' ~ type.id) }}">
+                                <button type="submit" class="js-confirm-trigger rounded-lg border border-red-200 p-1.5 text-red-600 hover:bg-red-50 transition-colors"
+                                        title="{{ 'issue_settings.delete'|trans({}, 'admin') }}" aria-label="{{ 'issue_settings.delete'|trans({}, 'admin') }}">
+                                    {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <form method="post" action="{{ path('app_centre_issue_type_create', {centreId: centre.id}) }}" class="flex flex-wrap items-end gap-3 border-t border-gray-100 bg-gray-50/60 px-6 py-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('create_issue_type') }}">
+            <div class="min-w-[14rem] flex-1">
+                <label for="type-name" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue_settings.types.new'|trans({}, 'admin') }}</label>
+                <input type="text" id="type-name" name="name" required maxlength="255" class="{{ inputClass }}">
+            </div>
+            <div class="min-w-[14rem]">
+                <label for="type-parent" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue_settings.types.parent'|trans({}, 'admin') }}</label>
+                <select id="type-parent" name="parent" class="{{ inputClass }}">
+                    <option value="">{{ 'issue_settings.types.root'|trans({}, 'admin') }}</option>
+                    {% for row in rows %}
+                        <option value="{{ row.type.id.toRfc4122 }}">{{ row.type.path }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}{{ 'issue_settings.add'|trans({}, 'admin') }}
+            </button>
+        </form>
+    </section>
+
+</div>
+{% endblock %}

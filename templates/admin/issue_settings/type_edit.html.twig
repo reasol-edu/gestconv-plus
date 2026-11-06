@@ -1,0 +1,102 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ type.name }} · {{ 'issue_settings.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set inputClass = 'block w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900 focus:border-forest-500 focus:bg-white focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors' %}
+<div class="px-6 py-8 max-w-2xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <a href="{{ path('app_centre_issue_settings', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'issue_settings.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ type.name }}</h1>
+        <p class="mt-1 text-sm text-gray-500">{{ type.path }}</p>
+    </div>
+
+    <form method="post" class="space-y-6">
+        <input type="hidden" name="_token" value="{{ csrf_token('edit_issue_type_' ~ type.id) }}">
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-5">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'issue_settings.types.name'|trans({}, 'admin') }}</label>
+                <input type="text" id="name" name="name" required maxlength="255" value="{{ type.name }}" class="{{ inputClass }}">
+            </div>
+
+            <div>
+                <label for="parent" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'issue_settings.types.parent'|trans({}, 'admin') }}</label>
+                <select id="parent" name="parent" class="{{ inputClass }}">
+                    <option value="">{{ 'issue_settings.types.root'|trans({}, 'admin') }}</option>
+                    {% for option in parentOptions %}
+                        <option value="{{ option.type.id.toRfc4122 }}" {{ type.parent and type.parent.id.equals(option.type.id) ? 'selected' : '' }}>{{ option.type.path }}</option>
+                    {% endfor %}
+                </select>
+                <p class="mt-1.5 text-xs text-gray-500">{{ 'issue_settings.types.parent_help'|trans({}, 'admin') }}</p>
+            </div>
+
+            <div>
+                <label for="managers" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'issue_settings.types.managers'|trans({}, 'admin') }}</label>
+                <select id="managers" name="managers[]" multiple class="w-full text-sm ts-local"
+                        data-placeholder="{{ 'issue_settings.types.managers_placeholder'|trans({}, 'admin')|e('html_attr') }}"
+                        data-no-results="{{ 'tom_select.no_results'|trans({}, 'admin')|e('html_attr') }}">
+                    {% for teacher in availableTeachers %}
+                        <option value="{{ teacher.id.toRfc4122 }}" {{ teacher.id.toRfc4122 in selectedManagerIds ? 'selected' : '' }}>{{ teacher.name.full() }}</option>
+                    {% endfor %}
+                </select>
+                <p class="mt-1.5 text-xs text-gray-500">{{ 'issue_settings.types.managers_help'|trans({}, 'admin') }}</p>
+                {% if inherited is not empty %}
+                    <p class="mt-2 text-xs text-gray-500">
+                        {{ 'issue_settings.types.inherited_list'|trans({}, 'admin') }}
+                        {% for manager in inherited %}<span class="ml-1 rounded-md border border-dashed border-gray-300 px-1.5 py-0.5">{{ manager.name.full() }}</span>{% endfor %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-3">
+            <p class="block text-sm font-medium text-gray-700">{{ 'issue_settings.types.state'|trans({}, 'admin') }}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <twig:Form:RadioCard name="active" value="1" :checked="type.active"
+                    label="{{ 'issue_settings.types.active'|trans({}, 'admin') }}" help="{{ 'issue_settings.types.active_help'|trans({}, 'admin') }}" />
+                <twig:Form:RadioCard name="active" value="0" :checked="not type.active" tone="gray"
+                    label="{{ 'issue_settings.types.inactive'|trans({}, 'admin') }}" help="{{ 'issue_settings.types.inactive_help'|trans({}, 'admin') }}" />
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+            <a href="{{ path('app_centre_issue_settings', {centreId: centre.id}) }}"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                {{ 'issue_settings.cancel'|trans({}, 'admin') }}
+            </a>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}{{ 'issue_settings.save'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script type="module">
+import TomSelect from 'tom-select';
+
+const el = document.getElementById('managers');
+if (el) {
+    new TomSelect(el, {
+        create:         false,
+        maxOptions:     null,
+        dropdownParent: 'body',
+        placeholder:    el.dataset.placeholder ?? '',
+        plugins:        ['remove_button', 'checkbox_options'],
+        render: {
+            no_results: () => `<div class="no-results px-3 py-2 text-sm">${el.dataset.noResults ?? ''}</div>`,
+        },
+    });
+}
+</script>
+{% endblock %}

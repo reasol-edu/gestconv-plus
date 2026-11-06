@@ -70,6 +70,7 @@ abstract class ControllerTestCase extends WebTestCase
                     'sanction_task_assigned', 'sanction_task_reminder', 'daily_note_threshold', 'report_prescription_warning',
                     'sanction_prescription_warning', 'booking_requested', 'booking_approved', 'booking_rejected',
                     'booking_issue_reported', 'booking_issue_received', 'booking_issue_resolved',
+                    'issue_created', 'issue_status', 'issue_priority', 'issue_observation', 'issue_changed', 'issue_overdue',
                 ],
                 array_keys($events),
             ),

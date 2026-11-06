@@ -1,0 +1,124 @@
+{% extends 'layouts/app.html.twig' %}
+
+{% block title %}{{ 'issue_settings.import.preview_title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set statusClass = {new: 'bg-forest-50 text-forest-700 border-forest-200', exists: 'bg-amber-50 text-amber-800 border-amber-200'} %}
+<div class="px-6 py-8 max-w-4xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_centre_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'educational_centre'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <a href="{{ path('app_centre_issue_settings', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'issue_settings.title'|trans({}, 'admin') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'issue_settings.import.preview_title'|trans({}, 'admin') }}</h1>
+        {% if file.centre %}<p class="mt-1 text-sm text-gray-500">{{ 'issue_settings.import.source'|trans({'%centre%': file.centre}, 'admin') }}</p>{% endif %}
+    </div>
+
+    <form method="post" action="{{ path('app_centre_issue_import_confirm', {centreId: centre.id}) }}" class="space-y-6" data-controller="issue-settings-import">
+        <input type="hidden" name="_token" value="{{ csrf_token('import_issue_settings_confirm') }}">
+        <input type="hidden" name="import_id" value="{{ importId }}">
+
+        {% if preview.unresolved is not empty %}
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900" role="status">
+                <p class="flex items-center gap-2 font-medium">
+                    {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4 w-4 shrink-0'}) }}
+                    {{ 'issue_settings.import.unresolved_title'|trans({'%count%': preview.unresolved|length}, 'admin') }}
+                </p>
+                <p class="mt-1 text-xs text-amber-800">{{ 'issue_settings.import.unresolved_help'|trans({}, 'admin') }}</p>
+                <ul class="mt-2 flex flex-wrap gap-1.5">
+                    {% for username, name in preview.unresolved %}
+                        <li class="rounded-md border border-amber-300 bg-white px-2 py-0.5 text-xs">{{ username }}{% if name %} · {{ name }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <section class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-4">
+            <h2 class="text-base font-semibold text-gray-900">{{ 'issue_settings.import.options_title'|trans({}, 'admin') }}</h2>
+            <label class="flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 cursor-pointer hover:border-gray-300 has-[:checked]:border-forest-400 has-[:checked]:bg-forest-50 transition-colors">
+                <input type="checkbox" name="include_managers" value="1" checked class="mt-0.5 rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                <span>
+                    <span class="block text-sm font-medium text-gray-700">{{ 'issue_settings.import.include_managers'|trans({}, 'admin') }}</span>
+                    <span class="block text-xs text-gray-500">{{ 'issue_settings.import.include_managers_help'|trans({}, 'admin') }}</span>
+                </span>
+            </label>
+
+            <h2 class="pt-2 text-base font-semibold text-gray-900">{{ 'issue_settings.import.mode_title'|trans({}, 'admin') }}</h2>
+            <p class="text-sm text-gray-500">{{ 'issue_settings.import.mode_help'|trans({}, 'admin') }}</p>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <twig:Form:RadioCard name="mode" value="ignore" :checked="true"
+                    label="{{ 'issue_settings.import.mode.ignore'|trans({}, 'admin') }}" help="{{ 'issue_settings.import.mode.ignore_help'|trans({}, 'admin') }}" />
+                <twig:Form:RadioCard name="mode" value="replace" tone="red"
+                    label="{{ 'issue_settings.import.mode.replace'|trans({}, 'admin') }}" help="{{ 'issue_settings.import.mode.replace_help'|trans({}, 'admin') }}" />
+            </div>
+        </section>
+
+        <section class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-4">
+                <div>
+                    <h2 class="text-base font-semibold text-gray-900">{{ 'issue_settings.import.selection_title'|trans({}, 'admin') }}</h2>
+                    <p class="text-sm text-gray-500">{{ 'issue_settings.import.selection_help'|trans({}, 'admin') }}</p>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                    <button type="button" data-action="issue-settings-import#all" class="font-medium text-forest-700 hover:text-forest-800">{{ 'issue_settings.import.select_all'|trans({}, 'admin') }}</button>
+                    <button type="button" data-action="issue-settings-import#none" class="font-medium text-gray-500 hover:text-gray-700">{{ 'issue_settings.import.select_none'|trans({}, 'admin') }}</button>
+                </div>
+            </div>
+
+            {% if file.priorities is not empty %}
+                <h3 class="px-6 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue_settings.priorities.title'|trans({}, 'admin') }}</h3>
+                <ul class="divide-y divide-gray-100">
+                    {% for priority in file.priorities %}
+                        <li class="px-6 py-2.5">
+                            <label class="flex flex-wrap items-center gap-2.5 cursor-pointer">
+                                <input type="checkbox" name="priorities[]" value="{{ priority.index }}" checked data-issue-settings-import-target="item"
+                                       class="rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                                <span class="h-3.5 w-3.5 rounded-full border border-black/10" style="background-color: {{ priority.color }}"></span>
+                                <span class="font-medium text-gray-900">{{ priority.name }}</span>
+                                <span class="rounded-full border px-2 py-0.5 text-xs font-medium {{ statusClass[preview.priorities[priority.index]] }}">{{ ('issue_settings.import.status.' ~ preview.priorities[priority.index])|trans({}, 'admin') }}</span>
+                                <span class="text-xs text-gray-500">
+                                    {{ 'issue_settings.priorities.recommended'|trans({}, 'admin') }}: {{ priority.recommended_days > 0 ? 'issue_settings.days'|trans({'%count%': priority.recommended_days}, 'admin') : '—' }}
+                                    · {{ 'issue_settings.priorities.max'|trans({}, 'admin') }}: {{ priority.max_days > 0 ? 'issue_settings.days'|trans({'%count%': priority.max_days}, 'admin') : '—' }}
+                                </span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if file.types is not empty %}
+                <h3 class="px-6 pt-5 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">{{ 'issue_settings.types.title'|trans({}, 'admin') }}</h3>
+                <ul class="divide-y divide-gray-100">
+                    {% for type in file.types %}
+                        <li class="py-2.5 pr-6" style="padding-left: {{ 1.5 + type.depth * 1.75 }}rem">
+                            <label class="flex flex-wrap items-center gap-2.5 cursor-pointer">
+                                <input type="checkbox" name="types[]" value="{{ type.index }}" checked
+                                       data-issue-settings-import-target="item" data-index="{{ type.index }}" data-parent="{{ type.parent ?? '' }}" data-action="issue-settings-import#toggled"
+                                       class="rounded border-gray-300 text-forest-600 focus:ring-forest-500">
+                                <span class="font-medium text-gray-900">{{ type.name }}</span>
+                                <span class="rounded-full border px-2 py-0.5 text-xs font-medium {{ statusClass[preview.types[type.index]] }}">{{ ('issue_settings.import.status.' ~ preview.types[type.index])|trans({}, 'admin') }}</span>
+                                {% if not type.active %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">{{ 'issue_settings.types.inactive'|trans({}, 'admin') }}</span>{% endif %}
+                                {% for manager in type.managers %}
+                                    <span class="rounded-md bg-forest-50 px-1.5 py-0.5 text-xs font-medium text-forest-700">{{ manager.name ?? manager.username }}{% if preview.unresolved[manager.username] is defined %} ⚠{% endif %}</span>
+                                {% endfor %}
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+
+        <div class="flex items-center justify-between">
+            <a href="{{ path('app_centre_issue_import', {centreId: centre.id}) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">{{ 'issue_settings.cancel'|trans({}, 'admin') }}</a>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:check', {class: 'h-4 w-4'}) }}{{ 'issue_settings.import.confirm_button'|trans({}, 'admin') }}
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
