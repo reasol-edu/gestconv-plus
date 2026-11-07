@@ -35,4 +35,11 @@ class AdminController extends AbstractController
             ],
         ]);
     }
+
+    /** Direcciones antiguas de la gestión de usuarios (se llamaba «docentes»): se redirigen a las nuevas. */
+    #[Route('/admin/docentes/{rest}', name: 'app_admin_teachers_legacy', requirements: ['rest' => '.*'], defaults: ['rest' => ''], methods: ['GET'], priority: -10)]
+    public function legacyUsers(string $rest): Response
+    {
+        return $this->redirect('/admin/usuarios' . ($rest !== '' ? '/' . $rest : ''), Response::HTTP_MOVED_PERMANENTLY);
+    }
 }

@@ -40,7 +40,7 @@ await page.screenshot({ path: `${imgRoot}/partes/admin-ubicaciones.png` });
 console.log('OK admin-ubicaciones.png');
 
 // 2. Formulario de docente (radio buttons: modo de acceso, forzar cambio de contraseña, admin global, cuenta activa)
-await goto(`${baseUrl}/admin/docentes/nuevo`);
+await goto(`${baseUrl}/admin/usuarios/nuevo`);
 await page.locator('#first_name').blur();
 await page.screenshot({ path: `${imgRoot}/admin/admin-docente-formulario.png`, fullPage: true });
 console.log('OK admin-docente-formulario.png');

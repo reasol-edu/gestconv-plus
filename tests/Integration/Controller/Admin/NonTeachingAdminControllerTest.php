@@ -20,7 +20,7 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         $w = $this->world();
         $this->loginAs($w['admin']);
 
-        $crawler = $this->client->request('GET', '/admin/docentes');
+        $crawler = $this->client->request('GET', '/admin/usuarios');
         self::assertResponseIsSuccessful();
         $text = $crawler->text();
         self::assertStringContainsString('Usuarios', $text);
@@ -39,7 +39,7 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         $w = $this->world();
         $this->loginAs($w['doc']);
 
-        $this->client->request('GET', '/admin/docentes/personal-no-docente/nuevo');
+        $this->client->request('GET', '/admin/usuarios/personal-no-docente/nuevo');
         self::assertResponseStatusCodeSame(403);
     }
 
@@ -48,17 +48,17 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         $w = $this->world();
         $this->loginAs($w['admin']);
 
-        $crawler = $this->client->request('GET', '/admin/docentes/personal-no-docente/nuevo');
+        $crawler = $this->client->request('GET', '/admin/usuarios/personal-no-docente/nuevo');
         self::assertResponseIsSuccessful();
         self::assertCount(2, $crawler->filter('input[name="centres[]"]'));
 
-        $this->client->request('POST', '/admin/docentes/personal-no-docente/nuevo', [
+        $this->client->request('POST', '/admin/usuarios/personal-no-docente/nuevo', [
             '_token' => (string) $crawler->filter('[name="_token"]')->attr('value'),
             'first_name' => 'Nuria', 'last_name' => 'Conserje', 'username' => 'nuria.adm', 'email' => 'nuria.adm@example.org',
             'mode' => 'password', 'password' => 'Clave-Inicial-123',
             'centres' => [$w['uno']->getId()->toRfc4122(), $w['dos']->getId()->toRfc4122()],
         ]);
-        self::assertResponseRedirects('/admin/docentes');
+        self::assertResponseRedirects('/admin/usuarios');
 
         $this->em->clear();
         $account = $this->em->getRepository(Teacher::class)->findOneBy(['username' => 'nuria.adm']);
@@ -76,11 +76,11 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         $w = $this->world();
         $this->loginAs($w['admin']);
 
-        $crawler = $this->client->request('GET', '/admin/docentes/personal-no-docente/nuevo');
+        $crawler = $this->client->request('GET', '/admin/usuarios/personal-no-docente/nuevo');
         $token   = (string) $crawler->filter('[name="_token"]')->attr('value');
 
         // Datos inválidos y duplicados.
-        $this->client->request('POST', '/admin/docentes/personal-no-docente/nuevo', [
+        $this->client->request('POST', '/admin/usuarios/personal-no-docente/nuevo', [
             '_token' => $token, 'first_name' => '', 'last_name' => '', 'username' => $w['paco']->getUsername(), 'email' => '', 'mode' => 'password', 'password' => '',
         ]);
         self::assertResponseIsSuccessful();
@@ -90,10 +90,10 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         self::assertStringContainsString('El correo electrónico es obligatorio', $text);
 
         // Invitación, sin centro.
-        $this->client->request('POST', '/admin/docentes/personal-no-docente/nuevo', [
+        $this->client->request('POST', '/admin/usuarios/personal-no-docente/nuevo', [
             '_token' => $token, 'first_name' => 'Ines', 'last_name' => 'Admin', 'username' => 'ines.adm', 'email' => 'ines.adm@example.org', 'mode' => 'invitation', 'password' => '',
         ]);
-        self::assertResponseRedirects('/admin/docentes');
+        self::assertResponseRedirects('/admin/usuarios');
         $this->em->clear();
         $account = $this->em->getRepository(Teacher::class)->findOneBy(['username' => 'ines.adm']);
         self::assertNotNull($account?->getPasswordResetToken());
@@ -106,17 +106,17 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         $id = $w['paco']->getId()->toRfc4122();
         $this->loginAs($w['admin']);
 
-        $crawler = $this->client->request('GET', "/admin/docentes/personal-no-docente/$id/editar");
+        $crawler = $this->client->request('GET', "/admin/usuarios/personal-no-docente/$id/editar");
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('input[name="centres[]"][checked]'));
 
         // Pasa del centro Uno al centro Dos y cambia su correo.
-        $this->client->request('POST', "/admin/docentes/personal-no-docente/$id/editar", [
+        $this->client->request('POST', "/admin/usuarios/personal-no-docente/$id/editar", [
             '_token' => (string) $crawler->filter('[name="_token"]')->attr('value'),
             'first_name' => 'Paco', 'last_name' => 'Conserje', 'username' => $w['paco']->getUsername(), 'email' => 'nuevo.paco@example.org', 'password' => '', 'active' => '1',
             'centres' => [$w['dos']->getId()->toRfc4122()],
         ]);
-        self::assertResponseRedirects('/admin/docentes');
+        self::assertResponseRedirects('/admin/usuarios');
 
         $this->em->clear();
         self::assertSame('nuevo.paco@example.org', $this->em->getRepository(Teacher::class)->find($w['paco']->getId())?->getEmail());
@@ -132,8 +132,8 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         $w = $this->world();
         $this->loginAs($w['admin']);
 
-        $this->client->request('GET', '/admin/docentes/' . $w['paco']->getId()->toRfc4122());
-        self::assertResponseRedirects('/admin/docentes/personal-no-docente/' . $w['paco']->getId()->toRfc4122() . '/editar');
+        $this->client->request('GET', '/admin/usuarios/' . $w['paco']->getId()->toRfc4122());
+        self::assertResponseRedirects('/admin/usuarios/personal-no-docente/' . $w['paco']->getId()->toRfc4122() . '/editar');
     }
 
     public function testItReinvitesAndDeletesAnAccount(): void
@@ -142,16 +142,16 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         $id = $w['paco']->getId()->toRfc4122();
         $this->loginAs($w['admin']);
 
-        $crawler = $this->client->request('GET', '/admin/docentes');
+        $crawler = $this->client->request('GET', '/admin/usuarios');
         $token   = (string) $crawler->filter('form[action$="/' . $id . '/invitar"] [name="_token"]')->attr('value');
-        $this->client->request('POST', "/admin/docentes/personal-no-docente/$id/invitar", ['_token' => $token]);
-        self::assertResponseRedirects('/admin/docentes');
+        $this->client->request('POST', "/admin/usuarios/personal-no-docente/$id/invitar", ['_token' => $token]);
+        self::assertResponseRedirects('/admin/usuarios');
         self::assertEmailCount(1);
 
-        $crawler = $this->client->request('GET', '/admin/docentes');
+        $crawler = $this->client->request('GET', '/admin/usuarios');
         $token   = (string) $crawler->filter('form[action$="/' . $id . '/eliminar"] [name="_token"]')->attr('value');
-        $this->client->request('POST', "/admin/docentes/personal-no-docente/$id/eliminar", ['_token' => $token]);
-        self::assertResponseRedirects('/admin/docentes');
+        $this->client->request('POST', "/admin/usuarios/personal-no-docente/$id/eliminar", ['_token' => $token]);
+        self::assertResponseRedirects('/admin/usuarios');
         $this->em->clear();
         self::assertNull($this->em->getRepository(Teacher::class)->find($w['paco']->getId()));
     }
@@ -161,7 +161,7 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         $w = $this->world();
         $this->loginAs($w['admin']);
 
-        $crawler = $this->client->request('GET', '/admin/docentes');
+        $crawler = $this->client->request('GET', '/admin/usuarios');
         $link    = $crawler->filter('a[href*="_switch_user=' . $w['paco']->getUsername() . '"]');
         self::assertCount(1, $link, 'hay un botón «Acceder como»');
         self::assertCount(1, $crawler->filter('section:nth-of-type(2) form[action$="/eliminar"] button svg'), 'con icono, igual que el listado de docentes');
@@ -173,6 +173,17 @@ class NonTeachingAdminControllerTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(403);
         $this->client->request('GET', '/incidencias');
         self::assertResponseIsSuccessful();
+    }
+
+    public function testTheOldDocentesAddressesRedirectToUsuarios(): void
+    {
+        $w = $this->world();
+        $this->loginAs($w['admin']);
+
+        $this->client->request('GET', '/admin/docentes');
+        self::assertResponseRedirects('/admin/usuarios', 301);
+        $this->client->request('GET', '/admin/docentes/personal-no-docente/nuevo');
+        self::assertResponseRedirects('/admin/usuarios/personal-no-docente/nuevo', 301);
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────

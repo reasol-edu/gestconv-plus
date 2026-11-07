@@ -33,10 +33,10 @@ class TeacherActivityLogTest extends ControllerTestCase
         $this->persist($admin);
         $this->loginAs($admin);
 
-        $crawler = $this->client->request('GET', '/admin/docentes/nuevo');
+        $crawler = $this->client->request('GET', '/admin/usuarios/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/admin/docentes/nuevo', [
+        $this->client->request('POST', '/admin/usuarios/nuevo', [
             '_token'      => $token,
             'first_name'  => 'Juan',
             'last_name'   => 'Garcia',
@@ -63,10 +63,10 @@ class TeacherActivityLogTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $teacherId = $teacher->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/admin/docentes/' . $teacherId);
+        $crawler   = $this->client->request('GET', '/admin/usuarios/' . $teacherId);
         $token     = $crawler->filter('form')->first()->filter('[name="_token"]')->attr('value');
 
-        $this->client->request('POST', '/admin/docentes/' . $teacherId, [
+        $this->client->request('POST', '/admin/usuarios/' . $teacherId, [
             '_token'      => $token,
             'first_name'  => 'Modificado',
             'last_name'   => 'Apellido',
@@ -96,10 +96,10 @@ class TeacherActivityLogTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $teacherId = $teacher->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/admin/docentes/' . $teacherId);
+        $crawler   = $this->client->request('GET', '/admin/usuarios/' . $teacherId);
         $token     = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/admin/docentes/' . $teacherId . '/eliminar', ['_token' => $token]);
+        $this->client->request('POST', '/admin/usuarios/' . $teacherId . '/eliminar', ['_token' => $token]);
 
         self::assertResponseRedirects();
 

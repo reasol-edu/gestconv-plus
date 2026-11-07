@@ -18,7 +18,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin);
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/admin/docentes');
+        $this->client->request('GET', '/admin/usuarios');
 
         self::assertResponseIsSuccessful();
     }
@@ -31,7 +31,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin, $with, $pending);
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/admin/docentes');
+        $this->client->request('GET', '/admin/usuarios');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('table', 'con.correo@iesejemplo.es');
@@ -44,7 +44,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($teacher);
         $this->loginAs($teacher);
 
-        $this->client->request('GET', '/admin/docentes');
+        $this->client->request('GET', '/admin/usuarios');
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -57,7 +57,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin);
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/admin/docentes/nuevo');
+        $this->client->request('GET', '/admin/usuarios/nuevo');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -69,10 +69,10 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin);
         $this->loginAs($admin);
 
-        $crawler = $this->client->request('GET', '/admin/docentes/nuevo');
+        $crawler = $this->client->request('GET', '/admin/usuarios/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/admin/docentes/nuevo', [
+        $this->client->request('POST', '/admin/usuarios/nuevo', [
             '_token'      => $token,
             'first_name'  => 'Juan',
             'last_name'   => 'Garcia',
@@ -83,7 +83,7 @@ class TeacherControllerTest extends ControllerTestCase
         ]);
 
         self::assertResponseRedirects();
-        self::assertStringContainsString('/admin/docentes', (string) $this->client->getResponse()->headers->get('Location'));
+        self::assertStringContainsString('/admin/usuarios', (string) $this->client->getResponse()->headers->get('Location'));
     }
 
     public function testNewPostWithInvalidCsrfIsDenied(): void
@@ -92,7 +92,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin);
         $this->loginAs($admin);
 
-        $this->client->request('POST', '/admin/docentes/nuevo', [
+        $this->client->request('POST', '/admin/usuarios/nuevo', [
             '_token'     => 'token-invalido',
             'first_name' => 'Juan',
             'last_name'  => 'Garcia',
@@ -109,10 +109,10 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin);
         $this->loginAs($admin);
 
-        $crawler = $this->client->request('GET', '/admin/docentes/nuevo');
+        $crawler = $this->client->request('GET', '/admin/usuarios/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/admin/docentes/nuevo', [
+        $this->client->request('POST', '/admin/usuarios/nuevo', [
             '_token'      => $token,
             'first_name'  => '',
             'last_name'   => 'Garcia',
@@ -131,10 +131,10 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin, $teacher);
         $this->loginAs($admin);
 
-        $crawler = $this->client->request('GET', '/admin/docentes/nuevo');
+        $crawler = $this->client->request('GET', '/admin/usuarios/nuevo');
         $token   = $crawler->filter('[name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/admin/docentes/nuevo', [
+        $this->client->request('POST', '/admin/usuarios/nuevo', [
             '_token'      => $token,
             'first_name'  => 'Juan',
             'last_name'   => 'Garcia',
@@ -155,7 +155,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin, $teacher);
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/admin/docentes/' . $teacher->getId()->toRfc4122());
+        $this->client->request('GET', '/admin/usuarios/' . $teacher->getId()->toRfc4122());
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -169,10 +169,10 @@ class TeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $teacherId = $teacher->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/admin/docentes/' . $teacherId);
+        $crawler   = $this->client->request('GET', '/admin/usuarios/' . $teacherId);
         $token     = $crawler->filter('form')->first()->filter('[name="_token"]')->attr('value');
 
-        $this->client->request('POST', '/admin/docentes/' . $teacherId, [
+        $this->client->request('POST', '/admin/usuarios/' . $teacherId, [
             '_token'      => $token,
             'first_name'  => 'Modificado',
             'last_name'   => 'Apellido',
@@ -197,7 +197,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $teacherId = $teacher->getId()->toRfc4122();
-        $this->client->request('POST', '/admin/docentes/' . $teacherId, [
+        $this->client->request('POST', '/admin/usuarios/' . $teacherId, [
             '_token'     => 'token-invalido',
             'first_name' => 'Hack',
             'last_name'  => 'Attack',
@@ -216,11 +216,11 @@ class TeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $adminId = $admin->getId()->toRfc4122();
-        $crawler = $this->client->request('GET', '/admin/docentes/' . $adminId);
+        $crawler = $this->client->request('GET', '/admin/usuarios/' . $adminId);
         $token   = $crawler->filter('form')->first()->filter('[name="_token"]')->attr('value');
 
         // Submit 'admin' => 'no' → tries to demote self
-        $this->client->request('POST', '/admin/docentes/' . $adminId, [
+        $this->client->request('POST', '/admin/usuarios/' . $adminId, [
             '_token'      => $token,
             'first_name'  => 'Admin',
             'last_name'   => 'User',
@@ -247,11 +247,11 @@ class TeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $adminId = $admin->getId()->toRfc4122();
-        $crawler = $this->client->request('GET', '/admin/docentes/' . $adminId);
+        $crawler = $this->client->request('GET', '/admin/usuarios/' . $adminId);
         $token   = $crawler->filter('form')->first()->filter('[name="_token"]')->attr('value');
 
         // Submit 'active' => 'no' → tries to deactivate self
-        $this->client->request('POST', '/admin/docentes/' . $adminId, [
+        $this->client->request('POST', '/admin/usuarios/' . $adminId, [
             '_token'      => $token,
             'first_name'  => 'Admin',
             'last_name'   => 'User',
@@ -280,13 +280,13 @@ class TeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $teacherId = $teacher->getId()->toRfc4122();
-        $crawler   = $this->client->request('GET', '/admin/docentes/' . $teacherId);
+        $crawler   = $this->client->request('GET', '/admin/usuarios/' . $teacherId);
         $token     = $crawler->filter('form[action$="/eliminar"] [name="_token"]')->first()->attr('value');
 
-        $this->client->request('POST', '/admin/docentes/' . $teacherId . '/eliminar', ['_token' => $token]);
+        $this->client->request('POST', '/admin/usuarios/' . $teacherId . '/eliminar', ['_token' => $token]);
 
         self::assertResponseRedirects();
-        self::assertStringContainsString('/admin/docentes', (string) $this->client->getResponse()->headers->get('Location'));
+        self::assertStringContainsString('/admin/usuarios', (string) $this->client->getResponse()->headers->get('Location'));
 
         $this->em->clear();
         self::assertNull($this->em->find(Teacher::class, $teacher->getId()));
@@ -300,7 +300,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $teacherId = $teacher->getId()->toRfc4122();
-        $this->client->request('POST', '/admin/docentes/' . $teacherId . '/eliminar', ['_token' => 'token-invalido']);
+        $this->client->request('POST', '/admin/usuarios/' . $teacherId . '/eliminar', ['_token' => 'token-invalido']);
 
         self::assertResponseStatusCodeSame(403);
     }
@@ -312,7 +312,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->loginAs($admin);
 
         $adminId = $admin->getId()->toRfc4122();
-        $this->client->request('GET', '/admin/docentes/' . $adminId);
+        $this->client->request('GET', '/admin/usuarios/' . $adminId);
 
         // The template hides the delete form when the admin views their own profile
         self::assertSelectorNotExists('form[action*="/eliminar"]');
@@ -327,7 +327,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin, $teacher);
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/admin/docentes');
+        $this->client->request('GET', '/admin/usuarios');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('a[href*="_switch_user=teacher.1"]');
@@ -339,7 +339,7 @@ class TeacherControllerTest extends ControllerTestCase
         $this->persist($admin);
         $this->loginAs($admin);
 
-        $this->client->request('GET', '/admin/docentes');
+        $this->client->request('GET', '/admin/usuarios');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists('a[href*="_switch_user=admin.1"]');

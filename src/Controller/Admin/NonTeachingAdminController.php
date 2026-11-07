@@ -25,7 +25,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * invitación), edición, centros a los que pertenece, reenvío de la invitación y eliminación. Se lista junto a los docentes, en
  * un bloque aparte, en «Usuarios».
  */
-#[Route('/admin/docentes/personal-no-docente')]
+#[Route('/admin/usuarios/personal-no-docente')]
 #[IsGranted('ROLE_ADMIN')]
 class NonTeachingAdminController extends AbstractController
 {

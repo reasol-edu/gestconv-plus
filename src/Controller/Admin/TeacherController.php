@@ -22,7 +22,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/admin/docentes')]
+#[Route('/admin/usuarios')]
 #[IsGranted('ROLE_ADMIN')]
 class TeacherController extends AbstractController
 {
