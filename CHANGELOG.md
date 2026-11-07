@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.25.1] - 2026-11-07
+
+### Changed
+
+- La gestión de usuarios de Administración pasa de la dirección `/admin/docentes` a `/admin/usuarios`. Las direcciones antiguas (marcadores, enlaces guardados) siguen funcionando: redirigen a las nuevas.
+
+### Fixed
+
+- El listado de **personal no docente** de Administración usa los mismos botones con icono que el de docentes y permite **acceder como** esa persona, para ver la aplicación tal y como la ve ella.
+
 ## [1.25.0] - 2026-11-06
 
 ### Added
