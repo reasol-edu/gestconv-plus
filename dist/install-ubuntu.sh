@@ -245,7 +245,9 @@ if [[ "$USE_TUNNEL" == true ]]; then
     mkdir -p --mode=0755 /usr/share/keyrings
     curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg \
         | tee /usr/share/keyrings/cloudflare-main.gpg > /dev/null
-    echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs 2>/dev/null || echo noble) main" \
+    # Distribución «any»: Cloudflare solo publica repositorios por nombre en clave
+    # para algunas versiones de Ubuntu, y «any» sirve para todas.
+    echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main" \
         | tee /etc/apt/sources.list.d/cloudflared.list > /dev/null
     DEBIAN_FRONTEND=noninteractive apt-get update -qq
     DEBIAN_FRONTEND=noninteractive apt-get install -y -qq cloudflared
