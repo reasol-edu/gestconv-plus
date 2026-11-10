@@ -109,6 +109,7 @@ Las distintas áreas funcionales de GestConv+, alineadas con sus controladores y
 | `absence`      | Ausencias del profesorado y las actividades de cobertura durante ellas |
 | `guards`       | Guardias, franjas horarias y su asignación |
 | `calendar`     | Calendario, días no lectivos y el modo tablón |
+| `utilities`    | Utilidades: generador de calendarios en PDF y calculadora de fechas |
 | `notification` | Notificaciones a los usuarios y su envío |
 | `dashboard`    | Panel de indicadores y estadísticas |
 | `reports`      | Informes, exportaciones y reportes |

@@ -77,6 +77,33 @@ class PdfTemplateResolverTest extends TestCase
         self::assertNull($result);
     }
 
+    /** El generador de calendarios tiene un ajuste propio por orientación, no uno compartido. */
+    public function testPrintableCalendarUsesItsOwnTemplatePerOrientation(): void
+    {
+        $portrait  = $this->makeResolved('calendario-vertical.pdf');
+        $landscape = $this->makeResolved('calendario-apaisado.pdf');
+
+        $this->settings->method('getFileForCentre')->willReturnMap([
+            ['reports.printable_calendar_pdf_template_portrait', $this->centre, $portrait],
+            ['reports.printable_calendar_pdf_template_landscape', $this->centre, $landscape],
+        ]);
+
+        self::assertSame($portrait, $this->resolver->resolve('printable_calendar', 'P', $this->centre));
+        self::assertSame($landscape, $this->resolver->resolve('printable_calendar', 'L', $this->centre));
+    }
+
+    public function testPrintableCalendarFallsBackToTheGeneralTemplateOfItsOrientation(): void
+    {
+        $general = $this->makeResolved('general-apaisada.pdf');
+
+        $this->settings->method('getFileForCentre')->willReturnMap([
+            ['reports.printable_calendar_pdf_template_landscape', $this->centre, null],
+            ['reports.pdf_template_landscape', $this->centre, $general],
+        ]);
+
+        self::assertSame($general, $this->resolver->resolve('printable_calendar', 'L', $this->centre));
+    }
+
     private function makeResolved(string $filename): ResolvedSettingFile
     {
         $file = new SettingFile('hash-' . $filename, 'contenido', 'application/pdf', 9);

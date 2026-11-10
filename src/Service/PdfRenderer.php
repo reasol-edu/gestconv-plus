@@ -17,6 +17,9 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
+/**
+ * @phpstan-type ReportType 'incident'|'sanction'|'group_stats'|'exit_stats'|'issue_stats'|'guard_duty'|'school_event'|'issue'|'printable_calendar'
+ */
 class PdfRenderer
 {
     /** Clave de fontdata de mPDF: minúsculas y sin espacios, como sus fuentes incluidas (dejavusans…). */
@@ -33,13 +36,14 @@ class PdfRenderer
 
     /**
      * Renders a Twig template to a PDF response via mPDF, with a shared running
-     * header/footer (pdf/_header.html.twig, pdf/_footer.html.twig).
+     * header/footer (pdf/_header.html.twig, pdf/_footer.html.twig) — unless $showHeader/
+     * $showFooter say to skip one, freeing up its margin for content instead.
      *
      * @param array<string, mixed>                                     $context        Must include 'centre' (EducationalCentre); merged into header/footer/content.
      * @param PdfHeader|null                                           $header         Custom header content and top margin; falls back to pdfTitle / centre name.
      * @param bool                                                     $draftWatermark Shows a diagonal "BORRADOR" watermark on every page; used while the report/sanction hasn't been notified to the family yet.
      * @param 'P'|'L'                                                  $orientation    'P' (portrait, default) or 'L' (landscape).
-     * @param 'incident'|'sanction'|'group_stats'|'exit_stats'|'issue_stats'|'guard_duty'|'school_event'|'issue'|null    $reportType    Together with $centre, resolves and stamps the configured PDF template as the background of every page (see PdfTemplateResolver).
+     * @param ReportType|null                                          $reportType     Together with $centre, resolves and stamps the configured PDF template as the background of every page (see PdfTemplateResolver).
      */
     public function render(
         string $template,
@@ -52,6 +56,8 @@ class PdfRenderer
         string $orientation = 'P',
         ?EducationalCentre $centre = null,
         ?string $reportType = null,
+        bool $showHeader = true,
+        bool $showFooter = true,
     ): Response {
         $context += [
             'pdfTitle'       => $title,
@@ -65,8 +71,8 @@ class PdfRenderer
             'orientation'   => $orientation,
             'margin_left'   => 15,
             'margin_right'  => 15,
-            'margin_top'    => $header->marginTopMm ?? 22,
-            'margin_bottom' => 18,
+            'margin_top'    => $showHeader ? ($header->marginTopMm ?? 22) : 12,
+            'margin_bottom' => $showFooter ? 18 : 10,
             'margin_header' => 8,
             'margin_footer' => 8,
             'tempDir'       => sys_get_temp_dir(),
@@ -90,8 +96,12 @@ class PdfRenderer
                 $mpdf->showWatermarkText = true;
             }
 
-            $mpdf->SetHTMLHeader($this->twig->render('pdf/_header.html.twig', $context));
-            $mpdf->SetHTMLFooter($this->twig->render('pdf/_footer.html.twig', $context));
+            if ($showHeader) {
+                $mpdf->SetHTMLHeader($this->twig->render('pdf/_header.html.twig', $context));
+            }
+            if ($showFooter) {
+                $mpdf->SetHTMLFooter($this->twig->render('pdf/_footer.html.twig', $context));
+            }
             $mpdf->WriteHTML($this->twig->render($template, $context));
 
             $content = $mpdf->Output('', Destination::STRING_RETURN);
@@ -149,7 +159,7 @@ class PdfRenderer
      * página generada. Devuelve la ruta del temporal para su limpieza posterior,
      * o null si no hay ninguna plantilla configurada.
      *
-     * @param 'incident'|'sanction'|'group_stats'|'exit_stats'|'issue_stats'|'guard_duty'|'school_event'|'issue' $reportType
+     * @param ReportType $reportType
      */
     private function applyDocTemplate(Mpdf $mpdf, string $reportType, string $orientation, EducationalCentre $centre): ?string
     {
