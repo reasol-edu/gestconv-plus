@@ -115,6 +115,8 @@ abstract class ControllerTestCase extends WebTestCase
             ['reports.issue_stats_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 290, null],
             ['reports.exit_stats_pdf_template',  SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 90, null],
             ['reports.issue_stats_pdf_template', SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 100, null],
+            ['reports.printable_calendar_pdf_template_portrait',  SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 110, null],
+            ['reports.printable_calendar_pdf_template_landscape', SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 120, null],
             ['bookings.max_advance_days',       SettingType::Integer, '0',  true,  true,  false, 0, 365,  'settings.category.bookings', 37, 10, null],
             ['uploads.max_file_size_mb',         SettingType::Integer, '10', true, false, false, 1, 1024, 'settings.category.uploads', 90, 10, null],
             ['uploads.max_total_size_mb',        SettingType::Integer, '50', true, false, false, 1, 2048, 'settings.category.uploads', 90, 20, null],

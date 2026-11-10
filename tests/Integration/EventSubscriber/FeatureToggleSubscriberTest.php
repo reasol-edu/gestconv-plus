@@ -66,6 +66,7 @@ final class FeatureToggleSubscriberTest extends ControllerTestCase
         yield 'tareas de sanción' => [Feature::SanctionTasks, '/tareas-de-sancion'];
         yield 'actividades'       => [Feature::Events, '/actividades/nuevo'];
         yield 'reservas'          => [Feature::Bookings, '/reservas'];
+        yield 'utilidades'        => [Feature::Utilities, '/utilidades/calculadora-fechas'];
     }
 
     #[DataProvider('sections')]

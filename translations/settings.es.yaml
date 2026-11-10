@@ -306,6 +306,12 @@ settings.key.reports_issue_stats_header_margin.description: 'Milímetros reserva
 settings.key.reports_issue_stats_pdf_template.label: 'Plantilla PDF del informe de incidencias'
 settings.key.reports_issue_stats_pdf_template.description: 'Sustituye, solo para el PDF del informe de incidencias, a la plantilla general vertical. Si no se sube ninguna, se usa la plantilla general vertical (si la hay).'
 
+settings.key.reports_printable_calendar_pdf_template_portrait.label: 'Plantilla PDF del generador de calendarios (vertical)'
+settings.key.reports_printable_calendar_pdf_template_portrait.description: 'PDF de una sola página que se usa como fondo de los calendarios generados en Utilidades en formato vertical. Si no se sube ninguna, se usa la plantilla PDF general (vertical).'
+
+settings.key.reports_printable_calendar_pdf_template_landscape.label: 'Plantilla PDF del generador de calendarios (apaisada)'
+settings.key.reports_printable_calendar_pdf_template_landscape.description: 'PDF de una sola página que se usa como fondo de los calendarios generados en Utilidades en formato apaisado. Si no se sube ninguna, se usa la plantilla PDF general (apaisada).'
+
 settings.key.absences_attachment_retention_days.label: 'Retención de adjuntos de actividades'
 settings.key.absences_attachment_retention_days.description: 'Días transcurridos desde la fecha de una actividad a partir de los cuales una tarea programada semanal elimina automáticamente sus ficheros adjuntos (no la actividad ni su descripción). Un valor de 0 desactiva esta eliminación automática.'
 
@@ -396,6 +402,8 @@ settings.key.features_bookings.label: 'Reservas de recursos'
 settings.key.features_bookings.description: 'Activa o desactiva las Reservas (recursos compartidos como dependencias o carros de portátiles, con su calendario semanal y mensual y el listado de reservas). Desactivadas, desaparecen del menú y del panel de inicio, y las direcciones de la sección y del catálogo de recursos del centro dejan de funcionar. Los datos ya registrados se conservan.'
 settings.key.features_issues.label: 'Incidencias'
 settings.key.features_issues.description: 'Activa o desactiva el módulo de Incidencias (avisar al responsable de una avería o un problema, con su tipo, prioridad, observaciones, adjuntos e historial). Desactivado, desaparece del menú, del panel de inicio, de la búsqueda y de las reservas, y sus direcciones y la configuración de tipos y prioridades dejan de funcionar. Los datos ya registrados se conservan.'
+settings.key.features_utilities.label: 'Utilidades'
+settings.key.features_utilities.description: 'Activa o desactiva la sección Utilidades (generador de calendarios y calculadora de fechas, herramientas personales del profesorado). Desactivada, desaparece del menú y sus direcciones dejan de funcionar. Los calendarios ya guardados se conservan.'
 settings.key.bookings_max_advance_days.label: 'Antelación máxima de las reservas (días)'
 settings.key.bookings_max_advance_days.description: 'Cuántos días por delante de hoy, como máximo, se puede reservar un recurso (0-365). Con 0 no hay límite. Cada categoría de recursos puede fijar su propio límite, que sustituye a este; la dirección y los responsables de la categoría no tienen límite.'
 settings.key.features_sanction_tasks.label: 'Tareas de sanción'

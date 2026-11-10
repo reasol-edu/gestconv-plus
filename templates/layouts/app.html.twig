@@ -200,6 +200,18 @@
                 {% endif %}
             {% endif %}
 
+            {# Utilidades — herramientas personales del profesorado (generador de calendarios, calculadora de fechas) #}
+            {% if active_centre and feature_enabled('utilities') %}
+                <div class="my-3 h-px bg-white/8"></div>
+                {{ _self.nav_item(
+                    'utilities'|trans({}, 'navigation'),
+                    path('app_utilities_index'),
+                    'heroicons:calculator',
+                    current_route,
+                    'app_utilities_'
+                ) }}
+            {% endif %}
+
             {# Cambio de sección: las herramientas de gestión (solo equipo directivo y admins) #}
             {% if active_centre and is_granted('educational_centre.section', active_centre) %}
                 {{ _self.nav_heading('section.management'|trans({}, 'navigation')) }}
