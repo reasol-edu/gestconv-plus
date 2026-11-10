@@ -19,7 +19,7 @@ consultarla). Ningún otro docente tiene acceso a las ausencias de otra persona,
 comparte grupo con quien las registró. Los administradores globales y los de centro son la
 excepción: tienen acceso completo —crear, consultar, editar y eliminar— a las ausencias de
 cualquier docente del curso, sin que el bloqueo por fecha les afecte (ver
-[Permisos de un vistazo](14-permisos-de-un-vistazo.md#ausencias)).
+[Permisos de un vistazo](15-permisos-de-un-vistazo.md#ausencias)).
 
 Si quien accede es administrador (global o de centro) y además pertenece al curso académico
 visualizado, la sección muestra dos pestañas:
@@ -116,7 +116,7 @@ tareas pendientes.
 La sección es visible para cualquier docente que tenga guardia en algún tramo horario del curso
 visualizado —no hace falta que sea precisamente ese día— y para los administradores del centro, que
 ven además **todos** los tramos, no solo los propios (ver
-[Permisos de un vistazo](14-permisos-de-un-vistazo.md#guardias)).
+[Permisos de un vistazo](15-permisos-de-un-vistazo.md#guardias)).
 
 La cabecera muestra el día activo, precedido de «Hoy: » cuando corresponde a la fecha actual, junto
 con dos flechas para navegar al día anterior y siguiente. Si el día visualizado es hoy, el tramo

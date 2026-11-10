@@ -151,7 +151,7 @@ Ciencias Sociales)»; se puede resolver escribiendo simplemente «1º Bachillera
 
 Con el alumnado ya importado, conviene indicar qué docentes ejercen la tutoría de cada grupo.
 Esta asignación determina, entre otras cosas, qué docentes ven los partes y sanciones de su grupo
-(ver [Permisos de un vistazo](14-permisos-de-un-vistazo.md)).
+(ver [Permisos de un vistazo](15-permisos-de-un-vistazo.md)).
 
 Se hace desde **Centro educativo › Oferta formativa**: al seleccionar un grupo, aparece debajo su
 panel de detalle, donde se asignan los tutores/as.

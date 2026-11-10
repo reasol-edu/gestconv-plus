@@ -94,6 +94,7 @@ GestConv+ se organiza en **módulos independientes**. El centro puede
 | **Reservas** | Reservar aulas, carros de portátiles y otros recursos compartidos |
 | **Incidencias** | Avisar de averías y desperfectos y seguirlas hasta cerrarlas |
 | **Calendario** | Sanciones, ausencias y actividades de centro, con modo tablón |
+| **Utilidades** | Generador de calendarios en PDF y calculadora de fechas, personales |
 
 El **personal no docente** (conserjería, administración…) solo accede a las
 Incidencias.
@@ -170,6 +171,7 @@ La guía va **por módulos**; el de convivencia, además, **por perfiles**:
 4. **Reservas**
 5. **Incidencias**
 6. **Calendario**
+7. **Utilidades**
 
 Cada módulo termina con su **configuración**, que es cosa del equipo directivo.
 Los perfiles suman permisos: cada subbloque solo añade lo que ese rol tiene
@@ -1240,18 +1242,56 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 
 ---
 
-
 <!-- _class: sep -->
 
-# En resumen
+# Bloque 7
 
-## Seis módulos, un mismo centro
+## Utilidades
+
+---
+
+
+## Utilidades: generador de calendarios
+
+![bg right:40% fit](../manual/img/utilidades/utilidades-generador-calendarios.png)
+
+- Calendarios **propios en PDF**, con **periodos** y **fechas destacadas**;
+  cada docente ve solo los suyos.
+- Un periodo puede ser un rango de fechas o **calcularse a partir de las
+  horas** (total y horas por día de la semana), saltando fines de semana y
+  días no lectivos.
+- Vertical o apaisado, con encabezado y pie opcionales y la **plantilla PDF**
+  del centro de fondo.
+- Se pueden **duplicar**, **exportar** e **importar** (JSON).
 
 
 ---
 
 
-## En resumen: seis módulos, un mismo centro
+## Utilidades: calculadora de fechas
+
+![bg right:40% fit](../manual/img/utilidades/utilidades-calculadora-fechas.png)
+
+- La misma cuenta que un periodo con horas, **sin guardar nada**: jornadas y
+  horas entre dos fechas, o la fecha que cierra un total de horas.
+- Resultado descargable en **Excel**, con el detalle de cada jornada.
+- La sección **Utilidades** se puede **desactivar** por centro o para toda la
+  plataforma.
+
+---
+
+
+<!-- _class: sep -->
+
+# En resumen
+
+## Siete módulos, un mismo centro
+
+
+---
+
+
+## En resumen: siete módulos, un mismo centro
 
 - **Convivencia**: parte → notificación → sanción, el mismo flujo para todo el
   centro. Cada perfil ve exactamente lo que necesita:
@@ -1259,8 +1299,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   - Tutor/a: todo su grupo.
   - Comisión y orientación: todo el centro.
   - Equipo directivo: la configuración de todo lo anterior.
-- **Salidas**, **ausencias y guardias**, **reservas**, **incidencias** y
-  **calendario**: cada uno con su uso diario y su configuración.
+- **Salidas**, **ausencias y guardias**, **reservas**, **incidencias**,
+  **calendario** y **utilidades**: cada uno con su uso diario y su configuración.
 - Todo queda **registrado, fechado y trazable**, sin depender de cuadernos ni
   hojas sueltas.
 

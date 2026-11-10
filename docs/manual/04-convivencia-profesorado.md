@@ -16,7 +16,7 @@ nada de lo que se explica aquí. La tramitación de las sanciones está en
 
 La sección **Partes** del menú lateral permite registrar y consultar los partes del curso activo.
 Cada docente ve, como mínimo, los partes que ha registrado; las tutorías y los perfiles
-especiales amplían esa visibilidad (ver [Permisos de un vistazo](14-permisos-de-un-vistazo.md)).
+especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de-un-vistazo.md)).
 
 ### Registrar un nuevo parte
 
@@ -397,7 +397,7 @@ con el estudiante, la materia y el periodo de la sanción de cada una.
     la pantalla completa de la sanción (datos de contacto familiar, observaciones o historial de
     notificación), que sigue reservada a quien ya la veía antes de esta funcionalidad —
     normalmente el tutor/a, la comisión de convivencia, orientación y los administradores (ver
-    [Permisos de un vistazo](14-permisos-de-un-vistazo.md#tareas-de-sancion)).
+    [Permisos de un vistazo](15-permisos-de-un-vistazo.md#tareas-de-sancion)).
 
 Pulsa sobre cualquier tarea de la lista (el nombre del estudiante o el icono de lápiz) para abrir
 su formulario, que muestra también, a modo de contexto, el nombre del estudiante, las fechas de la

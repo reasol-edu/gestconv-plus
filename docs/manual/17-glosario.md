@@ -84,6 +84,9 @@ Dependencia o material del centro que el profesorado puede reservar por tramos h
 **Incidencia**
 Aviso de una avería, desperfecto o problema del centro (una luz fundida, un aula sin wifi…), que se sigue hasta cerrarla: abierta, en proceso, solucionada, no procede o cerrada por duplicidad. Tiene un tipo (que decide quién la atiende), una prioridad que asigna el responsable, observaciones, adjuntos e historial. Distinta del *parte* de convivencia, que es sobre el alumnado.
 
+**Utilidades**
+Sección del menú con dos herramientas personales del profesorado: el generador de calendarios en PDF y la calculadora de fechas. No afecta a ningún otro dato del centro. Ver [Utilidades](14-utilidades.md).
+
 **Personal no docente**
 Cuenta de quien trabaja en el centro sin dar clase (conserjería, administración, mantenimiento…). Pertenece al centro sin depender del curso académico, no autentica en Séneca, no aparece entre los docentes y solo accede a las Incidencias. Se gestiona en Centro educativo › Personal no docente.
 

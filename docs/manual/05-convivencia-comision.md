@@ -3,7 +3,7 @@
 Este capítulo es para quienes tramitan las sanciones: la **comisión de convivencia** y quienes
 administran el centro (normalmente, el equipo directivo). La orientación puede consultar todas
 las sanciones, pero no registrarlas; el resto de perfiles solo ve las que le corresponden (ver
-[Permisos de un vistazo](14-permisos-de-un-vistazo.md#sanciones)). Los partes y su comunicación a
+[Permisos de un vistazo](15-permisos-de-un-vistazo.md#sanciones)). Los partes y su comunicación a
 la familia se explican en [Convivencia: el trabajo del profesorado](04-convivencia-profesorado.md).
 
 La sección **Sanciones** del menú lateral recoge las sanciones del curso activo: qué partes las

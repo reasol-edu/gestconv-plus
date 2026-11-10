@@ -229,6 +229,9 @@ aparte de los docentes y con los centros a los que pertenece cada una.
 ## Otras acciones y permisos generales
 
 - Cualquier docente puede ver y editar su propio perfil (nombre, contraseña, correo electrónico).
+- La sección [Utilidades](14-utilidades.md) está abierta a todo el profesorado con un centro
+  activo; cada calendario del generador es personal de quien lo crea. El personal no docente no la
+  ve.
 - Las secciones de **Inicio** y **Calendario** son accesibles para todo el profesorado
   autenticado con un centro seleccionado. El **modo tablón** solo pueden activarlo los
   administradores (ver [Calendario y tablón](11-calendario-actividades-y-tablon.md#modo-tablon)).

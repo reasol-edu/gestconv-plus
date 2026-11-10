@@ -17,6 +17,8 @@ puede usar (un grupo sin ninguna entrada visible no aparece):
 - **Convivencia** — **Partes**, **Notas**, **Sanciones**, **Tareas de sanción**,
   **Notificaciones** y **Mi tutoría**. Es el recorrido completo de un incidente: se registra, se
   sanciona si procede, se cumplen las tareas y se informa a la familia.
+- **Utilidades** — herramientas personales del profesorado: el generador de calendarios y la
+  calculadora de fechas (ver [Utilidades](14-utilidades.md)).
 - **Gestión** — **Informes** y **Centro educativo**, solo para el equipo directivo y la
   administración. **Administración** (solo administradores globales) queda aparte, al final.
 

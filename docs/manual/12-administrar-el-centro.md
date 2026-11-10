@@ -196,7 +196,7 @@ La tarjeta **Perfiles** asigna los roles especiales a docentes concretos del cen
 Los perfiles se asignan mediante buscadores de docentes con autocompletado, restringidos al
 curso académico activo. Ninguno concede acceso al resto del panel del centro (oferta
 formativa, estudiantes, catálogos…): solo amplían la visibilidad y los permisos sobre partes y
-sanciones, o sobre las actividades (ver [Permisos de un vistazo](14-permisos-de-un-vistazo.md)).
+sanciones, o sobre las actividades (ver [Permisos de un vistazo](15-permisos-de-un-vistazo.md)).
 
 ### Personal no docente {#personal-no-docente}
 
@@ -308,7 +308,7 @@ el día a día:
   o por tipo de informe (ver
   [Plantillas de informes](13-administrar-la-plataforma.md#plantillas-de-informes)).
 - **Secciones de la aplicación** — activar o desactivar Salidas, Ausencias, Notas, tareas de
-  sanción, Actividades y Reservas en este centro (ver
+  sanción, Actividades, Reservas, Incidencias y Utilidades en este centro (ver
   [Secciones de la aplicación](13-administrar-la-plataforma.md#secciones-de-la-aplicacion)).
 
 La referencia completa de todos los ajustes, con sus rangos y valores por defecto, está en

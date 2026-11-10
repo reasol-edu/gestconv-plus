@@ -1,10 +1,10 @@
 # Presentación de GestConv+
 
 Guía práctica de GestConv+ para el profesorado, escrita en [Marp]
-(Markdown → diapositivas). Organizada en seis bloques, uno por módulo: **Convivencia**
+(Markdown → diapositivas). Organizada en siete bloques, uno por módulo: **Convivencia**
 (dividido por perfiles —docente normal, tutoría de grupo, comisión de convivencia y orientación,
 y equipo directivo—, cada uno añadiendo solo lo que ese perfil tiene de más sobre el anterior),
-**Salidas**, **Ausencias y guardias**, **Reservas**, **Incidencias** y **Calendario**. Cada módulo
+**Salidas**, **Ausencias y guardias**, **Reservas**, **Incidencias**, **Calendario** y **Utilidades**. Cada módulo
 cierra con su configuración.
 
 ## Ficheros

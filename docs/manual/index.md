@@ -37,7 +37,7 @@ parte que pasa demasiado tiempo sin comunicarse acaba prescribiendo.
   alojados en él.
 
 El detalle completo de lo que puede hacer cada perfil está en
-[Permisos de un vistazo](14-permisos-de-un-vistazo.md).
+[Permisos de un vistazo](15-permisos-de-un-vistazo.md).
 
 ## Acceso a la aplicación
 

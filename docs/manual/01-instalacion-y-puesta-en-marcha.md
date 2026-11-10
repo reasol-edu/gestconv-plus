@@ -724,4 +724,4 @@ sin restricciones.
 
 Es la vía recomendada para crear administradores adicionales o para recuperar el acceso si se ha
 perdido la contraseña del único administrador (ver
-[Resolución de problemas](15-resolucion-de-problemas.md)).
+[Resolución de problemas](16-resolucion-de-problemas.md)).

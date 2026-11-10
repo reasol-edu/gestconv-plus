@@ -648,6 +648,7 @@ Mientras está activado:
 | Actividades de centro | Global, centro | Activado / Desactivado | Activado |
 | Reservas de recursos | Global, centro | Activado / Desactivado | Activado |
 | Incidencias | Global, centro | Activado / Desactivado | Activado |
+| Utilidades | Global, centro | Activado / Desactivado | Activado |
 
 Permiten que un centro (o toda la plataforma) no use una parte de la aplicación. Todas vienen
 **activadas**, así que nada cambia hasta que alguien las desactiva. Siguen las reglas de cualquier
@@ -782,7 +783,7 @@ Medidas que la aplicación aporta de serie:
 
 - **Acceso restringido** — solo el profesorado registrado puede entrar, y cada perfil ve
   únicamente lo que le corresponde (ver
-  [Permisos de un vistazo](14-permisos-de-un-vistazo.md)). Los datos de cada centro están
+  [Permisos de un vistazo](15-permisos-de-un-vistazo.md)). Los datos de cada centro están
   separados.
 - **Registro de actividad** — con `APP_LOG=true` (valor por defecto) queda traza de las acciones
   de los usuarios. Para las acciones de negocio principales (altas, modificaciones y bajas de

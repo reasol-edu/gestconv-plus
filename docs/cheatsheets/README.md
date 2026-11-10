@@ -18,11 +18,13 @@ se ejecutan desde la raíz del repositorio con `make`, no directamente desde est
   junto con el enlace.
 - `alta-personal-no-docente.md` — ficha para el equipo directivo, sin capturas (clase `.sin-capturas`),
   sobre cómo incorporar o registrar personal no docente.
+- `crear-calendario.md` — ficha para el profesorado, sin capturas (clase `.sin-capturas`), sobre cómo
+  generar un calendario en PDF con el generador de Utilidades.
 - `curso-nuevo.md` — ficha para el equipo directivo, con capturas de escritorio (a diferencia de
   las demás, pensadas para el móvil), usando la clase `.captura-escritorio` de `theme.css`.
-- Las 19 fichas comparten el mismo mecanismo de versión/fecha que `docs/slides/gestconv-plus.md`
+- Las 20 fichas comparten el mismo mecanismo de versión/fecha que `docs/slides/gestconv-plus.md`
   (marcadores `{{VERSION}}`/`{{PUB_DATE}}` sustituidos por `make cheatsheets`).
-- `theme.css` — tema Marp compartido por las 19 fichas (página A4 vertical, paleta de marca).
+- `theme.css` — tema Marp compartido por las 20 fichas (página A4 vertical, paleta de marca).
 - `img/` — capturas de pantalla referenciadas desde las fichas (móviles, salvo las de
   `curso-nuevo.md`).
 - `ficha-*.pdf` y `_build.md` — salidas generadas por `make cheatsheets` (ver abajo); no se editan

@@ -6,7 +6,7 @@ repositorio con `make`, no directamente desde esta carpeta.
 
 ## Ficheros
 
-- `index.md` y `01-*.md` a `10-*.md` — los capítulos del manual, en el orden en que aparecen tanto
+- `index.md` y `01-*.md` a `17-*.md` — los capítulos del manual, en el orden en que aparecen tanto
   en el PDF como en el índice de la web (ver [Cómo usar este manual](index.md#como-usar-este-manual)).
 - `mkdocs.yml` — configuración de MkDocs Material para la versión web (navegación, tema, exclusiones).
 - `requirements.txt` — dependencias de Python para generar la web (MkDocs Material y sus plugins).
