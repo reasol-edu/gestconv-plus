@@ -31,6 +31,18 @@ especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de
 
    ![Selector de alumnado con un estudiante seleccionado](img/partes/nuevo-parte-selector-alumnado.png)
 
+   **Selección rápida.** Debajo del buscador aparecen botones con tus grupos (los que impartes o
+   tutorizas), pensados para elegir con pocos toques incluso en la pantalla de un móvil. Pulsa un
+   grupo y se listan sus estudiantes: marca uno o varios, o usa **Marcar todos** / **Quitar todos**.
+   **Cambiar de grupo** vuelve a los botones, y puedes marcar estudiantes de varios grupos. El botón
+   **Otros** despliega el resto de los grupos del centro; si no impartes ni tutorizas ninguno, se
+   ven todos directamente. En cuanto escribes en el buscador, los botones y la lista desaparecen
+   para dejar sitio a los resultados, y los estudiantes ya elegidos siguen marcados como etiquetas
+   en el propio buscador; al vaciarlo, la selección rápida vuelve. Está activada por defecto; el
+   ajuste **Selección rápida de alumnado implicado en un parte** (categoría **Visualización**) permite
+   desactivarla para toda la plataforma, para un centro o para ti (ver
+   [Ajustes disponibles](13-administrar-la-plataforma.md#ajustes-disponibles)).
+
 3. **Fecha y hora del suceso** — por defecto se rellena con el momento actual; modifícala si el
    parte se registra después del incidente.
 4. **Dónde sucedió** — campo obligatorio con el catálogo de lugares del centro

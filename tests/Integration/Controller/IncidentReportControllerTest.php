@@ -22,9 +22,11 @@ use App\Entity\LocationOptionCategory;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\SettingDefinition;
+use App\Entity\SettingType;
 use App\Entity\SettingFile;
 use App\Entity\Student;
 use App\Entity\Teacher;
+use App\Entity\TeacherSettingValue;
 use App\Tests\Integration\ControllerTestCase;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
@@ -157,6 +159,148 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertSelectorNotExists('select#students-select');
         self::assertSelectorExists('input[type="hidden"][name="students[]"][value="' . $studentPair . '"]');
         self::assertSelectorExists('input[type="hidden"][name="from_daily_notes"][value="1"]');
+    }
+
+    // ── Selección rápida de estudiantes ──────────────────────────────────────
+
+    public function testNewShowsQuickSelectionWithAllGroupsWhenTeacherHasNone(): void
+    {
+        [$teacher, $centre, $group] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-controller="quick-selection"]');
+        self::assertSelectorExists('[data-controller="quick-selection"] button[data-group-id="' . $group->getId()->toRfc4122() . '"]');
+        // Sin grupos propios no hay nada que plegar: no hay botón «Otros» y los demás grupos están a la vista.
+        self::assertSelectorNotExists('[data-quick-selection-target="othersButton"]');
+        self::assertSelectorNotExists('[data-quick-selection-target="others"].hidden');
+    }
+
+    public function testNewQuickSelectionFoldsOtherGroupsBehindOthersButton(): void
+    {
+        [$teacher, $centre, $group] = $this->makeScenario();
+        $other = (new Group())->setName('1ºB')->setCourse($group->getCourse());
+        $this->persist($other);
+        $group->addTutor($teacher);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-quick-selection-target="othersButton"]');
+        self::assertSelectorExists('[data-quick-selection-target="others"].hidden button[data-group-id="' . $other->getId()->toRfc4122() . '"]');
+        self::assertSelectorNotExists('[data-quick-selection-target="others"] button[data-group-id="' . $group->getId()->toRfc4122() . '"]');
+    }
+
+    private function quickSelectionDefinition(): SettingDefinition
+    {
+        $definition = (new SettingDefinition())->setKey('display.quick_student_selection')->setType(SettingType::Boolean)
+            ->setCategory('settings.category.display')->setDefaultValue('true')
+            ->setGlobalScope(true)->setCentreScope(true)->setTeacherScope(true);
+        $this->persist($definition);
+
+        return $definition;
+    }
+
+    public function testQuickSelectionIsOnByDefault(): void
+    {
+        $this->quickSelectionDefinition();
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertSelectorExists('[data-controller="quick-selection"]');
+    }
+
+    public function testQuickSelectionCanBeSwitchedOffForACentre(): void
+    {
+        $definition         = $this->quickSelectionDefinition();
+        [$teacher, $centre] = $this->makeScenario();
+        $this->persist((new CentreSettingValue())->setDefinition($definition)->setCentre($centre)->setValue('false'));
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertSelectorNotExists('[data-controller="quick-selection"]');
+    }
+
+    public function testTeacherCanSwitchQuickSelectionBackOnOrOffForThemselves(): void
+    {
+        $definition         = $this->quickSelectionDefinition();
+        [$teacher, $centre] = $this->makeScenario();
+        // El centro la tiene activada y el docente la desactiva para sí mismo.
+        $this->persist(
+            (new CentreSettingValue())->setDefinition($definition)->setCentre($centre)->setValue('true'),
+            (new TeacherSettingValue())->setDefinition($definition)->setTeacher($teacher)->setValue('false'),
+        );
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertSelectorNotExists('[data-controller="quick-selection"]');
+    }
+
+    public function testQuickSelectionSwitchedOffGloballyAppliesToEveryone(): void
+    {
+        $definition = $this->quickSelectionDefinition();
+        $this->persist((new GlobalSettingValue())->setDefinition($definition)->setValue('false'));
+
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('[data-controller="quick-selection"]');
+        // El buscador sigue ahí.
+        self::assertSelectorExists('select#students-select');
+    }
+
+    public function testNewDoesNotShowQuickSelectionWhenStudentIsLocked(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $student->addGroup($group);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo?studentId=' . $student->getId()->toRfc4122() . '&groupId=' . $group->getId()->toRfc4122() . '&fromDailyNotes=1');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('[data-controller="quick-selection"]');
+    }
+
+    public function testGroupStudentsEndpointListsStudentPairsOfTheGroup(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $student->addGroup($group);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/buscar-alumnos/grupo/' . $group->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([[
+            'value'     => $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122(),
+            'label'     => 'García, Ana',
+            'secondary' => '1ºA',
+        ]], json_decode((string) $this->client->getResponse()->getContent(), true));
+    }
+
+    public function testGroupStudentsEndpointReturnsNothingForAnotherCentresGroup(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        [, , $foreignGroup, $foreignStudent] = $this->makeScenario();
+        $foreignStudent->addGroup($foreignGroup);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/buscar-alumnos/grupo/' . $foreignGroup->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([], json_decode((string) $this->client->getResponse()->getContent(), true));
     }
 
     public function testNewPostWithFromDailyNotesDeactivatesActiveNotesAndShowsCountOnCreatedPage(): void

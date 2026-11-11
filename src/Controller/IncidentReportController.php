@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Attribute\CurrentCentre;
 use App\Dto\IncidentReportFormData;
 use App\Entity\EducationalCentre;
+use App\Entity\Group;
 use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
 use App\Entity\Teacher;
@@ -111,6 +112,35 @@ class IncidentReportController extends AbstractController
         foreach ($pairs as $pair) {
             $student    = $pair['student'];
             $group      = $pair['group'];
+            $results[] = [
+                'value'     => $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122(),
+                'label'     => $student->getName()->getLastName() . ', ' . $student->getName()->getFirstName(),
+                'secondary' => $group->getName(),
+            ];
+        }
+
+        return $this->json($results);
+    }
+
+    /**
+     * Estudiantes de un grupo del curso activo, para la «selección rápida» del formulario de parte.
+     * Mismo formato que la búsqueda: el valor es el par «estudiante::grupo».
+     */
+    #[Route('/buscar-alumnos/grupo/{groupId}', name: 'app_incidents_group_students', requirements: ['groupId' => '[0-9a-fA-F-]{36}'], methods: ['GET'])]
+    public function groupStudents(string $groupId): JsonResponse
+    {
+        $centre = $this->tenantContext->getSelectedCentre();
+        if ($centre === null || !$this->getUser() instanceof Teacher) {
+            return $this->json([]);
+        }
+
+        $group = $this->groups->findByIdAndCentre($groupId, $centre);
+        if ($group === null || $group->getAcademicYear() !== $centre->getActiveAcademicYear()) {
+            return $this->json([]);
+        }
+
+        $results = [];
+        foreach ($this->students->findByGroupOrdered($group) as $student) {
             $results[] = [
                 'value'     => $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122(),
                 'label'     => $student->getName()->getLastName() . ', ' . $student->getName()->getFirstName(),
@@ -287,10 +317,22 @@ class IncidentReportController extends AbstractController
         $availableGroups = $this->groups->findByActiveYearOfCentreOrderedByName($centre);
         $lockedStudent   = $fromDailyNotes && count($preloadedStudents) === 1;
 
+        // Selección rápida (ajuste global, de centro y de docente; activa por defecto): primero los
+        // grupos que la persona imparte o tutoriza, luego el resto. Desactivada, no hay grupos que mostrar.
+        $quickEnabled = $this->settings->getForTeacherInCentre('display.quick_student_selection', $user, $centre) !== false;
+        $quickMine    = $quickEnabled && $activeYear !== null ? $this->groups->findTaughtOrTutoredInYear($activeYear, $user) : [];
+        $mineIds   = array_map(static fn (Group $g): string => $g->getId()->toRfc4122(), $quickMine);
+        $quickOthers = $quickEnabled ? array_values(array_filter(
+            $availableGroups,
+            static fn (Group $g): bool => !in_array($g->getId()->toRfc4122(), $mineIds, true),
+        )) : [];
+
         return $this->render('incident/new.html.twig', [
             'centre'              => $centre,
             'behaviorsByCategory' => $behaviorsByCategory,
             'availableGroups'     => $availableGroups,
+            'quickMine'           => $quickMine,
+            'quickOthers'         => $quickOthers,
             'errors'              => $errors,
             'formData'            => $formData,
             'preloadedStudents'   => $preloadedStudents,

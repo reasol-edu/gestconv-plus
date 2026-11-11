@@ -241,6 +241,17 @@ Número de elementos que se muestran en los listados paginados (partes, sancione
 etc.). Es un ajuste exclusivamente personal: cada docente configura el suyo desde su propio
 perfil, y no admite valor global ni de centro.
 
+| Ajuste | Ámbito | Tipo | Por defecto |
+|---|---|---|---|
+| Selección rápida de alumnado implicado en un parte | Global, centro, docente | Booleano (sí/no) | Activado |
+
+Activa o desactiva la **selección rápida** del formulario de
+[nuevo parte](04-convivencia-profesorado.md#registrar-un-nuevo-parte): los botones de grupo bajo el buscador
+de estudiantes, pensados para elegir con pocos toques desde el móvil. Un administrador global puede
+desactivarla para todo el servidor, uno de centro para su centro, y cada docente para sí mismo
+(por ejemplo, quien prefiere buscar siempre por nombre). Desactivada, el formulario conserva el
+buscador, que funciona igual.
+
 ### Correo electrónico
 
 | Ajuste | Ámbito | Tipo | Por defecto |
@@ -248,9 +259,9 @@ perfil, y no admite valor global ni de centro.
 | Activar notificaciones automáticas | Global, centro, docente | Booleano (sí/no) | Activado |
 
 Activa o desactiva todos los correos automáticos de avisos de la aplicación (ver
-[Avisos de partes y sanciones](06-convivencia-administracion.md#avisos-de-partes-y-sanciones)). Es el
-único ajuste con los tres ámbitos disponibles: un administrador global puede desactivarlos para
-todo el servidor, uno de centro para su centro, y cada docente para sí mismo.
+[Avisos de partes y sanciones](06-convivencia-administracion.md#avisos-de-partes-y-sanciones)). Tiene los
+tres ámbitos disponibles: un administrador global puede desactivarlos para todo el servidor, uno de
+centro para su centro, y cada docente para sí mismo.
 
 ### Actividades
 
