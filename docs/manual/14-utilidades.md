@@ -77,6 +77,49 @@ horas**, sin el desglose de jornadas, por ejemplo: «UD2 — 11/11/2026 - 18/11/
 
 ![Periodo «Desde el inicio, con horas», con su fecha de inicio, el total de horas y las horas de cada día de la semana](img/utilidades/utilidades-calendario-periodos.png)
 
+### Secuencias
+
+Una secuencia sirve para **temporalizar**: reparte una lista de elementos (por ejemplo, las unidades
+didácticas de un módulo), cada uno con sus horas, uno detrás de otro a partir de una fecha de inicio.
+Se define con:
+
+- un **nombre** (por ejemplo, «Unidades didácticas») y una **fecha de inicio**;
+- **dos colores**, que se alternan de un elemento al siguiente (el primero, el tercero… con el primer
+  color; el segundo, el cuarto… con el segundo) para distinguir a simple vista dónde acaba uno y
+  empieza otro;
+- las **horas de cada día de la semana** (lunes a viernes), igual que en los periodos con horas. El
+  calendario salta los fines de semana y los días no lectivos del curso;
+- la lista de **elementos**, cada uno con su descripción y sus horas (se admiten decimales, como 7,5).
+
+Con 55, 10 y 12 horas para UD1, UD2 y UD3, el calendario pinta los días que ocupa cada una y, en el
+margen del mes, indica **Inicio UD1**, **Fin UD1**, **Inicio UD2**… con el color de cada elemento.
+Cuando un elemento acaba a mitad de día, el siguiente empieza ese mismo día con las horas que sobran:
+ese día se pinta del color del elemento que ocupa **más horas** (si empatan, el que empieza), y si la
+secuencia muestra las horas de cada día, aparece el total del día.
+
+Cada secuencia tiene su **propio cuadro de resumen** encima del calendario:
+
+```text
+Unidades didácticas
+UD1 — 16/09/2026 - 10/11/2026 · 55 horas
+UD2 — 11/11/2026 - 18/11/2026 · 10 horas
+UD3 — 18/11/2026 - 24/11/2026 · 12 horas
+Total: 77 horas
+```
+
+Dos casillas controlan cada secuencia: **Mostrar las horas de cada día de esta secuencia en el
+calendario** y **Mostrar el resumen de esta secuencia debajo del calendario**.
+
+Para rellenar la lista con comodidad:
+
+- **Añadir elemento** añade una fila; los botones de cada fila la **suben**, la **bajan** o la
+  **quitan**. El orden de la lista es el orden en que se reparten las horas.
+- **Pegar elementos** admite varias líneas con la descripción y las horas separadas por «;»
+  (`UD1; 55`). También sirve copiar dos columnas de una hoja de cálculo. Se añaden a la lista al
+  guardar.
+
+Las secuencias se duplican, se exportan y se importan junto con el resto del calendario.
+
 ### Generar y compartir el PDF
 
 El botón **PDF** de cada calendario lo descarga en su formato actual; desde el formulario de

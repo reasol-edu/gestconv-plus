@@ -42,5 +42,9 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 </div>
 
 <div class="nota">
+  <p>Para <strong>temporalizar unidades didácticas</strong>, añade una <strong>secuencia</strong>: su fecha de inicio, las horas de cada día y la lista de elementos con sus horas (puedes pegarlos, una línea por elemento: «UD1; 55»). Cada elemento se pinta con uno de dos colores alternos y lleva su «Inicio» y su «Fin» en el margen.</p>
+</div>
+
+<div class="nota">
   <p>Cada calendario es <strong>personal</strong>: solo lo ves tú. Desde el listado puedes <strong>duplicarlo</strong> (útil para el curso siguiente), <strong>exportarlo</strong> a un fichero para otro docente e <strong>importarlo</strong>. Si solo quieres saber cuántas horas hay entre dos fechas, o qué día termina un periodo, usa la <strong>Calculadora de fechas</strong>, que no guarda nada y exporta a Excel.</p>
 </div>

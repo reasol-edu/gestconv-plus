@@ -1260,6 +1260,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Un periodo puede ser un rango de fechas o **calcularse a partir de las
   horas** (total y horas por día de la semana), saltando fines de semana y
   días no lectivos.
+- Una **secuencia** temporaliza una lista de elementos (p. ej. unidades
+  didácticas) con sus horas, alternando **dos colores** y con su propio
+  resumen de fechas y horas.
 - Vertical o apaisado, con encabezado y pie opcionales y la **plantilla PDF**
   del centro de fondo.
 - Se pueden **duplicar**, **exportar** e **importar** (JSON).
