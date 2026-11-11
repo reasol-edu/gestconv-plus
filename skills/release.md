@@ -112,17 +112,13 @@ Once a release is actually requested, the mechanics are:
 3. `git push origin main`, then `git tag -a vX.Y.Z -m vX.Y.Z` + `git push origin vX.Y.Z` — this tag
    push is what triggers `.github/workflows/build.yml`.
 
-### Gotcha: the FrankenPHP checksums go stale between releases
+### Gotcha: don't pin the FrankenPHP checksums
 
-`.github/workflows/build.yml` pins the SHA-256 of each FrankenPHP binary it packages (`fp_sha256` in
-the matrix). FrankenPHP **re-uploads the binaries of a version that is already published** (it
+`.github/workflows/build.yml` deliberately does **not** verify the SHA-256 of the FrankenPHP binaries
+it packages. FrankenPHP **re-uploads the binaries of a version that is already published** (it
 rebuilds them when the C libraries get security updates; upstream confirmed it is intentional,
-php/frankenphp#2761), so a pin that was right when you set it can fail days later with `FAILED` in
-the "Descargar binario FrankenPHP" step. **Right before tagging**, compare the pins with
-`gh api repos/php/frankenphp/releases/tags/v<version> --jq '.assets[] | "\(.name) \(.digest)"'` and, if
-they differ, re-pin them (downloading and running `shasum -a 256` confirms the API's digest). If a
-release job fails that way after tagging, re-pin and publish a new patch version: re-running the
-workflow on the same tag would need the tag moved.
+php/frankenphp#2761), so any pinned hash eventually fails with `FAILED` in the "Descargar binario
+FrankenPHP" step without a real problem. Don't reintroduce `fp_sha256`.
 
 When bumping FrankenPHP, also check that the PHP inside each binary is still a patched one
 (`strings -a frankenphp | grep -m1 -oE 'FrankenPHP v[0-9.]+ PHP [0-9.]+'`; on Windows look at

@@ -97,34 +97,24 @@ jobs:
     strategy:
       matrix:
         include:
-          # fp_sha256: suma del binario de FrankenPHP (versión de FRANKENPHP_VERSION), fijada aquí
-          # para que un cambio en el binario publicado rompa la build en vez de entrar en los
-          # paquetes. Al subir de versión, actualízalas todas con:
-          #   gh api repos/php/frankenphp/releases/tags/v<versión> --jq '.assets[] | "\(.name) \(.digest)"'
-          # FrankenPHP vuelve a subir los binarios de una versión ya publicada, porque los reconstruye
-          # cuando se actualizan las bibliotecas de C (php/frankenphp#2761, a propósito): si la build
-          # falla aquí con «FAILED», no es un fallo del repositorio. Comprueba las sumas de nuevo con
-          # el comando de arriba (y, si quieres estar seguro, descarga y calcula `shasum -a 256`) y
-          # vuelve a fijarlas justo antes de etiquetar.
+          # No se comprueba la suma de los binarios de FrankenPHP: vuelve a subirlos sin cambiar el
+          # número de versión (los reconstruye al actualizar bibliotecas de C, php/frankenphp#2761,
+          # a propósito), y fijar sus hashes rompía la build sin que hubiera un fallo real.
           - platform: linux-x86_64
             fp_asset:   frankenphp-linux-x86_64
-            fp_sha256:  cdb85dd2fd6c0468f53079e845c81621563024772ac400e5d1c17d0751324b71
             binary:     frankenphp
             archive:    tar.gz
           - platform: linux-aarch64
             fp_asset:   frankenphp-linux-aarch64
-            fp_sha256:  72272e9b5538b9d1cdf5bfecacc503cb3b0db8931538c81a1f2d32f3801b545e
             binary:     frankenphp
             archive:    tar.gz
           # Sin binario para Mac con procesador Intel: FrankenPHP solo lo publica para Apple Silicon desde la 1.13.2.
           - platform: macos-arm64
             fp_asset:   frankenphp-mac-arm64
-            fp_sha256:  42cbc1dc011495935a1ea8a90194269cda24a7f5ef2ef92117026efefd852f2e
             binary:     frankenphp
             archive:    tar.gz
           - platform: windows-x86_64
             fp_asset:   frankenphp-windows-x86_64.zip
-            fp_sha256:  825b11e8baff1c7991d93ff662465089b13cc417e11c37eab98df42a607ad984
             binary:     frankenphp.exe
             archive:    zip
 
@@ -151,8 +141,6 @@ jobs:
           curl -fsSL \
             "https://github.com/php/frankenphp/releases/download/v${{ env.FRANKENPHP_VERSION }}/${{ matrix.fp_asset }}" \
             -o fp_asset_download
-          # Comprobación de la suma desactivada de momento (FrankenPHP vuelve a subir los binarios).
-          # echo "${{ matrix.fp_sha256 }}  fp_asset_download" | sha256sum -c -
           if [[ "${{ matrix.fp_asset }}" == *.zip ]]; then
             unzip fp_asset_download -d fp_extracted
           else
