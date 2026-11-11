@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.29.0] - 2026-11-11
+
+### Added
+
+- **Filtro por tipo de contenido en el calendario mensual**: unos botones sobre la cuadrícula permiten mostrar u ocultar las sanciones, las ausencias y las actividades. La elección se mantiene al cambiar de mes. El último tipo visible queda deshabilitado para que el filtro no pueda dejar el calendario vacío; con un solo tipo de contenido, su único botón aparece deshabilitado. Solo afecta a la cuadrícula: la vista de día y el tablón siguen mostrándolo todo.
+- **Selección rápida del alumnado en el formulario de nuevo parte**, pensada para elegir con pocos toques desde el móvil: bajo el buscador aparecen los botones de los grupos que la persona imparte o tutoriza (y **Otros** despliega el resto; sin grupos propios se ven todos). Al pulsar un grupo se listan sus estudiantes para marcar uno o varios, con **Marcar todos** y **Quitar todos**. Al escribir en el buscador el bloque se oculta y los estudiantes elegidos siguen como etiquetas; al vaciarlo, vuelve.
+- Ajuste **Selección rápida de alumnado implicado en un parte** (categoría Visualización), con ámbito global, de centro y de docente y activado por defecto, para desactivar la selección rápida. Requiere ejecutar las migraciones.
+
 ## [1.28.1] - 2026-11-11
 
 ### Added
