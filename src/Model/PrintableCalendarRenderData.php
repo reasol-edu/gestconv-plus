@@ -22,4 +22,33 @@ final readonly class PrintableCalendarRenderData
         public array $journeySummaries,
         public PrintableCalendarPdfSizes $sizes,
     ) {}
+
+    /**
+     * The journey summary split into the boxes the PDF draws, keeping the by-start-date order:
+     * consecutive periods share one box, and each sequence gets a box of its own.
+     *
+     * @return list<list<PrintableCalendarJourneyLine>>
+     */
+    public function journeyBoxes(): array
+    {
+        $boxes   = [];
+        $periods = [];
+        foreach ($this->journeySummaries as $line) {
+            if ($line->items === []) {
+                $periods[] = $line;
+
+                continue;
+            }
+            if ($periods !== []) {
+                $boxes[]   = $periods;
+                $periods   = [];
+            }
+            $boxes[] = [$line];
+        }
+        if ($periods !== []) {
+            $boxes[] = $periods;
+        }
+
+        return $boxes;
+    }
 }

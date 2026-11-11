@@ -460,6 +460,231 @@ final class CalendarGeneratorControllerTest extends ControllerTestCase
         return new \Symfony\Component\HttpFoundation\File\UploadedFile($path, 'calendario.json', 'application/json', null, true);
     }
 
+    /** @return array<string, mixed> a sequence row of the form, UD1/UD2/UD3 from Monday 2 March 2026, 8 h a day */
+    private function sequenceRow(array $overrides = []): array
+    {
+        return array_replace([
+            'id' => '', 'name' => 'Unidades didácticas', 'startDate' => '2026-03-02', 'colorA' => '#bfdbfe', 'colorB' => '#fde68a',
+            'showHours' => '1', 'showJourneySummary' => '1',
+            'mondayHours' => '8', 'tuesdayHours' => '8', 'wednesdayHours' => '8', 'thursdayHours' => '8', 'fridayHours' => '8',
+            'items' => [
+                ['description' => 'UD1', 'hours' => '20'],
+                ['description' => 'UD2', 'hours' => '10'],
+                ['description' => 'UD3', 'hours' => '12'],
+            ],
+            'paste' => '',
+        ], $overrides);
+    }
+
+    private function loadCalendar(string $id): PrintableCalendar
+    {
+        $this->em->clear();
+        /** @var PrintableCalendarRepository $repo */
+        $repo     = self::getContainer()->get(PrintableCalendarRepository::class);
+        $calendar = $repo->findByOwnerAndId($this->owner, $this->centre, $id);
+        self::assertNotNull($calendar);
+
+        return $calendar;
+    }
+
+    /** @return list<string> «UD1:20», «UD2:10»… in order */
+    private function itemSummary(PrintableCalendar $calendar, int $sequence = 0): array
+    {
+        $summary = [];
+        foreach ($calendar->getSequences()->get($sequence)?->getItems() ?? [] as $item) {
+            $summary[] = $item->getDescription() . ':' . $item->getHours();
+        }
+
+        return $summary;
+    }
+
+    public function testASequenceIsSavedWithItsItemsInTheOrderSubmittedAndItsPdfRenders(): void
+    {
+        $id = $this->create(['sequences' => [$this->sequenceRow()]]);
+
+        $calendar = $this->loadCalendar($id);
+        self::assertCount(1, $calendar->getSequences());
+        $sequence = $calendar->getSequences()->first();
+        self::assertSame('Unidades didácticas', $sequence->getName());
+        self::assertSame(['UD1:20', 'UD2:10', 'UD3:12'], $this->itemSummary($calendar));
+        self::assertSame(8.0, $sequence->weekdayHours()[3]);
+
+        $this->client->request('GET', '/utilidades/generador-calendarios/' . $id . '/pdf');
+        self::assertSame(200, $this->client->getResponse()->getStatusCode());
+        self::assertStringContainsString('application/pdf', (string) $this->client->getResponse()->headers->get('Content-Type'));
+    }
+
+    public function testTheEditFormShowsTheSequenceAndItsItems(): void
+    {
+        $id = $this->create(['sequences' => [$this->sequenceRow()]]);
+
+        $crawler = $this->client->request('GET', '/utilidades/generador-calendarios/' . $id . '/editar');
+        self::assertSame(200, $this->client->getResponse()->getStatusCode());
+        self::assertSame('Unidades didácticas', $crawler->filter('input[name="sequences[0][name]"]')->attr('value'));
+        self::assertSame('UD2', $crawler->filter('input[name="sequences[0][items][1][description]"]')->attr('value'));
+        self::assertSame('12', $crawler->filter('input[name="sequences[0][items][2][hours]"]')->attr('value'));
+    }
+
+    public function testEditingReordersAndReplacesTheItemsAndRemovingASequenceDeletesIt(): void
+    {
+        $id       = $this->create(['sequences' => [$this->sequenceRow()]]);
+        $sequence = $this->loadCalendar($id)->getSequences()->first();
+        $seqId    = $sequence->getId()->toRfc4122();
+
+        // Reordered (UD3 first) and with a new one with decimal hours.
+        $this->client->request('GET', '/utilidades/generador-calendarios/' . $id . '/editar');
+        $this->client->request('POST', '/utilidades/generador-calendarios/' . $id . '/editar', array_replace(
+            $this->baseFormValues(),
+            ['_token' => $this->csrfToken('utilities_calendar_' . $id)],
+            ['sequences' => [$this->sequenceRow(['id' => $seqId, 'items' => [
+                ['description' => 'UD3', 'hours' => '12'],
+                ['description' => 'UD1', 'hours' => '20'],
+                ['description' => 'Repaso', 'hours' => '7,5'],
+            ]])]],
+        ));
+        self::assertSame(302, $this->client->getResponse()->getStatusCode(), (string) $this->client->getResponse()->getContent());
+
+        $calendar = $this->loadCalendar($id);
+        self::assertCount(1, $calendar->getSequences());
+        self::assertSame($seqId, $calendar->getSequences()->first()->getId()->toRfc4122(), 'the same sequence, updated in place');
+        self::assertSame(['UD3:12', 'UD1:20', 'Repaso:7.5'], $this->itemSummary($calendar));
+
+        $this->client->request('GET', '/utilidades/generador-calendarios/' . $id . '/editar');
+        $this->client->request('POST', '/utilidades/generador-calendarios/' . $id . '/editar', array_replace(
+            $this->baseFormValues(),
+            ['_token' => $this->csrfToken('utilities_calendar_' . $id)],
+            ['sequences' => [$this->sequenceRow(['id' => $seqId, 'remove' => '1'])]],
+        ));
+        self::assertSame(302, $this->client->getResponse()->getStatusCode());
+        self::assertCount(0, $this->loadCalendar($id)->getSequences());
+    }
+
+    public function testPastedItemsAreAddedAfterTheOnesAlreadyListed(): void
+    {
+        // A decimal comma stays part of the hours: only «;» and tab separate the description.
+        $id = $this->create(['sequences' => [$this->sequenceRow([
+            'items' => [['description' => 'UD1', 'hours' => '20']],
+            'paste' => "UD2; 10\nUD3\t7,5\n\n  Repaso final ; 2  ",
+        ])]]);
+
+        self::assertSame(['UD1:20', 'UD2:10', 'UD3:7.5', 'Repaso final:2'], $this->itemSummary($this->loadCalendar($id)));
+    }
+
+    /** @return iterable<string, array{array<string, mixed>}> */
+    public static function invalidSequences(): iterable
+    {
+        yield 'without a name' => [['name' => '']];
+        yield 'without a start date' => [['startDate' => '']];
+        yield 'with an invalid colour' => [['colorB' => 'rojo']];
+        yield 'without hours on any weekday' => [['mondayHours' => '', 'tuesdayHours' => '0', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => '']];
+        yield 'without items' => [['items' => []]];
+        yield 'with an item without hours' => [['items' => [['description' => 'UD1', 'hours' => '']]]];
+        yield 'with an item with zero hours' => [['items' => [['description' => 'UD1', 'hours' => '0']]]];
+        yield 'with a pasted line without hours' => [['items' => [['description' => 'UD1', 'hours' => '5']], 'paste' => 'UD2 sin horas']];
+    }
+
+    /** @param array<string, mixed> $overrides */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidSequences')]
+    public function testAnInvalidSequenceIsRejectedAndNothingIsSaved(array $overrides): void
+    {
+        $this->loginAs($this->owner, $this->centre);
+        $this->client->request('GET', '/utilidades/generador-calendarios/nuevo');
+        $this->client->request('POST', '/utilidades/generador-calendarios/nuevo', array_replace(
+            $this->baseFormValues(),
+            ['_token' => $this->csrfToken('utilities_calendar'), 'sequences' => [$this->sequenceRow($overrides)]],
+        ));
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        /** @var PrintableCalendarRepository $repo */
+        $repo = self::getContainer()->get(PrintableCalendarRepository::class);
+        self::assertSame([], $repo->findByOwnerAndYear($this->owner, $this->year));
+    }
+
+    public function testASpareBlankSequenceRowIsIgnored(): void
+    {
+        $blank = $this->sequenceRow(['name' => '', 'startDate' => '', 'items' => [['description' => '', 'hours' => '']], 'mondayHours' => '', 'tuesdayHours' => '', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => '']);
+
+        $id = $this->create(['sequences' => [$this->sequenceRow(), $blank]]);
+
+        self::assertCount(1, $this->loadCalendar($id)->getSequences());
+    }
+
+    public function testDuplicatingExportingAndImportingACalendarKeepTheSequencesAndTheirItemsInOrder(): void
+    {
+        $id = $this->create(['sequences' => [
+            $this->sequenceRow(),
+            $this->sequenceRow(['name' => 'Segunda', 'showJourneySummary' => '', 'showHours' => '', 'items' => [['description' => 'B', 'hours' => '3,5'], ['description' => 'A', 'hours' => '4']]]),
+        ]]);
+
+        // Duplicate.
+        $this->client->request('POST', '/utilidades/generador-calendarios/' . $id . '/duplicar', [
+            '_token' => $this->csrfToken('utilities_calendar_duplicate_' . $id),
+        ]);
+        preg_match('#/generador-calendarios/([0-9a-f-]+)/editar$#', (string) $this->client->getResponse()->headers->get('Location'), $matches);
+        $copy = $this->loadCalendar($matches[1]);
+        self::assertCount(2, $copy->getSequences());
+        self::assertSame(['UD1:20', 'UD2:10', 'UD3:12'], $this->itemSummary($copy, 0));
+        self::assertSame(['B:3.5', 'A:4'], $this->itemSummary($copy, 1));
+        self::assertFalse($copy->getSequences()->get(1)->isShowJourneySummary());
+        self::assertFalse($copy->getSequences()->get(1)->isShowHours());
+
+        // Export, then import.
+        $this->client->request('GET', '/utilidades/generador-calendarios/' . $id . '/exportar');
+        $json    = (string) $this->client->getResponse()->getContent();
+        $decoded = json_decode($json, true);
+        self::assertCount(2, $decoded['calendar']['sequences']);
+        self::assertSame('Segunda', $decoded['calendar']['sequences'][1]['name']);
+
+        $this->client->request('GET', '/utilidades/generador-calendarios/importar');
+        $this->client->request('POST', '/utilidades/generador-calendarios/importar', [
+            '_token'       => $this->csrfToken('utilities_calendar_import'),
+            'academicYear' => $this->year->getId()->toRfc4122(),
+        ], ['json' => $this->uploadedJsonFile($json)]);
+        self::assertSame(302, $this->client->getResponse()->getStatusCode());
+        preg_match('#/generador-calendarios/([0-9a-f-]+)/editar$#', (string) $this->client->getResponse()->headers->get('Location'), $matches);
+        $imported = $this->loadCalendar($matches[1]);
+        self::assertCount(2, $imported->getSequences());
+        self::assertSame(['UD1:20', 'UD2:10', 'UD3:12'], $this->itemSummary($imported, 0));
+        self::assertSame(['B:3.5', 'A:4'], $this->itemSummary($imported, 1));
+        self::assertSame('2026-03-02', $imported->getSequences()->first()->getStartDate()->format('Y-m-d'));
+        self::assertSame('#fde68a', $imported->getSequences()->first()->getColorB());
+    }
+
+    public function testAFileExportedBeforeSequencesExistedStillImports(): void
+    {
+        $json = (string) json_encode(['version' => 1, 'calendar' => [
+            'title' => 'Antiguo', 'description' => null, 'startDate' => null, 'endDate' => null,
+            'nonWorkingDayColor' => null, 'weekendColor' => null, 'orientation' => 'portrait', 'fontSizeScale' => 100,
+            'dates' => [], 'periods' => [],
+        ]]);
+        $this->loginAs($this->owner, $this->centre);
+        $this->client->request('GET', '/utilidades/generador-calendarios/importar');
+        $this->client->request('POST', '/utilidades/generador-calendarios/importar', [
+            '_token'       => $this->csrfToken('utilities_calendar_import'),
+            'academicYear' => $this->year->getId()->toRfc4122(),
+        ], ['json' => $this->uploadedJsonFile($json)]);
+
+        self::assertSame(302, $this->client->getResponse()->getStatusCode());
+        preg_match('#/generador-calendarios/([0-9a-f-]+)/editar$#', (string) $this->client->getResponse()->headers->get('Location'), $matches);
+        self::assertCount(0, $this->loadCalendar($matches[1])->getSequences());
+    }
+
+    public function testAnImportedSequenceWithInvalidDataIsRejected(): void
+    {
+        $sequence = ['name' => 'S', 'startDate' => '2026-03-02', 'colorA' => '#bfdbfe', 'colorB' => '#fde68a', 'mondayHours' => 8, 'items' => [['description' => 'UD1', 'hours' => 0]]];
+        $json     = (string) json_encode(['version' => 1, 'calendar' => [
+            'title' => 'X', 'orientation' => 'portrait', 'fontSizeScale' => 100, 'dates' => [], 'periods' => [], 'sequences' => [$sequence],
+        ]]);
+        $this->loginAs($this->owner, $this->centre);
+        $this->client->request('GET', '/utilidades/generador-calendarios/importar');
+        $this->client->request('POST', '/utilidades/generador-calendarios/importar', [
+            '_token'       => $this->csrfToken('utilities_calendar_import'),
+            'academicYear' => $this->year->getId()->toRfc4122(),
+        ], ['json' => $this->uploadedJsonFile($json)]);
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+    }
+
     public function testDeletingRemovesTheCalendar(): void
     {
         $id = $this->create();

@@ -129,20 +129,35 @@
        spaces), mPDF's table-layout: fixed can still widen that column beyond its declared
        percentage, which then shifts everything to its right and throws this off — not worth
        chasing further; it requires wrappable text in annotation descriptions. #}
+    {# One box for the consecutive periods and one box of its own for each sequence (data.journeyBoxes). #}
+    {% for box in data.journeyBoxes %}
     <table class="journey-row">
         <tr>
             <td class="annotation-col"></td>
             <td class="journey-box-cell" colspan="2">
-                {% for line in data.journeySummaries %}
+                {% for line in box %}
+                    {% if line.items is not empty %}
+                        <div class="journey"><span class="title">{{ line.description }}</span></div>
+                        {% for item in line.items %}
+                            <div class="journey">
+                                {{ item.description }}
+                                — {{ item.startDate|date('d/m/Y') }}{% if item.endDate != item.startDate %} - {{ item.endDate|date('d/m/Y') }}{% endif %}
+                                <span class="lines">· {{ item.hoursLabel }}</span>
+                            </div>
+                        {% endfor %}
+                        <div class="journey"><span class="title">{{ line.hoursLines|join(' · ') }}</span></div>
+                    {% else %}
                     <div class="journey">
                         <span class="title">{{ line.description }}</span>
                         — {{ line.startDate|date('d/m/Y') }}{% if line.endDate != line.startDate %} - {{ line.endDate|date('d/m/Y') }}{% endif %}
                         {% if line.hoursLines is not empty %}<span class="lines">· {{ line.hoursLines|join(' · ') }}</span>{% endif %}
                     </div>
+                    {% endif %}
                 {% endfor %}
             </td>
             <td class="annotation-col"></td>
         </tr>
     </table>
+    {% endfor %}
 {% endif %}
 {% endblock %}

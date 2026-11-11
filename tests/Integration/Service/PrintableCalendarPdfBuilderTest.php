@@ -133,6 +133,125 @@ final class PrintableCalendarPdfBuilderTest extends RepositoryTestCase
         self::assertSame(['1 hora'], $data->journeySummaries[2]->hoursLines);
     }
 
+    private function sequenceCalendar(): PrintableCalendar
+    {
+        $centre   = $this->centre();
+        $year     = $this->year($centre);
+        $teacher  = $this->teacher('docente');
+        $calendar = $this->calendar($centre, $year, $teacher);
+        // Monday 2 March 2026, 8 h a day: UD1 = Mon-Wed (20 h), UD2 = Wed-Thu (10 h), UD3 = Thu-Mon (12 h).
+        $sequence = $calendar->addSequence('Unidades didácticas', new \DateTimeImmutable('2026-03-02'), '#bfdbfe', '#fde68a');
+        $sequence->setWeekdayHours([1 => 8.0, 2 => 8.0, 3 => 8.0, 4 => 8.0, 5 => 8.0]);
+        $sequence->addItem('UD1', 20.0);
+        $sequence->addItem('UD2', 10.0);
+        $sequence->addItem('UD3', 12.0);
+        $this->persist($centre, $year, $teacher, $calendar);
+
+        return $calendar;
+    }
+
+    /** @return array<string, ?string> ISO date => background colour of the first month's days */
+    private function dayColors(PrintableCalendar $calendar): array
+    {
+        $colors = [];
+        foreach ($this->builder->build($calendar)->months as $month) {
+            foreach ($month->weeks as $week) {
+                foreach ($week as $day) {
+                    if ($day !== null) {
+                        $colors[$day->date->format('Y-m-d')] = $day->backgroundColor;
+                    }
+                }
+            }
+        }
+
+        return $colors;
+    }
+
+    public function testASequenceGetsItsOwnSummaryBoxWithItsItemsAndTotal(): void
+    {
+        $data = $this->builder->build($this->sequenceCalendar());
+
+        self::assertCount(1, $data->journeySummaries);
+        $line = $data->journeySummaries[0];
+        self::assertSame('Unidades didácticas', $line->description);
+        self::assertSame(
+            [['UD1', '2026-03-02', '2026-03-04', '20 horas'], ['UD2', '2026-03-04', '2026-03-05', '10 horas'], ['UD3', '2026-03-05', '2026-03-09', '12 horas']],
+            array_map(static fn ($i): array => [$i->description, $i->startDate->format('Y-m-d'), $i->endDate->format('Y-m-d'), $i->hoursLabel], $line->items),
+        );
+        self::assertSame(['Total: 42 horas'], $line->hoursLines);
+        self::assertEquals(new \DateTimeImmutable('2026-03-09'), $data->effectiveEnd);
+    }
+
+    public function testEachSequenceHasItsOwnBoxAndPeriodsAroundItKeepTheirOrderInTheirOwn(): void
+    {
+        $calendar = $this->sequenceCalendar();
+        $calendar->addPeriod('Antes', '#c7d2fe', true, PrintableCalendarPeriodMode::DateRange, new \DateTimeImmutable('2026-02-02'), new \DateTimeImmutable('2026-02-06'), null, null, null, null, null, null);
+        $calendar->addPeriod('Después', '#c7d2fe', true, PrintableCalendarPeriodMode::DateRange, new \DateTimeImmutable('2026-04-06'), new \DateTimeImmutable('2026-04-10'), null, null, null, null, null, null);
+        $second = $calendar->addSequence('Segunda secuencia', new \DateTimeImmutable('2026-05-04'), '#bfdbfe', '#fde68a');
+        $second->setWeekdayHours([1 => 8.0]);
+        $second->addItem('X', 8.0);
+        $this->em->flush();
+
+        $boxes = $this->builder->build($calendar)->journeyBoxes();
+
+        self::assertSame(
+            [['Antes'], ['Unidades didácticas'], ['Después'], ['Segunda secuencia']],
+            array_map(static fn (array $box): array => array_map(static fn ($l): string => $l->description, $box), $boxes),
+        );
+    }
+
+    public function testTheItemsAlternateTheTwoColoursAndAMixedDayTakesTheColourOfTheItemWithMostHours(): void
+    {
+        $colors = $this->dayColors($this->sequenceCalendar());
+
+        self::assertSame('#bfdbfe', $colors['2026-03-02']); // UD1
+        self::assertSame('#bfdbfe', $colors['2026-03-03']); // UD1
+        self::assertSame('#fde68a', $colors['2026-03-04']); // UD1 4 h / UD2 4 h: the one starting wins
+        self::assertSame('#fde68a', $colors['2026-03-05']); // UD2 6 h against UD3 2 h
+        self::assertSame('#bfdbfe', $colors['2026-03-06']); // UD3: the third item takes the first colour again
+        self::assertSame('#bfdbfe', $colors['2026-03-09']); // UD3
+    }
+
+    public function testASequenceHasInicioAndFinLabelsForEachItemInItsColour(): void
+    {
+        $month = $this->builder->build($this->sequenceCalendar())->months[0];
+
+        self::assertSame(
+            [['2', 'Inicio UD1'], ['4', 'Fin UD1'], ['4', 'Inicio UD2'], ['5', 'Fin UD2'], ['5', 'Inicio UD3'], ['9', 'Fin UD3']],
+            array_map(static fn ($a): array => [$a->label, $a->description], $month->annotations),
+        );
+        self::assertSame(['#bfdbfe', '#bfdbfe', '#fde68a', '#fde68a', '#bfdbfe', '#bfdbfe'], array_map(static fn ($a): string => $a->color, $month->annotations));
+    }
+
+    public function testASequenceWithTheSummaryOffIsPaintedButNotListed(): void
+    {
+        $calendar = $this->sequenceCalendar();
+        $calendar->getSequences()->first()->setShowJourneySummary(false);
+
+        self::assertSame([], $this->builder->build($calendar)->journeySummaries);
+    }
+
+    public function testASequenceItemsDayShowsTheDaysTotalHoursOnlyIfAsked(): void
+    {
+        $calendar = $this->sequenceCalendar();
+        $withHours = [];
+        foreach ($this->builder->build($calendar)->months[0]->weeks as $week) {
+            foreach ($week as $day) {
+                if ($day !== null && $day->hoursLabel !== null) {
+                    $withHours[$day->date->format('Y-m-d')] = $day->hoursLabel;
+                }
+            }
+        }
+        self::assertSame('8', $withHours['2026-03-04'], 'the mixed day shows the whole day, not only the owner\'s share');
+
+        $calendar->getSequences()->first()->setShowHours(false);
+        foreach ($this->builder->build($calendar)->months[0]->weeks as $week) {
+            foreach ($week as $day) {
+                self::assertNull($day?->hoursLabel);
+            }
+        }
+    }
+
     public function testADeclaredNonWorkingDayIsSkippedEvenIfItsWeekdayHasHoursAssigned(): void
     {
         $centre   = $this->centre();

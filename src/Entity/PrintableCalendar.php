@@ -93,6 +93,11 @@ class PrintableCalendar
     #[ORM\OrderBy(['position' => 'ASC'])]
     private Collection $periods;
 
+    /** @var Collection<int, PrintableCalendarSequence> */
+    #[ORM\OneToMany(targetEntity: PrintableCalendarSequence::class, mappedBy: 'calendar', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $sequences;
+
     /** @var Collection<int, PrintableCalendarDate> */
     #[ORM\OneToMany(targetEntity: PrintableCalendarDate::class, mappedBy: 'calendar', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['date' => 'ASC'])]
@@ -106,7 +111,8 @@ class PrintableCalendar
         $this->title             = $title;
         $this->createdAt         = now();
         $this->periods           = new ArrayCollection();
-        $this->dates             = new ArrayCollection();
+        $this->sequences         = new ArrayCollection();
+        $this->dates            = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -265,6 +271,20 @@ class PrintableCalendar
     public function getPeriods(): Collection
     {
         return $this->periods;
+    }
+
+    /** @return Collection<int, PrintableCalendarSequence> */
+    public function getSequences(): Collection
+    {
+        return $this->sequences;
+    }
+
+    public function addSequence(string $name, \DateTimeImmutable $startDate, string $colorA, string $colorB): PrintableCalendarSequence
+    {
+        $sequence = new PrintableCalendarSequence($this, $name, $startDate, $colorA, $colorB, $this->sequences->count());
+        $this->sequences->add($sequence);
+
+        return $sequence;
     }
 
     /** @return Collection<int, PrintableCalendarDate> */

@@ -9,8 +9,11 @@ use App\Entity\NonWorkingDay;
 use App\Entity\PrintableCalendar;
 use App\Entity\PrintableCalendarPeriod;
 use App\Entity\PrintableCalendarPeriodMode;
+use App\Entity\PrintableCalendarSequence;
+use App\Entity\PrintableCalendarSequenceItem;
 use App\Model\PrintableCalendarAnnotation;
 use App\Model\PrintableCalendarDay;
+use App\Model\PrintableCalendarJourneyItem;
 use App\Model\PrintableCalendarJourneyLine;
 use App\Model\PrintableCalendarMonth;
 use App\Model\PrintableCalendarPdfSizes;
@@ -27,6 +30,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * data model, and the approved plan (Utilidades › Generador de calendarios) for the algorithm.
  *
  * @phpstan-type PeriodDay array{date: \DateTimeImmutable, hours: ?float, quota: ?float}
+ * @phpstan-import-type Schedule from PrintableCalendarSequenceScheduler
  */
 final class PrintableCalendarPdfBuilder
 {
@@ -49,6 +53,7 @@ final class PrintableCalendarPdfBuilder
         private readonly NonWorkingDayChecker $nonWorkingDays,
         private readonly NonWorkingDayRepository $nonWorkingDayRepository,
         private readonly WeekdayHoursWalker $dayWalker,
+        private readonly PrintableCalendarSequenceScheduler $sequenceScheduler,
         private readonly TranslatorInterface $translator,
         private readonly ClockInterface $clock,
     ) {}
@@ -65,9 +70,33 @@ final class PrintableCalendarPdfBuilder
                 : $this->hourDays($period, $year);
         }
 
+        /** @var array<string, Schedule> $schedules sequence id => its items laid out over the days */
+        $schedules = [];
+        foreach ($calendar->getSequences() as $sequence) {
+            $id = $sequence->getId()->toRfc4122();
+
+            $schedules[$id] = $this->sequenceScheduler->schedule(
+                $year,
+                $sequence->getStartDate(),
+                $sequence->weekdayHours(),
+                array_values(array_map(static fn (PrintableCalendarSequenceItem $item): float => $item->getHours(), $sequence->getItems()->toArray())),
+            );
+            // Registered with the period days only so the calendar's date range takes them into account.
+            $periodDays[$id] = array_map(static fn (array $day): array => ['date' => $day['date'], 'hours' => $day['hours'], 'quota' => null], $schedules[$id]['days']);
+        }
+
         [$start, $end] = $this->effectiveRange($calendar, $periodDays);
 
         $journeySummaries = [];
+        foreach ($calendar->getSequences() as $sequence) {
+            if (!$sequence->isShowJourneySummary()) {
+                continue;
+            }
+            $line = $this->sequenceSummary($sequence, $schedules[$sequence->getId()->toRfc4122()]);
+            if ($line !== null) {
+                $journeySummaries[] = $line;
+            }
+        }
         foreach ($calendar->getPeriods() as $period) {
             if (!$period->isShowJourneySummary()) {
                 continue;
@@ -86,7 +115,7 @@ final class PrintableCalendarPdfBuilder
         $lastMonth = $end->modify('first day of this month');
         $count     = 0;
         while ($cursor <= $lastMonth && $count < self::MAX_MONTHS) {
-            $months[] = $this->buildMonth($cursor, $calendar, $periodDays, $year);
+            $months[] = $this->buildMonth($cursor, $calendar, $periodDays, $schedules, $year);
             $cursor   = $cursor->modify('first day of next month');
             ++$count;
         }
@@ -171,13 +200,16 @@ final class PrintableCalendarPdfBuilder
         return [$calendar->getStartDate() ?? $min, $calendar->getEndDate() ?? $max];
     }
 
-    /** @param array<string, list<PeriodDay>> $periodDays */
-    private function buildMonth(\DateTimeImmutable $monthStart, PrintableCalendar $calendar, array $periodDays, AcademicYear $year): PrintableCalendarMonth
+    /**
+     * @param array<string, list<PeriodDay>> $periodDays
+     * @param array<string, Schedule>        $schedules
+     */
+    private function buildMonth(\DateTimeImmutable $monthStart, PrintableCalendar $calendar, array $periodDays, array $schedules, AcademicYear $year): PrintableCalendarMonth
     {
         $monthEnd = $monthStart->modify('last day of this month');
 
         // Priority, lowest to highest — each step overwrites the previous one: periods, then
-        // weekends / declared non-working days, then specific individual dates.
+        // sequences, then weekends / declared non-working days, then specific individual dates.
         /** @var array<string, array{color: string, hours: ?float}> $paint ISO date => paint, in that order as it's built */
         $paint = [];
         /** @var array<string, string> $nonWorking ISO date => colour of the weekend / declared non-working day: painted over the periods, under the individual dates */
@@ -199,6 +231,15 @@ final class PrintableCalendarPdfBuilder
                     continue;
                 }
                 $paint[$day['date']->format('Y-m-d')] = ['color' => $period->getColor(), 'hours' => $period->isShowHours() ? $day['hours'] : null];
+            }
+        }
+        foreach ($calendar->getSequences() as $sequence) {
+            foreach ($schedules[$sequence->getId()->toRfc4122()]['days'] as $day) {
+                if ($day['date'] < $monthStart || $day['date'] > $monthEnd) {
+                    continue;
+                }
+                // The day takes the colour of the item that owns it, and shows the day's total hours.
+                $paint[$day['date']->format('Y-m-d')] = ['color' => $sequence->colorForIndex($day['item']), 'hours' => $sequence->isShowHours() ? $day['hours'] : null];
             }
         }
         foreach ($nonWorking as $iso => $color) {
@@ -240,19 +281,47 @@ final class PrintableCalendarPdfBuilder
             (int) $monthStart->format('Y'),
             (int) $monthStart->format('n'),
             $weeks,
-            $this->buildAnnotations($monthStart, $monthEnd, $calendar, $periodDays, $year),
+            $this->buildAnnotations($monthStart, $monthEnd, $calendar, $periodDays, $schedules, $year),
         );
     }
 
     /**
      * @param array<string, list<PeriodDay>> $periodDays
+     * @param array<string, Schedule>        $schedules
      *
      * @return list<PrintableCalendarAnnotation>
      */
-    private function buildAnnotations(\DateTimeImmutable $monthStart, \DateTimeImmutable $monthEnd, PrintableCalendar $calendar, array $periodDays, AcademicYear $year): array
+    private function buildAnnotations(\DateTimeImmutable $monthStart, \DateTimeImmutable $monthEnd, PrintableCalendar $calendar, array $periodDays, array $schedules, AcademicYear $year): array
     {
         /** @var list<array{sort: \DateTimeImmutable, item: PrintableCalendarAnnotation}> $entries */
         $entries = [];
+
+        // Sequences: «Inicio X» / «Fin X» for each item, in its own colour (a one-day item gets a single plain entry).
+        // Items are added in order, so on a shared day «Fin A» goes before «Inicio B» (the sort below is stable).
+        foreach ($calendar->getSequences() as $sequence) {
+            foreach (array_values($sequence->getItems()->toArray()) as $i => $item) {
+                $scheduled = $schedules[$sequence->getId()->toRfc4122()]['items'][$i] ?? null;
+                $start     = $scheduled['startDate'] ?? null;
+                $end       = $scheduled['endDate'] ?? null;
+                if ($start === null || $end === null) {
+                    continue;
+                }
+                $color = $sequence->colorForIndex($i);
+                if ($start->format('Y-m-d') === $end->format('Y-m-d')) {
+                    if ($start >= $monthStart && $start <= $monthEnd) {
+                        $entries[] = ['sort' => $start, 'item' => new PrintableCalendarAnnotation($this->rangeLabel($start, $start), $color, $item->getDescription())];
+                    }
+
+                    continue;
+                }
+                if ($start >= $monthStart && $start <= $monthEnd) {
+                    $entries[] = ['sort' => $start, 'item' => new PrintableCalendarAnnotation($this->rangeLabel($start, $start), $color, $this->translator->trans('pdf.period_start', ['%description%' => $item->getDescription()], 'utilities'))];
+                }
+                if ($end >= $monthStart && $end <= $monthEnd) {
+                    $entries[] = ['sort' => $end, 'item' => new PrintableCalendarAnnotation($this->rangeLabel($end, $end), $color, $this->translator->trans('pdf.period_end', ['%description%' => $item->getDescription()], 'utilities'))];
+                }
+            }
+        }
 
         // Individual dates: one line each, never merged — even two sharing the same date.
         foreach ($calendar->getDates() as $date) {
@@ -339,6 +408,39 @@ final class PrintableCalendarPdfBuilder
         $last  = (int) $end->format('j');
 
         return $first === $last ? (string) $first : $first . '-' . $last;
+    }
+
+    /**
+     * The summary box of a sequence: its name, one line per item («UD2 — 11/11/2026 - 18/11/2026 · 10 horas»)
+     * and the total. Null if no item got a day.
+     *
+     * @param Schedule $schedule
+     */
+    private function sequenceSummary(PrintableCalendarSequence $sequence, array $schedule): ?PrintableCalendarJourneyLine
+    {
+        $items = [];
+        $total = 0.0;
+        foreach (array_values($sequence->getItems()->toArray()) as $i => $item) {
+            $scheduled = $schedule['items'][$i] ?? null;
+            $start     = $scheduled['startDate'] ?? null;
+            $end       = $scheduled['endDate'] ?? null;
+            if ($scheduled === null || $start === null || $end === null) {
+                continue;
+            }
+            $items[] = new PrintableCalendarJourneyItem($item->getDescription(), $start, $end, $this->hoursLabel($scheduled['hours']));
+            $total  += $scheduled['hours'];
+        }
+        if ($items === []) {
+            return null;
+        }
+
+        return new PrintableCalendarJourneyLine(
+            $sequence->getName(),
+            $items[0]->startDate,
+            $items[array_key_last($items)]->endDate,
+            [$this->translator->trans('pdf.journey.total', ['%hours%' => $this->hoursLabel($total)], 'utilities')],
+            $items,
+        );
     }
 
     /** @param list<PeriodDay> $days */

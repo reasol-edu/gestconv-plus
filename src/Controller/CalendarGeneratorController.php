@@ -17,6 +17,7 @@ use App\Repository\PrintableCalendarRepository;
 use App\Service\NumberLabel;
 use App\Service\PdfRenderer;
 use App\Service\PrintableCalendarPdfBuilder;
+use App\Service\PrintableCalendarSequenceForm;
 use App\Service\TenantContext;
 use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +35,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * and individual highlighted dates over a two-months-per-row grid (PrintableCalendarPdfBuilder).
  * Entirely personal: PrintableCalendarRepository::findByOwnerAndId only ever resolves the current
  * teacher's own calendars, so there's no separate voter to check.
+ *
+ * @phpstan-import-type SequenceRow from PrintableCalendarSequenceForm
+ * @phpstan-import-type ParsedSequence from PrintableCalendarSequenceForm
  */
 #[Route('/utilidades/generador-calendarios')]
 class CalendarGeneratorController extends AbstractController
@@ -47,6 +51,7 @@ class CalendarGeneratorController extends AbstractController
         private readonly AcademicYearRepository $academicYears,
         private readonly TenantContext $tenantContext,
         private readonly PrintableCalendarPdfBuilder $pdfBuilder,
+        private readonly PrintableCalendarSequenceForm $sequences,
         private readonly PdfRenderer $pdf,
         private readonly EntityManagerInterface $em,
         private readonly TranslatorInterface $translator,
@@ -75,18 +80,19 @@ class CalendarGeneratorController extends AbstractController
     {
         $values = $this->blankValues();
         $values['academicYear'] = $request->query->getString('curso') ?: ($this->tenantContext->getViewYear($centre) ?? $centre->getActiveAcademicYear())?->getId()->toRfc4122() ?? '';
-        [$dateRows, $periodRows] = [[], []];
+        [$dateRows, $periodRows, $sequenceRows] = [[], [], []];
         $errors = [];
 
         if ($request->isMethod('POST')) {
             $this->checkToken($request, 'utilities_calendar');
-            [$values, $dateRows, $periodRows, $errors, $data] = $this->readForm($request, $centre);
+            [$values, $dateRows, $periodRows, $sequenceRows, $errors, $data] = $this->readForm($request, $centre);
             if ($data !== null) {
                 $year     = $this->academicYears->findByCentreAndId($centre, $data['academicYear']) ?? throw $this->createNotFoundException();
                 $calendar = new PrintableCalendar($centre, $year, $this->teacher(), $data['title']);
                 $this->applyCommonFields($calendar, $data);
                 $this->applyDates($calendar, $data['dates']);
                 $this->applyPeriods($calendar, $data['periods']);
+                $this->sequences->apply($calendar, $data['sequences']);
                 $this->em->persist($calendar);
                 $this->em->flush();
                 $this->addFlash('success', $this->t('flash.created'));
@@ -95,7 +101,7 @@ class CalendarGeneratorController extends AbstractController
             }
         }
 
-        return $this->renderForm($centre, null, $values, $dateRows, $periodRows, $errors);
+        return $this->renderForm($centre, null, $values, $dateRows, $periodRows, $sequenceRows, $errors);
     }
 
     #[Route('/{id}/editar', name: 'app_utilities_calendar_generator_edit', requirements: ['id' => Requirement::UUID], methods: ['GET', 'POST'])]
@@ -106,17 +112,19 @@ class CalendarGeneratorController extends AbstractController
         $values     = $this->valuesFor($calendar);
         $dateRows   = $this->dateRowsFor($calendar);
         $periodRows = $this->periodRowsFor($calendar);
+        $sequenceRows = $this->sequences->rowsFor($calendar);
         $errors     = [];
 
         if ($request->isMethod('POST')) {
             $this->checkToken($request, 'utilities_calendar_' . $id);
-            [$values, $dateRows, $periodRows, $errors, $data] = $this->readForm($request, $centre);
+            [$values, $dateRows, $periodRows, $sequenceRows, $errors, $data] = $this->readForm($request, $centre);
             if ($data !== null) {
                 $year = $this->academicYears->findByCentreAndId($centre, $data['academicYear']) ?? throw $this->createNotFoundException();
                 $calendar->setAcademicYear($year);
                 $this->applyCommonFields($calendar, $data);
                 $this->reconcileDates($calendar, $data['dates']);
                 $this->reconcilePeriods($calendar, $data['periods']);
+                $this->sequences->reconcile($calendar, $data['sequences']);
                 $this->em->flush();
                 $this->addFlash('success', $this->t('flash.saved'));
 
@@ -128,7 +136,7 @@ class CalendarGeneratorController extends AbstractController
             }
         }
 
-        return $this->renderForm($centre, $calendar, $values, $dateRows, $periodRows, $errors);
+        return $this->renderForm($centre, $calendar, $values, $dateRows, $periodRows, $sequenceRows, $errors);
     }
 
     #[Route('/{id}/duplicar', name: 'app_utilities_calendar_generator_duplicate', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
@@ -144,6 +152,7 @@ class CalendarGeneratorController extends AbstractController
         $this->applyCommonFields($copy, $data);
         $this->applyDates($copy, $data['dates']);
         $this->applyPeriods($copy, $data['periods']);
+        $this->sequences->apply($copy, $data['sequences']);
         $this->em->persist($copy);
         $this->em->flush();
         $this->addFlash('success', $this->t('flash.duplicated'));
@@ -200,6 +209,7 @@ class CalendarGeneratorController extends AbstractController
                 $this->applyCommonFields($calendar, $data);
                 $this->applyDates($calendar, $data['dates']);
                 $this->applyPeriods($calendar, $data['periods']);
+                $this->sequences->apply($calendar, $data['sequences']);
                 $this->em->persist($calendar);
                 $this->em->flush();
                 $this->addFlash('success', $this->t('flash.imported'));
@@ -258,7 +268,7 @@ class CalendarGeneratorController extends AbstractController
      * work on it regardless of whether it came from an HTTP form (readForm), an existing entity
      * (here, for duplicate() and export()) or an uploaded file (readImportPayload).
      *
-     * @return array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>}
+     * @return array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, sequences: list<ParsedSequence>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>}
      */
     private function dataFromCalendar(PrintableCalendar $calendar): array
     {
@@ -295,12 +305,13 @@ class CalendarGeneratorController extends AbstractController
             'showHeader'         => $calendar->isShowHeader(),
             'showFooter'         => $calendar->isShowFooter(),
             'dates'              => $dates,
+            'sequences'          => $this->sequences->dataFromCalendar($calendar),
             'periods'            => $periods,
         ];
     }
 
     /**
-     * @param array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>} $data
+     * @param array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, sequences: list<ParsedSequence>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>} $data
      *
      * @return array<string, mixed>
      */
@@ -322,6 +333,7 @@ class CalendarGeneratorController extends AbstractController
                 'color'       => $d['color'],
                 'description' => $d['description'],
             ], $data['dates']),
+            'sequences' => $this->sequences->exportPayload($data['sequences']),
             'periods' => array_map(static fn (array $p): array => [
                 'description'        => $p['description'],
                 'color'              => $p['color'],
@@ -347,7 +359,7 @@ class CalendarGeneratorController extends AbstractController
      * either a single translated error message, or a $data array in the same shape readForm()
      * produces, ready for applyCommonFields/applyDates/applyPeriods.
      *
-     * @return array{0: ?string, 1: ?array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>}}
+     * @return array{0: ?string, 1: ?array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, sequences: list<ParsedSequence>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>}}
      */
     private function readImportPayload(mixed $decoded): array
     {
@@ -463,6 +475,12 @@ class CalendarGeneratorController extends AbstractController
             ];
         }
 
+        // Files exported before sequences existed carry none.
+        $sequences = $this->sequences->parseImport($c['sequences'] ?? null);
+        if ($sequences === null) {
+            return $invalid;
+        }
+
         return [null, [
             'title'              => $title,
             'description'        => $description,
@@ -475,6 +493,7 @@ class CalendarGeneratorController extends AbstractController
             'showHeader'         => (bool) ($c['showHeader'] ?? true),
             'showFooter'         => (bool) ($c['showFooter'] ?? true),
             'dates'              => $dates,
+            'sequences'          => $sequences,
             'periods'            => $periods,
         ]];
     }
@@ -593,12 +612,14 @@ class CalendarGeneratorController extends AbstractController
      *     0: array{title: string, description: string, academicYear: string, startDate: string, endDate: string, nonWorkingDayColor: string, weekendColor: string, orientation: string, fontSizeScale: string, showHeader: string, showFooter: string},
      *     1: list<array{id: string, date: string, color: string, description: string}>,
      *     2: list<array{id: string, description: string, color: string, showJourneySummary: string, compactJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}>,
-     *     3: array<string, string>,
-     *     4: null|array{
+     *     3: list<SequenceRow>,
+     *     4: array<string, string>,
+     *     5: null|array{
      *         title: string, description: ?string, academicYear: string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable,
      *         nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int,
      *         showHeader: bool, showFooter: bool,
      *         dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>,
+     *         sequences: list<ParsedSequence>,
      *         periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>,
      *     }
      * }
@@ -649,14 +670,16 @@ class CalendarGeneratorController extends AbstractController
 
         [$dateRows, $dates, $dateErrors] = $this->readDates($request);
         [$periodRows, $periods, $periodErrors] = $this->readPeriods($request);
+        [$sequenceRows, $sequences, $sequenceErrors] = $this->sequences->read($request->request->all('sequences'));
         $errors += $dateErrors;
         $errors += $periodErrors;
+        $errors += $sequenceErrors;
 
         if ($errors !== [] || $orientation === null || $fontSizeScale === false) {
-            return [$values, $dateRows, $periodRows, $errors, null];
+            return [$values, $dateRows, $periodRows, $sequenceRows, $errors, null];
         }
 
-        return [$values, $dateRows, $periodRows, $errors, [
+        return [$values, $dateRows, $periodRows, $sequenceRows, $errors, [
             'title'              => $values['title'],
             'description'        => $values['description'] === '' ? null : $values['description'],
             'academicYear'       => $values['academicYear'],
@@ -669,6 +692,7 @@ class CalendarGeneratorController extends AbstractController
             'showHeader'         => $values['showHeader'] === '1',
             'showFooter'         => $values['showFooter'] === '1',
             'dates'              => $dates,
+            'sequences'          => $sequences,
             'periods'            => $periods,
         ]];
     }
@@ -943,9 +967,10 @@ class CalendarGeneratorController extends AbstractController
      * @param array{title: string, description: string, academicYear: string, startDate: string, endDate: string, nonWorkingDayColor: string, weekendColor: string, orientation: string, fontSizeScale: string, showHeader: string, showFooter: string} $values
      * @param list<array{id: string, date: string, color: string, description: string}>                                                                              $dateRows
      * @param list<array{id: string, description: string, color: string, showJourneySummary: string, compactJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}> $periodRows
+     * @param list<SequenceRow>                                                                                                                                      $sequenceRows
      * @param array<string, string>                                                                                                                                  $errors
      */
-    private function renderForm(EducationalCentre $centre, ?PrintableCalendar $calendar, array $values, array $dateRows, array $periodRows, array $errors): Response
+    private function renderForm(EducationalCentre $centre, ?PrintableCalendar $calendar, array $values, array $dateRows, array $periodRows, array $sequenceRows, array $errors): Response
     {
         $blankDate   = ['id' => '', 'date' => '', 'color' => '#a7f3d0', 'description' => ''];
         $blankPeriod = ['id' => '', 'description' => '', 'color' => '#c7d2fe', 'showJourneySummary' => '', 'compactJourneySummary' => '', 'showHours' => '1', 'mode' => PrintableCalendarPeriodMode::DateRange->value, 'startDate' => '', 'endDate' => '', 'totalHours' => '', 'mondayHours' => '', 'tuesdayHours' => '', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => ''];
@@ -956,6 +981,7 @@ class CalendarGeneratorController extends AbstractController
             'values'       => $values,
             'dateRows'     => [...$dateRows, $blankDate, $blankDate],
             'periodRows'   => [...$periodRows, $blankPeriod],
+            'sequenceRows' => [...$sequenceRows, $this->sequences->blankRow()],
             'errors'       => $errors,
             'academicYears' => $this->academicYears->findByCentreOrderedByName($centre),
             'modes'        => PrintableCalendarPeriodMode::cases(),

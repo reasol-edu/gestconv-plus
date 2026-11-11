@@ -29,6 +29,28 @@
     </label>
 {% endmacro %}
 
+{# One item of a sequence: description, hours, and the buttons to move it up/down or drop it
+   (sequence_items_controller.js — without JS the order is just the order of the rows). `j` is
+   the key of the row in the submitted array; the server reads them in the order they appear. #}
+{% macro sequence_item(i, j, item) %}
+    <div class="flex items-center gap-2" data-sequence-items-target="row">
+        <input name="sequences[{{ i }}][items][{{ j }}][description]" value="{{ item.description }}" maxlength="255"
+               placeholder="{{ 'form.sequences.item_description'|trans({}, 'utilities') }}" aria-label="{{ 'form.sequences.item_description'|trans({}, 'utilities') }}"
+               class="block min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20">
+        <input name="sequences[{{ i }}][items][{{ j }}][hours]" value="{{ item.hours }}" inputmode="decimal"
+               placeholder="{{ 'form.sequences.item_hours'|trans({}, 'utilities') }}" aria-label="{{ 'form.sequences.item_hours'|trans({}, 'utilities') }}"
+               class="block w-24 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20">
+        <div class="flex items-center">
+            <button type="button" data-action="sequence-items#up" title="{{ 'form.sequences.move_up'|trans({}, 'utilities') }}" aria-label="{{ 'form.sequences.move_up'|trans({}, 'utilities') }}"
+                    class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700">{{ ux_icon('heroicons:chevron-up', {class: 'h-4 w-4'}) }}</button>
+            <button type="button" data-action="sequence-items#down" title="{{ 'form.sequences.move_down'|trans({}, 'utilities') }}" aria-label="{{ 'form.sequences.move_down'|trans({}, 'utilities') }}"
+                    class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700">{{ ux_icon('heroicons:chevron-down', {class: 'h-4 w-4'}) }}</button>
+            <button type="button" data-action="sequence-items#remove" title="{{ 'form.sequences.remove_item'|trans({}, 'utilities') }}" aria-label="{{ 'form.sequences.remove_item'|trans({}, 'utilities') }}"
+                    class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-700">{{ ux_icon('heroicons:x-mark', {class: 'h-4 w-4'}) }}</button>
+        </div>
+    </div>
+{% endmacro %}
+
 {% block content %}
 {% set field ='block w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20' %}
 {% set label = 'block text-xs font-medium text-gray-600' %}
@@ -269,6 +291,92 @@
                 </div>
             {% endfor %}
             {% if errors.periods is defined %}<p class="text-xs text-red-600">{{ errors.periods }}</p>{% endif %}
+        </div>
+
+        {# ── Sequences ───────────────────────────────────────────────────────── #}
+        <div class="space-y-3">
+            <h2 class="text-sm font-semibold text-gray-900">{{ 'form.sequences.title'|trans({}, 'utilities') }}</h2>
+            <p class="text-xs text-gray-500">{{ 'form.sequences.help'|trans({}, 'utilities') }}</p>
+
+            {% for row in sequenceRows %}
+                {% set i = loop.index0 %}
+                {% set blankItem = {description: '', hours: ''} %}
+                <div data-controller="sequence-items" class="space-y-4 rounded-xl border border-gray-200 p-4">
+                    <input type="hidden" name="sequences[{{ i }}][id]" value="{{ row.id }}">
+
+                    <div class="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+                        <div class="space-y-1.5">
+                            <label class="{{ label }}">{{ 'form.sequences.name'|trans({}, 'utilities') }}</label>
+                            <input name="sequences[{{ i }}][name]" value="{{ row.name }}" maxlength="255"
+                                   placeholder="{{ row.id ? '' : 'form.sequences.new'|trans({}, 'utilities') }}" class="{{ field }}">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="{{ label }}">{{ 'form.sequences.color_a'|trans({}, 'utilities') }}</label>
+                            <input type="color" name="sequences[{{ i }}][colorA]" value="{{ row.colorA }}" class="h-9 w-14 rounded-lg border border-gray-200">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="{{ label }}">{{ 'form.sequences.color_b'|trans({}, 'utilities') }}</label>
+                            <input type="color" name="sequences[{{ i }}][colorB]" value="{{ row.colorB }}" class="h-9 w-14 rounded-lg border border-gray-200">
+                        </div>
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-[14rem_1fr]">
+                        <div class="space-y-1.5">
+                            <label class="{{ label }}">{{ 'form.start_date'|trans({}, 'utilities') }}</label>
+                            <input type="date" name="sequences[{{ i }}][startDate]" value="{{ row.startDate }}" class="{{ field }}">
+                        </div>
+                        <div class="space-y-1.5">
+                            <span class="{{ label }}">{{ 'weekday_hours'|trans({}, 'utilities') }}</span>
+                            <div class="grid grid-cols-5 gap-2">
+                                {% for key, prop in {1: 'mondayHours', 2: 'tuesdayHours', 3: 'wednesdayHours', 4: 'thursdayHours', 5: 'fridayHours'} %}
+                                    <div class="space-y-1">
+                                        <label class="block text-[11px] font-medium text-gray-500">{{ ('weekday.' ~ key)|trans({}, 'calendar') }}</label>
+                                        <input name="sequences[{{ i }}][{{ prop }}]" value="{{ attribute(row, prop) }}" inputmode="decimal" placeholder="0" class="{{ field }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <span class="{{ label }}">{{ 'form.sequences.items'|trans({}, 'utilities') }}</span>
+                        <div class="space-y-2" data-sequence-items-target="list">
+                            {% for item in row.items %}{{ _self.sequence_item(i, loop.index0, item) }}{% endfor %}
+                            {% for k in 1..(row.items is empty ? 3 : 1) %}{{ _self.sequence_item(i, 'n' ~ k, blankItem) }}{% endfor %}
+                        </div>
+                        <template data-sequence-items-target="template">{{ _self.sequence_item(i, '__INDEX__', blankItem) }}</template>
+                        <button type="button" data-action="sequence-items#add"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                            {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}{{ 'form.sequences.add_item'|trans({}, 'utilities') }}
+                        </button>
+                    </div>
+
+                    <details class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2" {{ row.paste is not empty ? 'open' : '' }}>
+                        <summary class="cursor-pointer text-xs font-medium text-gray-700">{{ 'form.sequences.paste'|trans({}, 'utilities') }}</summary>
+                        <p class="mt-2 text-xs text-gray-500">{{ 'form.sequences.paste_help'|trans({}, 'utilities') }}</p>
+                        <textarea name="sequences[{{ i }}][paste]" rows="4" class="mt-2 {{ field }}" placeholder="UD1; 55&#10;UD2; 10&#10;UD3; 12">{{ row.paste }}</textarea>
+                    </details>
+
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="sequences[{{ i }}][showHours]" value="1" {{ row.showHours ? 'checked' : '' }} class="rounded text-forest-600 focus:ring-forest-500">
+                            {{ 'form.sequences.show_hours'|trans({}, 'utilities') }}
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="sequences[{{ i }}][showJourneySummary]" value="1" {{ row.showJourneySummary ? 'checked' : '' }} class="rounded text-forest-600 focus:ring-forest-500">
+                            {{ 'form.sequences.show_summary'|trans({}, 'utilities') }}
+                        </label>
+                    </div>
+
+                    {% if row.id %}
+                        <label class="flex items-center gap-2 text-sm text-red-700">
+                            <input type="checkbox" name="sequences[{{ i }}][remove]" value="1" class="rounded text-red-600 focus:ring-red-500">
+                            {{ 'form.remove'|trans({}, 'utilities') }}
+                        </label>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% if errors.sequences is defined %}<p class="text-xs text-red-600">{{ errors.sequences }}</p>{% endif %}
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-5">
