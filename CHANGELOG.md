@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.28.1] - 2026-11-11
+
+### Added
+
+- Cada **secuencia** del generador de calendarios tiene la opción **Excluir de las fechas de la secuencia los días de los periodos definidos en este calendario**: la secuencia salta esos días, igual que los fines de semana y los días no lectivos, y sus fechas se recalculan solas. Las fechas en directo del formulario también tienen en cuenta los periodos aunque aún no se hayan guardado.
+
+### Fixed
+
+- En el formulario de las secuencias, la etiqueta de las horas de cada día de la semana aparecía sin traducir.
+
 ## [1.28.0] - 2026-11-11
 
 ### Added
