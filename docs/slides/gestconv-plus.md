@@ -1171,6 +1171,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - Vista mensual unificada: **sanciones** ya comunicadas (para todo el
   profesorado), **ausencias** del profesorado (solo administradores) y
   **actividades de centro**, cada tipo con su icono y su color.
+- **Botones de filtro** para mostrar u ocultar cada tipo; el último visible
+  queda deshabilitado para no vaciar el calendario.
 - Solo días lectivos (lunes a viernes), con el día actual resaltado.
 - Al hacer clic en un día se abre su **vista de detalle**, con navegación al
   día anterior/siguiente y el desglose completo: tramos horarios y guardias,

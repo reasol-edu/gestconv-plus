@@ -53,6 +53,30 @@
         {% endif %}
     </div>
 
+    {# ── Filtro por tipo de contenido. El último tipo visible va deshabilitado,
+         para que el filtro no pueda dejar el calendario vacío. ─────────────── #}
+    {% set filterTypes = this.filterTypes %}
+    {% if filterTypes is not empty %}
+        <div class="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-100">
+            <span class="text-xs font-medium text-gray-500">{{ 'filter.label'|trans({}, 'calendar') }}</span>
+            {% for type in filterTypes %}
+                <button type="button"
+                        data-action="live#action"
+                        data-live-action-param="toggleType"
+                        data-live-type-param="{{ type.key }}"
+                        aria-pressed="{{ type.visible ? 'true' : 'false' }}"
+                        {% if type.locked %}disabled{% endif %}
+                        class="rounded-full border px-3 py-1 text-xs font-medium transition-colors
+                               {{ type.visible
+                                   ? 'border-forest-600 bg-forest-600 text-white'
+                                   : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50' }}
+                               {{ type.locked ? 'opacity-60 cursor-not-allowed' : (type.visible ? 'hover:bg-forest-700' : '') }}">
+                    {{ ('filter.' ~ type.key)|trans({}, 'calendar') }}
+                </button>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {# ── Day-of-week headers (solo lectivos: sin sábado ni domingo) ─────────── #}
     <div class="grid grid-cols-5 border-b border-gray-100 bg-gray-50">
         {% for key in ['lun', 'mar', 'mie', 'jue', 'vie'] %}

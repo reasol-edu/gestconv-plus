@@ -28,10 +28,12 @@ use App\Entity\TimeSlot;
 use App\Tests\Integration\ControllerTestCase;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
+use Symfony\UX\LiveComponent\Test\InteractsWithLiveComponents;
 
 class CalendarControllerTest extends ControllerTestCase
 {
     use ClockSensitiveTrait;
+    use InteractsWithLiveComponents;
 
     protected function setUp(): void
     {
@@ -185,6 +187,134 @@ class CalendarControllerTest extends ControllerTestCase
 
         self::assertResponseIsSuccessful();
         self::assertStringNotContainsString('Reunión de 1ºA', (string) $this->client->getResponse()->getContent());
+    }
+
+    // ── Filtro por tipo de contenido ─────────────────────────────────────────
+
+    public function testTypeFilterShowsASingleDisabledButtonWhenOnlyOneTypeHasContent(): void
+    {
+        $world  = $this->makeScenario();
+        $viewer = (new Teacher(new PersonName('Viewer', 'Teacher')))->setUsername('calendar.filter.single');
+        $this->persist($viewer);
+        $this->persistSanctionIn($world, $viewer);
+
+        $this->loginAs($viewer, $world['centre']);
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Ana García', $content);
+        self::assertStringContainsString('data-live-type-param="sanction"', $content);
+        self::assertStringNotContainsString('data-live-type-param="event"', $content);
+        self::assertMatchesRegularExpression('/data-live-type-param="sanction"\s+aria-pressed="true"\s+disabled/', $content);
+    }
+
+    public function testTypeFilterDoesNotAllowHidingEverything(): void
+    {
+        $world  = $this->makeScenario();
+        $viewer = (new Teacher(new PersonName('Viewer', 'Teacher')))->setUsername('calendar.filter.last');
+        $this->persist($viewer);
+        $this->persistSanctionIn($world, $viewer);
+        $this->persistGeneralEventIn($world['year']);
+
+        $this->loginAs($viewer, $world['centre']);
+        $component = $this->createLiveComponent('CalendarComponent', [], $this->client);
+        $component->call('toggleType', ['type' => 'event']);
+        // Queda solo «Sanciones»: su botón está bloqueado y pulsarlo no tiene efecto.
+        $component->call('toggleType', ['type' => 'sanction']);
+
+        $html = (string) $component->render();
+        self::assertStringContainsString('Ana García', $html);
+        self::assertStringNotContainsString('Claustro', $html);
+        self::assertMatchesRegularExpression('/data-live-type-param="sanction"\s+aria-pressed="true"\s+disabled/', $html);
+    }
+
+    public function testTypeFilterAppearsWhenSeveralTypesHaveContent(): void
+    {
+        $world  = $this->makeScenario();
+        $viewer = (new Teacher(new PersonName('Viewer', 'Teacher')))->setUsername('calendar.filter.multi');
+        $this->persist($viewer);
+        $this->persistSanctionIn($world, $viewer);
+        $this->persistGeneralEventIn($world['year']);
+
+        $this->loginAs($viewer, $world['centre']);
+        $this->client->request('GET', '/calendario');
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('Mostrar en el calendario', $content);
+        self::assertStringContainsString('data-live-type-param="sanction"', $content);
+        self::assertStringContainsString('data-live-type-param="event"', $content);
+        self::assertStringNotContainsString('data-live-type-param="absence"', $content);
+    }
+
+    public function testTogglingATypeHidesAndShowsItsItems(): void
+    {
+        $world  = $this->makeScenario();
+        $viewer = (new Teacher(new PersonName('Viewer', 'Teacher')))->setUsername('calendar.filter.toggle');
+        $this->persist($viewer);
+        $this->persistSanctionIn($world, $viewer);
+        $this->persistGeneralEventIn($world['year']);
+
+        $this->loginAs($viewer, $world['centre']);
+        $component = $this->createLiveComponent('CalendarComponent', [], $this->client);
+        self::assertStringContainsString('Claustro', (string) $component->render());
+
+        $component->call('toggleType', ['type' => 'event']);
+        $html = (string) $component->render();
+        self::assertStringNotContainsString('Claustro', $html);
+        self::assertStringContainsString('Ana García', $html);
+        self::assertStringContainsString('aria-pressed="false"', $html);
+
+        $component->call('toggleType', ['type' => 'event']);
+        self::assertStringContainsString('Claustro', (string) $component->render());
+    }
+
+    public function testToggleIgnoresUnknownTypes(): void
+    {
+        $world  = $this->makeScenario();
+        $viewer = (new Teacher(new PersonName('Viewer', 'Teacher')))->setUsername('calendar.filter.unknown');
+        $this->persist($viewer);
+        $this->persistSanctionIn($world, $viewer);
+        $this->persistGeneralEventIn($world['year']);
+
+        $this->loginAs($viewer, $world['centre']);
+        $component = $this->createLiveComponent('CalendarComponent', [], $this->client);
+        $component->call('toggleType', ['type' => 'nada']);
+
+        $html = (string) $component->render();
+        self::assertStringContainsString('Claustro', $html);
+        self::assertStringNotContainsString('aria-pressed="false"', $html);
+    }
+
+    /**
+     * @param array{centre: EducationalCentre, year: AcademicYear, group: Group, student: Student} $world
+     */
+    private function persistSanctionIn(array $world, Teacher $creator): void
+    {
+        $sanction = (new Sanction())
+            ->setAcademicYear($world['year'])
+            ->setStudent($world['student'])
+            ->setGroup($world['group'])
+            ->setRegisteredBy($creator)
+            ->setDetails('<p>Expulsión</p>')
+            ->setNoMeasureApplied(true)
+            ->setEffectiveFrom($this->weekdayInCurrentMonth());
+        $this->persist($sanction);
+        $this->notifySanction($sanction, $world['centre'], $creator);
+    }
+
+    private function persistGeneralEventIn(AcademicYear $year): void
+    {
+        $this->persist(
+            (new SchoolEvent())
+                ->setAcademicYear($year)
+                ->setDate($this->weekdayInCurrentMonth())
+                ->setStartTime(new \DateTimeImmutable('09:00'))
+                ->setEndTime(new \DateTimeImmutable('10:00'))
+                ->setName('Claustro')
+                ->setGeneral(true),
+        );
     }
 
     public function testHidesSaturdayAndSundayColumns(): void

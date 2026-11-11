@@ -50,6 +50,11 @@ day.no_absences: 'Ningún docente ausente este día.'
 day.section.events: 'Actividades'
 day.no_events: 'No hay actividades registradas este día.'
 
+filter.label: 'Mostrar en el calendario'
+filter.sanction: 'Sanciones'
+filter.absence: 'Ausencias'
+filter.event: 'Actividades'
+
 board_mode: 'Modo tablón'
 board_mode_confirm_title: 'Activar modo tablón'
 board_mode_confirm_body: 'Una vez activo, para realizar otras operaciones tendrás que salir de este modo y volver a iniciar sesión.'

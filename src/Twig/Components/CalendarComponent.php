@@ -23,6 +23,9 @@ use App\Service\TenantContext;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\LiveArg;
+use Symfony\UX\LiveComponent\Attribute\LiveProp;
 
 /**
  * Calendario mensual unificado: sanciones (todo el profesorado), ausencias
@@ -36,6 +39,17 @@ class CalendarComponent extends AbstractCalendarComponent
     /** Colores base de lo que no pertenece a un grupo (ámbar para las ausencias, azul cielo para los eventos generales). */
     private const string ABSENCE_COLOR       = '#f59e0b';
     private const string GENERAL_EVENT_COLOR = '#0ea5e9';
+
+    /** Tipos de contenido que se pueden mostrar u ocultar con los botones del filtro. */
+    private const array TYPES = ['sanction', 'absence', 'event'];
+
+    /**
+     * Tipos que la persona ha ocultado con los botones del filtro.
+     *
+     * @var list<string>
+     */
+    #[LiveProp]
+    public array $hiddenTypes = [];
 
     /** @var list<Sanction|Absence|SchoolEvent>|null */
     private ?array $itemsCache = null;
@@ -55,6 +69,67 @@ class CalendarComponent extends AbstractCalendarComponent
         parent::__construct($tenantContext, $translator, $nonWorkingDayChecker, $clock);
     }
 
+    #[LiveAction]
+    public function toggleType(#[LiveArg] string $type): void
+    {
+        foreach ($this->getFilterTypes() as $button) {
+            if ($button['key'] !== $type || $button['locked']) {
+                continue;
+            }
+
+            $this->hiddenTypes = $button['visible']
+                ? [...$this->hiddenTypes, $type]
+                : array_values(array_diff($this->hiddenTypes, [$type]));
+
+            return;
+        }
+    }
+
+    /**
+     * Botones del filtro: un tipo por cada clase de contenido que tiene algo en el curso y que
+     * la persona puede ver. El último tipo visible queda bloqueado (deshabilitado) para que el
+     * filtro nunca deje el calendario vacío; con un solo tipo, su único botón está bloqueado.
+     *
+     * @return list<array{key: string, visible: bool, locked: bool}>
+     */
+    public function getFilterTypes(): array
+    {
+        $centre       = $this->getTenantContext()->getSelectedCentre();
+        $academicYear = $centre !== null ? $this->getTenantContext()->getViewYear($centre) : null;
+        if ($centre === null || $academicYear === null) {
+            return [];
+        }
+
+        $present = [];
+        foreach ($this->getItemsForYear($centre, $academicYear) as $item) {
+            $present[self::typeOf($item)] = true;
+        }
+
+        $keys = array_values(array_filter(self::TYPES, static fn (string $type): bool => isset($present[$type])));
+
+        // Si lo guardado ocultara todo lo que hay (p. ej. desapareció el contenido de otro tipo), no se oculta nada.
+        $hidden = array_diff($keys, $this->hiddenTypes) === [] ? [] : $this->hiddenTypes;
+        $shown  = array_values(array_diff($keys, $hidden));
+
+        return array_map(
+            static fn (string $type): array => [
+                'key'     => $type,
+                'visible' => !in_array($type, $hidden, true),
+                'locked'  => $shown === [$type],
+            ],
+            $keys,
+        );
+    }
+
+    private static function typeOf(Sanction|Absence|SchoolEvent $item): string
+    {
+        return match (true) {
+            $item instanceof Sanction => 'sanction',
+            $item instanceof Absence  => 'absence',
+            default                   => 'event',
+        };
+    }
+
     /**
      * @return list<array<string, mixed>>
      */
@@ -66,7 +141,16 @@ class CalendarComponent extends AbstractCalendarComponent
             return [];
         }
 
-        $items = $this->getItemsForYear($centre, $academicYear);
+        $hidden = [];
+        foreach ($this->getFilterTypes() as $button) {
+            if (!$button['visible']) {
+                $hidden[] = $button['key'];
+            }
+        }
+        $items = array_values(array_filter(
+            $this->getItemsForYear($centre, $academicYear),
+            static fn (Sanction|Absence|SchoolEvent $item): bool => !in_array(self::typeOf($item), $hidden, true),
+        ));
 
         return $this->gridBuilder->build(
             $this->year,

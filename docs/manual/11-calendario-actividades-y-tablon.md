@@ -32,6 +32,13 @@ desde la [oferta formativa](12-administrar-el-centro.md#color-de-un-grupo). Dond
 nombra un grupo —calendario, panel de inicio, guardias, tablón y listados— se hace con una
 etiqueta de ese color.
 
+- **Filtro por tipo de contenido**: sobre la cuadrícula aparecen unos botones, uno por cada tipo
+  que tiene algo en el curso (**Sanciones**, **Ausencias**, **Actividades**). Pulsar un botón
+  oculta o vuelve a mostrar ese tipo, y la elección se mantiene al cambiar de mes. Para que el
+  filtro nunca deje el calendario vacío, el **último tipo visible aparece deshabilitado** y no se
+  puede ocultar; por eso, si solo hay un tipo de contenido —por ejemplo, un docente en un centro
+  sin actividades ni ausencias visibles para él—, su único botón aparece deshabilitado. Solo
+  afecta a la cuadrícula mensual; la vista de detalle de un día y el tablón siguen mostrándolo todo.
 - Solo se muestran los días de lunes a viernes; los fines de semana no aparecen en la cuadrícula.
   Una actividad en fin de semana sigue siendo visible en su [vista de detalle](#vista-de-detalle-de-un-dia),
   en el modo tablón y en el panel de inicio, aunque no aparezca en esta cuadrícula mensual.
