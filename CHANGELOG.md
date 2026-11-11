@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.27.0] - 2026-11-11
+
+### Added
+
+- En el **generador de calendarios**, cada periodo con el resumen de jornadas activado tiene una nueva casilla **Resumen compacto**: ese periodo ocupa una sola línea del resumen, con su rango de fechas y el total de horas (por ejemplo, «UD2 — 11/11/2026 - 18/11/2026 · 10 horas»), sin el desglose de jornadas. Se conserva al exportar e importar calendarios.
+
+### Changed
+
+- El resumen de jornadas del PDF de un calendario muestra los periodos **ordenados por su fecha de comienzo**, sea cual sea el orden en que se dieron de alta.
+
+### Fixed
+
+- El resumen de jornadas del PDF concuerda ahora en singular y plural («1 hora», «1 jornada de 4 horas»).
+- En el formulario de un calendario, la casilla **Quitar** de cada periodo tiene el mismo tamaño de letra que el resto de casillas.
+
 ## [1.26.1] - 2026-11-11
 
 ### Fixed
