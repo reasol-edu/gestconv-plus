@@ -114,6 +114,25 @@ final class PrintableCalendarPdfBuilderTest extends RepositoryTestCase
         self::assertEquals(new \DateTimeImmutable('2026-03-04'), $data->journeySummaries[0]->endDate);
     }
 
+    public function testTheJourneySummaryUsesTheSingularOnlyForExactlyOne(): void
+    {
+        $centre   = $this->centre();
+        $year     = $this->year($centre);
+        $teacher  = $this->teacher('docente');
+        $calendar = $this->calendar($centre, $year, $teacher);
+        // Lunes 1 h (única jornada → «1 jornada de 1 hora», total «1 hora»); martes, otro periodo, 1,5 h (plural).
+        $calendar->addPeriod('Una', '#c7d2fe', true, PrintableCalendarPeriodMode::StartWithHours, new \DateTimeImmutable('2026-03-02'), null, 1.0, 1.0, null, null, null, null);
+        $calendar->addPeriod('Media', '#c7d2fe', true, PrintableCalendarPeriodMode::StartWithHours, new \DateTimeImmutable('2026-03-09'), null, 1.5, 1.5, null, null, null, null, true, true);
+        $calendar->addPeriod('Una compacta', '#c7d2fe', true, PrintableCalendarPeriodMode::StartWithHours, new \DateTimeImmutable('2026-03-16'), null, 1.0, 1.0, null, null, null, null, true, true);
+        $this->persist($centre, $year, $teacher, $calendar);
+
+        $data = $this->builder->build($calendar);
+
+        self::assertSame(['1 jornada de 1 hora', 'Total: 1 hora'], $data->journeySummaries[0]->hoursLines);
+        self::assertSame(['1,5 horas'], $data->journeySummaries[1]->hoursLines);
+        self::assertSame(['1 hora'], $data->journeySummaries[2]->hoursLines);
+    }
+
     public function testADeclaredNonWorkingDayIsSkippedEvenIfItsWeekdayHasHoursAssigned(): void
     {
         $centre   = $this->centre();

@@ -357,13 +357,11 @@ final class PrintableCalendarPdfBuilder
 
         $last  = $days[array_key_last($days)];
         $total = array_sum(array_map(static fn (array $day): float => (float) $day['hours'], $days));
-        $totalLine = $this->translator->trans('pdf.journey.total', ['%hours%' => NumberLabel::format($total)], 'utilities');
+        $totalLine = $this->translator->trans('pdf.journey.total', ['%hours%' => $this->hoursLabel($total)], 'utilities');
 
         // Compact entry: «UD2 — 11/11/2026 - 18/11/2026 · 10 horas», without the breakdown of days nor the «Total:» label.
         if ($period->isCompactJourneySummary()) {
-            $compactLine = $this->translator->trans('pdf.journey.total_compact', ['%hours%' => NumberLabel::format($total)], 'utilities');
-
-            return new PrintableCalendarJourneyLine($period->getDescription(), $days[0]['date'], $last['date'], [$compactLine]);
+            return new PrintableCalendarJourneyLine($period->getDescription(), $days[0]['date'], $last['date'], [$this->hoursLabel($total)]);
         }
 
         $main = \array_slice($days, 0, -1);
@@ -372,7 +370,7 @@ final class PrintableCalendarPdfBuilder
 
         $lines = [];
         if ($main === []) {
-            $lines[] = $this->translator->trans('pdf.journey.single', ['%hours%' => NumberLabel::format((float) $last['hours'])], 'utilities');
+            $lines[] = $this->translator->trans('pdf.journey.single', ['%hours%' => $this->hoursLabel((float) $last['hours'])], 'utilities');
         } else {
             /** @var array<string, list<PeriodDay>> $byQuota quota formatted to a fixed precision, to avoid float-as-array-key truncation */
             $byQuota = [];
@@ -381,10 +379,10 @@ final class PrintableCalendarPdfBuilder
             }
             if (\count($byQuota) === 1) {
                 $group   = reset($byQuota);
-                $lines[] = $this->translator->trans('pdf.journey.uniform', ['%count%' => \count($group), '%hours%' => NumberLabel::format((float) $group[0]['quota'])], 'utilities');
+                $lines[] = $this->translator->trans('pdf.journey.uniform', ['%count%' => \count($group), '%hours%' => $this->hoursLabel((float) $group[0]['quota'])], 'utilities');
             } elseif (\count($byQuota) < \count($main)) {
                 foreach ($byQuota as $quota => $group) {
-                    $lines[] = $this->translator->trans('pdf.journey.uniform', ['%count%' => \count($group), '%hours%' => NumberLabel::format((float) $quota)], 'utilities');
+                    $lines[] = $this->translator->trans('pdf.journey.uniform', ['%count%' => \count($group), '%hours%' => $this->hoursLabel((float) $quota)], 'utilities');
                 }
             } else {
                 foreach ($period->weekdayHours() as $iso => $hours) {
@@ -393,18 +391,24 @@ final class PrintableCalendarPdfBuilder
                     }
                     $lines[] = $this->translator->trans('pdf.journey.weekday', [
                         '%weekday%' => $this->translator->trans('weekday.' . $iso, [], 'calendar'),
-                        '%hours%'   => NumberLabel::format($hours),
+                        '%hours%'   => $this->hoursLabel($hours),
                     ], 'utilities');
                 }
             }
         }
 
         if ($lastPartial) {
-            $lines[] = $this->translator->trans('pdf.journey.last_different', ['%hours%' => NumberLabel::format((float) $last['hours'])], 'utilities');
+            $lines[] = $this->translator->trans('pdf.journey.last_different', ['%hours%' => $this->hoursLabel((float) $last['hours'])], 'utilities');
         }
 
         $lines[] = $totalLine;
 
         return new PrintableCalendarJourneyLine($period->getDescription(), $days[0]['date'], $last['date'], $lines);
+    }
+
+    /** «1 hora», «8 horas», «7,5 horas»: only exactly one is singular. */
+    private function hoursLabel(float $hours): string
+    {
+        return $this->translator->trans('pdf.hours', ['%count%' => $hours, '%hours%' => NumberLabel::format($hours)], 'utilities');
     }
 }
