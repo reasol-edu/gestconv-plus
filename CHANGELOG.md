@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.26.0] - 2026-11-11
+
+### Added
+
+- **Nueva sección «Utilidades»** en el menú, con herramientas personales para todo el profesorado del centro (el personal no docente no la ve):
+  - **Generador de calendarios**: crea calendarios en PDF con periodos de colores, fechas destacadas, resumen de jornadas y horas por día. Se pueden guardar, duplicar, exportar a un fichero e importar de nuevo. Admite orientación vertical u horizontal, tamaño de letra y ocultar cabecera y pie.
+  - **Calculadora de fechas**: calcula las jornadas y horas lectivas entre dos fechas, o la fecha en que se completa un número de horas, teniendo en cuenta los días no lectivos del curso. El resultado se puede exportar a Excel.
+- La sección se puede **activar o desactivar** por centro, o para toda la plataforma, como el resto de secciones. Al desactivarla, los calendarios guardados se conservan.
+- Dos nuevos ajustes de **plantillas de fondo para los PDF** de los calendarios (vertical y horizontal), junto a las demás plantillas de informes.
+- El manual tiene un capítulo nuevo de **Utilidades**, la presentación un bloque nuevo y hay una ficha de referencia sobre cómo crear un calendario.
+
+### Fixed
+
+- Al indicar un curso académico con un identificador no válido en una dirección, la aplicación ya no falla con un error interno.
+
 ## [1.25.2] - 2026-11-10
 
 ### Fixed
