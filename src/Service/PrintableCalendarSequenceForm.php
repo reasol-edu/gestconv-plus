@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\AcademicYear;
 use App\Entity\PrintableCalendar;
 use App\Entity\PrintableCalendarSequence;
 use App\Entity\PrintableCalendarSequenceItem;
@@ -32,7 +33,65 @@ final class PrintableCalendarSequenceForm
 
     public function __construct(
         private readonly TranslatorInterface $translator,
+        private readonly PrintableCalendarSequenceScheduler $scheduler,
     ) {}
+
+    /**
+     * The dates each item of a sequence would get, for the form to show while it's being filled in
+     * (nothing is saved or validated beyond what's needed to calculate): the very same scheduling
+     * the PDF uses. Everything comes as the raw text of the fields; an item without valid hours (or
+     * a sequence without a valid start date or hours on any weekday) simply gets no dates.
+     *
+     * @param array<int, string> $weekdayHours text of the hours of each ISO weekday 1..5
+     * @param list<string>       $itemHours    text of the hours of each item, in order
+     *
+     * @return array{items: list<?string>, summary: ?string, warning: ?string} each item's «dd/mm/yyyy - dd/mm/yyyy» (or one date), a line with the total and the end date, and a warning if the hours don't fit
+     */
+    public function preview(AcademicYear $year, string $startDate, array $weekdayHours, array $itemHours): array
+    {
+        $none  = ['items' => array_map(static fn (string $hours): ?string => null, $itemHours), 'summary' => null, 'warning' => null];
+        $start = self::parseDate(trim($startDate));
+        $week  = array_map(static fn (string $hours): ?float => self::parseNumber($hours), $weekdayHours);
+        if ($start === null || !self::hasPositiveHours($week)) {
+            return $none;
+        }
+
+        // Only the items with valid hours take part; each keeps its position in the list.
+        $valid = [];
+        foreach ($itemHours as $i => $text) {
+            $hours = self::parseNumber($text);
+            if ($hours !== null && $hours > 0.0) {
+                $valid[$i] = $hours;
+            }
+        }
+        if ($valid === []) {
+            return $none;
+        }
+
+        $schedule = $this->scheduler->schedule($year, $start, $week, array_values($valid));
+        $items    = $none['items'];
+        $end      = null;
+        foreach (array_keys($valid) as $n => $i) {
+            $from = $schedule['items'][$n]['startDate'];
+            $to   = $schedule['items'][$n]['endDate'];
+            if ($from === null || $to === null) {
+                continue;
+            }
+            $items[$i] = $from->format('d/m/Y') . ($to == $from ? '' : ' - ' . $to->format('d/m/Y'));
+            $end       = $to;
+        }
+
+        $total = array_sum($valid);
+
+        return [
+            'items'   => array_values($items),
+            'summary' => $end === null ? null : $this->translator->trans('form.sequences.preview_summary', [
+                '%hours%' => $this->translator->trans('pdf.hours', ['%count%' => $total, '%hours%' => NumberLabel::format($total)], 'utilities'),
+                '%date%'  => $end->format('d/m/Y'),
+            ], 'utilities'),
+            'warning' => $schedule['completed'] ? null : $this->t('form.sequences.preview_incomplete'),
+        ];
+    }
 
     /** @return SequenceRow a new, empty row of the form */
     public function blankRow(): array

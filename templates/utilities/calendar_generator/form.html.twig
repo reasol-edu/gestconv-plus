@@ -40,6 +40,8 @@
         <input name="sequences[{{ i }}][items][{{ j }}][hours]" value="{{ item.hours }}" inputmode="decimal"
                placeholder="{{ 'form.sequences.item_hours'|trans({}, 'utilities') }}" aria-label="{{ 'form.sequences.item_hours'|trans({}, 'utilities') }}"
                class="block w-24 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20">
+        {# Filled in by sequence_items_controller.js with the dates this item would get. #}
+        <span data-sequence-items-target="dates" aria-live="polite" class="hidden w-48 shrink-0 text-xs text-gray-500 sm:block"></span>
         <div class="flex items-center">
             <button type="button" data-action="sequence-items#up" title="{{ 'form.sequences.move_up'|trans({}, 'utilities') }}" aria-label="{{ 'form.sequences.move_up'|trans({}, 'utilities') }}"
                     class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700">{{ ux_icon('heroicons:chevron-up', {class: 'h-4 w-4'}) }}</button>
@@ -301,7 +303,8 @@
             {% for row in sequenceRows %}
                 {% set i = loop.index0 %}
                 {% set blankItem = {description: '', hours: ''} %}
-                <div data-controller="sequence-items" class="space-y-4 rounded-xl border border-gray-200 p-4">
+                <div data-controller="sequence-items" data-sequence-items-url-value="{{ path('app_utilities_calendar_generator_sequence_dates') }}"
+                     data-action="input->sequence-items#refresh change->sequence-items#refresh" class="space-y-4 rounded-xl border border-gray-200 p-4">
                     <input type="hidden" name="sequences[{{ i }}][id]" value="{{ row.id }}">
 
                     <div class="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
@@ -345,6 +348,8 @@
                             {% for k in 1..(row.items is empty ? 3 : 1) %}{{ _self.sequence_item(i, 'n' ~ k, blankItem) }}{% endfor %}
                         </div>
                         <template data-sequence-items-target="template">{{ _self.sequence_item(i, '__INDEX__', blankItem) }}</template>
+                        <p data-sequence-items-target="summary" aria-live="polite" class="text-xs font-medium text-gray-700"></p>
+                        <p data-sequence-items-target="warning" aria-live="polite" class="text-xs text-red-600"></p>
                         <button type="button" data-action="sequence-items#add"
                                 class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
                             {{ ux_icon('heroicons:plus', {class: 'h-4 w-4'}) }}{{ 'form.sequences.add_item'|trans({}, 'utilities') }}

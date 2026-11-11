@@ -87,6 +87,8 @@ form:
     move_up: 'Subir'
     move_down: 'Bajar'
     remove_item: 'Quitar el elemento'
+    preview_summary: 'Total: %hours% · termina el %date%'
+    preview_incomplete: 'Las horas no caben en el tiempo calculado (unos 10 años): se muestran las fechas hasta donde llega el cálculo.'
     paste: 'Pegar elementos'
     paste_help: 'Una línea por elemento, con su descripción y sus horas separadas por «;» (por ejemplo, «UD1; 55»). También sirve pegar dos columnas de una hoja de cálculo. Se añaden a la lista al guardar.'
   periods:

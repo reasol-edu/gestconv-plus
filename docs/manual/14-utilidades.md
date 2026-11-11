@@ -114,6 +114,11 @@ Para rellenar la lista con comodidad:
 
 - **Añadir elemento** añade una fila; los botones de cada fila la **suben**, la **bajan** o la
   **quitan**. El orden de la lista es el orden en que se reparten las horas.
+- Al lado de cada elemento aparecen, **en directo**, las fechas que le tocarían (por ejemplo,
+  «16/09/2026 - 10/11/2026»), y debajo de la lista, el total de horas y el día en que termina la
+  secuencia. Se recalculan al cambiar la fecha de inicio, las horas de cada día o las horas de un
+  elemento, y al reordenar la lista; es el mismo cálculo que usa el PDF. Si la secuencia no tiene
+  todavía fecha de inicio u horas por día de la semana, no se muestra nada.
 - **Pegar elementos** admite varias líneas con la descripción y las horas separadas por «;»
   (`UD1; 55`). También sirve copiar dos columnas de una hoja de cálculo. Se añaden a la lista al
   guardar.

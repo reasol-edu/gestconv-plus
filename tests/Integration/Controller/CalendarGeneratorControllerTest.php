@@ -685,6 +685,59 @@ final class CalendarGeneratorControllerTest extends ControllerTestCase
         self::assertSame(422, $this->client->getResponse()->getStatusCode());
     }
 
+    /** @param array<string, mixed> $overrides */
+    private function sequenceDates(array $overrides = []): \Symfony\Component\HttpFoundation\Response
+    {
+        $this->loginAs($this->owner, $this->centre);
+        $this->client->request('GET', '/utilidades/generador-calendarios/fechas-secuencia', array_replace([
+            'curso'  => $this->year->getId()->toRfc4122(),
+            'inicio' => '2026-03-02',
+            'dias'   => [1 => '8', 2 => '8', 3 => '8', 4 => '8', 5 => '8'],
+            'horas'  => ['20', '10', '12'],
+        ], $overrides));
+
+        return $this->client->getResponse();
+    }
+
+    public function testTheLiveDatesOfASequenceAreTheOnesThePdfWouldUse(): void
+    {
+        $response = $this->sequenceDates();
+
+        self::assertSame(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getContent(), true);
+        self::assertSame(['02/03/2026 - 04/03/2026', '04/03/2026 - 05/03/2026', '05/03/2026 - 09/03/2026'], $data['items']);
+        self::assertSame('Total: 42 horas · termina el 09/03/2026', $data['summary']);
+        self::assertNull($data['warning']);
+    }
+
+    public function testLiveDatesKeepEachItemsPositionAndSkipTheOnesWithoutValidHours(): void
+    {
+        $data = json_decode((string) $this->sequenceDates(['horas' => ['20', '', 'abc', '3,5', '0'], 'inicio' => '2026-03-02'])->getContent(), true);
+
+        self::assertSame(['02/03/2026 - 04/03/2026', null, null, '04/03/2026', null], $data['items']);
+        self::assertSame('Total: 23,5 horas · termina el 04/03/2026', $data['summary']);
+    }
+
+    public function testLiveDatesAreEmptyWithoutAStartDateOrHoursOnAnyWeekday(): void
+    {
+        $noStart = json_decode((string) $this->sequenceDates(['inicio' => ''])->getContent(), true);
+        self::assertSame([null, null, null], $noStart['items']);
+        self::assertNull($noStart['summary']);
+
+        $noHours = json_decode((string) $this->sequenceDates(['dias' => [1 => '', 2 => '0']])->getContent(), true);
+        self::assertSame([null, null, null], $noHours['items']);
+    }
+
+    public function testLiveDatesOfAnAcademicYearOfAnotherCentreAreNotFound(): void
+    {
+        $other     = (new EducationalCentre())->setCode('87654321')->setName('Otro')->setCity('Ciudad');
+        $otherYear = (new AcademicYear())->setName('2026-2027')->setEducationalCentre($other);
+        $this->persist($other, $otherYear);
+
+        self::assertSame(404, $this->sequenceDates(['curso' => $otherYear->getId()->toRfc4122()])->getStatusCode());
+        self::assertSame(404, $this->sequenceDates(['curso' => 'no-es-un-uuid'])->getStatusCode());
+    }
+
     public function testDeletingRemovesTheCalendar(): void
     {
         $id = $this->create();

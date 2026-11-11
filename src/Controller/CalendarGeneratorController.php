@@ -23,6 +23,7 @@ use App\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -256,6 +257,29 @@ class CalendarGeneratorController extends AbstractController
             showHeader: $calendar->isShowHeader(),
             showFooter: $calendar->isShowFooter(),
         );
+    }
+
+    /**
+     * The dates each item of a sequence would get — the form asks for them (JSON) while a sequence
+     * is being filled in. Read-only and nothing is stored, so a GET; the academic year must belong
+     * to the current centre.
+     */
+    #[Route('/fechas-secuencia', name: 'app_utilities_calendar_generator_sequence_dates', methods: ['GET'])]
+    public function sequenceDates(Request $request, #[CurrentCentre] EducationalCentre $centre): JsonResponse
+    {
+        $year = $this->academicYears->findByCentreAndId($centre, $request->query->getString('curso')) ?? throw $this->createNotFoundException();
+
+        $weekdayHours = [];
+        $rawDays      = $request->query->all('dias');
+        foreach ([1, 2, 3, 4, 5] as $iso) {
+            $weekdayHours[$iso] = \is_string($rawDays[$iso] ?? null) ? $rawDays[$iso] : '';
+        }
+        $itemHours = [];
+        foreach ($request->query->all('horas') as $hours) {
+            $itemHours[] = \is_string($hours) ? $hours : '';
+        }
+
+        return $this->json($this->sequences->preview($year, $request->query->getString('inicio'), $weekdayHours, \array_slice($itemHours, 0, 200)));
     }
 
     private function requireOwn(string $id, EducationalCentre $centre): PrintableCalendar
