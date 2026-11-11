@@ -685,18 +685,32 @@ final class CalendarGeneratorControllerTest extends ControllerTestCase
         self::assertSame(422, $this->client->getResponse()->getStatusCode());
     }
 
-    /** @param array<string, mixed> $overrides */
-    private function sequenceDates(array $overrides = []): \Symfony\Component\HttpFoundation\Response
+    /**
+     * What the form sends to get the live dates: the form itself plus the index of the sequence.
+     *
+     * @param array<string, mixed> $row the fields of the sequence being edited
+     * @param array<string, mixed> $top the rest of the form (academicYear, periods…)
+     */
+    private function sequenceDates(array $row = [], array $top = []): \Symfony\Component\HttpFoundation\Response
     {
         $this->loginAs($this->owner, $this->centre);
-        $this->client->request('GET', '/utilidades/generador-calendarios/fechas-secuencia', array_replace([
-            'curso'  => $this->year->getId()->toRfc4122(),
-            'inicio' => '2026-03-02',
-            'dias'   => [1 => '8', 2 => '8', 3 => '8', 4 => '8', 5 => '8'],
-            'horas'  => ['20', '10', '12'],
-        ], $overrides));
+        $this->client->request('POST', '/utilidades/generador-calendarios/fechas-secuencia', array_replace([
+            'academicYear' => $this->year->getId()->toRfc4122(),
+            'secuencia'    => '0',
+            'sequences'    => [$this->sequenceRow($row)],
+        ], $top));
 
         return $this->client->getResponse();
+    }
+
+    /** @return array<string, string> a period of the form over Wednesday 4 and Thursday 5 March 2026 */
+    private function marchPeriod(): array
+    {
+        return [
+            'id' => '', 'description' => 'Examen', 'color' => '#fca5a5', 'showJourneySummary' => '', 'mode' => 'date_range',
+            'startDate' => '2026-03-04', 'endDate' => '2026-03-05', 'totalHours' => '',
+            'mondayHours' => '', 'tuesdayHours' => '', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => '',
+        ];
     }
 
     public function testTheLiveDatesOfASequenceAreTheOnesThePdfWouldUse(): void
@@ -712,7 +726,8 @@ final class CalendarGeneratorControllerTest extends ControllerTestCase
 
     public function testLiveDatesKeepEachItemsPositionAndSkipTheOnesWithoutValidHours(): void
     {
-        $data = json_decode((string) $this->sequenceDates(['horas' => ['20', '', 'abc', '3,5', '0'], 'inicio' => '2026-03-02'])->getContent(), true);
+        $items = array_map(static fn (string $hours): array => ['description' => 'X', 'hours' => $hours], ['20', '', 'abc', '3,5', '0']);
+        $data  = json_decode((string) $this->sequenceDates(['items' => $items])->getContent(), true);
 
         self::assertSame(['02/03/2026 - 04/03/2026', null, null, '04/03/2026', null], $data['items']);
         self::assertSame('Total: 23,5 horas · termina el 04/03/2026', $data['summary']);
@@ -720,12 +735,55 @@ final class CalendarGeneratorControllerTest extends ControllerTestCase
 
     public function testLiveDatesAreEmptyWithoutAStartDateOrHoursOnAnyWeekday(): void
     {
-        $noStart = json_decode((string) $this->sequenceDates(['inicio' => ''])->getContent(), true);
+        $noStart = json_decode((string) $this->sequenceDates(['startDate' => ''])->getContent(), true);
         self::assertSame([null, null, null], $noStart['items']);
         self::assertNull($noStart['summary']);
 
-        $noHours = json_decode((string) $this->sequenceDates(['dias' => [1 => '', 2 => '0']])->getContent(), true);
+        $noHours = json_decode((string) $this->sequenceDates(['mondayHours' => '', 'tuesdayHours' => '0', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => ''])->getContent(), true);
         self::assertSame([null, null, null], $noHours['items']);
+    }
+
+    public function testLiveDatesSkipThePeriodsOfTheFormOnlyForASequenceThatExcludesThem(): void
+    {
+        $periods = ['periods' => [$this->marchPeriod()]];
+
+        // Without the option the period doesn't matter.
+        $plain = json_decode((string) $this->sequenceDates([], $periods)->getContent(), true);
+        self::assertSame(['02/03/2026 - 04/03/2026', '04/03/2026 - 05/03/2026', '05/03/2026 - 09/03/2026'], $plain['items']);
+
+        // Skipping Wednesday 4 and Thursday 5 (8 h a day): UD1 = Mon 8 + Tue 8 + Fri 4; UD2 = Fri 4 + Mon 6;
+        // UD3 = Mon 2 + Tue 8 + Wed 2.
+        $excluded = json_decode((string) $this->sequenceDates(['excludePeriods' => '1'], $periods)->getContent(), true);
+        self::assertSame(['02/03/2026 - 06/03/2026', '06/03/2026 - 09/03/2026', '09/03/2026 - 11/03/2026'], $excluded['items']);
+        self::assertSame('Total: 42 horas · termina el 11/03/2026', $excluded['summary']);
+    }
+
+    public function testASequenceThatExcludesThePeriodsIsSavedWithTheOptionAndItsPdfSkipsThem(): void
+    {
+        $id = $this->create([
+            'periods'   => [$this->marchPeriod()],
+            'sequences' => [$this->sequenceRow(['excludePeriods' => '1'])],
+        ]);
+
+        $calendar = $this->loadCalendar($id);
+        self::assertTrue($calendar->getSequences()->first()->isExcludePeriods());
+
+        /** @var \App\Service\PrintableCalendarPdfBuilder $builder */
+        $builder = self::getContainer()->get(\App\Service\PrintableCalendarPdfBuilder::class);
+        $items   = $builder->build($calendar)->journeySummaries[0]->items;
+        self::assertSame('2026-03-06', $items[0]->endDate->format('Y-m-d'));
+
+        // The option survives duplicating, exporting and importing.
+        $this->client->request('GET', '/utilidades/generador-calendarios/' . $id . '/exportar');
+        $json = (string) $this->client->getResponse()->getContent();
+        self::assertTrue(json_decode($json, true)['calendar']['sequences'][0]['excludePeriods']);
+        $this->client->request('GET', '/utilidades/generador-calendarios/importar');
+        $this->client->request('POST', '/utilidades/generador-calendarios/importar', [
+            '_token'       => $this->csrfToken('utilities_calendar_import'),
+            'academicYear' => $this->year->getId()->toRfc4122(),
+        ], ['json' => $this->uploadedJsonFile($json)]);
+        preg_match('#/generador-calendarios/([0-9a-f-]+)/editar$#', (string) $this->client->getResponse()->headers->get('Location'), $matches);
+        self::assertTrue($this->loadCalendar($matches[1])->getSequences()->first()->isExcludePeriods());
     }
 
     public function testLiveDatesOfAnAcademicYearOfAnotherCentreAreNotFound(): void
@@ -734,8 +792,9 @@ final class CalendarGeneratorControllerTest extends ControllerTestCase
         $otherYear = (new AcademicYear())->setName('2026-2027')->setEducationalCentre($other);
         $this->persist($other, $otherYear);
 
-        self::assertSame(404, $this->sequenceDates(['curso' => $otherYear->getId()->toRfc4122()])->getStatusCode());
-        self::assertSame(404, $this->sequenceDates(['curso' => 'no-es-un-uuid'])->getStatusCode());
+        self::assertSame(404, $this->sequenceDates([], ['academicYear' => $otherYear->getId()->toRfc4122()])->getStatusCode());
+        self::assertSame(404, $this->sequenceDates([], ['academicYear' => 'no-es-un-uuid'])->getStatusCode());
+        self::assertSame(404, $this->sequenceDates([], ['secuencia' => '7'])->getStatusCode());
     }
 
     public function testDeletingRemovesTheCalendar(): void

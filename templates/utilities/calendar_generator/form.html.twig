@@ -303,8 +303,9 @@
             {% for row in sequenceRows %}
                 {% set i = loop.index0 %}
                 {% set blankItem = {description: '', hours: ''} %}
-                <div data-controller="sequence-items" data-sequence-items-url-value="{{ path('app_utilities_calendar_generator_sequence_dates') }}"
-                     data-action="input->sequence-items#refresh change->sequence-items#refresh" class="space-y-4 rounded-xl border border-gray-200 p-4">
+                {# The window-level listeners: the periods of the form (outside this card) also change the dates when the sequence skips them. #}
+                <div data-controller="sequence-items" data-sequence-items-url-value="{{ path('app_utilities_calendar_generator_sequence_dates') }}" data-sequence-items-index-value="{{ i }}"
+                     data-action="input@window->sequence-items#refresh change@window->sequence-items#refresh" class="space-y-4 rounded-xl border border-gray-200 p-4">
                     <input type="hidden" name="sequences[{{ i }}][id]" value="{{ row.id }}">
 
                     <div class="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
@@ -329,7 +330,7 @@
                             <input type="date" name="sequences[{{ i }}][startDate]" value="{{ row.startDate }}" class="{{ field }}">
                         </div>
                         <div class="space-y-1.5">
-                            <span class="{{ label }}">{{ 'weekday_hours'|trans({}, 'utilities') }}</span>
+                            <span class="{{ label }}">{{ 'form.sequences.weekday_hours'|trans({}, 'utilities') }}</span>
                             <div class="grid grid-cols-5 gap-2">
                                 {% for key, prop in {1: 'mondayHours', 2: 'tuesdayHours', 3: 'wednesdayHours', 4: 'thursdayHours', 5: 'fridayHours'} %}
                                     <div class="space-y-1">
@@ -363,6 +364,13 @@
                     </details>
 
                     <div class="space-y-2">
+                        <div>
+                            <label class="flex items-center gap-2 text-sm text-gray-700">
+                                <input type="checkbox" name="sequences[{{ i }}][excludePeriods]" value="1" {{ row.excludePeriods ? 'checked' : '' }} class="rounded text-forest-600 focus:ring-forest-500">
+                                {{ 'form.sequences.exclude_periods'|trans({}, 'utilities') }}
+                            </label>
+                            <p class="mt-1 pl-6 text-xs text-gray-500">{{ 'form.sequences.exclude_periods_help'|trans({}, 'utilities') }}</p>
+                        </div>
                         <label class="flex items-center gap-2 text-sm text-gray-700">
                             <input type="checkbox" name="sequences[{{ i }}][showHours]" value="1" {{ row.showHours ? 'checked' : '' }} class="rounded text-forest-600 focus:ring-forest-500">
                             {{ 'form.sequences.show_hours'|trans({}, 'utilities') }}

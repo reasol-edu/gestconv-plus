@@ -88,6 +88,17 @@ final class PrintableCalendarSequenceSchedulerTest extends RepositoryTestCase
         self::assertCount(2, $schedule['items'][0]['days']);
     }
 
+    public function testExcludedDatesAreSkippedLikeNonWorkingDays(): void
+    {
+        // Tuesday 3 and Wednesday 4 are not usable: 8 h a day, 16 h = Monday 2 + Thursday 5.
+        $schedule = $this->scheduler->schedule($this->year, $this->date('2026-03-02'), $this->eightHoursADay(), [16.0], ['2026-03-03' => true, '2026-03-04' => true]);
+
+        self::assertTrue($schedule['completed']);
+        self::assertEquals($this->date('2026-03-02'), $schedule['items'][0]['startDate']);
+        self::assertEquals($this->date('2026-03-05'), $schedule['items'][0]['endDate']);
+        self::assertCount(2, $schedule['days']);
+    }
+
     public function testAnItemFittingInOneDayStartsAndEndsOnIt(): void
     {
         $schedule = $this->scheduler->schedule($this->year, $this->date('2026-03-02'), $this->eightHoursADay(), [3.0, 2.0]);

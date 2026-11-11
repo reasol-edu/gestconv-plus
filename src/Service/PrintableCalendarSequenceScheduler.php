@@ -30,6 +30,7 @@ final class PrintableCalendarSequenceScheduler
     /**
      * @param array<int, ?float> $weekdayHours hours for ISO weekday 1 (Monday) .. 5 (Friday)
      * @param list<float>        $itemHours    hours of each item, in order
+     * @param array<string, true> $excludedDates days that can't be used (ISO date => true), skipped like the non-working days
      *
      * @return Schedule `items` has one entry per item (dates null if it got no day at all); `days`
      *                  is every day the sequence occupies with its total hours, and the index of
@@ -37,14 +38,14 @@ final class PrintableCalendarSequenceScheduler
      *                  one starting that day); `completed` is false when the hours couldn't all be
      *                  placed (no weekday with hours, or the walker's cap was hit)
      */
-    public function schedule(AcademicYear $year, \DateTimeImmutable $start, array $weekdayHours, array $itemHours): array
+    public function schedule(AcademicYear $year, \DateTimeImmutable $start, array $weekdayHours, array $itemHours, array $excludedDates = []): array
     {
         $total = array_sum($itemHours);
         if ($itemHours === [] || $total <= 0.0) {
             return ['items' => array_map(static fn (float $hours): array => ['startDate' => null, 'endDate' => null, 'hours' => 0.0, 'days' => []], $itemHours), 'days' => [], 'completed' => $itemHours !== []];
         }
 
-        $walk = $this->dayWalker->walk($year, $start, true, $weekdayHours, $total);
+        $walk = $this->dayWalker->walk($year, $start, true, $weekdayHours, $total, null, $excludedDates);
 
         /** @var array<int, list<array{date: \DateTimeImmutable, hours: float}>> $itemDays what each item gets, day by day */
         $itemDays  = [];

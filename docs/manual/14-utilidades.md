@@ -107,7 +107,15 @@ UD3 — 18/11/2026 - 24/11/2026 · 12 horas
 Total: 77 horas
 ```
 
-Dos casillas controlan cada secuencia: **Mostrar las horas de cada día de esta secuencia en el
+Si en el mismo calendario hay periodos (una evaluación, unas prácticas, un examen…) y la secuencia
+no debe ocupar esos días, marca **Excluir de las fechas de la secuencia los días de los periodos
+definidos en este calendario**: la secuencia los salta, igual que los fines de semana y los días no
+lectivos, y sus fechas y su fin se recalculan solos (también los de los periodos con horas, cuyos
+días se calculan a partir de ellas). Los periodos conservan su propio color en esos días. Las fechas
+en directo del formulario tienen en cuenta los periodos tal como están escritos, aunque todavía no
+se hayan guardado.
+
+Otras dos casillas controlan cada secuencia: **Mostrar las horas de cada día de esta secuencia en el
 calendario** y **Mostrar el resumen de esta secuencia debajo del calendario**.
 
 Para rellenar la lista con comodidad:

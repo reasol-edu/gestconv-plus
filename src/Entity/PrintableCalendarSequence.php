@@ -67,6 +67,10 @@ class PrintableCalendarSequence
     #[ORM\Column(options: ['default' => true])]
     private bool $showJourneySummary = true;
 
+    /** Whether the days of the calendar's periods are skipped when laying the items out, like the non-working days. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $excludePeriods = false;
+
     #[ORM\Column]
     private int $position;
 
@@ -189,6 +193,18 @@ class PrintableCalendarSequence
     public function setShowJourneySummary(bool $showJourneySummary): static
     {
         $this->showJourneySummary = $showJourneySummary;
+
+        return $this;
+    }
+
+    public function isExcludePeriods(): bool
+    {
+        return $this->excludePeriods;
+    }
+
+    public function setExcludePeriods(bool $excludePeriods): static
+    {
+        $this->excludePeriods = $excludePeriods;
 
         return $this;
     }

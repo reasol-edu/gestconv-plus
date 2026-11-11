@@ -7,7 +7,7 @@ import { Controller } from '@hotwired/stimulus';
 // cambiar el orden. Sin JavaScript la lista sigue funcionando: solo faltan estos botones y las fechas.
 export default class extends Controller {
     static targets = ['list', 'row', 'template', 'summary', 'warning'];
-    static values = { url: String };
+    static values = { url: String, index: Number };
 
     connect() {
         this.counter = 0;
@@ -52,33 +52,46 @@ export default class extends Controller {
         this.refresh();
     }
 
-    // Se llama al escribir en cualquier campo de la secuencia: solo importan la fecha de inicio, las
-    // horas de cada día de la semana y las horas de cada elemento (no el nombre, los colores ni las descripciones).
+    // Se llama al escribir en cualquier campo del formulario (la escucha está en la ventana). En esta
+    // secuencia solo importan la fecha de inicio, las horas de cada día de la semana, las horas de
+    // cada elemento y si salta los periodos (no el nombre, los colores ni las descripciones); fuera
+    // de ella, los periodos del calendario, que cambian las fechas si la secuencia los salta.
     refresh(event) {
-        const name = event?.target?.name ?? '';
-        if (name !== '' && !/\[(startDate|mondayHours|tuesdayHours|wednesdayHours|thursdayHours|fridayHours|hours)\]$/.test(name)) {
-            return;
+        const target = event?.target;
+        if (target) {
+            const name = target.name ?? '';
+            const own = this.element.contains(target);
+            const relevant = own
+                ? /\[(startDate|mondayHours|tuesdayHours|wednesdayHours|thursdayHours|fridayHours|hours|excludePeriods)\]$/.test(name)
+                : name.startsWith('periods[');
+            if (!relevant) {
+                return;
+            }
         }
         clearTimeout(this.timer);
         this.timer = setTimeout(() => this.fetchDates(), 300);
     }
 
-    field(suffix) {
-        return this.element.querySelector(`[name$="[${suffix}]"]`)?.value ?? '';
-    }
-
     async fetchDates() {
         const rows = this.rowTargets;
-        const params = new URLSearchParams();
-        params.set('curso', this.element.closest('form')?.elements.academicYear?.value ?? '');
-        params.set('inicio', this.field('startDate'));
-        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].forEach((day, i) => params.set(`dias[${i + 1}]`, this.field(`${day}Hours`)));
-        rows.forEach((row) => params.append('horas[]', row.querySelector('input[name$="[hours]"]')?.value ?? ''));
+        const form = this.element.closest('form');
+        if (!form) {
+            return;
+        }
+
+        // Se envía el formulario tal cual (los periodos también cuentan) y qué secuencia es esta.
+        const body = new URLSearchParams(new FormData(form));
+        body.set('secuencia', String(this.indexValue));
 
         this.pending?.abort();
         this.pending = new AbortController();
         try {
-            const response = await fetch(`${this.urlValue}?${params}`, { signal: this.pending.signal, headers: { Accept: 'application/json' } });
+            const response = await fetch(this.urlValue, {
+                method: 'POST',
+                body,
+                signal: this.pending.signal,
+                headers: { Accept: 'application/json' },
+            });
             if (!response.ok) {
                 return this.show(rows, null);
             }

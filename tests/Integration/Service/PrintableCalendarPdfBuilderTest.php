@@ -223,6 +223,25 @@ final class PrintableCalendarPdfBuilderTest extends RepositoryTestCase
         self::assertSame(['#bfdbfe', '#bfdbfe', '#fde68a', '#fde68a', '#bfdbfe', '#bfdbfe'], array_map(static fn ($a): string => $a->color, $month->annotations));
     }
 
+    public function testASequenceThatExcludesThePeriodsSkipsTheirDaysIncludingThoseCalculatedFromHours(): void
+    {
+        $calendar = $this->sequenceCalendar();
+        // «Examen» over Wednesday 4 and Thursday 5 March, and «Prácticas»: from Friday 6 March, 8 h, only Fridays
+        // (so just that Friday): another period whose days come from hours, not from dates.
+        $calendar->addPeriod('Examen', '#fca5a5', false, PrintableCalendarPeriodMode::DateRange, new \DateTimeImmutable('2026-03-04'), new \DateTimeImmutable('2026-03-05'), null, null, null, null, null, null);
+        $calendar->addPeriod('Prácticas', '#a5b4fc', false, PrintableCalendarPeriodMode::StartWithHours, new \DateTimeImmutable('2026-03-06'), null, 8.0, null, null, null, null, 8.0);
+        $calendar->getSequences()->first()->setExcludePeriods(true);
+        $this->em->flush();
+
+        $items = $this->builder->build($calendar)->journeySummaries[0]->items;
+        $colors = $this->dayColors($calendar);
+
+        // Mon 2 + Tue 3 (16 h of UD1), then Mon 9 4 h more: Wed-Thu (period) and Fri (period from hours) are skipped.
+        self::assertSame('2026-03-09', $items[0]->endDate->format('Y-m-d'));
+        self::assertSame('#fca5a5', $colors['2026-03-04'], 'the period keeps its own colour on those days');
+        self::assertSame('#a5b4fc', $colors['2026-03-06']);
+    }
+
     public function testASequenceWithTheSummaryOffIsPaintedButNotListed(): void
     {
         $calendar = $this->sequenceCalendar();

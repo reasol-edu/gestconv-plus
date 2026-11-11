@@ -25,7 +25,8 @@ final class WeekdayHoursWalker
     ) {}
 
     /**
-     * @param array<int, ?float> $weekdayHours hours for ISO weekday 1 (Monday) .. 5 (Friday)
+     * @param array<int, ?float> $weekdayHours  hours for ISO weekday 1 (Monday) .. 5 (Friday)
+     * @param array<string, true> $excludedDates further days to skip like a non-working day (ISO date => true), e.g. those of a calendar's periods
      *
      * @return array{days: list<array{date: \DateTimeImmutable, hours: float, quota: float}>, completed: bool, lastDate: \DateTimeImmutable}
      */
@@ -36,6 +37,7 @@ final class WeekdayHoursWalker
         array $weekdayHours,
         ?float $targetHours,
         ?\DateTimeImmutable $limit = null,
+        array $excludedDates = [],
     ): array {
         $remaining = $targetHours;
         $cursor    = $start;
@@ -49,7 +51,7 @@ final class WeekdayHoursWalker
             }
             $lastDate = $cursor;
 
-            if (!$this->nonWorkingDays->isNonWorkingDay($year, $cursor)) {
+            if (!$this->nonWorkingDays->isNonWorkingDay($year, $cursor) && !isset($excludedDates[$cursor->format('Y-m-d')])) {
                 $quota = $weekdayHours[(int) $cursor->format('N')] ?? null;
                 if ($quota !== null && $quota > 0.0) {
                     $take   = $remaining === null ? $quota : min($quota, $remaining);

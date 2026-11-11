@@ -19,8 +19,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * The form rows (strings, as submitted) and the parsed sequences (typed, validated) are the two
  * shapes everything here converts between:
  *
- * @phpstan-type SequenceRow array{id: string, name: string, startDate: string, colorA: string, colorB: string, showHours: string, showJourneySummary: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string, items: list<array{description: string, hours: string}>, paste: string}
- * @phpstan-type ParsedSequence array{id: ?string, name: string, startDate: \DateTimeImmutable, colorA: string, colorB: string, showHours: bool, showJourneySummary: bool, weekdayHours: array<int, ?float>, items: list<array{description: string, hours: float}>}
+ * @phpstan-type SequenceRow array{id: string, name: string, startDate: string, colorA: string, colorB: string, showHours: string, showJourneySummary: string, excludePeriods: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string, items: list<array{description: string, hours: string}>, paste: string}
+ * @phpstan-type ParsedSequence array{id: ?string, name: string, startDate: \DateTimeImmutable, colorA: string, colorB: string, showHours: bool, showJourneySummary: bool, excludePeriods: bool, weekdayHours: array<int, ?float>, items: list<array{description: string, hours: float}>}
  */
 final class PrintableCalendarSequenceForm
 {
@@ -44,10 +44,11 @@ final class PrintableCalendarSequenceForm
      *
      * @param array<int, string> $weekdayHours text of the hours of each ISO weekday 1..5
      * @param list<string>       $itemHours    text of the hours of each item, in order
+     * @param array<string, true> $excludedDates days the sequence can't use (those of the periods, if it skips them)
      *
      * @return array{items: list<?string>, summary: ?string, warning: ?string} each item's «dd/mm/yyyy - dd/mm/yyyy» (or one date), a line with the total and the end date, and a warning if the hours don't fit
      */
-    public function preview(AcademicYear $year, string $startDate, array $weekdayHours, array $itemHours): array
+    public function preview(AcademicYear $year, string $startDate, array $weekdayHours, array $itemHours, array $excludedDates = []): array
     {
         $none  = ['items' => array_map(static fn (string $hours): ?string => null, $itemHours), 'summary' => null, 'warning' => null];
         $start = self::parseDate(trim($startDate));
@@ -68,7 +69,7 @@ final class PrintableCalendarSequenceForm
             return $none;
         }
 
-        $schedule = $this->scheduler->schedule($year, $start, $week, array_values($valid));
+        $schedule = $this->scheduler->schedule($year, $start, $week, array_values($valid), $excludedDates);
         $items    = $none['items'];
         $end      = null;
         foreach (array_keys($valid) as $n => $i) {
@@ -98,7 +99,7 @@ final class PrintableCalendarSequenceForm
     {
         return [
             'id' => '', 'name' => '', 'startDate' => '', 'colorA' => self::DEFAULT_COLOR_A, 'colorB' => self::DEFAULT_COLOR_B,
-            'showHours' => '1', 'showJourneySummary' => '1',
+            'showHours' => '1', 'showJourneySummary' => '1', 'excludePeriods' => '',
             'mondayHours' => '', 'tuesdayHours' => '', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => '',
             'items' => [], 'paste' => '',
         ];
@@ -117,6 +118,7 @@ final class PrintableCalendarSequenceForm
                 'colorB'             => $sequence->getColorB(),
                 'showHours'          => $sequence->isShowHours() ? '1' : '',
                 'showJourneySummary' => $sequence->isShowJourneySummary() ? '1' : '',
+                'excludePeriods'     => $sequence->isExcludePeriods() ? '1' : '',
             ] + array_map(self::number(...), array_combine(array_values(self::WEEKDAY_KEYS), $sequence->weekdayHours()));
             $row['items'] = array_map(
                 static fn (PrintableCalendarSequenceItem $item): array => ['description' => $item->getDescription(), 'hours' => NumberLabel::format($item->getHours())],
@@ -156,6 +158,7 @@ final class PrintableCalendarSequenceForm
             }
             $row['showHours']          = ($raw['showHours'] ?? '') === '1' ? '1' : '';
             $row['showJourneySummary'] = ($raw['showJourneySummary'] ?? '') === '1' ? '1' : '';
+            $row['excludePeriods']     = ($raw['excludePeriods'] ?? '') === '1' ? '1' : '';
 
             $items = [];
             $itemError = false;
@@ -226,6 +229,7 @@ final class PrintableCalendarSequenceForm
                 'colorB'             => $row['colorB'],
                 'showHours'          => $row['showHours'] === '1',
                 'showJourneySummary' => $row['showJourneySummary'] === '1',
+                'excludePeriods'     => $row['excludePeriods'] === '1',
                 'weekdayHours'       => $weekdayHours,
                 'items'              => $parsedItems,
             ];
@@ -273,6 +277,7 @@ final class PrintableCalendarSequenceForm
                 'colorB'             => $sequence->getColorB(),
                 'showHours'          => $sequence->isShowHours(),
                 'showJourneySummary' => $sequence->isShowJourneySummary(),
+                'excludePeriods'     => $sequence->isExcludePeriods(),
                 'weekdayHours'       => $sequence->weekdayHours(),
                 'items'              => array_map(
                     static fn (PrintableCalendarSequenceItem $item): array => ['description' => $item->getDescription(), 'hours' => $item->getHours()],
@@ -298,6 +303,7 @@ final class PrintableCalendarSequenceForm
             'colorB'             => $s['colorB'],
             'showHours'          => $s['showHours'],
             'showJourneySummary' => $s['showJourneySummary'],
+            'excludePeriods'     => $s['excludePeriods'],
             'mondayHours'        => $s['weekdayHours'][1],
             'tuesdayHours'       => $s['weekdayHours'][2],
             'wednesdayHours'     => $s['weekdayHours'][3],
@@ -336,7 +342,7 @@ final class PrintableCalendarSequenceForm
                 || !\is_string($colorA) || !self::validColor($colorA) || !\is_string($colorB) || !self::validColor($colorB)) {
                 return null;
             }
-            foreach (['showHours', 'showJourneySummary'] as $flag) {
+            foreach (['showHours', 'showJourneySummary', 'excludePeriods'] as $flag) {
                 if (isset($s[$flag]) && !\is_bool($s[$flag])) {
                     return null;
                 }
@@ -372,6 +378,7 @@ final class PrintableCalendarSequenceForm
                 'colorB'             => $colorB,
                 'showHours'          => ($s['showHours'] ?? true) === true,
                 'showJourneySummary' => ($s['showJourneySummary'] ?? true) === true,
+                'excludePeriods'     => ($s['excludePeriods'] ?? false) === true,
                 'weekdayHours'       => $weekdayHours,
                 'items'              => $items,
             ];
@@ -428,6 +435,7 @@ final class PrintableCalendarSequenceForm
     {
         $sequence->setShowHours($entry['showHours'])
             ->setShowJourneySummary($entry['showJourneySummary'])
+            ->setExcludePeriods($entry['excludePeriods'])
             ->setWeekdayHours($entry['weekdayHours']);
         foreach ($entry['items'] as $item) {
             $sequence->addItem($item['description'], $item['hours']);

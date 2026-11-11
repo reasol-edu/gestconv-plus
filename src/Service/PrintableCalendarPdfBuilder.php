@@ -64,10 +64,14 @@ final class PrintableCalendarPdfBuilder
 
         /** @var array<string, list<PeriodDay>> $periodDays period id => its days */
         $periodDays = [];
+        /** @var array<string, true> $periodDates every day any period occupies, for the sequences that skip them */
+        $periodDates = [];
         foreach ($calendar->getPeriods() as $period) {
-            $periodDays[$period->getId()->toRfc4122()] = $period->getMode() === PrintableCalendarPeriodMode::DateRange
-                ? $this->dateRangeDays($period)
-                : $this->hourDays($period, $year);
+            $days = $this->periodDaysOf($period, $year);
+            $periodDays[$period->getId()->toRfc4122()] = $days;
+            foreach ($days as $day) {
+                $periodDates[$day['date']->format('Y-m-d')] = true;
+            }
         }
 
         /** @var array<string, Schedule> $schedules sequence id => its items laid out over the days */
@@ -80,6 +84,7 @@ final class PrintableCalendarPdfBuilder
                 $sequence->getStartDate(),
                 $sequence->weekdayHours(),
                 array_values(array_map(static fn (PrintableCalendarSequenceItem $item): float => $item->getHours(), $sequence->getItems()->toArray())),
+                $sequence->isExcludePeriods() ? $periodDates : [],
             );
             // Registered with the period days only so the calendar's date range takes them into account.
             $periodDays[$id] = array_map(static fn (array $day): array => ['date' => $day['date'], 'hours' => $day['hours'], 'quota' => null], $schedules[$id]['days']);
@@ -121,6 +126,33 @@ final class PrintableCalendarPdfBuilder
         }
 
         return new PrintableCalendarRenderData($calendar, $start, $end, $months, $journeySummaries, $this->sizesFor($calendar));
+    }
+
+    /**
+     * Every day the calendar's periods occupy (ISO date => true): what a sequence set to skip the
+     * periods can't use. Works on a calendar that isn't saved (the form's live dates build a
+     * transient one), so it never relies on the periods' ids.
+     *
+     * @return array<string, true>
+     */
+    public function periodDates(PrintableCalendar $calendar): array
+    {
+        $dates = [];
+        foreach ($calendar->getPeriods() as $period) {
+            foreach ($this->periodDaysOf($period, $calendar->getAcademicYear()) as $day) {
+                $dates[$day['date']->format('Y-m-d')] = true;
+            }
+        }
+
+        return $dates;
+    }
+
+    /** @return list<PeriodDay> */
+    private function periodDaysOf(PrintableCalendarPeriod $period, AcademicYear $year): array
+    {
+        return $period->getMode() === PrintableCalendarPeriodMode::DateRange
+            ? $this->dateRangeDays($period)
+            : $this->hourDays($period, $year);
     }
 
     private function sizesFor(PrintableCalendar $calendar): PrintableCalendarPdfSizes

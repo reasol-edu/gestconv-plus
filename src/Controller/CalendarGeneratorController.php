@@ -261,25 +261,38 @@ class CalendarGeneratorController extends AbstractController
 
     /**
      * The dates each item of a sequence would get — the form asks for them (JSON) while a sequence
-     * is being filled in. Read-only and nothing is stored, so a GET; the academic year must belong
-     * to the current centre.
+     * is being filled in, sending the form as it is (`secuencia` is the index of the sequence in
+     * `sequences`): the periods of the form matter too, for a sequence that skips them. Nothing is
+     * stored (the periods are only turned into transient objects to calculate their days). The
+     * academic year must belong to the current centre.
      */
-    #[Route('/fechas-secuencia', name: 'app_utilities_calendar_generator_sequence_dates', methods: ['GET'])]
+    #[Route('/fechas-secuencia', name: 'app_utilities_calendar_generator_sequence_dates', methods: ['POST'])]
     public function sequenceDates(Request $request, #[CurrentCentre] EducationalCentre $centre): JsonResponse
     {
-        $year = $this->academicYears->findByCentreAndId($centre, $request->query->getString('curso')) ?? throw $this->createNotFoundException();
+        $year = $this->academicYears->findByCentreAndId($centre, $request->request->getString('academicYear')) ?? throw $this->createNotFoundException();
+        $raw  = $request->request->all('sequences')[$request->request->getString('secuencia')] ?? null;
+        if (!\is_array($raw)) {
+            throw $this->createNotFoundException();
+        }
 
         $weekdayHours = [];
-        $rawDays      = $request->query->all('dias');
-        foreach ([1, 2, 3, 4, 5] as $iso) {
-            $weekdayHours[$iso] = \is_string($rawDays[$iso] ?? null) ? $rawDays[$iso] : '';
+        foreach ([1 => 'mondayHours', 2 => 'tuesdayHours', 3 => 'wednesdayHours', 4 => 'thursdayHours', 5 => 'fridayHours'] as $iso => $field) {
+            $weekdayHours[$iso] = \is_string($raw[$field] ?? null) ? $raw[$field] : '';
         }
         $itemHours = [];
-        foreach ($request->query->all('horas') as $hours) {
-            $itemHours[] = \is_string($hours) ? $hours : '';
+        foreach (\is_array($raw['items'] ?? null) ? \array_slice($raw['items'], 0, 200) : [] as $item) {
+            $itemHours[] = \is_array($item) && \is_string($item['hours'] ?? null) ? $item['hours'] : '';
         }
 
-        return $this->json($this->sequences->preview($year, $request->query->getString('inicio'), $weekdayHours, \array_slice($itemHours, 0, 200)));
+        $excluded = [];
+        if (($raw['excludePeriods'] ?? '') === '1') {
+            [, $periods] = $this->readPeriods($request);
+            $transient   = new PrintableCalendar($centre, $year, $this->teacher(), '');
+            $this->applyPeriods($transient, $periods);
+            $excluded = $this->pdfBuilder->periodDates($transient);
+        }
+
+        return $this->json($this->sequences->preview($year, \is_string($raw['startDate'] ?? null) ? $raw['startDate'] : '', $weekdayHours, $itemHours, $excluded));
     }
 
     private function requireOwn(string $id, EducationalCentre $centre): PrintableCalendar
