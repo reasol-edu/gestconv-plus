@@ -81,6 +81,39 @@ final class PrintableCalendarPdfBuilderTest extends RepositoryTestCase
         self::assertEquals(new \DateTimeImmutable('2026-03-04'), $data->journeySummaries[0]->endDate);
     }
 
+    public function testTheJourneySummaryIsOrderedByStartDateRegardlessOfThePeriodsOrder(): void
+    {
+        $centre   = $this->centre();
+        $year     = $this->year($centre);
+        $teacher  = $this->teacher('docente');
+        $calendar = $this->calendar($centre, $year, $teacher);
+        // Dados de alta en orden inverso al cronológico.
+        $calendar->addPeriod('Tercera', '#c7d2fe', true, PrintableCalendarPeriodMode::DateRange, new \DateTimeImmutable('2026-05-04'), new \DateTimeImmutable('2026-05-08'), null, null, null, null, null, null);
+        $calendar->addPeriod('Primera', '#c7d2fe', true, PrintableCalendarPeriodMode::DateRange, new \DateTimeImmutable('2026-03-02'), new \DateTimeImmutable('2026-03-06'), null, null, null, null, null, null);
+        $calendar->addPeriod('Segunda', '#c7d2fe', true, PrintableCalendarPeriodMode::StartWithHours, new \DateTimeImmutable('2026-04-06'), null, 8.0, 8.0, null, null, null, null);
+        $this->persist($centre, $year, $teacher, $calendar);
+
+        $data = $this->builder->build($calendar);
+
+        self::assertSame(['Primera', 'Segunda', 'Tercera'], array_map(static fn ($l): string => $l->description, $data->journeySummaries));
+    }
+
+    public function testACompactJourneySummaryShowsOnlyTheTotalHours(): void
+    {
+        $centre   = $this->centre();
+        $year     = $this->year($centre);
+        $teacher  = $this->teacher('docente');
+        $calendar = $this->calendar($centre, $year, $teacher);
+        $calendar->addPeriod('FCT', '#c7d2fe', true, PrintableCalendarPeriodMode::StartWithHours, new \DateTimeImmutable('2026-03-02'), null, 20.0, 8.0, 8.0, 8.0, 8.0, 8.0, true, true);
+        $this->persist($centre, $year, $teacher, $calendar);
+
+        $data = $this->builder->build($calendar);
+
+        self::assertSame(['Total: 20 horas'], $data->journeySummaries[0]->hoursLines);
+        self::assertEquals(new \DateTimeImmutable('2026-03-02'), $data->journeySummaries[0]->startDate);
+        self::assertEquals(new \DateTimeImmutable('2026-03-04'), $data->journeySummaries[0]->endDate);
+    }
+
     public function testADeclaredNonWorkingDayIsSkippedEvenIfItsWeekdayHasHoursAssigned(): void
     {
         $centre   = $this->centre();

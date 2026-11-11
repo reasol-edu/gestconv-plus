@@ -258,7 +258,7 @@ class CalendarGeneratorController extends AbstractController
      * work on it regardless of whether it came from an HTTP form (readForm), an existing entity
      * (here, for duplicate() and export()) or an uploaded file (readImportPayload).
      *
-     * @return array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>}
+     * @return array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>}
      */
     private function dataFromCalendar(PrintableCalendar $calendar): array
     {
@@ -273,6 +273,7 @@ class CalendarGeneratorController extends AbstractController
                 'description'        => $period->getDescription(),
                 'color'              => $period->getColor(),
                 'showJourneySummary' => $period->isShowJourneySummary(),
+                'compactJourneySummary' => $period->isCompactJourneySummary(),
                 'showHours'          => $period->isShowHours(),
                 'mode'               => $period->getMode(),
                 'startDate'          => $period->getStartDate(),
@@ -299,7 +300,7 @@ class CalendarGeneratorController extends AbstractController
     }
 
     /**
-     * @param array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>} $data
+     * @param array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>} $data
      *
      * @return array<string, mixed>
      */
@@ -325,6 +326,7 @@ class CalendarGeneratorController extends AbstractController
                 'description'        => $p['description'],
                 'color'              => $p['color'],
                 'showJourneySummary' => $p['showJourneySummary'],
+                'compactJourneySummary' => $p['compactJourneySummary'],
                 'showHours'          => $p['showHours'],
                 'mode'               => $p['mode']->value,
                 'startDate'          => $p['startDate']?->format('Y-m-d'),
@@ -345,7 +347,7 @@ class CalendarGeneratorController extends AbstractController
      * either a single translated error message, or a $data array in the same shape readForm()
      * produces, ready for applyCommonFields/applyDates/applyPeriods.
      *
-     * @return array{0: ?string, 1: ?array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>}}
+     * @return array{0: ?string, 1: ?array{title: string, description: ?string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int, showHeader: bool, showFooter: bool, dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>, periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>}}
      */
     private function readImportPayload(mixed $decoded): array
     {
@@ -417,7 +419,7 @@ class CalendarGeneratorController extends AbstractController
             if ($desc === '' || mb_strlen($desc) > 255 || $color === null || $color === false || $mode === null) {
                 return $invalid;
             }
-            foreach (['showJourneySummary', 'showHours'] as $flag) {
+            foreach (['showJourneySummary', 'compactJourneySummary', 'showHours'] as $flag) {
                 if (isset($raw[$flag]) && !\is_bool($raw[$flag])) {
                     return $invalid;
                 }
@@ -451,6 +453,7 @@ class CalendarGeneratorController extends AbstractController
                 'description'        => $desc,
                 'color'              => $color,
                 'showJourneySummary' => ($raw['showJourneySummary'] ?? false) === true,
+                'compactJourneySummary' => ($raw['compactJourneySummary'] ?? false) === true,
                 'showHours'          => ($raw['showHours'] ?? $c['showHours'] ?? true) === true,
                 'mode'               => $mode,
                 'startDate'          => $mode === PrintableCalendarPeriodMode::EndWithHours ? null : $pStart,
@@ -558,7 +561,7 @@ class CalendarGeneratorController extends AbstractController
         return $rows;
     }
 
-    /** @return list<array{id: string, description: string, color: string, showJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}> */
+    /** @return list<array{id: string, description: string, color: string, showJourneySummary: string, compactJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}> */
     private function periodRowsFor(PrintableCalendar $calendar): array
     {
         $rows = [];
@@ -568,6 +571,7 @@ class CalendarGeneratorController extends AbstractController
                 'description'        => $period->getDescription(),
                 'color'              => $period->getColor(),
                 'showJourneySummary' => $period->isShowJourneySummary() ? '1' : '',
+                'compactJourneySummary' => $period->isCompactJourneySummary() ? '1' : '',
                 'showHours'          => $period->isShowHours() ? '1' : '',
                 'mode'               => $period->getMode()->value,
                 'startDate'          => $period->getStartDate()?->format('Y-m-d') ?? '',
@@ -588,14 +592,14 @@ class CalendarGeneratorController extends AbstractController
      * @return array{
      *     0: array{title: string, description: string, academicYear: string, startDate: string, endDate: string, nonWorkingDayColor: string, weekendColor: string, orientation: string, fontSizeScale: string, showHeader: string, showFooter: string},
      *     1: list<array{id: string, date: string, color: string, description: string}>,
-     *     2: list<array{id: string, description: string, color: string, showJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}>,
+     *     2: list<array{id: string, description: string, color: string, showJourneySummary: string, compactJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}>,
      *     3: array<string, string>,
      *     4: null|array{
      *         title: string, description: ?string, academicYear: string, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable,
      *         nonWorkingDayColor: ?string, weekendColor: ?string, orientation: PrintableCalendarOrientation, fontSizeScale: int,
      *         showHeader: bool, showFooter: bool,
      *         dates: list<array{id: ?string, date: \DateTimeImmutable, color: string, description: string}>,
-     *         periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>,
+     *         periods: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>,
      *     }
      * }
      */
@@ -726,8 +730,8 @@ class CalendarGeneratorController extends AbstractController
 
     /**
      * @return array{
-     *     0: list<array{id: string, description: string, color: string, showJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}>,
-     *     1: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>,
+     *     0: list<array{id: string, description: string, color: string, showJourneySummary: string, compactJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}>,
+     *     1: list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}>,
      *     2: array<string, string>,
      * }
      */
@@ -745,6 +749,7 @@ class CalendarGeneratorController extends AbstractController
                 'description'        => \is_string($raw['description'] ?? null) ? trim($raw['description']) : '',
                 'color'              => \is_string($raw['color'] ?? null) ? $raw['color'] : '#c7d2fe',
                 'showJourneySummary' => ($raw['showJourneySummary'] ?? '') === '1' ? '1' : '',
+                'compactJourneySummary' => ($raw['compactJourneySummary'] ?? '') === '1' ? '1' : '',
                 'showHours'          => ($raw['showHours'] ?? '') === '1' ? '1' : '',
                 'mode'               => \is_string($raw['mode'] ?? null) ? $raw['mode'] : '',
                 'startDate'          => \is_string($raw['startDate'] ?? null) ? $raw['startDate'] : '',
@@ -795,6 +800,7 @@ class CalendarGeneratorController extends AbstractController
                 'description'        => $row['description'],
                 'color'              => $row['color'],
                 'showJourneySummary' => $row['showJourneySummary'] === '1',
+                'compactJourneySummary' => $row['showJourneySummary'] === '1' && $row['compactJourneySummary'] === '1',
                 'showHours'          => $row['showHours'] === '1',
                 'mode'               => $mode,
                 'startDate'          => $mode === PrintableCalendarPeriodMode::EndWithHours ? null : $startDate,
@@ -830,7 +836,7 @@ class CalendarGeneratorController extends AbstractController
         }
     }
 
-    /** @param list<array{id: ?string, description: string, color: string, showJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}> $periods */
+    /** @param list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}> $periods */
     private function applyPeriods(PrintableCalendar $calendar, array $periods): void
     {
         foreach ($periods as $entry) {
@@ -848,6 +854,7 @@ class CalendarGeneratorController extends AbstractController
                 $entry['weekdayHours'][4],
                 $entry['weekdayHours'][5],
                 $entry['showHours'],
+                $entry['compactJourneySummary'],
             );
         }
     }
@@ -876,7 +883,7 @@ class CalendarGeneratorController extends AbstractController
         }
     }
 
-    /** @param list<array{id: ?string, description: string, color: string, showJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}> $periods */
+    /** @param list<array{id: ?string, description: string, color: string, showJourneySummary: bool, compactJourneySummary: bool, showHours: bool, mode: PrintableCalendarPeriodMode, startDate: ?\DateTimeImmutable, endDate: ?\DateTimeImmutable, totalHours: ?float, weekdayHours: array<int, ?float>}> $periods */
     private function reconcilePeriods(PrintableCalendar $calendar, array $periods): void
     {
         $existing = [];
@@ -892,6 +899,7 @@ class CalendarGeneratorController extends AbstractController
                     ->setColor($entry['color'])
                     ->setShowJourneySummary($entry['showJourneySummary'])
                     ->setShowHours($entry['showHours'])
+                    ->setCompactJourneySummary($entry['compactJourneySummary'])
                     ->setMode($entry['mode'])
                     ->setStartDate($entry['startDate'])
                     ->setEndDate($entry['endDate'])
@@ -918,6 +926,7 @@ class CalendarGeneratorController extends AbstractController
                     $entry['weekdayHours'][4],
                     $entry['weekdayHours'][5],
                     $entry['showHours'],
+                    $entry['compactJourneySummary'],
                 );
                 $period->setPosition($position);
             }
@@ -933,13 +942,13 @@ class CalendarGeneratorController extends AbstractController
     /**
      * @param array{title: string, description: string, academicYear: string, startDate: string, endDate: string, nonWorkingDayColor: string, weekendColor: string, orientation: string, fontSizeScale: string, showHeader: string, showFooter: string} $values
      * @param list<array{id: string, date: string, color: string, description: string}>                                                                              $dateRows
-     * @param list<array{id: string, description: string, color: string, showJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}> $periodRows
+     * @param list<array{id: string, description: string, color: string, showJourneySummary: string, compactJourneySummary: string, showHours: string, mode: string, startDate: string, endDate: string, totalHours: string, mondayHours: string, tuesdayHours: string, wednesdayHours: string, thursdayHours: string, fridayHours: string}> $periodRows
      * @param array<string, string>                                                                                                                                  $errors
      */
     private function renderForm(EducationalCentre $centre, ?PrintableCalendar $calendar, array $values, array $dateRows, array $periodRows, array $errors): Response
     {
         $blankDate   = ['id' => '', 'date' => '', 'color' => '#a7f3d0', 'description' => ''];
-        $blankPeriod = ['id' => '', 'description' => '', 'color' => '#c7d2fe', 'showJourneySummary' => '', 'showHours' => '1', 'mode' => PrintableCalendarPeriodMode::DateRange->value, 'startDate' => '', 'endDate' => '', 'totalHours' => '', 'mondayHours' => '', 'tuesdayHours' => '', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => ''];
+        $blankPeriod = ['id' => '', 'description' => '', 'color' => '#c7d2fe', 'showJourneySummary' => '', 'compactJourneySummary' => '', 'showHours' => '1', 'mode' => PrintableCalendarPeriodMode::DateRange->value, 'startDate' => '', 'endDate' => '', 'totalHours' => '', 'mondayHours' => '', 'tuesdayHours' => '', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => ''];
 
         return $this->render('utilities/calendar_generator/form.html.twig', [
             'centre'       => $centre,

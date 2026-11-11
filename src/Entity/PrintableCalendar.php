@@ -287,6 +287,7 @@ class PrintableCalendar
         ?float $thursdayHours,
         ?float $fridayHours,
         bool $showHours = true,
+        bool $compactJourneySummary = false,
     ): PrintableCalendarPeriod {
         $period = new PrintableCalendarPeriod(
             $this,
@@ -304,6 +305,7 @@ class PrintableCalendar
             $fridayHours,
             $this->periods->count(),
             $showHours,
+            $compactJourneySummary,
         );
         $this->periods->add($period);
 

@@ -71,6 +71,10 @@ class PrintableCalendarPeriod
     #[ORM\Column(options: ['default' => true])]
     private bool $showHours;
 
+    /** When set, this period's entry in the journey summary shows only its date range and total hours, without the breakdown of days. Only meaningful with showJourneySummary. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $compactJourneySummary;
+
     public function __construct(
         PrintableCalendar $calendar,
         string $description,
@@ -87,6 +91,7 @@ class PrintableCalendarPeriod
         ?float $fridayHours,
         int $position,
         bool $showHours = true,
+        bool $compactJourneySummary = false,
     ) {
         $this->calendar           = $calendar;
         $this->description        = $description;
@@ -103,6 +108,7 @@ class PrintableCalendarPeriod
         $this->fridayHours        = $fridayHours;
         $this->position           = $position;
         $this->showHours          = $showHours;
+        $this->compactJourneySummary = $compactJourneySummary;
     }
 
     public function getId(): Uuid
@@ -154,6 +160,18 @@ class PrintableCalendarPeriod
     public function setShowHours(bool $showHours): static
     {
         $this->showHours = $showHours;
+
+        return $this;
+    }
+
+    public function isCompactJourneySummary(): bool
+    {
+        return $this->compactJourneySummary;
+    }
+
+    public function setCompactJourneySummary(bool $compactJourneySummary): static
+    {
+        $this->compactJourneySummary = $compactJourneySummary;
 
         return $this;
     }

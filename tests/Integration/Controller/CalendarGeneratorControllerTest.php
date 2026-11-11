@@ -110,6 +110,25 @@ final class CalendarGeneratorControllerTest extends ControllerTestCase
         self::assertCount(1, $calendar->getDates());
     }
 
+    public function testTheCompactJourneySummaryIsPersistedOnlyWithTheSummaryEnabled(): void
+    {
+        $period = static fn (string $description, string $summary): array => [
+            'id' => '', 'description' => $description, 'color' => '#fca5a5', 'showJourneySummary' => $summary, 'compactJourneySummary' => '1', 'mode' => 'date_range',
+            'startDate' => '2026-03-09', 'endDate' => '2026-03-11', 'totalHours' => '',
+            'mondayHours' => '', 'tuesdayHours' => '', 'wednesdayHours' => '', 'thursdayHours' => '', 'fridayHours' => '',
+        ];
+        $id = $this->create(['periods' => [$period('Con resumen', '1'), $period('Sin resumen', '')]]);
+
+        $this->em->clear();
+        /** @var PrintableCalendarRepository $repo */
+        $repo     = self::getContainer()->get(PrintableCalendarRepository::class);
+        $calendar = $repo->findByOwnerAndId($this->owner, $this->centre, $id);
+        self::assertNotNull($calendar);
+        $periods = $calendar->getPeriods()->toArray();
+        self::assertTrue($periods[0]->isCompactJourneySummary());
+        self::assertFalse($periods[1]->isCompactJourneySummary());
+    }
+
     public function testTheOrientationAndFontSizeScaleArePersisted(): void
     {
         $id = $this->create(['orientation' => 'landscape', 'fontSizeScale' => '150']);

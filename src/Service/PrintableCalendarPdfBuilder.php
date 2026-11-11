@@ -78,6 +78,9 @@ final class PrintableCalendarPdfBuilder
             }
         }
 
+        // Ordered by start date (stable: periods starting the same day keep their own order).
+        usort($journeySummaries, static fn (PrintableCalendarJourneyLine $a, PrintableCalendarJourneyLine $b): int => $a->startDate <=> $b->startDate);
+
         $months = [];
         $cursor    = $start->modify('first day of this month');
         $lastMonth = $end->modify('first day of this month');
@@ -352,7 +355,15 @@ final class PrintableCalendarPdfBuilder
             return null;
         }
 
-        $last = $days[array_key_last($days)];
+        $last  = $days[array_key_last($days)];
+        $total = array_sum(array_map(static fn (array $day): float => (float) $day['hours'], $days));
+        $totalLine = $this->translator->trans('pdf.journey.total', ['%hours%' => NumberLabel::format($total)], 'utilities');
+
+        // Compact entry: just the date range and the total, without the breakdown of days.
+        if ($period->isCompactJourneySummary()) {
+            return new PrintableCalendarJourneyLine($period->getDescription(), $days[0]['date'], $last['date'], [$totalLine]);
+        }
+
         $main = \array_slice($days, 0, -1);
         // Did the last jornada get less than its weekday's usual quota (totalHours ran out mid-day)?
         $lastPartial = $last['quota'] !== null && $last['hours'] !== null && $last['hours'] < $last['quota'];
@@ -390,8 +401,7 @@ final class PrintableCalendarPdfBuilder
             $lines[] = $this->translator->trans('pdf.journey.last_different', ['%hours%' => NumberLabel::format((float) $last['hours'])], 'utilities');
         }
 
-        $total   = array_sum(array_map(static fn (array $day): float => (float) $day['hours'], $days));
-        $lines[] = $this->translator->trans('pdf.journey.total', ['%hours%' => NumberLabel::format($total)], 'utilities');
+        $lines[] = $totalLine;
 
         return new PrintableCalendarJourneyLine($period->getDescription(), $days[0]['date'], $last['date'], $lines);
     }

@@ -196,10 +196,18 @@
                         </div>
                     </div>
 
-                    <label class="flex items-center gap-2 text-sm text-gray-700">
-                        <input type="checkbox" name="periods[{{ i }}][showJourneySummary]" value="1" {{ row.showJourneySummary ? 'checked' : '' }} class="rounded text-forest-600 focus:ring-forest-500">
-                        {{ 'form.periods.show_journey_summary'|trans({}, 'utilities') }}
-                    </label>
+                    <div class="space-y-2" data-controller="reveal">
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="periods[{{ i }}][showJourneySummary]" value="1" {{ row.showJourneySummary ? 'checked' : '' }}
+                                   data-reveal-target="trigger" data-action="change->reveal#update" class="rounded text-forest-600 focus:ring-forest-500">
+                            {{ 'form.periods.show_journey_summary'|trans({}, 'utilities') }}
+                        </label>
+                        {# Solo con el resumen activado: el detalle compacto (rango de fechas y total de horas). #}
+                        <label class="flex items-center gap-2 pl-6 text-sm text-gray-700" data-reveal-target="content" {{ row.showJourneySummary ? '' : 'hidden' }}>
+                            <input type="checkbox" name="periods[{{ i }}][compactJourneySummary]" value="1" {{ row.compactJourneySummary ? 'checked' : '' }} class="rounded text-forest-600 focus:ring-forest-500">
+                            {{ 'form.periods.compact_journey_summary'|trans({}, 'utilities') }}
+                        </label>
+                    </div>
 
                     <fieldset class="flex flex-wrap gap-2" data-controller="radio-card">
                         <legend class="sr-only">{{ 'form.periods.mode_legend'|trans({}, 'utilities') }}</legend>
@@ -253,7 +261,7 @@
                     </div>
 
                     {% if row.id %}
-                        <label class="flex items-center gap-2 text-xs font-medium text-red-600">
+                        <label class="flex items-center gap-2 text-sm text-red-700">
                             <input type="checkbox" name="periods[{{ i }}][remove]" value="1" class="rounded text-red-600 focus:ring-red-500">
                             {{ 'form.remove'|trans({}, 'utilities') }}
                         </label>
