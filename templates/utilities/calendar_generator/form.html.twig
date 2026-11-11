@@ -281,21 +281,23 @@
 
     {% if calendar %}
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-4">
-                <a href="{{ path('app_utilities_calendar_generator_export', {id: cid}) }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-800">
+            <div class="flex items-center gap-3">
+                <a href="{{ path('app_utilities_calendar_generator_export', {id: cid}) }}" class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 transition-colors">
                     {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-4 w-4'}) }}{{ 'calendar_generator.export'|trans({}, 'utilities') }}
                 </a>
-                <form method="post" action="{{ path('app_utilities_calendar_generator_duplicate', {id: cid}) }}">
+                <form method="post" action="{{ path('app_utilities_calendar_generator_duplicate', {id: cid}) }}" class="flex">
                     <input type="hidden" name="_token" value="{{ csrf_token('utilities_calendar_duplicate_' ~ cid) }}">
-                    <button type="submit" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-800">
+                    <button type="submit" class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 transition-colors">
                         {{ ux_icon('heroicons:document-duplicate', {class: 'h-4 w-4'}) }}{{ 'calendar_generator.duplicate'|trans({}, 'utilities') }}
                     </button>
                 </form>
             </div>
-            <form method="post" action="{{ path('app_utilities_calendar_generator_delete', {id: cid}) }}"
-                  class="js-confirm-form" data-confirm="{{ 'form.delete_confirm'|trans({}, 'utilities')|e('html_attr') }}">
+            <form method="post" action="{{ path('app_utilities_calendar_generator_delete', {id: cid}) }}" class="js-confirm-form flex"
+                  data-confirm="{{ 'form.delete_confirm'|trans({}, 'utilities')|e('html_attr') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('utilities_calendar_' ~ cid) }}">
-                <button type="submit" class="js-confirm-trigger text-sm font-medium text-red-700 hover:text-red-800">{{ 'form.delete'|trans({}, 'utilities') }}</button>
+                <button type="submit" class="js-confirm-trigger inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-xs hover:bg-red-50 transition-colors">
+                    {{ ux_icon('heroicons:trash', {class: 'h-4 w-4'}) }}{{ 'form.delete'|trans({}, 'utilities') }}
+                </button>
             </form>
         </div>
     {% endif %}
