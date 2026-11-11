@@ -42,7 +42,7 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 </div>
 
 <div class="nota">
-  <p>Para <strong>temporalizar unidades didácticas</strong>, añade una <strong>secuencia</strong>: su fecha de inicio, las horas de cada día y la lista de elementos con sus horas (puedes pegarlos, una línea por elemento: «UD1; 55»). Cada elemento se pinta con uno de dos colores alternos y lleva su «Inicio» y su «Fin» en el margen.</p>
+  <p>Para <strong>temporalizar unidades didácticas</strong>, añade una <strong>secuencia</strong>: su fecha de inicio, las horas de cada día y la lista de elementos con sus horas (puedes pegarlos, una línea por elemento: «UD1; 55»). Mientras escribes ves las <strong>fechas de cada elemento</strong>. Cada uno se pinta con uno de dos colores alternos y lleva su «Inicio» y su «Fin» en el margen. Si el calendario tiene periodos (un examen, unas prácticas…), marca <strong>Excluir… los días de los periodos</strong> para que la secuencia los salte.</p>
 </div>
 
 <div class="nota">

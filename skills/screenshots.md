@@ -168,3 +168,20 @@ source of truth; to rerun all of them:
    then open a sample of the PNGs (toolbar hidden, seeded names present, new UI visible); compare heights with
    the previous version (`git show HEAD:path > old.png; sips -g pixelHeight`).
 6. Teardown: stop the server, drop the databases and templates, delete the copied seed command.
+
+## Screenshots of a generated PDF (Utilidades › calendar generator)
+
+`scripts/capture-utilities-shots.mjs` also captures what the calendar generator *prints*. A PDF can't be
+screenshotted from the browser: download it with the logged-in session
+(`page.context().request.get('…/pdf')`), write it to a temp folder and convert only the top of page 1 with
+poppler's `pdftoppm -r 110 -png -singlefile -f 1 -l 1 -x X -y Y -W W -H H` (`SHOTS_PDF_CROP="x,y,width,height"`
+tunes the crop; the default fits a 4-month calendar with its summary box). Notes:
+
+- That script **creates calendars** (they're personal data, not in the fixtures) and the list screenshot expects a
+  single one: run it on a fresh disposable database, never twice on the same one.
+- The sequence form fills its fields and then waits for the live dates
+  (`page.waitForFunction` on the summary line) — they come from a request made after a 300 ms debounce.
+  Blur the last field (`document.activeElement.blur()`) before `card.screenshot()` or the focus ring is captured.
+- The Tailwind CSS served in dev (`var/tailwind/app.built.css`) goes stale: classes added by new templates
+  (e.g. arbitrary `sm:grid-cols-[…]` values) are missing until it's rebuilt, and a form then looks stacked. Rebuild it
+  as described in step 3 above before capturing.

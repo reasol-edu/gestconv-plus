@@ -1261,11 +1261,26 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   horas** (total y horas por día de la semana), saltando fines de semana y
   días no lectivos.
 - Una **secuencia** temporaliza una lista de elementos (p. ej. unidades
-  didácticas) con sus horas, alternando **dos colores** y con su propio
-  resumen de fechas y horas.
+  didácticas), ver la diapositiva siguiente.
 - Vertical o apaisado, con encabezado y pie opcionales y la **plantilla PDF**
   del centro de fondo.
 - Se pueden **duplicar**, **exportar** e **importar** (JSON).
+
+
+---
+
+
+## Utilidades: temporalizar con secuencias
+
+![bg right:45% fit](../manual/img/utilidades/utilidades-secuencia-pdf.png)
+
+- Reparte una lista de elementos con sus **horas**, uno tras otro, desde
+  una fecha de inicio.
+- Cada elemento, en uno de **dos colores alternos**, con su **Inicio** y su
+  **Fin** en el margen.
+- Las **fechas** de cada uno se ven **en directo** al rellenarla; los
+  elementos se pueden **pegar** («UD1; 55»).
+- Puede **saltar los días de los periodos** y tiene su **propio resumen**.
 
 
 ---

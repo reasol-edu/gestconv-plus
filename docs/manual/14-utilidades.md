@@ -15,9 +15,10 @@ conservan.
 
 ## Generador de calendarios
 
-Genera calendarios propios en PDF, con periodos y fechas destacadas — pensado, por ejemplo, para
-llevar el seguimiento de un periodo de prácticas, de un proyecto o de cualquier otro periodo con un
-patrón de horas semanal. No tiene relación con el
+Genera calendarios propios en PDF, con **periodos**, **secuencias** y **fechas destacadas** — pensado,
+por ejemplo, para llevar el seguimiento de un periodo de prácticas, de un proyecto o de cualquier
+otro periodo con un patrón de horas semanal, o para **temporalizar** las unidades didácticas de un
+módulo. No tiene relación con el
 [calendario del centro](11-calendario-actividades-y-tablon.md): es completamente personal, cada
 calendario lo ve y lo edita únicamente quien lo ha creado.
 
@@ -91,19 +92,26 @@ Se define con:
   calendario salta los fines de semana y los días no lectivos del curso;
 - la lista de **elementos**, cada uno con su descripción y sus horas (se admiten decimales, como 7,5).
 
-Con 55, 10 y 12 horas para UD1, UD2 y UD3, el calendario pinta los días que ocupa cada una y, en el
-margen del mes, indica **Inicio UD1**, **Fin UD1**, **Inicio UD2**… con el color de cada elemento.
-Cuando un elemento acaba a mitad de día, el siguiente empieza ese mismo día con las horas que sobran:
-ese día se pinta del color del elemento que ocupa **más horas** (si empatan, el que empieza), y si la
-secuencia muestra las horas de cada día, aparece el total del día.
+![Una secuencia de unidades didácticas con tres elementos, sus colores, las horas de cada día de la semana y las fechas que le tocan a cada uno](img/utilidades/utilidades-secuencia-formulario.png)
 
-Cada secuencia tiene su **propio cuadro de resumen** encima del calendario:
+En el ejemplo, la secuencia empieza el 16/09/2026 y el centro dedica 2 horas el lunes, 2 el martes y 1
+el miércoles, el jueves y el viernes (7 a la semana). Con 55, 10 y 12 horas para UD1, UD2 y UD3, el
+calendario pinta los días que ocupa cada una y, en el margen del mes, indica **Inicio UD1**,
+**Fin UD1**, **Inicio UD2**… con el color de cada elemento. Cuando un elemento acaba a mitad de día,
+el siguiente empieza ese mismo día con las horas que sobran (aquí, el 10/11/2026 es el último día de
+UD1 y el primero de UD2): ese día se pinta del color del elemento que ocupa **más horas** (si
+empatan, el que empieza), y si la secuencia muestra las horas de cada día, aparece el total del día.
+
+Cada secuencia tiene su **propio cuadro de resumen** encima del calendario, aparte del de los
+periodos, con una línea por elemento y el total de horas:
+
+![PDF de un calendario con una secuencia: los días de cada unidad en dos colores alternos, «Inicio» y «Fin» de cada una en el margen del mes, y su cuadro de resumen](img/utilidades/utilidades-secuencia-pdf.png)
 
 ```text
 Unidades didácticas
 UD1 — 16/09/2026 - 10/11/2026 · 55 horas
-UD2 — 11/11/2026 - 18/11/2026 · 10 horas
-UD3 — 18/11/2026 - 24/11/2026 · 12 horas
+UD2 — 10/11/2026 - 19/11/2026 · 10 horas
+UD3 — 20/11/2026 - 01/12/2026 · 12 horas
 Total: 77 horas
 ```
 
@@ -145,10 +153,11 @@ como fondo de cada página; si no, se usa la plantilla general del centro para e
 
 ### Duplicar, exportar e importar
 
-- **Duplicar** crea una copia completa del calendario (con sus fechas y periodos), con «(copia)»
+- **Duplicar** crea una copia completa del calendario (con sus fechas, periodos y secuencias), con «(copia)»
   añadido al título — útil para reutilizar uno de un curso anterior como punto de partida.
 - **Exportar** descarga el calendario como un fichero **JSON** que no incluye el centro ni el curso
-  académico, para poder llevarlo a otro curso o compartirlo con otro docente.
+  académico, para poder llevarlo a otro curso o compartirlo con otro docente. Los ficheros
+  exportados con versiones anteriores, que no tenían secuencias, se siguen pudiendo importar.
 - **Importar calendario** crea un calendario nuevo a partir de uno de esos ficheros, en el curso
   académico que se elija al importarlo.
 

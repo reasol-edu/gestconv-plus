@@ -87,6 +87,9 @@ Aviso de una avería, desperfecto o problema del centro (una luz fundida, un aul
 **Utilidades**
 Sección del menú con dos herramientas personales del profesorado: el generador de calendarios en PDF y la calculadora de fechas. No afecta a ningún otro dato del centro. Ver [Utilidades](14-utilidades.md).
 
+**Secuencia (generador de calendarios)**
+Lista ordenada de elementos con sus horas (por ejemplo, las unidades didácticas de un módulo) que el generador de calendarios reparte uno tras otro a partir de una fecha de inicio, según las horas de cada día de la semana. Cada elemento se pinta con uno de dos colores alternos y lleva su «Inicio» y su «Fin» en el margen del mes, y cada secuencia tiene su propio cuadro de resumen. Ver [Secuencias](14-utilidades.md#secuencias).
+
 **Personal no docente**
 Cuenta de quien trabaja en el centro sin dar clase (conserjería, administración, mantenimiento…). Pertenece al centro sin depender del curso académico, no autentica en Séneca, no aparece entre los docentes y solo accede a las Incidencias. Se gestiona en Centro educativo › Personal no docente.
 
