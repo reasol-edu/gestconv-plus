@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.28.0] - 2026-11-11
+
+### Added
+
+- **Secuencias en el generador de calendarios**, para temporalizar: una secuencia tiene un nombre, una fecha de inicio, dos colores, las horas de cada día de la semana y una lista de elementos (por ejemplo, unidades didácticas), cada uno con sus horas, que se reparten uno detrás de otro saltando fines de semana y días no lectivos. En el calendario, cada elemento se pinta alternando los dos colores y lleva en el margen su «Inicio» y su «Fin». Si un elemento acaba a mitad de día, el siguiente empieza ese mismo día; el día se pinta del color del elemento con más horas.
+- **Cada secuencia tiene su propio cuadro de resumen** sobre el calendario, con una línea por elemento («UD2 — 11/11/2026 - 18/11/2026 · 10 horas») y el total de horas. Se puede ocultar el resumen de una secuencia, y también mostrar u ocultar las horas de cada día.
+- Para rellenar una secuencia con comodidad: añadir, subir, bajar y quitar elementos; **pegar elementos** (una línea por elemento, «UD1; 55», o dos columnas de una hoja de cálculo); y **las fechas de cada elemento en directo** mientras se escribe, con el total de horas y el día en que termina.
+- Las secuencias se duplican, exportan e importan junto con el calendario.
+
 ## [1.27.0] - 2026-11-11
 
 ### Added
