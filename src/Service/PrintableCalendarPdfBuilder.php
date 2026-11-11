@@ -359,9 +359,11 @@ final class PrintableCalendarPdfBuilder
         $total = array_sum(array_map(static fn (array $day): float => (float) $day['hours'], $days));
         $totalLine = $this->translator->trans('pdf.journey.total', ['%hours%' => NumberLabel::format($total)], 'utilities');
 
-        // Compact entry: just the date range and the total, without the breakdown of days.
+        // Compact entry: «UD2 — 11/11/2026 - 18/11/2026 · 10 horas», without the breakdown of days nor the «Total:» label.
         if ($period->isCompactJourneySummary()) {
-            return new PrintableCalendarJourneyLine($period->getDescription(), $days[0]['date'], $last['date'], [$totalLine]);
+            $compactLine = $this->translator->trans('pdf.journey.total_compact', ['%hours%' => NumberLabel::format($total)], 'utilities');
+
+            return new PrintableCalendarJourneyLine($period->getDescription(), $days[0]['date'], $last['date'], [$compactLine]);
         }
 
         $main = \array_slice($days, 0, -1);

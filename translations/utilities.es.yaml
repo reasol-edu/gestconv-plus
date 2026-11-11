@@ -73,7 +73,7 @@ form:
     help: 'Un periodo se define con una fecha de inicio y una de fin, o con uno de esos extremos más un total de horas y las horas de cada día de la semana (lunes a viernes).'
     new: 'Nuevo periodo'
     show_journey_summary: 'Mostrar el resumen de jornadas debajo del calendario'
-    compact_journey_summary: 'Detalle de jornadas en resumen (solo el rango de fechas y el total de horas)'
+    compact_journey_summary: 'Resumen compacto'
     show_hours: 'Mostrar las horas de cada día de este periodo en el calendario'
     mode_legend: 'Cómo se definen sus fechas'
     mode:
@@ -129,3 +129,4 @@ pdf:
     last_different: 'y 1 jornada de %hours% horas'
     weekday: '%weekday%: %hours% horas'
     total: 'Total: %hours% horas'
+    total_compact: '%hours% horas'

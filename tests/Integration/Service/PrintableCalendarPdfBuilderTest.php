@@ -109,7 +109,7 @@ final class PrintableCalendarPdfBuilderTest extends RepositoryTestCase
 
         $data = $this->builder->build($calendar);
 
-        self::assertSame(['Total: 20 horas'], $data->journeySummaries[0]->hoursLines);
+        self::assertSame(['20 horas'], $data->journeySummaries[0]->hoursLines);
         self::assertEquals(new \DateTimeImmutable('2026-03-02'), $data->journeySummaries[0]->startDate);
         self::assertEquals(new \DateTimeImmutable('2026-03-04'), $data->journeySummaries[0]->endDate);
     }

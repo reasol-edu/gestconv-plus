@@ -71,9 +71,9 @@ aparece en los periodos de fecha de inicio y de fin, que no tienen horas.
 Un periodo con horas puede mostrar, además, un **resumen de jornadas** justo encima del calendario
 (cuántas jornadas y de cuántas horas cada una, y al final la **suma total de horas** del periodo).
 Los periodos del resumen aparecen **ordenados por su fecha de comienzo**, sea cual sea el orden en
-que se hayan dado de alta. Si marcas **Detalle de jornadas en resumen**, opción que solo aparece
-cuando el resumen está activado, ese periodo muestra únicamente su **rango de fechas y el total de
-horas**, sin el desglose de jornadas.
+que se hayan dado de alta. Si marcas **Resumen compacto**, opción que solo aparece cuando el
+resumen está activado, ese periodo ocupa una sola línea con su **rango de fechas y el total de
+horas**, sin el desglose de jornadas, por ejemplo: «UD2 — 11/11/2026 - 18/11/2026 · 10 horas».
 
 ![Periodo «Desde el inicio, con horas», con su fecha de inicio, el total de horas y las horas de cada día de la semana](img/utilidades/utilidades-calendario-periodos.png)
 
