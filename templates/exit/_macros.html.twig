@@ -11,6 +11,14 @@
 {% endmacro %}
 
 {% macro timer(exit) %}
+    {% if exit.autoClosed %}
+        {# Salida de un día anterior que nadie cerró: se da por cerrada, sin temporizador ni tiempo fuera. #}
+        <span class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1 text-sm font-semibold text-gray-600"
+              title="{{ 'exit.auto_closed.hint'|trans({}, 'admin') }}">
+            {{ ux_icon('heroicons:clock', {class: 'h-4 w-4 shrink-0'}) }}
+            {{ 'exit.auto_closed.label'|trans({}, 'admin') }}
+        </span>
+    {% else %}
     {% set seconds = exit_seconds(exit) %}
     {% set level_classes = ['bg-gray-100 text-gray-700', 'bg-amber-100 text-amber-800', 'bg-orange-200 text-orange-900', 'bg-red-600 text-white'] %}
     <span data-controller="exit-timer"
@@ -21,6 +29,7 @@
         {{ ux_icon('heroicons:clock', {class: 'h-4 w-4 shrink-0'}) }}
         <span data-exit-timer-target="ago">{{ exit_ago(seconds) }}</span>
     </span>
+    {% endif %}
 {% endmacro %}
 
 {% macro exit_time(exit) %}

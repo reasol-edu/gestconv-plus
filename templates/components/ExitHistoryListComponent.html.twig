@@ -79,6 +79,7 @@
                     <option value="">{{ 'exit.history.filter.status'|trans({}, 'admin') }}</option>
                     <option value="out" {{ status == 'out' ? 'selected' : '' }}>{{ 'exit.history.status.out'|trans({}, 'admin') }}</option>
                     <option value="returned" {{ status == 'returned' ? 'selected' : '' }}>{{ 'exit.history.status.returned'|trans({}, 'admin') }}</option>
+                    <option value="auto_closed" {{ status == 'auto_closed' ? 'selected' : '' }}>{{ 'exit.history.status.auto_closed'|trans({}, 'admin') }}</option>
                 </select>
 
                 <label class="flex items-center gap-2 text-sm text-gray-600">

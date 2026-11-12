@@ -397,6 +397,52 @@ class StudentExitControllerTest extends ControllerTestCase
         self::assertStringNotContainsString('Pérez, Luis', $searched);
     }
 
+    public function testAutoClosedExitIsLabelledFilterableAndNotCountedAsTimeOut(): void
+    {
+        self::mockTime('2026-10-14 12:00:00');
+        $s      = $this->makeScenario();
+        $closed = $this->makeExit($s, $s['studentA'], $s['groupA'], $s['other'], '2026-10-13 11:00:00');
+        $closed->markAutoClosed(new \DateTimeImmutable('2026-10-14 01:10:00'));
+        $this->makeExit($s, $s['studentB'], $s['groupB'], $s['teacher'], '2026-10-14 11:50:00');
+        $this->flush();
+        $this->loginAs($s['cadmin'], $s['centre']);
+
+        $component = $this->createLiveComponent('ExitHistoryListComponent', ['centre' => $s['centre']], $this->client);
+        $all       = $component->render()->crawler();
+        self::assertStringContainsString('Cierre automático', $all->text());
+        // Solo la salida abierta (10 min) lleva cronómetro, y la cerrada (25 h) no: no tiene tiempo fuera.
+        self::assertGreaterThan(0, $all->filter('[data-exit-timer-seconds-value="600"]')->count());
+        self::assertCount(0, $all->filter('[data-exit-timer-seconds-value="90000"]'));
+        self::assertSame($all->filter('[data-exit-timer-seconds-value]')->count(), $all->filter('[data-exit-timer-seconds-value="600"]')->count());
+
+        $component->set('status', 'out');
+        $out = $component->render()->crawler()->text();
+        self::assertStringNotContainsString('García, Ana', $out, '«Siguen fuera» no incluye la cerrada automáticamente.');
+        self::assertStringContainsString('Pérez, Luis', $out);
+
+        $component->set('status', 'auto_closed');
+        $auto = $component->render()->crawler()->text();
+        self::assertStringContainsString('García, Ana', $auto);
+        self::assertStringNotContainsString('Pérez, Luis', $auto);
+    }
+
+    public function testAutoClosedExitDoesNotAppearInCurrentListAndStudentCanLeaveAgain(): void
+    {
+        self::mockTime('2026-10-14 10:00:00');
+        $s      = $this->makeScenario();
+        $closed = $this->makeExit($s, $s['studentB'], $s['groupB'], $s['teacher'], '2026-10-13 11:00:00');
+        $closed->markAutoClosed(new \DateTimeImmutable('2026-10-14 01:10:00'));
+        $this->flush();
+        $this->loginAs($s['teacher'], $s['centre']);
+
+        $current = $this->createLiveComponent('ExitCurrentListComponent', ['centre' => $s['centre']], $this->client)->render()->crawler()->text();
+        self::assertStringNotContainsString('Pérez, Luis', $current);
+
+        $crawler = $this->client->request('GET', $this->newUrl($s['groupB'], $s['studentB']));
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('ya tiene una salida abierta', $crawler->text());
+    }
+
     // ── borrado desde el historial (solo administración) ──────────────────────
 
     public function testAdminDeletesAnExitFromTheHistoryAfterConfirming(): void

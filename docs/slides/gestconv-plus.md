@@ -123,6 +123,8 @@ Incidencias.
 - Saber **quién está fuera del aula** ahora, con qué permiso y desde cuándo.
 - Pensado para el **móvil**: se autoriza en tres toques.
 - El **historial** permite revisar las salidas del centro.
+- Las salidas **olvidadas** de días anteriores se **cierran solas** de madrugada
+  (sin inventar hora de regreso).
 
 
 ---

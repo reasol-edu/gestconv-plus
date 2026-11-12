@@ -118,8 +118,9 @@ class ExitCurrentListComponent extends AbstractController
         }
         $this->denyAccessUnlessGranted(StudentExitVoter::MARK_RETURNED, $exit);
 
-        // Otro docente pudo registrar ya el regreso mientras esta pantalla seguía abierta.
-        if (!$exit->isReturned()) {
+        // Otro docente pudo registrar ya el regreso (o la tarea nocturna cerrar la salida) mientras esta
+        // pantalla seguía abierta.
+        if ($exit->isOut()) {
             $exit->markReturned($user);
             $this->em->flush();
 

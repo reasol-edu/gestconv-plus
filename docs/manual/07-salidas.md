@@ -20,7 +20,7 @@ comandos.
 
 Si el estudiante tiene **pase prioritario** (ver más abajo), se muestra su justificación en un
 aviso destacado antes de elegir el motivo. Un estudiante que ya tiene una salida abierta no puede
-volver a salir hasta que se registre su regreso.
+volver a salir hasta que se registre su regreso o la salida se cierre sola (ver [Salidas olvidadas](#salidas-olvidadas)).
 
 ![Último paso de Autorizar salida, con el aviso de pase prioritario](img/salidas/salidas-autorizar.png)
 
@@ -38,6 +38,18 @@ Las salidas que has autorizado tú aparecen **aparte y primero**, con un botón 
 cierra la salida (la sección no se muestra si no tienes ninguna). En las salidas de otros docentes
 el botón **Ha regresado** solo aparece si eres tutor/a del grupo del estudiante, equipo directivo o
 administración.
+
+## Salidas olvidadas {#salidas-olvidadas}
+
+Si nadie pulsa **Ha regresado**, el estudiante seguiría «fuera» indefinidamente y no podría volver a
+salir al día siguiente. Para evitarlo, cada madrugada la aplicación **cierra automáticamente las
+salidas de días anteriores** que siguen sin regreso registrado (las de hoy no se tocan). No hay
+ajuste que configurar: funciona siempre que la sección Salidas esté activada.
+
+Una salida cerrada así **no se da por regresada**: no se inventa ninguna hora de vuelta, por lo que
+no cuenta en los tiempos fuera de los informes y se muestra con la etiqueta **Cierre automático** en
+lugar del cronómetro. En el [historial](#historial) puede filtrarse con **Cerradas
+automáticamente** (el filtro **Siguen fuera** no las incluye).
 
 ## Pase prioritario
 
@@ -81,7 +93,8 @@ el informe muestra:
 - **Alumnado con más salidas** (los diez primeros): grupo, número de salidas, tiempo fuera en
   total y motivo más frecuente.
 
-El tiempo fuera solo cuenta las salidas con regreso registrado. Los botones **Exportar a PDF**
+El tiempo fuera solo cuenta las salidas con regreso registrado (las [cerradas
+automáticamente](#salidas-olvidadas) figuran como sin regreso registrado, y no suman tiempo). Los botones **Exportar a PDF**
 (apaisado, con el encabezado y la plantilla personalizables, ver
 [Personalización de informes](13-administrar-la-plataforma.md#personalizacion-de-informes)) y
 **Exportar a hoja de cálculo** descargan el mismo contenido. El informe desaparece, con el resto de

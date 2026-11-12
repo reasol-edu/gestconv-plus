@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\AcademicYear;
+use App\Entity\EducationalCentre;
 use App\Entity\ExitReason;
 use App\Entity\Student;
 use App\Entity\StudentExit;
@@ -63,8 +64,32 @@ class StudentExitRepository extends ServiceEntityRepository
             ->leftJoin('g.tutors', 'gt')->addSelect('gt')
             ->where('e.academicYear = :year')
             ->andWhere('e.returnedAt IS NULL')
+            ->andWhere('e.autoClosedAt IS NULL')
             ->setParameter('year', $year->getId(), 'uuid')
             ->orderBy('e.exitedAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * Salidas del centro que siguen abiertas (sin regreso ni cierre) y cuya salida es anterior a
+     * `$before`: las olvidadas de días pasados, que la tarea nocturna cierra.
+     *
+     * @return list<StudentExit>
+     */
+    public function findOutBefore(EducationalCentre $centre, \DateTimeImmutable $before): array
+    {
+        /** @var list<StudentExit> $result */
+        $result = $this->createQueryBuilder('e')
+            ->join('e.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('e.returnedAt IS NULL')
+            ->andWhere('e.autoClosedAt IS NULL')
+            ->andWhere('e.exitedAt < :before')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('before', $before)
             ->getQuery()
             ->getResult();
 
@@ -108,7 +133,7 @@ class StudentExitRepository extends ServiceEntityRepository
      * Listado filtrable de las salidas del curso (pestaña de dirección).
      *
      * Filtros opcionales: search (estudiante o docente), groupId, reasonId, teacherId, from, to
-     * (fechas `Y-m-d`, ambas incluidas), status (`out` | `returned`), sort, sortDir.
+     * (fechas `Y-m-d`, ambas incluidas), status (`out` | `returned` | `auto_closed`), sort, sortDir.
      *
      * @param array<string, mixed> $filters
      * @return Query<null, StudentExit>
@@ -147,9 +172,11 @@ class StudentExitRepository extends ServiceEntityRepository
 
         $status = $filters['status'] ?? '';
         if ($status === 'out') {
-            $qb->andWhere('e.returnedAt IS NULL');
+            $qb->andWhere('e.returnedAt IS NULL')->andWhere('e.autoClosedAt IS NULL');
         } elseif ($status === 'returned') {
             $qb->andWhere('e.returnedAt IS NOT NULL');
+        } elseif ($status === 'auto_closed') {
+            $qb->andWhere('e.autoClosedAt IS NOT NULL');
         }
 
         $sortDirRaw = $filters['sortDir'] ?? 'desc';

@@ -6,6 +6,7 @@ namespace App;
 
 use App\Message\AutoPrescribeIncidentReportsMessage;
 use App\Message\AutoPrescribeSanctionsMessage;
+use App\Message\CloseForgottenExitsMessage;
 use App\Message\DeactivateExpiredDailyNotesMessage;
 use App\Message\IssueOverdueReminderMessage;
 use App\Message\PurgeActivityAttachmentsMessage;
@@ -35,6 +36,7 @@ class Schedule implements ScheduleProviderInterface
         return (new SymfonySchedule())
             ->add(
                 RecurringMessage::cron('0 1 * * *', new DeactivateExpiredDailyNotesMessage()),
+                RecurringMessage::cron('10 1 * * *', new CloseForgottenExitsMessage()),
                 RecurringMessage::cron('0 3 * * 0', new PurgeActivityLogMessage()),
                 RecurringMessage::cron('30 3 * * 0', new PurgeEmailNotificationLogMessage()),
                 RecurringMessage::cron('0 4 * * *', new AutoPrescribeIncidentReportsMessage()),

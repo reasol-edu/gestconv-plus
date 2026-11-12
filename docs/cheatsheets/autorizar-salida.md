@@ -49,5 +49,5 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 </div>
 
 <div class="nota">
-  <p>Un estudiante con una salida abierta no puede volver a salir hasta que se registre su regreso. Los motivos de la cuadrícula los configura el equipo directivo en <strong>Centro educativo</strong>. Al pie de la pantalla del paso 3 ves las salidas de hoy de ese estudiante.</p>
+  <p>Un estudiante con una salida abierta no puede volver a salir hasta que se registre su regreso (las salidas olvidadas de días anteriores se cierran solas de madrugada). Los motivos de la cuadrícula los configura el equipo directivo en <strong>Centro educativo</strong>. Al pie de la pantalla del paso 3 ves las salidas de hoy de ese estudiante.</p>
 </div>

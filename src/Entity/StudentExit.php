@@ -59,6 +59,14 @@ class StudentExit
     #[ORM\JoinColumn(nullable: true)]
     private ?Teacher $returnedBy = null;
 
+    /**
+     * Instante en que la tarea nocturna dio por cerrada una salida de un día anterior sin regreso
+     * registrado. No es un regreso (`returnedAt` sigue vacío, así que no cuenta para los tiempos);
+     * solo evita que el estudiante figure fuera para siempre.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $autoClosedAt = null;
+
     public function __construct()
     {
         $this->exitedAt = now();
@@ -172,6 +180,29 @@ class StudentExit
     {
         $this->returnedAt = $at ?? now();
         $this->returnedBy = $by;
+
+        return $this;
+    }
+
+    public function getAutoClosedAt(): ?\DateTimeImmutable
+    {
+        return $this->autoClosedAt;
+    }
+
+    public function isAutoClosed(): bool
+    {
+        return $this->autoClosedAt !== null;
+    }
+
+    /** El estudiante sigue figurando fuera: ni ha regresado ni se ha cerrado automáticamente. */
+    public function isOut(): bool
+    {
+        return $this->returnedAt === null && $this->autoClosedAt === null;
+    }
+
+    public function markAutoClosed(?\DateTimeImmutable $at = null): static
+    {
+        $this->autoClosedAt = $at ?? now();
 
         return $this;
     }
