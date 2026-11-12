@@ -1,0 +1,216 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% set student = data.student %}
+
+{% block content %}
+    <p class="section-title">{{ 'student_report.heading'|trans({}, 'admin') }} · {{ student.name.lastName }}, {{ student.name.firstName }}</p>
+
+    <table class="data-table">
+        <tbody>
+            <tr>
+                <td><span class="cell-sub">{{ 'incident.col.student'|trans({}, 'admin') }}</span><br>{{ student.name.lastName }}, {{ student.name.firstName }} · {{ student.studentId }}</td>
+                <td><span class="cell-sub">{{ 'incident.col.group'|trans({}, 'admin') }}</span><br>{{ data.groupNames is empty ? '—' : data.groupNames|join(', ') }}</td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="cell-sub">{{ 'student_report.period'|trans({}, 'admin') }}</span><br>
+                    {{ data.year.name }}
+                    {% if data.from or data.to %}
+                        ·
+                        {% if data.from and data.to %}{{ data.from|date('format.date'|trans) }} – {{ data.to|date('format.date'|trans) }}
+                        {% elseif data.from %}{{ 'student_report.since'|trans({'%date%': data.from|date('format.date'|trans)}, 'admin') }}
+                        {% else %}{{ 'student_report.until'|trans({'%date%': data.to|date('format.date'|trans)}, 'admin') }}{% endif %}
+                    {% endif %}
+                </td>
+                <td><span class="cell-sub">{{ 'student_report.generated_by'|trans({}, 'admin') }}</span><br>{{ viewer.name.lastName }}, {{ viewer.name.firstName }} · {{ pdfGeneratedAt|date('format.datetime'|trans) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% if data.showContact %}
+        <p class="section-title">{{ 'student.show.contact'|trans({}, 'admin') }}</p>
+        {% set phones = [
+            {number: student.contactPhone1, notes: student.contactPhone1Notes},
+            {number: student.contactPhone2, notes: student.contactPhone2Notes},
+            {number: student.contactPhone3, notes: student.contactPhone3Notes},
+        ]|filter(p => p.number) %}
+        {% if not student.tutorName1 and not student.tutorName2 and phones is empty %}
+            <p class="cell-sub">{{ 'student.show.contact_empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <table class="data-table">
+                <tbody>
+                    {% if student.tutorName1 %}
+                        <tr><td><span class="cell-sub">{{ 'student.show.tutor1'|trans({}, 'admin') }}</span><br>{{ student.tutorName1 }}{% if student.tutorEmail1 %} · {{ student.tutorEmail1 }}{% endif %}</td></tr>
+                    {% endif %}
+                    {% if student.tutorName2 %}
+                        <tr><td><span class="cell-sub">{{ 'student.show.tutor2'|trans({}, 'admin') }}</span><br>{{ student.tutorName2 }}{% if student.tutorEmail2 %} · {{ student.tutorEmail2 }}{% endif %}</td></tr>
+                    {% endif %}
+                    {% if phones is not empty %}
+                        <tr><td><span class="cell-sub">{{ 'student.show.phones'|trans({}, 'admin') }}</span><br>
+                            {% for phone in phones %}{{ phone.number }}{% if phone.notes %} ({{ phone.notes }}){% endif %}{% if not loop.last %} · {% endif %}{% endfor %}
+                        </td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endif %}
+
+    <p class="section-title">{{ 'student_report.summary'|trans({}, 'admin') }}</p>
+    {% if data.related %}
+        <table class="data-table">
+            <tbody>
+                <tr>
+                    <td><span class="cell-sub">{{ 'student.show.reports'|trans({}, 'admin') }}</span><br><strong>{{ data.reports|length }}</strong></td>
+                    <td><span class="cell-sub">{{ 'student.show.serious'|trans({}, 'admin') }}</span><br><strong>{{ data.seriousCount }}</strong></td>
+                    <td><span class="cell-sub">{{ 'student.show.prescribed'|trans({}, 'admin') }}</span><br><strong>{{ data.prescribedCount }}</strong></td>
+                    <td><span class="cell-sub">{{ 'student_report.sanctions'|trans({}, 'admin') }}</span><br><strong>{{ data.sanctions|length }}</strong></td>
+                    <td><span class="cell-sub">{{ 'student.show.active_sanctions'|trans({}, 'admin') }}</span><br><strong>{{ data.activeSanctions }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <p class="cell-sub">{{ 'student_report.limited'|trans({}, 'admin') }}</p>
+    {% endif %}
+
+    {# ── Partes ──────────────────────────────────────────────────────────── #}
+    <p class="section-title">{{ 'student_report.reports_title'|trans({}, 'admin') }}</p>
+    {% if data.reports is empty %}
+        <p class="cell-sub">{{ (data.related ? 'student_report.reports_empty' : 'student_report.reports_empty_limited')|trans({}, 'admin') }}</p>
+    {% endif %}
+    {% for report in data.reports %}
+        <div style="page-break-inside: avoid;">
+            <p class="subsection-title">
+                #{{ report.number }} · {{ report.occurredAt|date('format.datetime'|trans) }} · {{ report.group.name }}
+            </p>
+            <p>
+                <span class="badge {{ report.notified ? 'badge-green' : 'badge-amber' }}">
+                    {{ (report.notified ? 'notification.badge.notified' : 'notification.badge.pending')|trans({}, 'notifications') }}
+                </span>
+                {% if report.prescribed %}
+                    <span class="badge badge-amber">{{ 'incident.badge.prescribed'|trans({}, 'admin') }} · {{ report.prescribedAt|date('format.date'|trans) }}</span>
+                {% endif %}
+                {% if report.expelledFromClass %}
+                    <span class="badge badge-gray">{{ 'incident.badge.expelled'|trans({}, 'admin') }}</span>
+                {% endif %}
+                {% if report.location %}<span class="cell-sub">{{ report.location.name }}</span>{% endif %}
+                <span class="cell-sub">· {{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}</span>
+            </p>
+            {% include 'pdf/_behavior_badges.html.twig' with { behaviors: report.behaviors } %}
+            <div class="prose-block">{{ report.description|sanitize_html('app.rich_text') }}</div>
+        </div>
+    {% endfor %}
+
+    {# ── Sanciones ───────────────────────────────────────────────────────── #}
+    <p class="section-title">{{ 'student_report.sanctions_title'|trans({}, 'admin') }}</p>
+    {% if data.sanctions is empty %}
+        <p class="cell-sub">{{ (data.related ? 'student_report.sanctions_empty' : 'student_report.sanctions_empty_limited')|trans({}, 'admin') }}</p>
+    {% else %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'sanction.col.created_at'|trans({}, 'admin') }}</th>
+                    <th>{{ 'incident.col.group'|trans({}, 'admin') }}</th>
+                    <th>{{ 'sanction.section.measures'|trans({}, 'admin') }}</th>
+                    <th>{{ 'student_report.effective'|trans({}, 'admin') }}</th>
+                    <th>{{ 'incident.col.status'|trans({}, 'admin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sanction in data.sanctions %}
+                    <tr>
+                        <td>{{ sanction.createdAt|date('format.date'|trans) }}</td>
+                        <td>{{ sanction.group.name }}</td>
+                        <td>
+                            {% if sanction.noMeasureApplied %}
+                                {{ 'sanction.badge.no_measure'|trans({}, 'admin') }}
+                            {% else %}
+                                {% for measure in sanction.measures %}{{ measure.name }}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sanction.effectiveFrom and sanction.effectiveTo %}
+                                {{ sanction.effectiveFrom|date('format.date'|trans) }} – {{ sanction.effectiveTo|date('format.date'|trans) }}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {{ sanction.notified ? 'badge-green' : 'badge-amber' }}">
+                                {{ (sanction.notified ? 'notification.badge.notified' : 'notification.badge.pending')|trans({}, 'notifications') }}
+                            </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {# ── Notas del día ───────────────────────────────────────────────────── #}
+    {% if data.includesNotes %}
+        <p class="section-title">{{ 'student_report.notes_title'|trans({}, 'admin') }}</p>
+        {% if data.notes is empty %}
+            <p class="cell-sub">{{ 'student_report.notes_empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <p>
+                {% for total in data.noteTotals %}
+                    <span class="badge badge-blue">{{ total.type }}: {{ 'student_report.note_totals'|trans({'%active%': total.active, '%total%': total.total}, 'admin') }}</span>
+                {% endfor %}
+            </p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'incident.col.occurred_at'|trans({}, 'admin') }}</th>
+                        <th>{{ 'student_report.note_type'|trans({}, 'admin') }}</th>
+                        <th>{{ 'incident.col.teacher'|trans({}, 'admin') }}</th>
+                        <th>{{ 'daily_note.field.observations'|trans({}, 'admin') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for note in data.notes %}
+                        <tr>
+                            <td>{{ note.occurredAt|date('format.datetime'|trans) }}</td>
+                            <td>{{ note.type.name }}{% if not note.active %} <span class="cell-sub">({{ 'student_report.note_inactive'|trans({}, 'admin') }})</span>{% endif %}</td>
+                            <td>{{ note.registeredBy.name.lastName }}, {{ note.registeredBy.name.firstName }}</td>
+                            <td>{{ note.observations }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endif %}
+
+    {# ── Salidas del aula ────────────────────────────────────────────────── #}
+    {% if data.includesExits %}
+        <p class="section-title">{{ 'student_report.exits_title'|trans({}, 'admin') }}</p>
+        {% if data.exits is empty %}
+            <p class="cell-sub">{{ 'student_report.exits_empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'exit.field.left_at'|trans({}, 'admin') }}</th>
+                        <th>{{ 'exit.field.reason'|trans({}, 'admin') }}</th>
+                        <th>{{ 'exit.field.teacher'|trans({}, 'admin') }}</th>
+                        <th>{{ 'exit.field.returned_at'|trans({}, 'admin') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exit in data.exits %}
+                        <tr>
+                            <td>{{ exit.exitedAt|date('format.datetime'|trans) }}</td>
+                            <td>{{ exit.reason.name }}</td>
+                            <td>{{ exit.authorizedBy.name.lastName }}, {{ exit.authorizedBy.name.firstName }}</td>
+                            <td>
+                                {% if exit.returned %}
+                                    {{ exit.returnedAt|date('H:i') }} · {{ exit_duration(exit.secondsOut(pdfGeneratedAt)) }}
+                                {% elseif exit.autoClosed %}
+                                    {{ 'exit.auto_closed.label'|trans({}, 'admin') }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endif %}
+{% endblock %}

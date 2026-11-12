@@ -357,6 +357,8 @@ El parte pasa a **"Notificado"** y queda en el historial.
   sanciones): solo si le da clase, lo tutoriza o ha registrado algo suyo.
 - Para el resto del alumnado, la ficha se reduce a esos datos básicos y las
   notas diarias.
+- El botón **Informe en PDF** genera el informe de convivencia del curso (o de
+  un rango de fechas) con **solo lo que ese docente puede ver**.
 
 
 ---

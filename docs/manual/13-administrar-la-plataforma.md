@@ -531,9 +531,14 @@ cada centro educativo, no un valor de texto que tenga sentido compartir entre ce
 Las dos primeras filas son las plantillas **generales**, una por orientación (vertical y
 apaisada); las siguientes permiten sustituir, solo para ese tipo de informe en concreto,
 la plantilla general de su orientación. Si un tipo de informe no tiene plantilla propia, se usa la
-general de la orientación que necesita (vertical para partes, sanciones, estadísticas por grupo, incidencias y actividades;
+general de la orientación que necesita (vertical para partes, sanciones, estadísticas por grupo, incidencias, actividades
+y el informe de convivencia de un estudiante;
 apaisada para profesorado de guardia y para el informe de salidas); si tampoco hay ninguna general, el informe se genera sin
 fondo, igual que antes de existir este ajuste.
+
+El [informe de convivencia de un estudiante](04-convivencia-profesorado.md#informe-de-convivencia-del-estudiante)
+usa siempre la plantilla general vertical y un encabezado fijo (título y nombre del centro): de momento no
+tiene ajustes propios de encabezado, margen, pie ni plantilla.
 
 ![Ajustes de plantillas de informes](img/ajustes/ajustes-plantillas-pdf.png)
 

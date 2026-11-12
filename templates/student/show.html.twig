@@ -57,6 +57,36 @@
                     {{ 'sanction.new'|trans({}, 'admin') }}
                 </a>
             {% endif %}
+            {# Informe de convivencia en PDF, de todo el curso o de un rango de fechas. #}
+            <details class="relative">
+                <summary class="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm
+                                font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-xs [&::-webkit-details-marker]:hidden">
+                    {{ ux_icon('heroicons:document-arrow-down', {class: 'h-4 w-4'}) }}
+                    {{ 'student.show.report_pdf'|trans({}, 'admin') }}
+                </summary>
+                <form method="get" action="{{ path('app_students_report_pdf', {id: student.id}) }}" target="_blank"
+                      class="absolute right-0 z-20 mt-2 w-72 space-y-3 rounded-xl border border-gray-200 bg-white p-4 shadow-lg">
+                    <p class="text-xs text-gray-500">{{ 'student.show.report_pdf_hint'|trans({}, 'admin') }}</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="text-xs font-medium text-gray-600">
+                            {{ 'student.show.report_pdf_from'|trans({}, 'admin') }}
+                            <input type="date" name="from"
+                                   class="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm text-gray-900">
+                        </label>
+                        <label class="text-xs font-medium text-gray-600">
+                            {{ 'student.show.report_pdf_to'|trans({}, 'admin') }}
+                            <input type="date" name="to"
+                                   class="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm text-gray-900">
+                        </label>
+                    </div>
+                    <button type="submit"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-forest-600 px-3 py-2 text-sm font-semibold text-white
+                                   hover:bg-forest-700 transition-colors">
+                        {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-4 w-4'}) }}
+                        {{ 'student.show.report_pdf_download'|trans({}, 'admin') }}
+                    </button>
+                </form>
+            </details>
         </div>
     </div>
 

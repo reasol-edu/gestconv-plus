@@ -18,6 +18,8 @@ use App\Repository\StudentRepository;
 use App\Security\Voter\StudentExitVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
+use App\Service\PdfRenderer;
+use App\Service\StudentConductReportBuilder;
 use App\Service\StudentContactVisibility;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,11 +28,14 @@ use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/alumnado')]
 class StudentController extends AbstractController
 {
+    use ReportDateRangeTrait;
+
     /** @var list<string> */
     private const CONTACT_FIELDS = [
         'details',
@@ -54,6 +59,8 @@ class StudentController extends AbstractController
         private readonly ActivityLogService $activityLog,
         private readonly TranslatorInterface $translator,
         private readonly ClockInterface $clock,
+        private readonly StudentConductReportBuilder $reportBuilder,
+        private readonly PdfRenderer $pdfRenderer,
     ) {}
 
     #[Route('/{id}', name: 'app_students_show', methods: ['GET'])]
@@ -180,6 +187,41 @@ class StudentController extends AbstractController
                 && !$this->tenantContext->isViewingNonActiveYear($centre)
                 && $this->isGranted(StudentExitVoter::MANAGE, $centre),
         ]);
+    }
+
+    /**
+     * Informe de convivencia del estudiante en PDF, del curso que se está viendo y, si se pasan `from`/`to`
+     * (Y-m-d), solo de ese rango. Incluye únicamente lo que la ficha enseña a quien lo pide.
+     */
+    #[Route('/{id}/informe', name: 'app_students_report_pdf', methods: ['GET'])]
+    public function reportPdf(string $id, Request $request, #[CurrentCentre] EducationalCentre $centre): Response
+    {
+        $viewer = $this->getUser();
+        if (!$viewer instanceof Teacher) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $student = $this->students->findById($id);
+        $year    = $this->tenantContext->getViewYear($centre);
+        if ($student === null || $year === null || !$this->students->belongsToCentre($student, $centre)) {
+            throw $this->createNotFoundException();
+        }
+
+        [$from, $to] = $this->parseRange($request);
+        $data        = $this->reportBuilder->build($viewer, $centre, $student, $year, $from, $to);
+
+        $this->activityLog->log('student.report_generated', ['studentId' => $student->getId()->toRfc4122()]);
+
+        $title = $this->translator->trans('pdf.student_report.title', [], 'admin');
+
+        return $this->pdfRenderer->render(
+            'pdf/student_report.html.twig',
+            ['centre' => $centre, 'data' => $data, 'viewer' => $viewer],
+            $title,
+            sprintf('informe-convivencia-%s.pdf', (new AsciiSlugger('es'))->slug($student->getName()->full())->lower()),
+            centre: $centre,
+            reportType: 'student',
+        );
     }
 
     #[Route('/{id}/contacto', name: 'app_students_edit_contact', methods: ['POST'])]

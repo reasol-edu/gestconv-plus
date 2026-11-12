@@ -378,6 +378,25 @@ docente es administrador, tutor/a o imparte clase al estudiante, o si ha registr
 parte o sanción suyo; para el resto del profesorado la ficha se reduce a los datos básicos, los
 accesos directos y las notas diarias.
 
+### Informe de convivencia del estudiante {#informe-de-convivencia-del-estudiante}
+
+El botón **Informe en PDF** de la cabecera de la ficha genera un documento con la situación de
+convivencia del estudiante en el curso que estás viendo, útil para reuniones con la familia, sesiones de
+evaluación o la comisión de convivencia. Si rellenas **Desde** y/o **Hasta** solo incluye ese periodo; con
+las fechas vacías, todo el curso. Contiene, de más antiguo a más reciente:
+
+- los datos del estudiante, su grupo, el periodo y quién genera el informe y cuándo;
+- los **datos de contacto de la familia**, solo si tienes permiso para verlos en la ficha;
+- un **resumen** (partes, graves, prescritos, sanciones y sanciones vigentes);
+- los **partes** con su descripción completa, conductas y estado de notificación, y las **sanciones**
+  con sus medidas, vigencia y estado;
+- las **notas del día** y las **salidas del aula**, mientras esas secciones estén activadas en el centro.
+
+**El informe nunca incluye más de lo que la ficha te enseña a ti**: cada docente obtiene solo los partes
+y sanciones que puede ver, y si no tienes relación con el estudiante el informe lo advierte en lugar de
+dar a entender que «no tiene partes». Cada generación queda en el
+[registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
+
 Se llega a la ficha desde el buscador global, los listados y detalles de partes y sanciones, y la
 lista *Alumnado con partes pendientes de sanción* del inicio.
 
