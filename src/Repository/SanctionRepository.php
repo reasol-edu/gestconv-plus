@@ -83,6 +83,7 @@ class SanctionRepository extends ServiceEntityRepository
      *   effectiveToday bool   — only sanctions in effect today (notified, within date range)
      *   pendingOnly    bool   — only sanctions without a successful communication
      *   pendingTasksOnly bool — only sanctions with at least one incomplete sanction task
+     *   pendingSenecaOnly bool — only sanctions not yet registered in Séneca (flag unset or false)
      *
      * Each academic year is sealed off from the others: results are always restricted to $year.
      *
@@ -155,6 +156,10 @@ class SanctionRepository extends ServiceEntityRepository
 
         if (($filters['pendingTasksOnly'] ?? false) === true) {
             $qb->andWhere('EXISTS (SELECT 1 FROM ' . SanctionTask::class . ' xt WHERE xt.sanction = s AND xt.completedAt IS NULL)');
+        }
+
+        if (($filters['pendingSenecaOnly'] ?? false) === true) {
+            $qb->andWhere('s.registeredInSeneca IS NULL OR s.registeredInSeneca = false');
         }
 
         return $qb->getQuery();

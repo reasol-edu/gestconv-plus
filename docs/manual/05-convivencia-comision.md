@@ -21,7 +21,9 @@ motivaron, qué medidas disciplinarias se aplican y en qué fechas están en vig
 El listado muestra las sanciones accesibles para el docente, con paginación y estas herramientas:
 
 - **Búsqueda por estudiante o grupo**, que filtra en vivo mientras se escribe.
-- Filtros de **Vigentes hoy** y **Pendientes de notificar**.
+- Filtros de **Vigentes hoy** y **Pendientes de notificar**, y **Pendientes de registrar en
+  Séneca**: las sanciones cuyo indicador *Registrada en Séneca* aún no está marcado, que es la lista
+  de trabajo de quien las traslada a Séneca.
 - Una columna con el **estado de la notificación** a la familia, con enlace directo para
   registrar la comunicación si está pendiente. Si el centro permite que las sanciones sin
   notificar [prescriban](06-convivencia-administracion.md#prescripcion-de-sanciones-sin-notificar)

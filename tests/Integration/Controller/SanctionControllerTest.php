@@ -31,9 +31,13 @@ use App\Entity\Teacher;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
 use App\Tests\Integration\ControllerTestCase;
+use Symfony\UX\LiveComponent\Test\InteractsWithLiveComponents;
 
 class SanctionControllerTest extends ControllerTestCase
 {
+    use InteractsWithLiveComponents;
+
+
     private int $nextReportNumber = 0;
     private static int $scenarioCounter = 0;
 
@@ -147,6 +151,40 @@ class SanctionControllerTest extends ControllerTestCase
         self::assertSelectorExists('button[data-live-action-param="togglePendingTasksOnly"].border-forest-300');
         self::assertSelectorExists('a[href$="/sanciones/' . $withPendingTask->getId()->toRfc4122() . '"]');
         self::assertCount(0, $crawler->filter('a[href$="/sanciones/' . $withoutTasks->getId()->toRfc4122() . '"]'));
+    }
+
+    public function testIndexOffersPendingSenecaFilterButton(): void
+    {
+        [$admin, $centre] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/sanciones');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('button[data-live-action-param="togglePendingSenecaOnly"]');
+    }
+
+    public function testTogglingPendingSenecaFilterListsOnlyUnregisteredSanctions(): void
+    {
+        [$admin, $centre, $group, $student] = $this->makeScenario();
+        $pending    = $this->makeSanction($admin, $student, $group);
+        $registered = $this->makeSanction($admin, $student, $group);
+        $registered->setRegisteredInSeneca(true);
+        $this->flush();
+        $pendingId    = $pending->getId()->toRfc4122();
+        $registeredId = $registered->getId()->toRfc4122();
+        $this->loginAs($admin, $centre);
+
+        $component = $this->createLiveComponent('SanctionListComponent', ['centre' => $centre], $this->client);
+        $before    = (string) $component->render();
+        self::assertStringContainsString($pendingId, $before);
+        self::assertStringContainsString($registeredId, $before);
+
+        $component->call('togglePendingSenecaOnly');
+        $after = (string) $component->render();
+
+        self::assertStringContainsString($pendingId, $after);
+        self::assertStringNotContainsString($registeredId, $after);
     }
 
     public function testIndexShowsTaskRatioAndPendingTasksFilterToGroupTutor(): void

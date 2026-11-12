@@ -1822,6 +1822,7 @@ sanction.filter.search_placeholder: 'Filtrar por nombre, apellidos o grupo…'
 sanction.filter.effective_today: 'Vigentes hoy'
 sanction.filter.pending_notification: 'Pendientes de notificar'
 sanction.filter.pending_tasks: 'Con materias sin cumplimentar'
+sanction.filter.pending_seneca: 'Pendientes de registrar en Séneca'
 sanction.search_empty: 'No se encontraron sanciones con esos filtros.'
 
 sanction.empty_students: 'No hay estudiantes registrados en el curso activo.'

@@ -39,6 +39,9 @@ class SanctionListComponent extends AbstractController
     #[LiveProp(writable: true)]
     public bool $pendingTasksOnly = false;
 
+    #[LiveProp(writable: true)]
+    public bool $pendingSenecaOnly = false;
+
     /** @var Paginator<Sanction>|null */
     private ?Paginator $paginationCache = null;
 
@@ -79,6 +82,7 @@ class SanctionListComponent extends AbstractController
             'effectiveToday'   => $this->effectiveToday,
             'pendingOnly'      => $this->pendingOnly,
             'pendingTasksOnly' => $this->pendingTasksOnly,
+            'pendingSenecaOnly' => $this->pendingSenecaOnly,
         ]));
     }
 
@@ -98,7 +102,7 @@ class SanctionListComponent extends AbstractController
 
     public function hasActiveFilters(): bool
     {
-        return $this->search !== '' || $this->effectiveToday || $this->pendingOnly || $this->pendingTasksOnly;
+        return $this->search !== '' || $this->effectiveToday || $this->pendingOnly || $this->pendingTasksOnly || $this->pendingSenecaOnly;
     }
 
     #[LiveAction]
@@ -120,5 +124,12 @@ class SanctionListComponent extends AbstractController
     {
         $this->pendingTasksOnly = !$this->pendingTasksOnly;
         $this->page             = 1;
+    }
+
+    #[LiveAction]
+    public function togglePendingSenecaOnly(): void
+    {
+        $this->pendingSenecaOnly = !$this->pendingSenecaOnly;
+        $this->page              = 1;
     }
 }

@@ -48,6 +48,14 @@
         </button>
         {% endif %}
 
+        {# Pendientes de registrar en Séneca #}
+        <button data-action="live#action" data-live-action-param="togglePendingSenecaOnly"
+                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                       {{ pendingSenecaOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
+            {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-3.5 w-3.5'}) }}
+            {{ 'sanction.filter.pending_seneca'|trans({}, 'admin') }}
+        </button>
+
         <svg data-loading class="hidden h-4 w-4 text-forest-500 animate-spin shrink-0 ml-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 22 6.477 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>

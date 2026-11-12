@@ -252,6 +252,28 @@ class SanctionRepositoryTest extends RepositoryTestCase
         self::assertSame($withPendingTask->getId()->toRfc4122(), $results[0]->getId()->toRfc4122());
     }
 
+    public function testCreateFilteredQueryPendingSenecaOnlyReturnsSanctionsNotRegisteredInSeneca(): void
+    {
+        $world = $this->makeWorld();
+        $admin = $this->makeTeacher('filter.pending.seneca', admin: true);
+        $this->persist($admin);
+
+        $unset = $this->makeSanctionWithReport($world, $admin);
+        $no    = $this->makeSanctionWithReport($world, $admin);
+        $no->setRegisteredInSeneca(false);
+        $yes   = $this->makeSanctionWithReport($world, $admin);
+        $yes->setRegisteredInSeneca(true);
+        $this->flush();
+
+        $results = $this->repo->createFilteredQuery($world['centre'], $admin, $world['year'], ['pendingSenecaOnly' => true])->getResult();
+        $ids     = array_map(static fn (Sanction $s): string => $s->getId()->toRfc4122(), $results);
+        sort($ids);
+        $expected = [$unset->getId()->toRfc4122(), $no->getId()->toRfc4122()];
+        sort($expected);
+
+        self::assertSame($expected, $ids);
+    }
+
     public function testCreateFilteredQueryEffectiveTodayReturnsOnlyNotifiedSanctionsInRange(): void
     {
         $world = $this->makeWorld();
