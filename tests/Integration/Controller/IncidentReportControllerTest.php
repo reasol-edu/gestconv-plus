@@ -303,6 +303,154 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertSame([], json_decode((string) $this->client->getResponse()->getContent(), true));
     }
 
+    // ── contexto del estudiante en el formulario ──────────────────────────────
+
+    /** @return array<string, mixed> */
+    private function studentContext(Student $student): array
+    {
+        $this->client->request('GET', '/partes/contexto-alumno/' . $student->getId()->toRfc4122());
+        self::assertResponseIsSuccessful();
+
+        return json_decode((string) $this->client->getResponse()->getContent(), true);
+    }
+
+    public function testFormEmbedsTheStudentContextBlock(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertSelectorExists('[data-controller="student-context"][data-student-context-select-id-value="students-select"]');
+    }
+
+    public function testFormEmbedsTheStudentContextBlockForALockedStudent(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $student->addGroup($group);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo?studentId=' . $student->getId()->toRfc4122() . '&groupId=' . $group->getId()->toRfc4122() . '&fromDailyNotes=1');
+
+        self::assertSelectorExists('[data-controller="student-context"][data-student-context-initial-value*="' . $student->getId()->toRfc4122() . '"]');
+    }
+
+    public function testStudentContextCountsRecentReportsAndSeriousOnesTheViewerCanSee(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $student->addGroup($group);
+        $group->addTutor($teacher);
+        $this->makeReport($student, $group, $teacher, $behavior);
+        $old = $this->makeReport($student, $group, $teacher, $behavior);
+        $old->setOccurredAt(new \DateTimeImmutable('-60 days'));
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $data = $this->studentContext($student);
+
+        self::assertTrue($data['related']);
+        self::assertSame(1, $data['recentReports'], 'El parte de hace 60 días queda fuera del último mes.');
+        self::assertSame(0, $data['recentSerious']);
+        self::assertFalse($data['hasActiveSanction']);
+        self::assertSame([], $data['notes']);
+    }
+
+    public function testStudentContextDoesNotLeakReportsOrSanctionsToAnUnrelatedTeacher(): void
+    {
+        [$author, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $student->addGroup($group);
+        $this->makeReport($student, $group, $author, $behavior);
+        $stranger = $this->makeTeacher('stranger.' . uniqid('', false));
+        $this->persist($stranger);
+        $this->flush();
+        $this->loginAs($stranger, $centre);
+
+        $data = $this->studentContext($student);
+
+        self::assertFalse($data['related'], 'No debe dar a entender que el estudiante no tiene partes a quien no puede verlos.');
+        self::assertSame(0, $data['recentReports']);
+        self::assertSame(0, $data['recentSerious']);
+        self::assertFalse($data['hasActiveSanction']);
+    }
+
+    public function testStudentContextShowsActiveSanctionToCentreAdminButNotToAnUnrelatedTeacher(): void
+    {
+        [$admin, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $student->addGroup($group);
+        $centre->addAdmin($admin);
+        $report   = $this->makeReport($student, $group, $admin, $behavior);
+        $sanction = (new \App\Entity\Sanction())
+            ->setAcademicYear($centre->getActiveAcademicYear())
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setRegisteredBy($admin)
+            ->setDetails('Detalle.')
+            ->setNoMeasureApplied(false)
+            ->setEffectiveFrom(new \DateTimeImmutable('-1 day'))
+            ->setEffectiveTo(new \DateTimeImmutable('+3 days'));
+        $this->persist($sanction);
+        $report->setSanction($sanction);
+        $this->flush();
+        $this->notifySanction($sanction, $centre, $admin);
+        $this->loginAs($admin, $centre);
+
+        $data = $this->studentContext($student);
+
+        self::assertTrue($data['hasActiveSanction']);
+        self::assertSame((new \DateTimeImmutable('+3 days'))->format('d/m/Y'), $data['sanctionUntil']);
+    }
+
+    public function testStudentContextListsActiveNotesByType(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenarioWithTwoNotes();
+        $this->loginAs($teacher, $centre);
+
+        $data = $this->studentContext($student);
+
+        self::assertSame([['type' => 'Retraso a primera hora', 'count' => 2]], $data['notes']);
+    }
+
+    public function testStudentContextOmitsNotesWhenTheNotesSectionIsDisabled(): void
+    {
+        [$teacher, $centre, , $student] = $this->makeScenarioWithTwoNotes();
+        $definition = (new SettingDefinition())->setKey('features.daily_notes')->setType(SettingType::Boolean)
+            ->setCategory('settings.category.features')->setDefaultValue('true')->setGlobalScope(true)->setCentreScope(true);
+        $this->persist($definition, (new CentreSettingValue())->setDefinition($definition)->setCentre($centre)->setValue('false'));
+        $this->loginAs($teacher, $centre);
+
+        $data = $this->studentContext($student);
+
+        self::assertSame([], $data['notes']);
+    }
+
+    /** @return array{0: Teacher, 1: EducationalCentre, 2: Group, 3: Student} */
+    private function makeScenarioWithTwoNotes(): array
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $student->addGroup($group);
+        $year = $centre->getActiveAcademicYear();
+        $type = (new DailyNoteType())->setEducationalCentre($centre)->setName('Retraso a primera hora')->setPosition(0);
+        $this->persist($type);
+        $this->persist(
+            (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher),
+            (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($type)->setRegisteredBy($teacher),
+        );
+
+        return [$teacher, $centre, $group, $student];
+    }
+
+    public function testStudentContextOfAnotherCentresStudentIsEmpty(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        [, , $foreignGroup, $foreignStudent] = $this->makeScenario();
+        $foreignStudent->addGroup($foreignGroup);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        self::assertSame([], $this->studentContext($foreignStudent));
+    }
+
     public function testNewPostWithFromDailyNotesDeactivatesActiveNotesAndShowsCountOnCreatedPage(): void
     {
         [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
@@ -1614,6 +1762,22 @@ class IncidentReportControllerTest extends ControllerTestCase
         $this->persist($report);
 
         return $report;
+    }
+
+    private function notifySanction(\App\Entity\Sanction $sanction, EducationalCentre $centre, Teacher $teacher): void
+    {
+        $method = (new CommunicationMethod())
+            ->setEducationalCentre($centre)
+            ->setName('Llamada telefónica')
+            ->setPosition(0)
+            ->setActive(true);
+        $communication = Communication::forSanction(
+            $sanction, $method, $teacher, new \DateTimeImmutable(), CommunicationResult::Notified,
+        );
+        $this->persist($method, $communication);
+
+        $sanction->setNotifiedCommunication($communication);
+        $this->flush();
     }
 
     private function notifyReport(IncidentReport $report, EducationalCentre $centre, Teacher $teacher): void

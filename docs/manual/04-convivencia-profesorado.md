@@ -43,6 +43,16 @@ especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de
    desactivarla para toda la plataforma, para un centro o para ti (ver
    [Ajustes disponibles](13-administrar-la-plataforma.md#ajustes-disponibles)).
 
+   **Antecedentes.** Al elegir a un estudiante, justo debajo aparece una tarjeta con un resumen de su
+   situación: los **partes del último mes** (y cuántos incluyen conductas graves), si tiene una
+   **sanción vigente** (con su fecha de fin) y sus **notas activas** por tipo, con un enlace a su
+   [ficha](#ficha-del-estudiante). Hay una tarjeta por estudiante, hasta cinco; con más estudiantes
+   elegidos no se muestra para no sobrecargar la pantalla. El resumen **solo incluye lo que la ficha
+   enseñaría a ese mismo docente**: si no tienes relación con el estudiante (no le das clase, no lo
+   tutorizas y no administras el centro) solo verás los partes y sanciones que tú hayas registrado, y la
+   tarjeta no afirma que «no tiene partes», porque no puedes verlos todos. Las notas activas se muestran
+   siempre que la sección Notas esté activada.
+
 3. **Fecha y hora del suceso** — por defecto se rellena con el momento actual; modifícala si el
    parte se registra después del incidente.
 4. **Dónde sucedió** — campo obligatorio con el catálogo de lugares del centro

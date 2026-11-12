@@ -31,6 +31,7 @@ use App\Service\IncidentReportFormHandler;
 use App\Service\ObservationFormHandler;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
+use App\Service\StudentConductContext;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -69,6 +70,7 @@ class IncidentReportController extends AbstractController
         private readonly CommunicationRepository $communications,
         private readonly DailyNoteRepository $dailyNotes,
         private readonly IncidentReportObservationRepository $observations,
+        private readonly StudentConductContext $studentContext,
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
@@ -149,6 +151,28 @@ class IncidentReportController extends AbstractController
         }
 
         return $this->json($results);
+    }
+
+    /**
+     * Resumen de convivencia de un estudiante para el formulario de nuevo parte (partes del último mes,
+     * sanción vigente, notas activas). Solo contiene lo que la ficha del estudiante enseña a quien lo pide.
+     */
+    #[Route('/contexto-alumno/{studentId}', name: 'app_incidents_student_context', requirements: ['studentId' => '[0-9a-fA-F-]{36}'], methods: ['GET'])]
+    public function studentContext(string $studentId): JsonResponse
+    {
+        $centre = $this->tenantContext->getSelectedCentre();
+        $user   = $this->getUser();
+        if ($centre === null || !$user instanceof Teacher) {
+            return $this->json([]);
+        }
+
+        $year    = $centre->getActiveAcademicYear();
+        $student = $this->students->findById($studentId);
+        if ($year === null || $student === null || !$this->students->belongsToCentre($student, $centre)) {
+            return $this->json([]);
+        }
+
+        return $this->json($this->studentContext->build($user, $centre, $student, $year));
     }
 
     #[Route('/buscar-ubicaciones', name: 'app_incidents_search_locations', methods: ['GET'])]

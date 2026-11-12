@@ -248,7 +248,8 @@ cualquier docente, sin ser tutor/a ni de la comisión de convivencia.
 
 1. Desde el listado de partes, pulsa **"Nuevo parte"**.
 2. Busca al estudiante o usa la **selección rápida**: pulsa un **grupo** y marca a los
-   **estudiantes** implicados.
+   **estudiantes** implicados. Debajo verás sus **antecedentes** (partes del último
+   mes, sanción vigente, notas activas).
 3. Indica **dónde sucedió**, del catálogo de ubicaciones del centro.
 4. Elige la **conducta** del catálogo del centro (o varias, si aplica).
 5. Redacta la **descripción de los hechos** en el editor de texto.

@@ -25,7 +25,7 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
 <div class="step">
   <span class="num">2</span>
   <div class="text">
-    <p><strong>Alumnado implicado</strong>: busca por nombre o NIE, o usa la <strong>selección rápida</strong> (botones de tus grupos bajo el buscador). Si hay varios estudiantes, selecciónalos todos.</p>
+    <p><strong>Alumnado implicado</strong>: busca por nombre o NIE, o usa la <strong>selección rápida</strong> (botones de tus grupos bajo el buscador). Si hay varios estudiantes, selecciónalos todos. Debajo aparecen sus <strong>antecedentes</strong>: partes del último mes, sanción vigente y notas activas.</p>
     <img src="img/registrar-parte-2.png" alt="Selector de alumnado">
   </div>
 </div>
