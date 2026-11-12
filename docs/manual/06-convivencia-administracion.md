@@ -202,7 +202,7 @@ Las entradas se purgan automáticamente pasados los días del ajuste **Retenció
 (90 por defecto, limpieza semanal los domingos a las 3:00). Este mismo ajuste, exclusivamente
 global, controla también la retención del
 [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
-## Informes
+## Informes {#informes}
 
 La sección **Informes** del menú lateral reúne los informes agregados del centro: las estadísticas
 de convivencia por grupo (que se explican aquí), el [informe de salidas](07-salidas.md#informe-de-salidas)

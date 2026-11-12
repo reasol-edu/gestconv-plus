@@ -1,4 +1,4 @@
-# Utilidades
+# Utilidades {#utilidades}
 
 La sección **Utilidades** reúne herramientas personales del profesorado que no dependen de ningún
 otro módulo: nada de lo que hay aquí afecta a los partes, las sanciones ni a ningún otro dato del
@@ -13,7 +13,7 @@ La sección se puede desactivar, para toda la plataforma o para un centro, con e
 desaparece del menú y sus direcciones dejan de funcionar, pero los calendarios ya guardados se
 conservan.
 
-## Generador de calendarios
+## Generador de calendarios {#generador-de-calendarios}
 
 Genera calendarios propios en PDF, con **periodos**, **secuencias** y **fechas destacadas** — pensado,
 por ejemplo, para llevar el seguimiento de un periodo de prácticas, de un proyecto o de cualquier
@@ -161,7 +161,7 @@ como fondo de cada página; si no, se usa la plantilla general del centro para e
 - **Importar calendario** crea un calendario nuevo a partir de uno de esos ficheros, en el curso
   académico que se elija al importarlo.
 
-## Calculadora de fechas
+## Calculadora de fechas {#calculadora-de-fechas}
 
 Resuelve directamente, sin crear ni guardar ningún calendario, la misma cuenta que hace un periodo
 con horas del generador de calendarios:

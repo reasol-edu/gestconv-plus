@@ -1,4 +1,4 @@
-# Reservas de recursos
+# Reservas de recursos {#reservas-de-recursos}
 
 Este capítulo es para todo el profesorado, para quienes validan las reservas de una categoría y
 para el equipo directivo, que define los recursos.

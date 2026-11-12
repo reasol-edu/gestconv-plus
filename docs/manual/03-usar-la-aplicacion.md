@@ -22,7 +22,7 @@ puede usar (un grupo sin ninguna entrada visible no aparece):
 - **Gestión** — **Informes** y **Centro educativo**, solo para el equipo directivo y la
   administración. **Administración** (solo administradores globales) queda aparte, al final.
 
-## La pantalla de inicio
+## La pantalla de inicio {#la-pantalla-de-inicio}
 
 El panel de inicio muestra un resumen del curso activo, adaptado al perfil de quien entra.
 
@@ -124,6 +124,16 @@ agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni
   curso** (esta última requiere permisos de administración). Si la sección de
   [Reservas](09-reservas.md) está habilitada para el centro, también **Reservar recurso** y **Ver el
   calendario de reservas** (no se ofrecen al consultar un curso pasado).
+
+## Ayuda en cada pantalla {#ayuda-en-cada-pantalla}
+
+En la cabecera, junto a la campana, el icono de **ayuda** (**?**) abre este manual en el apartado que
+explica la pantalla en la que estás (por ejemplo, en el formulario de un nuevo parte, el apartado
+[Registrar un nuevo parte](04-convivencia-profesorado.md#registrar-un-nuevo-parte)). Se abre en una pestaña
+nueva, así que no pierdes lo que estás rellenando. Aparece en las pantallas que tienen un apartado propio en
+el manual. Si la aplicación está instalada en una intranet sin salida a internet, quien la administra puede
+apuntar el icono a una copia propia del manual con la variable `APP_HELP_URL` (ver
+[Variables de entorno](01-instalacion-y-puesta-en-marcha.md#variables-de-entorno-opcionales)).
 
 ## Uso con teclado y cambios sin guardar
 

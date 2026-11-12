@@ -8,7 +8,7 @@ sobre todo desde el móvil: el botón **Autorizar salida** queda fijo en la part
 pantalla y también está entre los accesos rápidos de la pantalla de inicio y en la paleta de
 comandos.
 
-## Autorizar una salida
+## Autorizar una salida {#autorizar-una-salida}
 
 1. Pulsa **Autorizar salida** y elige el **grupo**. Primero aparecen tus grupos (aquellos en los
    que das clase o eres tutor/a) y debajo el resto.
@@ -51,7 +51,7 @@ no cuenta en los tiempos fuera de los informes y se muestra con la etiqueta **Ci
 lugar del cronómetro. En el [historial](#historial) puede filtrarse con **Cerradas
 automáticamente** (el filtro **Siguen fuera** no las incluye).
 
-## Pase prioritario
+## Pase prioritario {#pase-prioritario}
 
 Algunos estudiantes necesitan un trato especial al salir del aula (por ejemplo, por motivos de
 salud). La administración del centro puede concederles un **pase prioritario** desde su

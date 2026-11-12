@@ -1,4 +1,4 @@
-# Incidencias
+# Incidencias {#incidencias}
 
 Este capítulo es para todo el profesorado y el personal no docente que registra incidencias, para
 quienes las atienden como responsables y para el equipo directivo, que configura los tipos y las

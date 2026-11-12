@@ -338,6 +338,16 @@
                     </button>
                     <twig:NotificationBellComponent loading="defer" />
                 {% endif %}
+                {# Ayuda: lleva al apartado del manual que explica esta pantalla. #}
+                {% set helpUrl = help_url(current_route) %}
+                {% if helpUrl %}
+                    <a href="{{ helpUrl }}" target="_blank" rel="noopener"
+                       title="{{ 'help.open'|trans({}, 'navigation') }}"
+                       aria-label="{{ 'help.open'|trans({}, 'navigation') }}"
+                       class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-forest-700 transition-colors">
+                        {{ ux_icon('heroicons:question-mark-circle', {class: 'h-5 w-5'}) }}
+                    </a>
+                {% endif %}
             </div>
         </header>
 

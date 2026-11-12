@@ -1,4 +1,4 @@
-# Administrar la plataforma
+# Administrar la plataforma {#administrar-la-plataforma}
 
 Este capítulo es para quien mantiene el servidor donde está instalada la aplicación: la
 **administración global**. Un mismo servidor puede alojar varios centros educativos con datos
@@ -161,7 +161,7 @@ binario nativo). El correo de restablecimiento de contraseña es la excepción: 
 por la urgencia del token. Los detalles de la cola, los reintentos y los comandos de diagnóstico
 están en [Correos en cola (Messenger)](#correos-en-cola-messenger).
 
-## Sistema de ajustes
+## Sistema de ajustes {#sistema-de-ajustes}
 
 La pantalla de **Ajustes** existe en tres sitios, uno por ámbito: la tarjeta **Ajustes globales**
 del panel de administración (todo el servidor), la tarjeta **Ajustes** del panel de

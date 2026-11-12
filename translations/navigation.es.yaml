@@ -31,6 +31,7 @@ switch_year: 'Cambiar de curso académico'
 viewing_past_year: 'Estás viendo el curso %year%, que no es el curso activo'
 return_to_active_year: 'Volver al curso activo'
 menu: 'Abrir menú de navegación'
+help.open: 'Ayuda: abrir el manual en el apartado de esta pantalla'
 year_selection:
   title: 'Seleccionar curso académico'
   active: 'Curso activo'

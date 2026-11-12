@@ -14,7 +14,7 @@ motivaron, qué medidas disciplinarias se aplican y en qué fechas están en vig
     comunicarse también: hasta entonces no aparece en el
     [calendario ni en el tablón](11-calendario-actividades-y-tablon.md), aunque tenga fechas de vigencia.
 
-## Listado de sanciones
+## Listado de sanciones {#listado-de-sanciones}
 
 ![Listado de sanciones](img/sanciones/sanciones-listado.png)
 
@@ -35,7 +35,7 @@ El listado muestra las sanciones accesibles para el docente, con paginación y e
 
 En pantallas pequeñas, cada fila se muestra como una tarjeta con las etiquetas de campo visibles.
 
-## Registrar una sanción
+## Registrar una sanción {#registrar-una-sancion}
 
 El registro tiene dos pasos:
 

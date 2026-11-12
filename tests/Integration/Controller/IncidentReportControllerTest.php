@@ -314,6 +314,16 @@ class IncidentReportControllerTest extends ControllerTestCase
         return json_decode((string) $this->client->getResponse()->getContent(), true);
     }
 
+    public function testHeaderOffersHelpLinkedToTheManualSectionOfTheScreen(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        self::assertSelectorExists('header a[href$="/04-convivencia-profesorado.html#registrar-un-nuevo-parte"][target="_blank"]');
+    }
+
     public function testFormEmbedsTheStudentContextBlock(): void
     {
         [$teacher, $centre] = $this->makeScenario();

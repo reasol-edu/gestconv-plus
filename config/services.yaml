@@ -20,6 +20,10 @@ parameters:
     # no existe) para que el envío síncrono del correo no permita enumerar
     # cuentas por timing. En el entorno de tests se anula (services_test.yaml).
     app.password_reset.request_min_duration_us: 900000
+    # Dirección base del manual web al que enlaza el icono de ayuda de cada pantalla. Una instalación sin salida
+    # a internet puede apuntar a una copia propia del manual con APP_HELP_URL.
+    env(APP_HELP_URL):          "https://reasol-edu.github.io/gestconv-plus/"
+    app.help_url:               "%env(APP_HELP_URL)%"
 
 services:
     # default configuration for services in *this* file

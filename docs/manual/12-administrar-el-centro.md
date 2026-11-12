@@ -1,4 +1,4 @@
-# Administrar el centro educativo
+# Administrar el centro educativo {#administrar-el-centro-educativo}
 
 Este capítulo es para quienes administran el centro — normalmente, el **equipo directivo**. La
 puesta en marcha de cada curso (profesorado, alumnado, grupos y tutorías) se explica en

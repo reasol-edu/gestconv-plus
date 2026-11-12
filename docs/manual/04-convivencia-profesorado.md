@@ -12,13 +12,13 @@ nada de lo que se explica aquí. La tramitación de las sanciones está en
     plazo, prescribe. Registrar el parte es solo la mitad del trabajo: la otra mitad es dejar
     constancia de que la familia ha sido informada.
 
-## Partes de convivencia
+## Partes de convivencia {#partes-de-convivencia}
 
 La sección **Partes** del menú lateral permite registrar y consultar los partes del curso activo.
 Cada docente ve, como mínimo, los partes que ha registrado; las tutorías y los perfiles
 especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de-un-vistazo.md)).
 
-### Registrar un nuevo parte
+### Registrar un nuevo parte {#registrar-un-nuevo-parte}
 
 ![Formulario de nuevo parte](img/partes/nuevo-parte-vacio.png)
 
@@ -124,7 +124,7 @@ registrado, y son los únicos que pueden **eliminarlo** definitivamente (una acc
 Mientras el parte esté pendiente de comunicar a la familia y no esté prescrito, quien tenga
 permiso para notificarlo ve también un botón **Notificar** junto a los de editar y eliminar.
 
-## Notas
+## Notas {#notas}
 
 La sección **Notas** del menú lateral permite registrar avisos de comportamiento del día a día
 (un retraso, salir al baño, usar el móvil en clase…) sin necesidad de abrir un parte de
@@ -216,7 +216,7 @@ Dos botones por fila:
 
 ![Aviso de notas desactivadas en la pantalla de éxito al registrar un parte](img/notas/parte-notas-desactivadas.png)
 
-## Notificaciones
+## Notificaciones {#notificaciones}
 
 La sección **Notificaciones** del menú lateral tiene dos pestañas: **Notificaciones pendientes**,
 la cola de partes y sanciones cuya familia todavía no ha sido informada, e **Historial de
@@ -345,7 +345,7 @@ tutor/a del grupo**, o **ambos** (opción por defecto). Se configura en los ajus
 
 ![Ajustes de quién notifica partes y sanciones](img/notificaciones/ajustes-notificaciones.png)
 
-## Ficha del estudiante
+## Ficha del estudiante {#ficha-del-estudiante}
 
 La ficha del estudiante reúne en una sola pantalla toda la información de convivencia de un
 estudiante. Su contenido depende de la relación del docente con ese estudiante:
@@ -400,7 +400,7 @@ dar a entender que «no tiene partes». Cada generación queda en el
 Se llega a la ficha desde el buscador global, los listados y detalles de partes y sanciones, y la
 lista *Alumnado con partes pendientes de sanción* del inicio.
 
-## Mi tutoría
+## Mi tutoría {#mi-tutoria}
 
 La sección **Mi tutoría** del menú lateral aparece para cualquier docente que sea tutor/a de al
 menos un grupo en el curso académico visualizado, y reúne en una sola tabla todo el alumnado de
@@ -423,7 +423,7 @@ creciente y decreciente. El botón **Ver ficha** de cada fila lleva a la
 [ficha del estudiante](#ficha-del-estudiante), donde el tutor/a puede además editar sus datos de
 contacto.
 
-## Tareas de sanción
+## Tareas de sanción {#tareas-de-sancion}
 
 Cuando una sanción incluye una medida con **rango de fechas** (el estudiante pasa un periodo fuera
 de su aula habitual, por ejemplo una expulsión al aula de convivencia o a casa), la aplicación

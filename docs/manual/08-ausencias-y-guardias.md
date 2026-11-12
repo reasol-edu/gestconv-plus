@@ -3,7 +3,7 @@
 Este capítulo es para todo el profesorado: dejar organizado el trabajo de las clases cuando se
 sabe que se va a faltar, y consultar quién cubre cada tramo en las guardias.
 
-## Ausencias
+## Ausencias {#ausencias}
 
 La sección **Ausencias** del menú lateral permite a cualquier docente dejar organizado el trabajo
 de sus grupos cuando sabe que va a faltar: qué debe trabajarse en cada clase afectada, con las
@@ -105,7 +105,7 @@ eliminarlo, además de poder añadir otros nuevos.
     descripción no se ven afectadas: queda una nota al final indicando qué fichero se eliminó, y
     cuándo.
 
-## Guardias
+## Guardias {#guardias}
 
 Cuando un docente cubre una guardia (un tramo horario en el que figura como guarda), la sección
 **Mis guardias** del menú lateral —**Guardias** a secas para quien administra el centro— reúne todo

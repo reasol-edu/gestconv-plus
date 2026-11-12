@@ -5,7 +5,7 @@ profesorado día a día: las **sanciones** en vigor, las **ausencias** del profe
 administradores) y las **actividades de centro**. Su versión para pantallas del centro, el
 **modo tablón**, muestra lo mismo de un vistazo en la sala de profesorado.
 
-## Calendario
+## Calendario {#calendario}
 
 La sección **Calendario** del menú lateral muestra, en una vista mensual, todo lo relevante para
 quien la consulta:
