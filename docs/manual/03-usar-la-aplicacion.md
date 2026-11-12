@@ -125,6 +125,20 @@ agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni
   [Reservas](09-reservas.md) está habilitada para el centro, también **Reservar recurso** y **Ver el
   calendario de reservas** (no se ofrecen al consultar un curso pasado).
 
+## Exportar un listado a Excel {#exportar-un-listado-a-excel}
+
+Los listados de **partes**, **sanciones**, **notas**, **historial de notificaciones** y **Mi tutoría**
+tienen, en su barra de filtros, el botón **Exportar a Excel**. Descarga una hoja de cálculo con **todas las
+filas del listado tal como lo tienes filtrado** (no solo la página que ves): si has buscado un nombre o has
+marcado «Pendientes de notificar», la hoja contiene justo eso.
+
+- La hoja trae **solo lo que tu perfil ve en esa pantalla**, con las mismas columnas del listado: un docente
+  sin permisos especiales exporta únicamente sus partes y los de los grupos que tutoriza, igual que los ve.
+  No se incluyen datos de contacto de las familias.
+- El texto libre (descripciones, observaciones) se guarda como **texto**: aunque empiece por «=», Excel no
+  lo interpreta como una fórmula.
+- Cada exportación queda anotada en el [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
+
 ## Ayuda en cada pantalla {#ayuda-en-cada-pantalla}
 
 En la cabecera, junto a la campana, el icono de **ayuda** (**?**) abre este manual en el apartado que

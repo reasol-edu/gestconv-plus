@@ -194,6 +194,9 @@ El **personal no docente** (conserjería, administración…) solo accede a las
 - La **búsqueda global** (`⌘K` / `Ctrl+K`) encuentra un estudiante, un grupo o
   un parte sin navegar por menús (y `#123` abre directamente el parte con ese
   número).
+- Los listados (partes, sanciones, notas, notificaciones, mi tutoría) se
+  **exportan a Excel** con los filtros puestos, y el icono **?** de la cabecera
+  abre el manual en el apartado de la pantalla.
 - Con **varios centros**, un selector permite cambiar de centro sin cerrar
   sesión.
 - El menú se adapta a tu rol y se agrupa en **Día a día** (salidas, guardias,

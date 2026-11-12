@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use OpenSpout\Common\Entity\Cell\StringCell;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
@@ -29,8 +30,11 @@ class XlsxExporter
         $writer->addRow(Row::fromValuesWithStyle($headers, $headerStyle));
 
         foreach ($rows as $row) {
-            $writer->addRow(Row::fromValues(array_values(array_map(
-                static fn (string|int|float|null $v): string => (string) ($v ?? ''),
+            // Siempre celdas de texto explícitas: `Row::fromValues()` convertiría en FÓRMULA cualquier texto que
+            // empiece por «=» (observaciones, descripciones y nombres son texto libre), lo que permitiría inyectar
+            // fórmulas en la hoja que abre quien exporta.
+            $writer->addRow(new Row(array_values(array_map(
+                static fn (string|int|float|null $v): StringCell => new StringCell((string) ($v ?? ''), null),
                 $row,
             ))));
         }
