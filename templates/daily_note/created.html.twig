@@ -1,6 +1,9 @@
 {% extends 'layouts/app.html.twig' %}
 
-{% block title %}{{ 'daily_note.created.title'|trans({}, 'admin') }} · {{ app_name }}{% endblock %}
+{% set many = entries|length > 1 %}
+{% set pageTitle = (many ? 'daily_note.created.title_many' : 'daily_note.created.title')|trans({}, 'admin') %}
+
+{% block title %}{{ pageTitle }} · {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="px-6 py-8 max-w-2xl mx-auto space-y-6">
@@ -10,37 +13,45 @@
             {% include 'components/_breadcrumb_home.html.twig' %}
             <a href="{{ path('app_daily_notes_index') }}" class="hover:text-forest-600 transition-colors">{{ 'daily_note.title'|trans({}, 'admin') }}</a>
             {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
-            <span aria-current="page" class="text-gray-700 font-medium">{{ 'daily_note.created.title'|trans({}, 'admin') }}</span>
+            <span aria-current="page" class="text-gray-700 font-medium">{{ pageTitle }}</span>
         </div>
         <div class="flex items-center gap-3">
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
                 {{ ux_icon('heroicons:check', {class: 'h-5 w-5'}) }}
             </span>
-            <h1 class="text-2xl font-bold text-gray-900">{{ 'daily_note.created.title'|trans({}, 'admin') }}</h1>
+            <h1 class="text-2xl font-bold text-gray-900">{{ pageTitle }}</h1>
         </div>
+        {% if many %}
+            <p class="mt-2 text-sm text-gray-600">{{ 'daily_note.created.many_summary'|trans({'%count%': entries|length}, 'admin') }}</p>
+        {% endif %}
     </div>
 
-    <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-3">
-        <p class="text-sm font-medium text-gray-900">
-            <a href="{{ path('app_students_show', {id: note.student.id}) }}" class="hover:text-forest-700 hover:underline">
-                {{ note.student.name.lastName }}, {{ note.student.name.firstName }}
-            </a>
-            · {{ note.group.name }}
-        </p>
-        <p class="text-sm text-gray-600">
-            <span class="inline-flex items-center rounded-full bg-sky-50 text-sky-700 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide">
-                {{ note.type.name }}
-            </span>
-            <span class="ml-2 text-xs text-gray-400">{{ note.occurredAt|date('format.datetime'|trans) }}</span>
-        </p>
-        {% if note.observations %}
-            <p class="text-sm text-gray-600">{{ note.observations }}</p>
-        {% endif %}
-        {% if note.type.occurrencesForReport > 0 %}
-            <p class="text-xs text-gray-400">
-                {{ 'daily_note.created.occurrence_count'|trans({'%count%': count, '%threshold%': note.type.occurrencesForReport}, 'admin') }}
-            </p>
-        {% endif %}
+    <div class="space-y-3">
+        {% for entry in entries %}
+            {% set note = entry.note %}
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-xs p-6 space-y-3">
+                <p class="text-sm font-medium text-gray-900">
+                    <a href="{{ path('app_students_show', {id: note.student.id}) }}" class="hover:text-forest-700 hover:underline">
+                        {{ note.student.name.lastName }}, {{ note.student.name.firstName }}
+                    </a>
+                    · {{ note.group.name }}
+                </p>
+                <p class="text-sm text-gray-600">
+                    <span class="inline-flex items-center rounded-full bg-sky-50 text-sky-700 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide">
+                        {{ note.type.name }}
+                    </span>
+                    <span class="ml-2 text-xs text-gray-400">{{ note.occurredAt|date('format.datetime'|trans) }}</span>
+                </p>
+                {% if note.observations %}
+                    <p class="text-sm text-gray-600">{{ note.observations }}</p>
+                {% endif %}
+                {% if note.type.occurrencesForReport > 0 %}
+                    <p class="text-xs {{ entry.count >= note.type.occurrencesForReport ? 'font-semibold text-red-600' : 'text-gray-400' }}">
+                        {{ 'daily_note.created.occurrence_count'|trans({'%count%': entry.count, '%threshold%': note.type.occurrencesForReport}, 'admin') }}
+                    </p>
+                {% endif %}
+            </div>
+        {% endfor %}
     </div>
 
     <div class="flex items-center justify-end gap-3">

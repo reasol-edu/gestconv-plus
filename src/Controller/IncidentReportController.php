@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Attribute\CurrentCentre;
 use App\Dto\IncidentReportFormData;
 use App\Entity\EducationalCentre;
-use App\Entity\Group;
 use App\Entity\IncidentReport;
 use App\Entity\IncidentReportObservation;
 use App\Entity\Teacher;
@@ -31,6 +30,7 @@ use App\Service\IncidentReportFormHandler;
 use App\Service\ObservationFormHandler;
 use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
+use App\Service\QuickStudentSelection;
 use App\Service\StudentConductContext;
 use App\Service\TenantContext;
 use Doctrine\ORM\EntityManagerInterface;
@@ -71,6 +71,7 @@ class IncidentReportController extends AbstractController
         private readonly DailyNoteRepository $dailyNotes,
         private readonly IncidentReportObservationRepository $observations,
         private readonly StudentConductContext $studentContext,
+        private readonly QuickStudentSelection $quickSelection,
         private readonly IncidentEmailNotifier $notifier,
         private readonly TranslatorInterface $translator,
         private readonly ActivityLogService $activityLog,
@@ -341,22 +342,15 @@ class IncidentReportController extends AbstractController
         $availableGroups = $this->groups->findByActiveYearOfCentreOrderedByName($centre);
         $lockedStudent   = $fromDailyNotes && count($preloadedStudents) === 1;
 
-        // Selección rápida (ajuste global, de centro y de docente; activa por defecto): primero los
-        // grupos que la persona imparte o tutoriza, luego el resto. Desactivada, no hay grupos que mostrar.
-        $quickEnabled = $this->settings->getForTeacherInCentre('display.quick_student_selection', $user, $centre) !== false;
-        $quickMine    = $quickEnabled && $activeYear !== null ? $this->groups->findTaughtOrTutoredInYear($activeYear, $user) : [];
-        $mineIds   = array_map(static fn (Group $g): string => $g->getId()->toRfc4122(), $quickMine);
-        $quickOthers = $quickEnabled ? array_values(array_filter(
-            $availableGroups,
-            static fn (Group $g): bool => !in_array($g->getId()->toRfc4122(), $mineIds, true),
-        )) : [];
+        // Selección rápida (ajuste global, de centro y de docente): grupos propios y resto.
+        $quick = $this->quickSelection->groupsFor($user, $centre);
 
         return $this->render('incident/new.html.twig', [
             'centre'              => $centre,
             'behaviorsByCategory' => $behaviorsByCategory,
             'availableGroups'     => $availableGroups,
-            'quickMine'           => $quickMine,
-            'quickOthers'         => $quickOthers,
+            'quickMine'           => $quick['mine'],
+            'quickOthers'         => $quick['others'],
             'errors'              => $errors,
             'formData'            => $formData,
             'preloadedStudents'   => $preloadedStudents,

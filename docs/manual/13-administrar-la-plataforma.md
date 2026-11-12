@@ -243,7 +243,7 @@ perfil, y no admite valor global ni de centro.
 
 | Ajuste | Ámbito | Tipo | Por defecto |
 |---|---|---|---|
-| Selección rápida de alumnado implicado en un parte | Global, centro, docente | Booleano (sí/no) | Activado |
+| Selección rápida de alumnado (formularios de parte y de nota) | Global, centro, docente | Booleano (sí/no) | Activado |
 
 Activa o desactiva la **selección rápida** del formulario de
 [nuevo parte](04-convivencia-profesorado.md#registrar-un-nuevo-parte): los botones de grupo bajo el buscador

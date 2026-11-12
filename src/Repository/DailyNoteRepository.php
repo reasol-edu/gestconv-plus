@@ -514,6 +514,50 @@ class DailyNoteRepository extends ServiceEntityRepository
     }
 
     /**
+     * Varias notas por id en una sola consulta, con estudiante, grupo y tipo ya cargados (pantalla de resumen
+     * tras registrar una nota para varios estudiantes). Los ids que no son UUID se ignoran.
+     *
+     * @param  list<string> $ids
+     * @return list<DailyNote> en el orden pedido
+     */
+    public function findByIds(array $ids): array
+    {
+        $ids = array_values(array_filter($ids, static fn (string $id): bool => Uuid::isValid($id)));
+        if ($ids === []) {
+            return [];
+        }
+
+        $qb           = $this->createQueryBuilder('n')
+            ->addSelect('st', 'g', 't')
+            ->join('n.student', 'st')
+            ->join('n.group', 'g')
+            ->join('n.type', 't');
+        $placeholders = [];
+        foreach ($ids as $i => $id) {
+            $placeholders[] = ":id{$i}";
+            $qb->setParameter("id{$i}", $id, 'uuid');
+        }
+
+        /** @var list<DailyNote> $found */
+        $found = $qb->where('n.id IN (' . implode(', ', $placeholders) . ')')->getQuery()->getResult();
+
+        $byId = [];
+        foreach ($found as $note) {
+            $byId[$note->getId()->toRfc4122()] = $note;
+        }
+
+        $ordered = [];
+        foreach ($ids as $id) {
+            $key = Uuid::fromString($id)->toRfc4122();
+            if (isset($byId[$key])) {
+                $ordered[] = $byId[$key];
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
      * Notas activas de un estudiante de un tipo concreto, de más reciente a más antigua — para
      * componer el correo de "umbral alcanzado" con el detalle de cada una.
      *

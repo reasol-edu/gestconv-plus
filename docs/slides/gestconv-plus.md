@@ -266,6 +266,8 @@ incidente los afecta conjuntamente.
 
 - Sección **Notas**, para incidencias menores del día a día: retraso, salida
   al baño, uso del móvil…
+- Una misma nota se puede registrar para **varios estudiantes a la vez**, con la
+  **selección rápida** de grupos (una nota independiente para cada uno).
 - Cada **tipo de nota** tiene un umbral de ocurrencias que, al alcanzarse, se
   resalta en rojo, y una caducidad opcional tras la que se desactiva sola.
 - Al elegir el tipo se muestra al instante el **historial** de ese tipo para

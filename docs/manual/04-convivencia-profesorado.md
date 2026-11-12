@@ -39,7 +39,8 @@ especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de
    ven todos directamente. En cuanto escribes en el buscador, los botones y la lista desaparecen
    para dejar sitio a los resultados, y los estudiantes ya elegidos siguen marcados como etiquetas
    en el propio buscador; al vaciarlo, la selección rápida vuelve. Está activada por defecto; el
-   ajuste **Selección rápida de alumnado implicado en un parte** (categoría **Visualización**) permite
+   ajuste **Selección rápida de alumnado** (categoría **Visualización**, común a los formularios de
+   parte y de [nota](#registrar-una-nota-nueva)) permite
    desactivarla para toda la plataforma, para un centro o para ti (ver
    [Ajustes disponibles](13-administrar-la-plataforma.md#ajustes-disponibles)).
 
@@ -144,19 +145,25 @@ una caducidad opcional (ver [Tipos de notas diarias](06-convivencia-administraci
 
 1. Pulsa **Nueva nota** en la sección, en el acceso rápido del inicio o desde la ficha del
    alumno, siempre junto a **Nuevo parte**.
-2. **Estudiante** — escribe el nombre o el NIE en el buscador; a diferencia de los partes, una
-   nota es siempre para un único estudiante.
+2. **Estudiantes** — escribe el nombre o el NIE en el buscador, o usa la **selección rápida** de
+   botones de grupo, que funciona igual que en los [partes](#registrar-un-nuevo-parte). Puedes
+   elegir a **varios estudiantes** (hasta 50): se registra **una nota independiente para cada uno**,
+   con el mismo tipo y las mismas observaciones, y cada una cuenta por separado para su umbral. Es lo
+   más cómodo para anotar, por ejemplo, los cinco retrasos de primera hora de una vez.
 3. **Tipo de nota** — elige uno de los tipos activos del centro. Los tipos que, de añadir esta
    nota, alcanzarían el umbral de ocurrencias que dan lugar a parte se muestran resaltados en
-   rojo. Al elegir un tipo aparece, sin recargar la página, el historial de ese tipo para el
-   estudiante seleccionado (fecha/hora, docente y observaciones; las notas ya desactivadas se ven
+   rojo (con varios estudiantes, si lo alcanzaría **cualquiera** de ellos). Al elegir un tipo
+   aparece, sin recargar la página, el historial de ese tipo para el
+   estudiante seleccionado (con varios estudiantes elegidos solo se muestra al elegir uno) (fecha/hora, docente y observaciones; las notas ya desactivadas se ven
    atenuadas).
 
    ![Tipo de nota resaltado en rojo con el historial del estudiante](img/notas/nueva-nota-tipo-historial.png)
 
 4. **Observaciones** — campo de texto libre, opcional.
 5. Pulsa **Guardar**. La pantalla de resumen muestra los datos de la nota y, si el tipo tiene
-   umbral configurado, cuántas ocurrencias lleva el estudiante sobre el total.
+   umbral configurado, cuántas ocurrencias lleva el estudiante sobre el total; con varios
+   estudiantes, una tarjeta por cada uno (el contador se resalta en rojo si ya ha alcanzado el
+   umbral). La edición de una nota existente sigue siendo de un solo estudiante.
 
 > La fecha y hora de la nota se registran automáticamente en el momento de guardarla, y no se
 > pueden elegir manualmente.

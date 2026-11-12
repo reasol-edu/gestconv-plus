@@ -81,18 +81,29 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5" for="student-select">
-                    {{ 'daily_note.field.student'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
+                    {{ 'daily_note.field.students'|trans({}, 'admin') }} <span class="text-red-500" aria-hidden="true">*</span>
                 </label>
-                <select id="student-select" name="student_pair" required
+                <select id="student-select" name="students[]" multiple aria-required="true"
                         {% if errors.student is defined %}aria-invalid="true"{% endif %}
+                        placeholder="{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}"
                         class="w-full">
-                    {% if preloadedStudent %}
-                        <option value="{{ preloadedStudent.value }}" selected>{{ preloadedStudent.label }}</option>
-                    {% endif %}
+                    {% for preloaded in preloadedStudents %}
+                        <option value="{{ preloaded.value }}" selected>{{ preloaded.label }}</option>
+                    {% endfor %}
                 </select>
                 {% if errors.student is defined %}
                     <p class="mt-1 text-xs text-red-600">{{ errors.student }}</p>
                 {% endif %}
+
+                {# ── Selección rápida: grupos → estudiantes. Se oculta al escribir en el buscador. ── #}
+                {% include 'components/_quick_selection.html.twig' with {
+                    select_id: 'student-select',
+                    url: path('app_incidents_group_students', {groupId: '00000000-0000-0000-0000-000000000000'}),
+                    mine: quickMine,
+                    others: quickOthers,
+                } only %}
+
+                <p class="mt-1 text-xs text-gray-400">{{ 'daily_note.field.students_help'|trans({}, 'admin') }}</p>
             </div>
         </div>
 
@@ -157,15 +168,15 @@
 <script type="module">
 import TomSelect from 'tom-select';
 
-const preloadedStudent = {{ preloadedStudent ? preloadedStudent|json_encode(constant('JSON_HEX_TAG'))|raw : 'null' }};
+const preloadedStudents = {{ preloadedStudents|json_encode(constant('JSON_HEX_TAG'))|raw }};
 
 const studentSelect = new TomSelect('#student-select', {
+    plugins: ['remove_button'],
     valueField: 'value',
     labelField: 'label',
     searchField: ['label', 'secondary'],
-    maxItems: 1,
-    options: preloadedStudent ? [preloadedStudent] : [],
-    items: preloadedStudent ? [preloadedStudent.value] : [],
+    options: preloadedStudents,
+    items: preloadedStudents.map(s => s.value),
     load: function(query, callback) {
         if (query.length < 2) return callback();
         fetch('{{ path('app_incidents_search_students') }}?q=' + encodeURIComponent(query))
@@ -185,9 +196,14 @@ const studentSelect = new TomSelect('#student-select', {
 const typeRadios       = document.querySelectorAll('#type-radios input[name="type_id"]');
 const typeHistoryPanel = document.getElementById('type-history');
 
-function currentStudentId() {
-    const value = studentSelect.getValue();
-    return value ? String(value).split('::')[0] : '';
+// Estudiantes elegidos (valores «estudiante::grupo»), sin repetir el estudiante.
+function currentStudentIds() {
+    const ids = [];
+    for (const value of studentSelect.items) {
+        const id = String(value).split('::')[0];
+        if (!ids.includes(id)) ids.push(id);
+    }
+    return ids;
 }
 
 function onStudentChanged() {
@@ -196,14 +212,15 @@ function onStudentChanged() {
     if (checked) loadTypeHistory(checked.value);
 }
 
+// Un tipo se marca en rojo si, al añadir la nota, alcanzaría el umbral para cualquiera de los estudiantes elegidos.
 function updateTypeStatus() {
-    const studentId = currentStudentId();
+    const studentIds = currentStudentIds();
     document.querySelectorAll('.type-radio-label').forEach(label => {
         label.querySelector('.type-radio-text').classList.remove('text-red-600', 'font-semibold');
     });
-    if (!studentId) return;
+    if (studentIds.length === 0) return;
 
-    fetch('{{ path('app_daily_notes_type_status') }}?studentId=' + encodeURIComponent(studentId))
+    fetch('{{ path('app_daily_notes_type_status') }}?studentIds=' + encodeURIComponent(studentIds.join(',')))
         .then(r => r.json())
         .then(data => {
             (data.types || []).forEach(t => {
@@ -216,11 +233,20 @@ function updateTypeStatus() {
 }
 
 function loadTypeHistory(typeId, page) {
-    const studentId = currentStudentId();
-    if (!studentId || !typeId) {
-        typeHistoryPanel.innerHTML = '';
+    const studentIds = currentStudentIds();
+    if (studentIds.length === 0 || !typeId) {
+        typeHistoryPanel.replaceChildren();
         return;
     }
+    // El historial es de un estudiante: con varios elegidos no se muestra, y se avisa.
+    if (studentIds.length > 1) {
+        const hint = document.createElement('p');
+        hint.className = 'text-xs text-gray-500';
+        hint.textContent = '{{ 'daily_note.history.select_one'|trans({}, 'admin')|e('js') }}';
+        typeHistoryPanel.replaceChildren(hint);
+        return;
+    }
+    const studentId = studentIds[0];
     const url = '{{ path('app_daily_notes_type_history') }}?studentId=' + encodeURIComponent(studentId)
         + '&typeId=' + encodeURIComponent(typeId) + '&page=' + (page || 1);
     fetch(url)
@@ -241,6 +267,9 @@ typeHistoryPanel.addEventListener('click', (event) => {
     if (checked) loadTypeHistory(checked.value, link.dataset.historyPage);
 });
 
-if (preloadedStudent) onStudentChanged();
+// Avisa a la «selección rápida», que puede haberse conectado antes de que exista el buscador.
+window.dispatchEvent(new CustomEvent('students-select:ready'));
+
+if (preloadedStudents.length > 0) onStudentChanged();
 </script>
 {% endblock %}

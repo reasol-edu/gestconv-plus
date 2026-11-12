@@ -1,0 +1,82 @@
+{#
+    «Selección rápida» de estudiantes bajo un buscador Tom Select (formularios de parte y de nota): botones de
+    grupo → lista de estudiantes. Lo gobierna el controlador Stimulus `quick-selection`.
+
+    Parámetros: select_id (id del <select> del buscador), url (listado de estudiantes de un grupo, con el UUID
+    nulo como marcador), mine / others (grupos propios y resto, de App\Service\QuickStudentSelection).
+#}
+{% macro quick_group(group, mine) %}
+    <button type="button"
+            data-action="quick-selection#open"
+            data-group-id="{{ group.id }}"
+            data-group-name="{{ group.name }}"
+            class="flex min-h-12 items-center justify-center rounded-xl border-2 px-2 py-2 text-center text-base font-semibold shadow-xs transition-colors
+                   {{ mine ? 'border-forest-600 bg-forest-600 text-white hover:bg-forest-700 active:bg-forest-800' : 'border-gray-200 bg-white text-gray-800 hover:border-forest-300 hover:bg-forest-50 active:bg-forest-100' }}">
+        {{ group.name }}
+    </button>
+{% endmacro %}
+
+{% import _self as q %}
+
+{% if mine is not empty or others is not empty %}
+    <div class="mt-3"
+         data-controller="quick-selection"
+         data-quick-selection-select-id-value="{{ select_id }}"
+         data-quick-selection-url-value="{{ url }}"
+         data-quick-selection-loading-label-value="{{ 'incident.quick.loading'|trans({}, 'admin') }}"
+         data-quick-selection-error-label-value="{{ 'incident.quick.error'|trans({}, 'admin') }}"
+         data-quick-selection-empty-label-value="{{ 'incident.quick.empty'|trans({}, 'admin') }}"
+         data-quick-selection-select-all-label-value="{{ 'incident.quick.select_all'|trans({}, 'admin') }}"
+         data-quick-selection-deselect-all-label-value="{{ 'incident.quick.deselect_all'|trans({}, 'admin') }}"
+         data-quick-selection-count-label-value="{{ 'incident.quick.count'|trans({}, 'admin') }}">
+        <div data-quick-selection-target="root" class="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
+            <p class="text-sm font-semibold text-gray-700">{{ 'incident.quick.title'|trans({}, 'admin') }}</p>
+
+            <div data-quick-selection-target="groups" class="mt-2 space-y-3">
+                <p class="text-xs text-gray-500">{{ 'incident.quick.hint'|trans({}, 'admin') }}</p>
+                {% if mine is not empty %}
+                    <div>
+                        <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-forest-800">{{ 'incident.quick.my_groups'|trans({}, 'admin') }}</p>
+                        <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                            {% for group in mine %}{{ q.quick_group(group, true) }}{% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if others is not empty %}
+                    {# Con grupos propios, el resto se pliega tras «Otros»; sin ellos, se ven todos. #}
+                    {% if mine is not empty %}
+                        <button type="button" data-action="quick-selection#toggleOthers" data-quick-selection-target="othersButton"
+                                aria-expanded="false"
+                                class="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">
+                            {{ 'incident.quick.other_groups'|trans({}, 'admin') }}
+                            {{ ux_icon('heroicons:chevron-down', {class: 'h-4 w-4 transition-transform', 'data-quick-selection-target': 'othersIcon'}) }}
+                        </button>
+                    {% endif %}
+                    <div data-quick-selection-target="others" class="{{ mine is not empty ? 'hidden' : '' }}">
+                        <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                            {% for group in others %}{{ q.quick_group(group, false) }}{% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div data-quick-selection-target="panel" class="mt-2 hidden space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                    <button type="button" data-action="quick-selection#back"
+                            class="inline-flex min-h-11 items-center gap-1 rounded-lg pr-2 text-sm font-medium text-gray-600 hover:text-forest-700">
+                        {{ ux_icon('heroicons:chevron-left', {class: 'h-4 w-4'}) }}
+                        {{ 'incident.quick.back'|trans({}, 'admin') }}
+                    </button>
+                    <button type="button" data-action="quick-selection#toggleAll" data-quick-selection-target="toggleAll"
+                            class="min-h-11 rounded-lg px-2 text-sm font-semibold text-forest-700 hover:bg-forest-50"></button>
+                </div>
+                <div class="flex items-baseline justify-between gap-2">
+                    <p data-quick-selection-target="title" class="text-lg font-bold text-gray-900"></p>
+                    <p data-quick-selection-target="count" class="text-xs text-gray-500"></p>
+                </div>
+                <p data-quick-selection-target="status" class="hidden rounded-xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-500"></p>
+                <ul data-quick-selection-target="list" class="space-y-2"></ul>
+            </div>
+        </div>
+    </div>
+{% endif %}

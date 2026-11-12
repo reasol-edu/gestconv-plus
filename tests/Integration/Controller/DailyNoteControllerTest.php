@@ -5,18 +5,23 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\AcademicYear;
+use App\Entity\CentreSettingValue;
 use App\Entity\Course;
 use App\Entity\DailyNote;
 use App\Entity\DailyNoteType;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
 use App\Entity\PersonName;
+use App\Entity\SettingDefinition;
+use App\Entity\SettingType;
 use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
 
 class DailyNoteControllerTest extends ControllerTestCase
 {
+    private static int $scenarioCounter = 0;
+
     // ── new ───────────────────────────────────────────────────────────────────
 
     public function testNewGetShowsForm(): void
@@ -77,6 +82,170 @@ class DailyNoteControllerTest extends ControllerTestCase
         self::assertCount(1, $notes);
         self::assertSame($teacher->getId()->toRfc4122(), $notes[0]->getRegisteredBy()->getId()->toRfc4122());
         self::assertSame('Llegó 10 minutos tarde.', $notes[0]->getObservations());
+    }
+
+    // ── varios estudiantes a la vez ───────────────────────────────────────────
+
+    private function pair(Student $student, Group $group): string
+    {
+        return $student->getId()->toRfc4122() . '::' . $group->getId()->toRfc4122();
+    }
+
+    private function formToken(): string
+    {
+        $crawler = $this->client->request('GET', '/notas/nuevo');
+
+        return (string) $crawler->filter('[name="_token"]')->first()->attr('value');
+    }
+
+    public function testNewPostWithSeveralStudentsCreatesOneNoteEachAndListsThemInTheSummary(): void
+    {
+        [$teacher, $centre, $group, $student, $type] = $this->makeScenario();
+        $other = (new Student(new PersonName('Luis', 'Pérez')))->setStudentId('NIE-L-' . uniqid('', false));
+        $other->addGroup($group);
+        $this->persist($other);
+        $this->loginAs($teacher, $centre);
+        $token = $this->formToken();
+
+        $this->client->request('POST', '/notas/nuevo', [
+            '_token'       => $token,
+            'students'     => [$this->pair($student, $group), $this->pair($other, $group)],
+            'type_id'      => $type->getId()->toRfc4122(),
+            'observations' => 'Sin material.',
+        ]);
+
+        self::assertResponseRedirects();
+        self::assertStringContainsString('/notas/creadas?ids=', (string) $this->client->getResponse()->headers->get('Location'));
+
+        $this->em->clear();
+        $notes = $this->em->getRepository(DailyNote::class)->findAll();
+        self::assertCount(2, $notes);
+        foreach ($notes as $note) {
+            self::assertSame($teacher->getId()->toRfc4122(), $note->getRegisteredBy()->getId()->toRfc4122());
+            self::assertSame('Sin material.', $note->getObservations());
+        }
+
+        $crawler = $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Notas registradas', $crawler->text());
+        self::assertStringContainsString('García, Ana', $crawler->text());
+        self::assertStringContainsString('Pérez, Luis', $crawler->text());
+    }
+
+    public function testNewPostIgnoresDuplicatesAndPairsFromAnotherCentre(): void
+    {
+        [$teacher, $centre, $group, $student, $type] = $this->makeScenario();
+        [, , $foreignGroup, $foreignStudent]          = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+        $token = $this->formToken();
+
+        $this->client->request('POST', '/notas/nuevo', [
+            '_token'   => $token,
+            'students' => [$this->pair($student, $group), $this->pair($student, $group), $this->pair($foreignStudent, $foreignGroup)],
+            'type_id'  => $type->getId()->toRfc4122(),
+        ]);
+
+        self::assertResponseRedirects();
+        self::assertStringContainsString('/creada', (string) $this->client->getResponse()->headers->get('Location'));
+        self::assertStringNotContainsString('/creadas', (string) $this->client->getResponse()->headers->get('Location'));
+        $this->em->clear();
+        self::assertCount(1, $this->em->getRepository(DailyNote::class)->findAll());
+    }
+
+    public function testNewPostWithMoreStudentsThanTheLimitCreatesNothing(): void
+    {
+        [$teacher, $centre, $group, $student, $type] = $this->makeScenario();
+        $pairs = [$this->pair($student, $group)];
+        for ($i = 0; $i < 50; ++$i) {
+            $extra = (new Student(new PersonName('Extra' . $i, 'Alumno')))->setStudentId('NIE-X-' . $i . uniqid('', false));
+            $extra->addGroup($group);
+            $this->persist($extra);
+            $pairs[] = $this->pair($extra, $group);
+        }
+        $this->loginAs($teacher, $centre);
+        $token = $this->formToken();
+
+        $this->client->request('POST', '/notas/nuevo', ['_token' => $token, 'students' => $pairs, 'type_id' => $type->getId()->toRfc4122()]);
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('como máximo', $this->client->getResponse()->getContent() ?: '');
+        $this->em->clear();
+        self::assertCount(0, $this->em->getRepository(DailyNote::class)->findAll());
+    }
+
+    public function testCreatedManyOnlyListsNotesTheViewerCanSee(): void
+    {
+        [$teacher, $centre, $group, $student, $type] = $this->makeScenario();
+        $stranger = $this->makeTeacher('stranger.dn.' . uniqid('', false));
+        $other    = (new Student(new PersonName('Luis', 'Pérez')))->setStudentId('NIE-L-' . uniqid('', false));
+        $other->addGroup($group);
+        $this->persist($stranger, $other);
+        $mine   = $this->makeNote($centre, $student, $group, $type, $teacher);
+        $theirs = $this->makeNote($centre, $other, $group, $type, $stranger);
+        $this->persist($mine, $theirs);
+        $this->loginAs($teacher, $centre);
+
+        $crawler = $this->client->request('GET', '/notas/creadas?ids=' . $mine->getId()->toRfc4122() . ',' . $theirs->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('García, Ana', $crawler->text());
+        self::assertStringNotContainsString('Pérez, Luis', $crawler->text());
+
+        $this->client->request('GET', '/notas/creadas?ids=' . $theirs->getId()->toRfc4122());
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testTypeStatusFlagsATypeThatWouldReachTheThresholdForAnySelectedStudent(): void
+    {
+        [$teacher, $centre, $group, $student, $type] = $this->makeScenario(2);
+        $other = (new Student(new PersonName('Luis', 'Pérez')))->setStudentId('NIE-L-' . uniqid('', false));
+        $other->addGroup($group);
+        $this->persist($other);
+        $this->persist($this->makeNote($centre, $student, $group, $type, $teacher));
+        $this->loginAs($teacher, $centre);
+
+        $flag = function (string $query) use ($type): bool {
+            $this->client->request('GET', '/notas/estado-tipos?' . $query);
+            self::assertResponseIsSuccessful();
+            $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+            foreach ($data['types'] as $t) {
+                if ($t['id'] === $type->getId()->toRfc4122()) {
+                    return $t['warn'];
+                }
+            }
+            self::fail('Tipo no devuelto.');
+        };
+
+        $withNote = $student->getId()->toRfc4122();
+        $without  = $other->getId()->toRfc4122();
+        self::assertTrue($flag('studentIds=' . $without . ',' . $withNote), 'Basta con que lo alcance uno de los estudiantes.');
+        self::assertTrue($flag('studentId=' . $withNote), 'El parámetro de un solo estudiante se sigue aceptando.');
+        self::assertFalse($flag('studentIds=' . $without));
+    }
+
+    public function testFormOffersQuickSelectionByDefault(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/notas/nuevo');
+
+        self::assertSelectorExists('[data-controller="quick-selection"][data-quick-selection-select-id-value="student-select"]');
+    }
+
+    public function testFormHidesQuickSelectionWhenTheCentreSwitchesItOff(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $definition = (new SettingDefinition())->setKey('display.quick_student_selection')->setType(SettingType::Boolean)
+            ->setCategory('settings.category.display')->setDefaultValue('true')
+            ->setGlobalScope(true)->setCentreScope(true)->setTeacherScope(true);
+        $this->persist($definition, (new CentreSettingValue())->setDefinition($definition)->setCentre($centre)->setValue('false'));
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/notas/nuevo');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('[data-controller="quick-selection"]');
     }
 
     public function testNewPostWithoutStudentShowsError(): void
@@ -357,7 +526,7 @@ class DailyNoteControllerTest extends ControllerTestCase
     {
         $suffix   = uniqid('', false);
         $teacher  = $this->makeTeacher('teacher.dn.' . $suffix);
-        $centre   = (new EducationalCentre())->setCode('5' . substr($suffix, 0, 7))->setName('IES Test')->setCity('Sevilla');
+        $centre   = (new EducationalCentre())->setCode('5' . str_pad((string) ++self::$scenarioCounter, 7, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
         $year     = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
         $course   = (new Course())->setName('DAW')->setAcademicYear($year);
         $group    = (new Group())->setName('1ºA')->setCourse($course);

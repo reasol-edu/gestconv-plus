@@ -50,8 +50,8 @@ settings.category.bookings.label: 'Reservas'
 settings.key.page_size.label: 'Resultados por página'
 settings.key.page_size.description: 'Número de elementos que se muestran en los listados.'
 
-settings.key.display_quick_student_selection.label: 'Selección rápida de alumnado implicado en un parte'
-settings.key.display_quick_student_selection.description: 'Muestra, bajo el buscador del formulario de parte, botones con los grupos para marcar a los estudiantes implicados con pocos toques (pensado para el móvil). Desactivada, solo queda el buscador.'
+settings.key.display_quick_student_selection.label: 'Selección rápida de alumnado'
+settings.key.display_quick_student_selection.description: 'Muestra, bajo el buscador de los formularios de parte y de nota, botones con los grupos para marcar a los estudiantes con pocos toques (pensado para el móvil). Desactivada, solo queda el buscador.'
 
 settings.key.email_notifications.label: 'Activar notificaciones automáticas'
 settings.key.email_notifications.description: 'Activa o desactiva todos los correos automáticos de la aplicación.'
