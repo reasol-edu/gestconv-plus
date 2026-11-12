@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Controller;
 use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Entity\Group;
+use App\Entity\IncidentReport;
 use App\Entity\PersonName;
 use App\Entity\Course;
 use App\Entity\Student;
@@ -174,6 +175,81 @@ class SearchControllerTest extends ControllerTestCase
     /**
      * @return array{EducationalCentre, Teacher, Course}
      */
+    public function testSearchByHashNumberFindsReportForItsAuthorAndForAdmin(): void
+    {
+        [$centre, $admin, $course] = $this->makeChain('41000080', 'search.admin.80');
+        [$author, , $report] = $this->makeReportScenario($course, 'search.author.80', 7);
+
+        foreach ([$author, $admin] as $viewer) {
+            $this->loginAs($viewer, $centre);
+            $this->client->request('GET', '/buscar?q=' . rawurlencode('#7'));
+
+            self::assertResponseIsSuccessful();
+            $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+            self::assertArrayHasKey('incidents', $data['groups']);
+            self::assertStringStartsWith('#7 · Visible', $data['groups']['incidents'][0]['label']);
+            self::assertStringEndsWith('/partes/' . $report->getId()->toRfc4122(), $data['groups']['incidents'][0]['url']);
+        }
+    }
+
+    public function testSearchByHashNumberDoesNotRevealReportToUnrelatedTeacher(): void
+    {
+        [$centre, , $course] = $this->makeChain('41000081', 'search.admin.81');
+        $this->makeReportScenario($course, 'search.author.81', 7);
+        $other = (new Teacher(new PersonName('Otro', 'Docente')))->setUsername('search.other.81');
+        $other->setPassword('x');
+        $this->persist($other);
+
+        $this->loginAs($other, $centre);
+        $this->client->request('GET', '/buscar?q=' . rawurlencode('#7'));
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+        self::assertArrayNotHasKey('incidents', $data['groups']);
+    }
+
+    public function testSearchByBareNumberOrUnknownNumberReturnsNoReport(): void
+    {
+        [$centre, $admin, $course] = $this->makeChain('41000082', 'search.admin.82');
+        $this->makeReportScenario($course, 'search.author.82', 7);
+        $this->loginAs($admin, $centre);
+
+        foreach (['7', '#99'] as $query) {
+            $this->client->request('GET', '/buscar?q=' . rawurlencode($query));
+
+            self::assertResponseIsSuccessful();
+            $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+            self::assertArrayNotHasKey('incidents', $data['groups'], 'Consulta: ' . $query);
+        }
+    }
+
+    /**
+     * @return array{0: Teacher, 1: Student, 2: IncidentReport}
+     */
+    private function makeReportScenario(Course $course, string $authorUsername, int $number): array
+    {
+        $group   = (new Group())->setCourse($course)->setName('1DAW-A');
+        $student = new Student(new PersonName('Pepe', 'Visible'));
+        $student->setStudentId('NIE-' . $number . $authorUsername);
+        $group->addStudent($student);
+        $author = (new Teacher(new PersonName('Autor', 'Parte')))->setUsername($authorUsername);
+        $author->setPassword('x');
+        $this->persist($group, $student, $author);
+
+        $report = (new IncidentReport())
+            ->setAcademicYear($course->getAcademicYear())
+            ->setNumber($number)
+            ->setStudent($student)
+            ->setGroup($group)
+            ->setRegisteredBy($author)
+            ->setOccurredAt(new \DateTimeImmutable())
+            ->setDescription('<p>Test.</p>')
+            ->setExpelledFromClass(false);
+        $this->persist($report);
+
+        return [$author, $student, $report];
+    }
+
     private function makeChain(string $code, string $username): array
     {
         $centre = (new EducationalCentre())->setCode($code)->setName('IES ' . $code)->setCity('Sevilla');

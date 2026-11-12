@@ -116,6 +116,10 @@ agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni
   alumnado** (a quienes se imparte clase o se tutoriza) y **Otro alumnado**; sobre estos últimos
   la ficha no muestra datos de contacto ni el historial de convivencia, solo las notas diarias.
 - **Docentes** — solo para administradores.
+- **Partes** — escribe el número del parte con la almohadilla, por ejemplo `#123`, para abrirlo
+  directamente. Es el número que aparece en la primera columna del listado, dentro del curso que
+  estás viendo, y solo se ofrece si tienes permiso para ver ese parte. La almohadilla es
+  imprescindible: sin ella, los números se buscan entre estudiantes e incidencias.
 - **Acciones** — accesos directos a **Nuevo parte**, **Ir a notificaciones** y **Cambiar de
   curso** (esta última requiere permisos de administración). Si la sección de
   [Reservas](09-reservas.md) está habilitada para el centro, también **Reservar recurso** y **Ver el

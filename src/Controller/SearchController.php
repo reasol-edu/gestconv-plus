@@ -6,9 +6,11 @@ namespace App\Controller;
 
 use App\Entity\Issue;
 use App\Entity\Teacher;
+use App\Repository\IncidentReportRepository;
 use App\Repository\IssueRepository;
 use App\Repository\StudentRepository;
 use App\Repository\TeacherRepository;
+use App\Security\Voter\IncidentReportVoter;
 use App\Security\Voter\IssueVoter;
 use App\Service\IssueAccess;
 use App\Service\IssueListFilter;
@@ -31,6 +33,7 @@ class SearchController extends AbstractController
         private readonly StudentRepository $studentRepository,
         private readonly TeacherRepository $teacherRepository,
         private readonly IssueRepository $issues,
+        private readonly IncidentReportRepository $incidentReports,
         private readonly IssueAccess $issueAccess,
         private readonly NonTeachingAccess $nonTeaching,
         private readonly TranslatorInterface $translator,
@@ -119,6 +122,21 @@ class SearchController extends AbstractController
                         ]),
                     ], $teachers);
                 }
+            }
+        }
+
+        // Partes por número («#123»): el almacén de números es por curso y se exige la almohadilla, porque un
+        // NIE es numérico. Solo se devuelve el parte si el voter deja verlo a quien busca.
+        if (!$restricted && preg_match('/^#(\d{1,9})$/', $q, $m) === 1) {
+            $viewYear = $this->tenantContext->getViewYear($centre);
+            $report   = $viewYear !== null ? $this->incidentReports->findOneByYearAndNumber($viewYear, (int) $m[1]) : null;
+            if ($report !== null && $this->isGranted(IncidentReportVoter::VIEW, $report)) {
+                $student = $report->getStudent()->getName();
+                $groups['incidents'] = [[
+                    'label'    => '#' . $report->getNumber() . ' · ' . $student->getLastName() . ', ' . $student->getFirstName(),
+                    'sublabel' => $report->getGroup()->getName() . ' · ' . $report->getOccurredAt()->format('d/m/Y'),
+                    'url'      => $this->generateUrl('app_incidents_show', ['id' => $report->getId()->toRfc4122()]),
+                ]];
             }
         }
 

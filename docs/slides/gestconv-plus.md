@@ -190,7 +190,8 @@ El **personal no docente** (conserjería, administración…) solo accede a las
 - El **panel de inicio** muestra tarjetas con lo pendiente y **accesos
   rápidos** (en el móvil, baldosas de un toque).
 - La **búsqueda global** (`⌘K` / `Ctrl+K`) encuentra un estudiante, un grupo o
-  un parte sin navegar por menús.
+  un parte sin navegar por menús (y `#123` abre directamente el parte con ese
+  número).
 - Con **varios centros**, un selector permite cambiar de centro sin cerrar
   sesión.
 - El menú se adapta a tu rol y se agrupa en **Día a día** (salidas, guardias,

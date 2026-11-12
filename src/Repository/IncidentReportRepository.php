@@ -581,6 +581,26 @@ class IncidentReportRepository extends ServiceEntityRepository
         };
     }
 
+    /**
+     * The report with the given per-year number, with its student and group.
+     * The number is only unique within an academic year; visibility is up to the caller (voter).
+     */
+    public function findOneByYearAndNumber(AcademicYear $year, int $number): ?IncidentReport
+    {
+        $result = $this->createQueryBuilder('r')
+            ->addSelect('st', 'g')
+            ->join('r.student', 'st')
+            ->join('r.group', 'g')
+            ->where('r.academicYear = :year')
+            ->andWhere('r.number = :number')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('number', $number)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof IncidentReport ? $result : null;
+    }
+
     public function findById(string $id): ?IncidentReport
     {
         $result = $this->createQueryBuilder('r')
