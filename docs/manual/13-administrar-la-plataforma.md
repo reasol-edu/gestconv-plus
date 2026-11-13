@@ -499,6 +499,12 @@ número) y `{issue_type}` (su tipo, con la ruta completa).
 
 ![Ajustes de personalización de informes](img/ajustes/ajustes-informes.png)
 
+El informe de convivencia de un estudiante tiene sus propios ajustes de encabezado (izquierda y derecha),
+margen y pie. Aquí, con un encabezado con el nombre y el grupo del estudiante, otro con el centro y el
+curso, y el pie por defecto:
+
+![Ajustes del informe de convivencia de un estudiante: encabezados y pie con marcadores](img/ajustes/ajustes-informe-estudiante.png)
+
 Dentro del texto se pueden escribir **marcadores** que se sustituyen por los datos reales al
 generar el PDF. Un marcador desconocido (por ejemplo, con una errata) no rompe el informe: se
 muestra tal cual en el PDF, lo que facilita detectar el error. Esta misma tabla está disponible
