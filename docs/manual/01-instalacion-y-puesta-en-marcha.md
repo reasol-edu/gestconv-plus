@@ -357,9 +357,8 @@ FrankenPHP (Caddy) gestionará el certificado TLS sin configuración adicional.
 
 Si el servidor está detrás de un NAT o un cortafuegos sobre el que no tienes control (no puedes
 abrir los puertos 80/443), la
-**[guía de Cloudflare Tunnel](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/cloudflare-tunnel.md)**
-del repositorio describe una alternativa sin puertos entrantes, con un overlay de Docker Compose
-dedicado.
+**[Exposición con Cloudflare Tunnel](21-cloudflare-tunnel.md)**
+describe una alternativa sin puertos entrantes, con un overlay de Docker Compose dedicado.
 
 ### Datos persistentes
 
@@ -477,7 +476,7 @@ La guía completa, con los ocho pasos detallados (dominio, PHP 8.4, variables de
 Composer, worker vía cron y HTTPS), está en el repositorio. Las actualizaciones se reducen a
 `git pull` y `composer install --no-dev`, que también compila solo el CSS y los assets:
 
-**[Guía de despliegue en Plesk](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/plesk.md)**
+**[Despliegue en Plesk](18-despliegue-en-plesk.md)**
 
 ## Despliegue en Ubuntu Server 26.04
 
@@ -522,9 +521,8 @@ worker).
     cualquier otra pantalla: hazlo antes de dar acceso a nadie más.
 
 !!! info "¿Prefieres controlar cada paso?"
-    La **[guía de instalación manual](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/ubuntu-manual.md)**
-    del repositorio detalla los mismos pasos que realiza el script, uno a uno, para adaptarlos a tu
-    entorno.
+    El capítulo **[Instalación manual en Ubuntu Server](19-ubuntu-instalacion-manual.md)**
+    detalla los mismos pasos que realiza el script, uno a uno, para adaptarlos a tu entorno.
 
 ### Actualización en Ubuntu Server
 
@@ -560,14 +558,14 @@ curl -fsSL https://raw.githubusercontent.com/reasol-edu/gestconv-plus/main/dist/
 
 Si prefieres que el servidor se actualice solo con cada nueva versión —mediante un systemd timer o
 un webhook de GitHub—, sigue la
-**[guía de despliegue continuo](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/despliegue-continuo.md)**
-del repositorio, que usa este mismo script.
+**[Despliegue continuo en Ubuntu Server](20-despliegue-continuo.md)**,
+que usa este mismo script.
 
 ### Exposición sin abrir puertos (Cloudflare Tunnel)
 
 Si el servidor está en una red sin IP pública o detrás de un cortafuegos en el que no puedes pedir
 la apertura de los puertos 80/443, `install-ubuntu.sh` puede configurar en su lugar
-**[Cloudflare Tunnel](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/cloudflare-tunnel.md)**:
+**[Cloudflare Tunnel](21-cloudflare-tunnel.md)**:
 el servidor abre una conexión saliente hacia Cloudflare y no hace falta abrir ningún puerto
 entrante. La guía cubre también el caso de un centro que solo dispone de un subdominio delegado
 dentro del dominio de su organización (Consejería, ayuntamiento…), sin necesidad de migrar el

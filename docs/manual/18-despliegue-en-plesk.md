@@ -4,30 +4,28 @@ Guía para centros que ya disponen de un **VPS o servidor dedicado gestionado co
 es PHP-FPM + MySQL + Apache/Nginx estándar: no requiere Docker ni FrankenPHP. Se requiere
 **acceso SSH** a la suscripción.
 
-Esta guía complementa al capítulo
-[Instalación y puesta en marcha](https://reasol-edu.github.io/gestconv-plus/01-instalacion-y-puesta-en-marcha.html)
-del manual de usuario, donde están la tabla comparativa de modos de despliegue y la referencia de
-variables de entorno.
+Este capítulo complementa a [Instalación y puesta en marcha](01-instalacion-y-puesta-en-marcha.md),
+donde están la tabla comparativa de modos de despliegue y la referencia de variables de entorno.
 
 ## Requisitos previos
 
 - **PHP 8.4** en modo **PHP-FPM** con las siguientes extensiones activas:
   `ctype`, `curl`, `dom`, `gd`, `iconv`, `intl`, `libxml`, `mbstring`, `pdo_mysql`, `xml`, `opcache`
-- **MySQL 8.0+** o **MariaDB 10.6+** (o PostgreSQL 12+ si el servidor lo ofrece; ver nota al final)
+- **MySQL 8.0+** o **MariaDB 10.6+** (o PostgreSQL 12+ si el servidor lo ofrece; ver nota al final del
+  paso 4)
 - **Composer** (disponible en la mayoría de servidores Plesk vía SSH; compruébalo con `composer --version`)
 - Acceso SSH a la suscripción
 
 ## 1. Obtener los archivos
 
-> [!TIP]
-> **Usa Git para facilitar las actualizaciones.** Clona el repositorio en un directorio
-> **fuera de `httpdocs/`** (por ejemplo `~/apps/gestconv-plus/`):
->
-> ```bash
-> git clone https://github.com/reasol-edu/gestconv-plus.git ~/apps/gestconv-plus
-> ```
->
-> Así, actualizar a una nueva versión se reduce a un `git pull` y tres comandos.
+!!! tip "Usa Git para facilitar las actualizaciones"
+    Clona el repositorio en un directorio **fuera de `httpdocs/`** (por ejemplo `~/apps/gestconv-plus/`):
+
+    ```bash
+    git clone https://github.com/reasol-edu/gestconv-plus.git ~/apps/gestconv-plus
+    ```
+
+    Así, actualizar a una nueva versión se reduce a un `git pull` y tres comandos.
 
 Si prefieres no usar Git, descarga el código fuente desde la
 [página de Releases](https://github.com/reasol-edu/gestconv-plus/releases) en **Assets → Source code (zip)**
@@ -70,33 +68,32 @@ MIGRATIONS_PATH=migrations/mysql
 DEFAULT_URI=https://tudominio.es
 ```
 
-> [!TIP]
-> **Generar APP_SECRET.** Ejecuta este comando en el servidor y copia el resultado:
->
-> ```bash
-> php -r "echo bin2hex(random_bytes(32));"
-> ```
+!!! tip "Generar APP_SECRET"
+    Ejecuta este comando en el servidor y copia el resultado:
+
+    ```bash
+    php -r "echo bin2hex(random_bytes(32));"
+    ```
 
 El resto de variables (correo, autenticación externa, registro de actividad…) son opcionales;
 consulta la
-[referencia de variables de entorno](https://reasol-edu.github.io/gestconv-plus/01-instalacion-y-puesta-en-marcha.html#variables-de-entorno-opcionales)
-del manual.
+[referencia de variables de entorno](01-instalacion-y-puesta-en-marcha.md#variables-de-entorno-opcionales)
+del capítulo de instalación.
 
-> [!NOTE]
-> **Avisos push (opcional).** Para activarlos, genera las claves con
-> `php bin/console app:push:generate-keys` y añade `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y
-> `VAPID_SUBJECT` (`mailto:…`) a `.env.local`. Requiere HTTPS, salida a internet y la extensión `curl` de PHP.
-> Ver [Avisos push al móvil](https://reasol-edu.github.io/gestconv-plus/13-administrar-la-plataforma.html#avisos-push-al-movil).
+!!! note "Avisos push (opcional)"
+    Para activarlos, genera las claves con `php bin/console app:push:generate-keys` y añade
+    `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` (`mailto:…`) a `.env.local`. Requiere
+    HTTPS, salida a internet y la extensión `curl` de PHP. Ver
+    [Avisos push al móvil](13-administrar-la-plataforma.md#avisos-push-al-movil).
 
-> [!NOTE]
-> **PostgreSQL como alternativa.** Si el servidor dispone de PostgreSQL en lugar de MySQL, cambia
-> `DATABASE_URL` al formato:
->
-> ```
-> postgresql://usuario:contraseña@localhost:5432/nombre_bd?serverVersion=16&charset=utf8
-> ```
->
-> y ajusta también `MIGRATIONS_PATH=migrations/postgresql`.
+!!! note "PostgreSQL como alternativa"
+    Si el servidor dispone de PostgreSQL en lugar de MySQL, cambia `DATABASE_URL` al formato:
+
+    ```
+    postgresql://usuario:contraseña@localhost:5432/nombre_bd?serverVersion=16&charset=utf8
+    ```
+
+    y ajusta también `MIGRATIONS_PATH=migrations/postgresql`.
 
 ## 5. Instalar dependencias y compilar los assets
 
@@ -109,25 +106,25 @@ composer install --no-dev --optimize-autoloader
 `tailwind:build --minify` y `asset-map:compile` (lo hace solo en producción, es decir, con `--no-dev`; en
 desarrollo no los toca). No hay que lanzarlos a mano.
 
-> [!NOTE]
-> **Por qué hace falta compilar los assets.** Los archivos CSS y JS generados no se incluyen en el
-> repositorio. `tailwind:build` genera el CSS a partir de las plantillas (sin necesidad de Node.js)
-> y `asset-map:compile` copia y versiona todos los assets en `public/assets/`. Un CSS sin recompilar
-> deja sin estilo las pantallas nuevas de cada versión: por eso se hace en cada `composer install`.
+!!! note "Por qué hace falta compilar los assets"
+    Los archivos CSS y JS generados no se incluyen en el repositorio. `tailwind:build` genera el CSS a
+    partir de las plantillas (sin necesidad de Node.js) y `asset-map:compile` copia y versiona todos los
+    assets en `public/assets/`. Un CSS sin recompilar deja sin estilo las pantallas nuevas de cada
+    versión: por eso se hace en cada `composer install`.
 
-> [!WARNING]
-> **Si la compilación automática falla** (el servidor no tiene salida a internet para descargar el binario
-> de Tailwind la primera vez, el hosting no permite ejecutar procesos…), `composer install` **no se
-> interrumpe**: termina con un aviso que empieza por «AVISO: no se pudieron compilar los assets» y repite
-> estas dos órdenes, que hay que ejecutar a mano antes de usar la aplicación:
->
-> ```bash
-> php bin/console tailwind:build --minify --env=prod
-> php bin/console asset-map:compile --env=prod
-> ```
->
-> Para saltarse la compilación automática (por ejemplo, si compilas en otra máquina y subes
-> `public/assets/`), define `GESTCONV_SKIP_ASSET_BUILD=1` al ejecutar Composer.
+!!! warning "Si la compilación automática falla"
+    Si el servidor no tiene salida a internet para descargar el binario de Tailwind la primera vez, o el
+    hosting no permite ejecutar procesos, `composer install` **no se interrumpe**: termina con un aviso
+    que empieza por «AVISO: no se pudieron compilar los assets» y repite estas dos órdenes, que hay que
+    ejecutar a mano antes de usar la aplicación:
+
+    ```bash
+    php bin/console tailwind:build --minify --env=prod
+    php bin/console asset-map:compile --env=prod
+    ```
+
+    Para saltarse la compilación automática (por ejemplo, si compilas en otra máquina y subes
+    `public/assets/`), define `GESTCONV_SKIP_ASSET_BUILD=1` al ejecutar Composer.
 
 ## 6. Crear la base de datos y configurar la aplicación
 
@@ -143,14 +140,13 @@ php bin/console app:setup --no-interaction
 `app:setup` crea únicamente el usuario `admin`, sin ningún centro educativo: tras iniciar sesión,
 la pantalla de selección de centro ofrece un enlace directo para dar de alta el centro real desde
 **Administración › Centros › Nuevo centro** (ver
-[Comandos de consola](https://reasol-edu.github.io/gestconv-plus/01-instalacion-y-puesta-en-marcha.html#appsetup)).
+[Comandos de consola](01-instalacion-y-puesta-en-marcha.md#appsetup)).
 
-> [!CAUTION]
-> **Cambia la contraseña por defecto.** `app:setup` crea el usuario `admin` con contraseña `admin`,
-> con el cambio de contraseña obligatorio en el primer inicio de sesión: la cuenta queda confinada
-> a la pantalla de cambio de contraseña hasta que se establece una nueva. Si has usado
-> `--no-force-password-change`, cambia la contraseña manualmente en
-> **Perfil → Cambiar contraseña** antes de que nadie más acceda.
+!!! danger "Cambia la contraseña por defecto"
+    `app:setup` crea el usuario `admin` con contraseña `admin`, con el cambio de contraseña obligatorio
+    en el primer inicio de sesión: la cuenta queda confinada a la pantalla de cambio de contraseña hasta
+    que se establece una nueva. Si has usado `--no-force-password-change`, cambia la contraseña
+    manualmente en **Perfil → Cambiar contraseña** antes de que nadie más acceda.
 
 ## 7. Correos y tareas programadas (worker vía cron)
 
@@ -170,7 +166,7 @@ siguiente ejecución, evitando solapamientos.
 
 El transporte `async` lleva los correos pendientes y `scheduler_default` gestiona las tareas
 programadas. Consulta
-[Correos en cola (Messenger)](https://reasol-edu.github.io/gestconv-plus/07-administrar-la-plataforma.html#correos-en-cola-messenger)
+[Correos en cola (Messenger)](13-administrar-la-plataforma.md#correos-en-cola-messenger)
 para los comandos de diagnóstico de la cola.
 
 ## 8. HTTPS y dominio definitivo
@@ -193,32 +189,36 @@ php bin/console cache:clear
 1. Descarga o actualiza los archivos (con Git: `git pull`).
 2. Instala las dependencias actualizadas (esto **recompila también el CSS y los assets**, ver el paso 5 de
    la instalación; no hace falta lanzar `tailwind:build` ni `asset-map:compile`):
+
    ```bash
    composer install --no-dev --optimize-autoloader
    ```
+
 3. Aplica las migraciones de base de datos:
+
    ```bash
    php bin/console doctrine:migrations:migrate --no-interaction
    ```
+
 4. Regenera la caché:
+
    ```bash
    rm -rf var/cache/prod
    php bin/console cache:warmup --env=prod --no-debug
    ```
 
-> [!TIP]
-> **Las migraciones son seguras de re-ejecutar.** Si una versión no incluye cambios de esquema,
-> `doctrine:migrations:migrate` termina en segundos sin modificar nada. Puedes ejecutarlo en cada
-> actualización sin riesgo.
+!!! tip "Las migraciones son seguras de re-ejecutar"
+    Si una versión no incluye cambios de esquema, `doctrine:migrations:migrate` termina en segundos sin
+    modificar nada. Puedes ejecutarlo en cada actualización sin riesgo.
 
 ## Copias de seguridad
 
-Guarda periódicamente un volcado de la base de datos:
+Además de la [copia descargable desde el panel de administración](13-administrar-la-plataforma.md#copia-desde-el-panel),
+guarda periódicamente un volcado de la base de datos:
 
 ```bash
 mysqldump -u usuario -p nombre_bd > backup-$(date +%Y%m%d).sql
 ```
 
-Consulta
-[Copias de seguridad](https://reasol-edu.github.io/gestconv-plus/07-administrar-la-plataforma.html#copias-de-seguridad)
-en el manual para más contexto sobre protección de datos y política de conservación.
+Consulta [Copias de seguridad](13-administrar-la-plataforma.md#copias-de-seguridad) para más contexto
+sobre protección de datos y política de conservación.

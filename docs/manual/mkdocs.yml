@@ -69,3 +69,7 @@ nav:
   - Permisos de un vistazo: 15-permisos-de-un-vistazo.md
   - 'Anexo: Resolución de problemas': 16-resolucion-de-problemas.md
   - 'Anexo: Glosario': 17-glosario.md
+  - 'Anexo: Despliegue en Plesk': 18-despliegue-en-plesk.md
+  - 'Anexo: Instalación manual en Ubuntu Server': 19-ubuntu-instalacion-manual.md
+  - 'Anexo: Despliegue continuo en Ubuntu Server': 20-despliegue-continuo.md
+  - 'Anexo: Exposición con Cloudflare Tunnel': 21-cloudflare-tunnel.md

@@ -24,7 +24,7 @@
 #
 # Es la opción de despliegue continuo que NO requiere abrir ningún puerto
 # adicional ni configurar un webhook en GitHub — ver la guía completa:
-# https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/despliegue-continuo.md
+# https://reasol-edu.github.io/gestconv-plus/20-despliegue-continuo.html
 # =============================================================================
 set -euo pipefail
 

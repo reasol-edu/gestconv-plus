@@ -31,7 +31,7 @@
 #     necesario para que FrankenPHP/Caddy obtenga el certificado TLS automático —
 #     salvo que el servidor esté detrás de un NAT/cortafuegos sin puertos abiertos,
 #     en cuyo caso el script puede configurar Cloudflare Tunnel en su lugar (hace
-#     falta un token de túnel ya creado, ver docs/despliegue/cloudflare-tunnel.md)
+#     falta un token de túnel ya creado, ver docs/manual/21-cloudflare-tunnel.md)
 # =============================================================================
 set -euo pipefail
 
@@ -112,7 +112,7 @@ echo -e "
    ya creado el túnel en el dashboard de Cloudflare (Zero Trust → Networks →
    Tunnels → Create a tunnel → Cloudflared) y el token que se muestra en el
    comando 'cloudflared service install <token>'. Más detalles en
-   docs/despliegue/cloudflare-tunnel.md.
+   docs/manual/21-cloudflare-tunnel.md.
 "
 read -rp "   ¿Usar Cloudflare Tunnel en vez de exponer 80/443 directamente? [s/N] " USE_TUNNEL_RAW </dev/tty
 if [[ "${USE_TUNNEL_RAW:-N}" =~ ^[Ss]$ ]]; then

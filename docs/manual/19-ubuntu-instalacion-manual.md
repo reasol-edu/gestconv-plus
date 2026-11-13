@@ -4,12 +4,13 @@ Guía paso a paso para instalar GestConv+ en un **VPS o servidor dedicado con Ub
 LTS**, usando el binario de FrankenPHP con **PostgreSQL nativo** y dos servicios **systemd**, sin
 Docker. Se requiere acceso SSH con sudo.
 
-> [!TIP]
-> Estos son exactamente los pasos que automatiza el script
-> [`dist/install-ubuntu.sh`](../../dist/install-ubuntu.sh). Sigue esta guía solo si prefieres
-> controlar cada paso o adaptar la instalación a tu entorno; en caso contrario, usa la
-> [instalación automatizada](https://reasol-edu.github.io/gestconv-plus/01-instalacion-y-puesta-en-marcha.html#despliegue-en-ubuntu-server-2604)
-> descrita en el manual.
+!!! tip "Esto es lo que automatiza el script de instalación"
+    Estos son exactamente los pasos que automatiza el script
+    [`dist/install-ubuntu.sh`](https://github.com/reasol-edu/gestconv-plus/blob/main/dist/install-ubuntu.sh).
+    Sigue este capítulo solo si prefieres controlar cada paso o adaptar la instalación a tu entorno; en
+    caso contrario, usa la
+    [instalación automatizada](01-instalacion-y-puesta-en-marcha.md#despliegue-en-ubuntu-server-2604)
+    descrita en el capítulo de instalación.
 
 ## 1. Instalar PostgreSQL
 
@@ -88,13 +89,13 @@ VAPID_SUBJECT=mailto:informatica@tudominio.es
 ```
 
 Necesita HTTPS (ya lo da `SERVER_ADDR`) y salida a internet. Reinicia los dos servicios al terminar. Más
-detalle en el [manual](https://reasol-edu.github.io/gestconv-plus/13-administrar-la-plataforma.html#avisos-push-al-movil).
+detalle en [Avisos push al móvil](13-administrar-la-plataforma.md#avisos-push-al-movil).
 
 ## 6. Crear los scripts de arranque
 
 Los scripts `gestconv-start.sh` y `gestconv-worker.sh` los genera `install-ubuntu.sh`; en la
 instalación manual, copia su contenido desde el propio script (sección «Crear scripts de arranque»
-de [`dist/install-ubuntu.sh`](../../dist/install-ubuntu.sh)).
+de [`dist/install-ubuntu.sh`](https://github.com/reasol-edu/gestconv-plus/blob/main/dist/install-ubuntu.sh)).
 
 Los scripts leen `.env.local`, generan `APP_SECRET` automáticamente en el primer arranque
 (guardado en `data/.secret`), escriben el fichero `app/.env` que necesita Symfony y lanzan en
@@ -151,9 +152,9 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now gestconv-plus gestconv-plus-worker
 ```
 
-> [!NOTE]
-> La directiva `AmbientCapabilities=CAP_NET_BIND_SERVICE` permite que el proceso (ejecutado como
-> `gestconvplus`, sin privilegios de root) escuche en los puertos 80 y 443.
+!!! note "Puertos 80 y 443 sin ser root"
+    La directiva `AmbientCapabilities=CAP_NET_BIND_SERVICE` permite que el proceso (ejecutado como
+    `gestconvplus`, sin privilegios de root) escuche en los puertos 80 y 443.
 
 ## Comandos útiles
 
@@ -173,10 +174,9 @@ sudo systemctl restart gestconv-plus gestconv-plus-worker
 
 - La aplicación queda accesible en `https://tudominio.es` con `admin` / `admin`.
   **Cambia la contraseña inmediatamente** en **Perfil → Cambiar contraseña**.
-- Los pasos de actualización a nuevas versiones están en el
-  [manual](https://reasol-edu.github.io/gestconv-plus/01-instalacion-y-puesta-en-marcha.html#actualizacion-en-ubuntu-server),
-  y la actualización automática, en la guía de
-  [despliegue continuo](despliegue-continuo.md).
+- Los pasos de actualización a nuevas versiones están en
+  [Actualización en Ubuntu Server](01-instalacion-y-puesta-en-marcha.md#actualizacion-en-ubuntu-server),
+  y la actualización automática, en [Despliegue continuo en Ubuntu Server](20-despliegue-continuo.md).
 - Incluye en tus copias de seguridad el volcado de la base de datos, el secreto (`data/.secret`) y
   la configuración (`.env.local`):
 

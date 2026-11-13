@@ -1,10 +1,10 @@
 # Despliegue continuo (CD) en Ubuntu Server
 
 Con despliegue continuo, el servidor se actualiza solo cada vez que se publica una nueva versión
-de GestConv+, sin intervención manual. Esta guía asume una instalación en Ubuntu Server como la
-descrita en el
-[manual](https://reasol-edu.github.io/gestconv-plus/01-instalacion-y-puesta-en-marcha.html#despliegue-en-ubuntu-server-2604)
-(automatizada con `install-ubuntu.sh` o [manual paso a paso](ubuntu-manual.md)).
+de GestConv+, sin intervención manual. Este capítulo asume una instalación en Ubuntu Server como la
+descrita en
+[Instalación y puesta en marcha](01-instalacion-y-puesta-en-marcha.md#despliegue-en-ubuntu-server-2604)
+(automatizada con `install-ubuntu.sh` o [paso a paso](19-ubuntu-instalacion-manual.md)).
 
 La base es siempre el mismo script de actualización; la diferencia está en cómo se activa:
 **sondeo periódico** (más sencillo, sin puertos extra) o **webhook** (instantáneo, requiere un
@@ -166,8 +166,7 @@ En el repositorio ve a **Settings → Webhooks → Add webhook**:
 | Secret | el mismo valor que `WEBHOOK_SECRET` |
 | Events | «Let me select individual events» → **Releases** |
 
-> [!TIP]
-> **HTTPS para el webhook.** Si prefieres no exponer el puerto 9000 directamente, configura un
-> proxy inverso en FrankenPHP (o Caddy) que enrute `/hooks/` al receptor local en
-> `localhost:9000`. Así el webhook llega por el mismo puerto 443 ya abierto y el tráfico queda
-> cifrado con tu certificado TLS existente.
+!!! tip "HTTPS para el webhook"
+    Si prefieres no exponer el puerto 9000 directamente, configura un proxy inverso en FrankenPHP (o
+    Caddy) que enrute `/hooks/` al receptor local en `localhost:9000`. Así el webhook llega por el mismo
+    puerto 443 ya abierto y el tráfico queda cifrado con tu certificado TLS existente.

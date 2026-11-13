@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Las guías de despliegue pasan a ser capítulos del manual** (anexos 18 a 21: despliegue en Plesk, instalación manual en Ubuntu Server, despliegue continuo en Ubuntu Server y exposición con Cloudflare Tunnel). Antes vivían aparte, en `docs/despliegue/`, y solo se leían en GitHub; ahora salen en la web del manual, en su buscador y en el PDF, con los mismos avisos y estilo, y el capítulo de instalación y el de administración de la plataforma enlazan a ellos. La carpeta `docs/despliegue/` desaparece; los comentarios de `dist/`, `compose.cloudflare.yaml` y `.env.example` apuntan a los nuevos capítulos. Se corrigieron además varios enlaces que apuntaban a capítulos con la numeración antigua.
+
 - **Plesk (y cualquier despliegue con Git y Composer): el CSS y los assets se compilan solos.** `composer install --no-dev` (y `composer update --no-dev`) ejecuta ahora `tailwind:build --minify` y `asset-map:compile` al terminar, así que actualizar se reduce a `git pull`, `composer install --no-dev`, migraciones y caché. En desarrollo no hace nada, la imagen Docker y los binarios siguen compilando por su cuenta, y si la compilación falla (sin internet para descargar Tailwind, hosting sin ejecución de procesos) `composer install` no se interrumpe: avisa y dice qué ejecutar a mano. `GESTCONV_SKIP_ASSET_BUILD=1` la omite. Guías de Plesk y del manual actualizadas.
 
 ## [1.35.0] - 2026-11-13

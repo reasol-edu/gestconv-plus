@@ -67,7 +67,11 @@ No hace falta leerlo de principio a fin; cada persona puede ir directamente a lo
 - **¿Vas a instalar la aplicación o mantener el servidor?** Los capítulos
   [Instalación y puesta en marcha](01-instalacion-y-puesta-en-marcha.md) y
   [Administrar la plataforma](13-administrar-la-plataforma.md) son los únicos con contenido
-  técnico. Si tu centro ya tiene GestConv+ en marcha, puedes saltártelos por completo.
+  técnico. Si tu centro ya tiene GestConv+ en marcha, puedes saltártelos por completo. Los anexos
+  de despliegue detallan cada forma de instalar: [Plesk](18-despliegue-en-plesk.md),
+  [Ubuntu Server paso a paso](19-ubuntu-instalacion-manual.md),
+  [despliegue continuo](20-despliegue-continuo.md) y
+  [Cloudflare Tunnel](21-cloudflare-tunnel.md).
 
 ## Sobre el proyecto
 
