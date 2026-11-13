@@ -98,7 +98,7 @@ class AbsenceController extends AbstractController
             default                                        => 'centre',
         };
 
-        $absences = $tab === 'mine' && $year !== null
+        $absences = $tab === 'mine'
             ? $this->absences->findByTeacherAndYearOrderedByStartDate($user, $year)
             : [];
 

@@ -645,7 +645,7 @@ class IncidentReportController extends AbstractController
                     $report->setOccurredAt($result->occurredAt);
                 }
                 $report->setLocation($result->location);
-                if ($canReassign && $registeredBy !== null && $student !== null && $group !== null) {
+                if ($canReassign && $registeredBy !== null && $student !== null) {
                     $report->setRegisteredBy($registeredBy)
                            ->setStudent($student)
                            ->setGroup($group);
