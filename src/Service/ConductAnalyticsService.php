@@ -10,6 +10,7 @@ use App\Entity\IncidentReport;
 use App\Repository\GroupRepository;
 use App\Repository\IncidentReportRepository;
 use App\Repository\SanctionRepository;
+use Symfony\Component\Clock\ClockInterface;
 
 /**
  * Analítica de convivencia: las series de los gráficos (evolución mensual, día de la semana, hora, conductas,
@@ -32,16 +33,27 @@ final class ConductAnalyticsService
         private readonly IncidentReportRepository $incidentReports,
         private readonly SanctionRepository $sanctions,
         private readonly GroupRepository $groups,
+        private readonly ClockInterface $clock,
     ) {}
 
     /**
-     * Primer y último día con partes del curso, o null si todavía no hay (rango por defecto de la pantalla).
+     * El curso entero, que es el rango por defecto de la pantalla: del comienzo del curso al día de hoy si el curso está en
+     * marcha (para no dibujar meses futuros vacíos) y a su fin si ya terminó o todavía no ha empezado.
      *
-     * @return array{0: \DateTimeImmutable, 1: \DateTimeImmutable}|null
+     * @return array{0: \DateTimeImmutable, 1: \DateTimeImmutable}
      */
-    public function defaultRange(EducationalCentre $centre, AcademicYear $year): ?array
+    public function defaultRange(AcademicYear $year): array
     {
-        return $this->incidentReports->findOccurredAtBounds($centre, $year);
+        $today = $this->clock->now()->setTime(0, 0);
+        $to    = ($today >= $year->getStartDate() && $today < $year->getEndDate()) ? $today : $year->getEndDate();
+
+        return [$year->getStartDate(), $to];
+    }
+
+    /** Si el curso ya tiene algún parte (sin partes, la pantalla explica por dónde empezar en vez de dibujar gráficos vacíos). */
+    public function hasReports(EducationalCentre $centre, AcademicYear $year): bool
+    {
+        return $this->incidentReports->findOccurredAtBounds($centre, $year) !== null;
     }
 
     public function build(EducationalCentre $centre, AcademicYear $year, \DateTimeImmutable $from, \DateTimeImmutable $to): ConductAnalyticsReport

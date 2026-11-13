@@ -238,8 +238,10 @@ una hoja Excel con una fila por grupo, los subtotales y el total general.
 
 La tarjeta **Analítica de convivencia** presenta los mismos partes y sanciones en **gráficos**, para ver
 de un vistazo cómo evoluciona la convivencia y dónde se concentra. Sin elegir fechas abarca desde el
-primer hasta el último parte del curso; con los campos de fecha y los rangos rápidos (último mes, tres
-meses, seis meses, año) o **Todo el curso** se acota. Solo la ve quien tiene acceso a la sección
+comienzo del curso hasta hoy (o hasta su fin, si ya terminó), según las fechas del
+[curso académico](12-administrar-el-centro.md#cursos-academicos); con los campos de fecha y los rangos
+rápidos (último mes, tres meses, seis meses, año) o **Todo el curso** se acota. Los demás informes
+(estadísticas por grupo, salidas e incidencias) tienen también el rango rápido **Todo el curso**. Solo la ve quien tiene acceso a la sección
 Informes (equipo directivo y administración) y recoge siempre el centro entero.
 
 ![Analítica de convivencia: cifras clave y partes por mes](img/informes/informes-analitica.png)

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Fechas de comienzo y de fin del curso académico**. Se indican al crear o editar el curso en Cursos académicos; por defecto, del 15 de septiembre del primer año del nombre al 14 de septiembre del siguiente (`2026-2027` → 15/09/2026 – 14/09/2027). Los cursos existentes las reciben al actualizar, calculadas del mismo modo. Los informes con rangos de fechas las usan como «Todo el curso»: estadísticas por grupo, salidas e incidencias estrenan ese rango rápido, y la analítica de convivencia pasa a abarcar por defecto desde el comienzo del curso hasta hoy (o hasta su fin).
+
 ## [1.30.2] - 2026-11-13
 
 ### Changed

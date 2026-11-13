@@ -29,6 +29,7 @@
                     <li class="flex items-center gap-4 px-6 py-4">
                         <div class="flex-1 min-w-0 flex items-center gap-3">
                             <span class="text-sm font-medium text-gray-900">{{ year.name }}</span>
+                            <span class="text-xs text-gray-500">{{ 'years.dates_range'|trans({'{start}': year.startDate|date('d/m/Y'), '{end}': year.endDate|date('d/m/Y')}, 'admin') }}</span>
                             {% if centre.activeAcademicYear and centre.activeAcademicYear.id == year.id %}
                                 <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                                     {{ ux_icon('heroicons:check', {class: 'h-3 w-3 mr-1'}) }}{{ 'years.badge.active'|trans({}, 'admin') }}
@@ -84,18 +85,33 @@
             </p>
             <form method="post"
                   action="{{ path('app_centre_years_add', {centreId: centre.id}) }}"
-                  class="flex gap-3">
+                  class="space-y-3">
                 <input type="hidden" name="_token" value="{{ csrf_token('add_year_' ~ centre.id) }}">
-                <input type="text" name="name"
-                       placeholder="{{ 'years.field.name_placeholder'|trans({}, 'admin') }}"
-                       class="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 px-3.5 text-sm
-                              focus:border-forest-500 focus:ring-3 focus:ring-forest-500/20 focus:outline-none transition-colors"
-                       required>
-                <button type="submit"
-                        class="rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
-                               hover:bg-forest-700 transition-colors shadow-xs shrink-0">
-                    {{ ux_icon('heroicons:plus', {class: 'h-4 w-4 mr-1 inline'}) }}{{ 'years.add.submit'|trans({}, 'admin') }}
-                </button>
+                <div class="flex flex-wrap gap-3">
+                    <input type="text" name="name" aria-label="{{ 'years.field.name'|trans({}, 'admin') }}"
+                           placeholder="{{ 'years.field.name_placeholder'|trans({}, 'admin') }}"
+                           class="min-w-48 flex-1 rounded-xl border border-gray-200 bg-white py-2.5 px-3.5 text-sm
+                                  focus:border-forest-500 focus:ring-3 focus:ring-forest-500/20 focus:outline-none transition-colors"
+                           required>
+                    <button type="submit"
+                            class="rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
+                                   hover:bg-forest-700 transition-colors shadow-xs shrink-0">
+                        {{ ux_icon('heroicons:plus', {class: 'h-4 w-4 mr-1 inline'}) }}{{ 'years.add.submit'|trans({}, 'admin') }}
+                    </button>
+                </div>
+                <div class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label for="add-start-date" class="block text-xs font-medium text-gray-500 mb-1">{{ 'years.field.start_date'|trans({}, 'admin') }}</label>
+                        <input id="add-start-date" type="date" name="start_date"
+                               class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-sm focus:border-forest-500 focus:ring-3 focus:ring-forest-500/20 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label for="add-end-date" class="block text-xs font-medium text-gray-500 mb-1">{{ 'years.field.end_date'|trans({}, 'admin') }}</label>
+                        <input id="add-end-date" type="date" name="end_date"
+                               class="rounded-xl border border-gray-200 bg-white py-2 px-3 text-sm focus:border-forest-500 focus:ring-3 focus:ring-forest-500/20 focus:outline-none transition-colors">
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500">{{ 'years.field.dates_help'|trans({}, 'admin') }}</p>
             </form>
         </div>
     </div>

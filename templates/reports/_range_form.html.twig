@@ -24,6 +24,14 @@
                 {{ ('group_stats.quick_range.' ~ key)|trans({}, 'admin') }}
             </button>
         {% endfor %}
+        {% if year %}
+            {# Del comienzo al fin del curso que se está viendo (sus fechas se configuran en Cursos académicos). #}
+            <a href="{{ path(app.request.attributes.get('_route'), {centreId: centre.id, from: year.startDate|date('Y-m-d'), to: year.endDate|date('Y-m-d')}) }}"
+               class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600
+                      hover:bg-forest-50 hover:border-forest-200 hover:text-forest-700 transition-colors">
+                {{ 'group_stats.quick_range.whole_year'|trans({}, 'admin') }}
+            </a>
+        {% endif %}
     </div>
 
     <button type="submit"

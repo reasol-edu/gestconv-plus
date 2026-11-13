@@ -31,12 +31,18 @@ eliminarlos y establecer cuál es el activo.
 ![Gestión de cursos académicos del centro](img/centro/centro-cursos.png)
 
 - **Añadir** — un formulario con el nombre del curso (por ejemplo, `2026-2027`) lo crea de
-  inmediato.
+  inmediato. Opcionalmente se indican la **fecha de comienzo** y la **de fin** del curso; si se
+  dejan en blanco, se toman del nombre: del 15 de septiembre del primer año al 14 de septiembre
+  del siguiente (`2026-2027` → 15/09/2026 – 14/09/2027). Los cursos que ya existían recibieron
+  esas mismas fechas al actualizar.
 - **Establecer activo** — cambia el curso activo del centro; a partir de ese momento, los partes,
   sanciones y demás datos nuevos se asocian a él. El curso anterior queda disponible como
   histórico (ver
   [Cambio de curso académico](03-usar-la-aplicacion.md#cambio-de-curso-academico-administradores)).
-- **Editar** — permite corregir el nombre de un curso.
+- **Editar** — permite corregir el nombre de un curso y sus fechas de comienzo y de fin. Estas
+  fechas son las que las pantallas con rangos de fechas (la
+  [analítica](06-convivencia-administracion.md#analitica-de-convivencia) y los demás informes)
+  usan como «**Todo el curso**»; no filtran los datos, que ya pertenecen a cada curso.
 - **Eliminar** — solo disponible en cursos que no sean el activo.
 
 A diferencia del resto de tarjetas del panel, esta no requiere un curso académico activo para

@@ -136,19 +136,40 @@ class ConductAnalyticsServiceTest extends RepositoryTestCase
         self::assertSame([0, 0, 0, 0, 0], array_column($report->concentration, 'students'));
     }
 
-    public function testTheDefaultRangeSpansTheFirstAndLastReportOfTheYear(): void
+    public function testTheDefaultRangeIsTheWholeYearUpToTodayWhileItIsRunning(): void
+    {
+        $w = $this->world();   // «hoy» es el 10/12/2025 y el curso va del 15/09/2025 al 14/09/2026
+
+        $range = $this->service->defaultRange($w['year']);
+
+        self::assertSame('2025-09-15', $range[0]->format('Y-m-d'));
+        self::assertSame('2025-12-10', $range[1]->format('Y-m-d'), 'Con el curso en marcha no se dibujan meses futuros.');
+    }
+
+    public function testTheDefaultRangeOfAFinishedOrNotStartedYearIsItsOwnDates(): void
     {
         $w = $this->world();
 
-        $range = $this->service->defaultRange($w['centre'], $w['year']);
+        $past = $this->service->defaultRange((new AcademicYear())->setName('2023-2024')->setEducationalCentre($w['centre']));
+        self::assertSame(['2023-09-15', '2024-09-14'], [$past[0]->format('Y-m-d'), $past[1]->format('Y-m-d')]);
 
-        self::assertNotNull($range);
-        self::assertSame('2025-09-15', $range[0]->format('Y-m-d'));
-        self::assertSame('2026-03-10', $range[1]->format('Y-m-d'));
+        $future = $this->service->defaultRange((new AcademicYear())->setName('2030-2031')->setEducationalCentre($w['centre']));
+        self::assertSame(['2030-09-15', '2031-09-14'], [$future[0]->format('Y-m-d'), $future[1]->format('Y-m-d')]);
+
+        $custom = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($w['centre'])
+            ->setDates(new \DateTimeImmutable('2025-09-08'), new \DateTimeImmutable('2026-06-30'));
+        self::assertSame('2025-09-08', $this->service->defaultRange($custom)[0]->format('Y-m-d'));
+    }
+
+    public function testHasReportsOnlyWhenTheYearHasAny(): void
+    {
+        $w = $this->world();
+
+        self::assertTrue($this->service->hasReports($w['centre'], $w['year']));
 
         $empty = (new AcademicYear())->setName('2030-2031')->setEducationalCentre($w['centre']);
         $this->persist($empty);
-        self::assertNull($this->service->defaultRange($w['centre'], $empty));
+        self::assertFalse($this->service->hasReports($w['centre'], $empty));
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────

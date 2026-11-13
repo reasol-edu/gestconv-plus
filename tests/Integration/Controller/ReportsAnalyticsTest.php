@@ -86,8 +86,36 @@ class ReportsAnalyticsTest extends ControllerTestCase
         self::assertSelectorCount(7, 'details table');
         // Los meses salen de las traducciones del calendario, no de texto fijo en el código.
         self::assertStringContainsString('Mar', (string) $this->client->getResponse()->getContent());
-        // El rango por defecto del formulario es el del primer al último parte.
-        self::assertSelectorExists('input[name="from"][value="2026-03-02"]');
+        // El rango por defecto del formulario es el del curso (2025-2026, ya terminado: del 15/09/2025 al 14/09/2026).
+        self::assertSelectorExists('input[name="from"][value="2025-09-15"]');
+        self::assertSelectorExists('input[name="to"][value="2026-09-14"]');
+    }
+
+    public function testTheDefaultRangeFollowsTheDatesConfiguredInTheYear(): void
+    {
+        $w = $this->world();
+        $w['year']->setDates(new \DateTimeImmutable('2025-09-08'), new \DateTimeImmutable('2026-06-30'));
+        $this->makeReports($w, 3);
+        $this->flush();
+        $this->loginAs($w['centreAdmin'], $w['centre']);
+
+        $this->client->request('GET', $this->url($w['centre']));
+
+        self::assertSelectorExists('input[name="from"][value="2025-09-08"]');
+        self::assertSelectorExists('input[name="to"][value="2026-06-30"]');
+    }
+
+    public function testTheOtherReportsOfferTheWholeCourseAsAQuickRange(): void
+    {
+        $w = $this->world();
+        $this->loginAs($w['centreAdmin'], $w['centre']);
+
+        foreach (['estadisticas-grupo', 'salidas', 'incidencias'] as $report) {
+            $this->client->request('GET', '/centro/' . $w['centre']->getId()->toRfc4122() . '/informes/' . $report);
+
+            self::assertResponseIsSuccessful();
+            self::assertSelectorExists('a[href*="from=2025-09-15"][href*="to=2026-09-14"]');
+        }
     }
 
     public function testARangeWithoutReportsExplainsItsEmptiness(): void

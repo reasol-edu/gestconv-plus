@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
+use function Symfony\Component\Clock\now;
+
 #[ORM\Entity(repositoryClass: AcademicYearRepository::class)]
 #[ORM\UniqueConstraint(name: 'uq_academic_year_centre', columns: ['name', 'educational_centre_id'])]
 class AcademicYear
@@ -23,6 +25,14 @@ class AcademicYear
     #[ORM\Column(length: 50)]
     private string $name;
 
+    /** Primer día del curso (inclusive). Por defecto, el 15 de septiembre del año con el que empieza el nombre. */
+    #[ORM\Column(type: 'date_immutable')]
+    private \DateTimeImmutable $startDate;
+
+    /** Último día del curso (inclusive). Por defecto, el 14 de septiembre del año siguiente. */
+    #[ORM\Column(type: 'date_immutable')]
+    private \DateTimeImmutable $endDate;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private EducationalCentre $educationalCentre;
@@ -35,6 +45,34 @@ class AcademicYear
     public function __construct()
     {
         $this->teachers = new ArrayCollection();
+        [$this->startDate, $this->endDate] = self::defaultDates(null);
+    }
+
+    /**
+     * Fechas por defecto de un curso: del 15 de septiembre del año con el que empieza su nombre («2025-2026» → 2025)
+     * al 14 de septiembre del siguiente. Si el nombre no trae ningún año, el curso que contiene el día de hoy.
+     *
+     * @return array{0: \DateTimeImmutable, 1: \DateTimeImmutable}
+     */
+    public static function defaultDates(?string $name, ?\DateTimeImmutable $today = null): array
+    {
+        $startYear = null;
+        if ($name !== null && preg_match('/(?<!\d)(\d{4})(?!\d)/', $name, $match) === 1) {
+            $startYear = (int) $match[1];
+        }
+
+        if ($startYear === null) {
+            $today ??= now();
+            $startYear = (int) $today->format('Y');
+            if ($today->format('m-d') < '09-15') {
+                --$startYear;
+            }
+        }
+
+        return [
+            new \DateTimeImmutable(sprintf('%04d-09-15', $startYear)),
+            new \DateTimeImmutable(sprintf('%04d-09-14', $startYear + 1)),
+        ];
     }
 
     public function getId(): Uuid
@@ -47,11 +85,41 @@ class AcademicYear
         return $this->name;
     }
 
+    /** En un curso nuevo (sin guardar), poner el nombre calcula también sus fechas por defecto; `setDates()` las sustituye. */
     public function setName(string $name): static
     {
         $this->name = $name;
+        if (!isset($this->id)) {
+            [$this->startDate, $this->endDate] = self::defaultDates($name);
+        }
 
         return $this;
+    }
+
+    public function getStartDate(): \DateTimeImmutable
+    {
+        return $this->startDate;
+    }
+
+    public function getEndDate(): \DateTimeImmutable
+    {
+        return $this->endDate;
+    }
+
+    public function setDates(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): static
+    {
+        $this->startDate = $startDate->setTime(0, 0);
+        $this->endDate   = $endDate->setTime(0, 0);
+
+        return $this;
+    }
+
+    /** Si el día cae dentro del curso (los dos extremos incluidos). */
+    public function contains(\DateTimeImmutable $day): bool
+    {
+        $day = $day->setTime(0, 0);
+
+        return $day >= $this->startDate && $day <= $this->endDate;
     }
 
     public function getEducationalCentre(): EducationalCentre

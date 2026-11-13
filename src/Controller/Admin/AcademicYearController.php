@@ -52,13 +52,21 @@ class AcademicYearController extends AbstractController
         }
 
         $name = trim($request->request->getString('name'));
+        $from = $this->parseDay($request->request->getString('start_date'));
+        $to   = $this->parseDay($request->request->getString('end_date'));
 
         if ($name === '') {
             $this->addFlash('error', $this->t('year.flash.name_required'));
+        } elseif (($from === null) !== ($to === null) || ($from !== null && $to !== null && $from >= $to)) {
+            $this->addFlash('error', $this->t('year.flash.dates_invalid'));
         } else {
             $year = (new AcademicYear())
                 ->setName($name)
                 ->setEducationalCentre($centre);
+            // Sin fechas, las que salen del nombre («2026-2027» → 15/09/2026 a 14/09/2027).
+            if ($from !== null && $to !== null) {
+                $year->setDates($from, $to);
+            }
 
             $this->em->persist($year);
             $this->em->flush();
@@ -93,11 +101,20 @@ class AcademicYearController extends AbstractController
             }
 
             $name = trim($request->request->getString('name'));
+            $from = $this->parseDay($request->request->getString('start_date'));
+            $to   = $this->parseDay($request->request->getString('end_date'));
 
             if ($name === '') {
                 $errors['name'] = $this->t('year.error.name_required');
-            } else {
-                $year->setName($name);
+            }
+            if ($from === null || $to === null) {
+                $errors['dates'] = $this->t('year.error.dates_required');
+            } elseif ($from >= $to) {
+                $errors['dates'] = $this->t('year.error.dates_order');
+            }
+
+            if ($errors === [] && $from !== null && $to !== null) {
+                $year->setName($name)->setDates($from, $to);
                 $this->em->flush();
 
                 $this->addFlash('success', $this->t('year.flash.saved'));
@@ -158,6 +175,15 @@ class AcademicYearController extends AbstractController
         $this->addFlash('success', $this->t('year.flash.activated'));
 
         return $this->redirectToRoute('app_centre_years_index', ['centreId' => $centreId]);
+    }
+
+    /** Un día enviado por un `<input type="date">` (Y-m-d); null si está vacío o no es una fecha real. */
+    private function parseDay(string $raw): ?\DateTimeImmutable
+    {
+        $raw = trim($raw);
+        $day = \DateTimeImmutable::createFromFormat('!Y-m-d', $raw);
+
+        return $day !== false && $day->format('Y-m-d') === $raw ? $day : null;
     }
 
     private function requireCentre(string $centreId): EducationalCentre

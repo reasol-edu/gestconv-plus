@@ -74,16 +74,15 @@ class ReportsController extends AbstractController
         $from   = $to = null;
         $hasData = false;
         if ($year !== null) {
-            $default = $this->conductAnalytics->defaultRange($centre, $year);
-            $hasData = $default !== null;
+            $hasData = $this->conductAnalytics->hasReports($centre, $year);
 
             [$from, $to] = $this->parseRange($request);
-            $from ??= $default[0] ?? null;
-            $to   ??= $default[1] ?? null;
-            if ($from !== null && $to !== null) {
-                $from = max($from, $to->modify('-' . (self::ANALYTICS_MAX_MONTHS - 1) . ' months')->modify('first day of this month'));
-                $report = $this->conductAnalytics->build($centre, $year, $from, $to);
-            }
+            [$defaultFrom, $defaultTo] = $this->conductAnalytics->defaultRange($year);
+            $from ??= $defaultFrom;
+            $to   ??= $defaultTo;
+
+            $from   = max($from, $to->modify('-' . (self::ANALYTICS_MAX_MONTHS - 1) . ' months')->modify('first day of this month'));
+            $report = $this->conductAnalytics->build($centre, $year, $from, $to);
         }
 
         return $this->render('reports/analytics.html.twig', [
