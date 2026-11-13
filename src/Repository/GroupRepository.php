@@ -121,6 +121,29 @@ class GroupRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * Los grupos del curso sin ningún tutor/a, ordenados por curso y nombre, con su curso ya cargado (aviso de Oferta
+     * formativa: una sola consulta, sin una por grupo).
+     *
+     * @return list<Group>
+     */
+    public function findWithoutTutor(AcademicYear $year): array
+    {
+        /** @var list<Group> $result */
+        $result = $this->createQueryBuilder('g')
+            ->addSelect('c')
+            ->join('g.course', 'c')
+            ->where('c.academicYear = :year')
+            ->andWhere('g.tutors IS EMPTY')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->orderBy('c.name', \SortDirection::Ascending)
+            ->addOrderBy('g.name', \SortDirection::Ascending)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
     /** Grupos del curso que todavía no tienen ningún tutor/a (paso «tutorías» de la lista de inicio de curso). */
     public function countWithoutTutor(AcademicYear $year): int
     {

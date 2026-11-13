@@ -46,11 +46,15 @@ class ProgrammeOfferController extends AbstractController
     ) {}
 
     #[Route('', name: 'app_centre_offer_index')]
-    public function index(string $centreId): Response
+    public function index(string $centreId, Request $request): Response
     {
         $centre = $this->requireCentre($centreId);
 
-        return $this->render('admin/offer/index.html.twig', ['centre' => $centre]);
+        return $this->render('admin/offer/index.html.twig', [
+            'centre'    => $centre,
+            // Grupo que abre el enlace del aviso de «grupos sin tutoría»; el componente lo valida y lo ignora si no procede.
+            'openGroup' => $request->query->getString('grupo'),
+        ]);
     }
 
     /** Descarga la oferta del curso que se está viendo (también un curso pasado, para llevarla al curso nuevo). */

@@ -223,7 +223,138 @@ class OfferTreeComponentTest extends ControllerTestCase
         self::assertCount(0, $this->em->getRepository(SanctionTask::class)->findAll());
     }
 
+    // ── Aviso: grupos sin tutoría ─────────────────────────────────────────────
+
+    public function testItWarnsAboutGroupsWithoutATutorAndTheLinksOnlyShowWhenExpanded(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $withTutor = (new Group())->setName('1ºB')->setCourse($group->getCourse());
+        $withTutor->addTutor($admin);
+        $this->persist($withTutor);
+        $this->loginAs($admin, $centre);
+
+        $component = $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client);
+        $crawler   = $component->render()->crawler();
+
+        // Solo el grupo sin tutor cuenta; plegado, no hay enlaces.
+        self::assertStringContainsString('Hay 1 grupo sin tutoría', $crawler->filter('section[aria-label="Grupos sin tutoría"]')->text());
+        self::assertSame('false', $crawler->filter('section[aria-label="Grupos sin tutoría"] button')->attr('aria-expanded'));
+        self::assertCount(0, $crawler->filter('#offer-no-tutor-list'));
+        self::assertCount(0, $crawler->filter('a[href*="grupo="]'));
+
+        $crawler = $component->call('toggleTutorWarning')->render()->crawler();
+        self::assertSame('true', $crawler->filter('section[aria-label="Grupos sin tutoría"] button')->attr('aria-expanded'));
+        $links = $crawler->filter('#offer-no-tutor-list a');
+        self::assertCount(1, $links);
+        self::assertSame('1ºA', trim($links->text()));
+        self::assertStringEndsWith('/offer?grupo=' . $group->getId()->toRfc4122() . '#offer-detail', (string) $links->attr('href'));
+
+        // Y se vuelve a plegar.
+        $crawler = $component->call('toggleTutorWarning')->render()->crawler();
+        self::assertCount(0, $crawler->filter('#offer-no-tutor-list'));
+    }
+
+    public function testTheWarningListsGroupsGroupedByCourseAndCountsThemAll(): void
+    {
+        [$admin, $centre, $year] = $this->makeScenario();
+        $second = (new Course())->setName('ASIR')->setAcademicYear($year);
+        $other  = (new Group())->setName('2ºA')->setCourse($second);
+        $this->persist($second, $other);
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
+            ->call('toggleTutorWarning')->render()->crawler();
+
+        self::assertStringContainsString('Hay 2 grupos sin tutoría', $crawler->filter('section[aria-label="Grupos sin tutoría"]')->text());
+        // Cursos por orden alfabético (ASIR antes que DAW), cada uno con su grupo.
+        self::assertSame(['ASIR', 'DAW'], $crawler->filter('#offer-no-tutor-list p.uppercase')->each(static fn ($n): string => trim($n->text())));
+        self::assertSame(['2ºA', '1ºA'], $crawler->filter('#offer-no-tutor-list a')->each(static fn ($n): string => trim($n->text())));
+    }
+
+    public function testTheWarningDisappearsOnceTheLastGroupGetsATutor(): void
+    {
+        [$admin, $centre, , , $group, $teacher] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $component = $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)
+            ->call('selectGroup', ['id' => $group->getId()->toRfc4122()]);
+        self::assertCount(1, $component->render()->crawler()->filter('section[aria-label="Grupos sin tutoría"]'));
+
+        $crawler = $component->call('setGroupTutors', ['ids' => [$teacher->getId()->toRfc4122()]])->render()->crawler();
+
+        self::assertCount(0, $crawler->filter('section[aria-label="Grupos sin tutoría"]'), 'El aviso es parte del componente y se repinta solo.');
+    }
+
+    public function testNoWarningWhenEveryGroupHasATutor(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $group->addTutor($admin);
+        $this->flush();
+        $this->loginAs($admin, $centre);
+
+        $crawler = $this->createLiveComponent('Admin:OfferTreeComponent', ['centre' => $centre], $this->client)->render()->crawler();
+
+        self::assertCount(0, $crawler->filter('section[aria-label="Grupos sin tutoría"]'));
+    }
+
+    public function testTheDirectLinkOpensThatGroupsConfiguration(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        // El montaje usa el curso de la sesión, así que se prueba como la pantalla: con una petición.
+        $crawler = $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/offer?grupo=' . $group->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('#offer-detail'));
+        self::assertSame('1ºA', $crawler->filter('#offer-detail input[type="text"]')->first()->attr('value'));
+        self::assertCount(1, $crawler->filter('#staff-tutors'), 'Está el selector de tutores del grupo.');
+        // Y el aviso sigue ahí, plegado, con el grupo abierto.
+        self::assertCount(1, $crawler->filter('section[aria-label="Grupos sin tutoría"]'));
+    }
+
+    public function testTheDirectLinkIgnoresInvalidUnknownAndForeignGroups(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $foreign = $this->makeForeignGroup();
+        $this->loginAs($admin, $centre);
+
+        foreach (['no-es-un-uuid', '00000000-0000-4000-8000-000000000000', $foreign->getId()->toRfc4122()] as $id) {
+            $crawler = $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/offer?grupo=' . $id);
+            self::assertResponseIsSuccessful();
+            self::assertCount(0, $crawler->filter('#offer-detail'), "No debe abrir «$id»");
+        }
+
+        // Control: con el grupo propio sí abre.
+        $crawler = $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/offer?grupo=' . $group->getId()->toRfc4122());
+        self::assertCount(1, $crawler->filter('#offer-detail'));
+    }
+
+    public function testThePageOpensTheGroupFromTheQueryString(): void
+    {
+        [$admin, $centre, , , $group] = $this->makeScenario();
+        $this->loginAs($admin, $centre);
+
+        $this->client->request('GET', '/centro/' . $centre->getId()->toRfc4122() . '/offer?grupo=' . $group->getId()->toRfc4122());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#offer-detail');
+        self::assertSelectorExists('#staff-tutors');
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /** Un grupo de otro centro (su id no debe poder abrirse desde este). */
+    private function makeForeignGroup(): Group
+    {
+        $centre = (new EducationalCentre())->setCode('41000099')->setName('IES Ajeno')->setCity('Sevilla');
+        $year   = (new AcademicYear())->setName('2024-2025')->setEducationalCentre($centre);
+        $course = (new Course())->setName('DAW')->setAcademicYear($year);
+        $group  = (new Group())->setName('9ºZ')->setCourse($course);
+        $this->persist($centre, $year, $course, $group);
+
+        return $group;
+    }
 
     private function generateSanctionTasks(EducationalCentre $centre, AcademicYear $year, Group $group, Teacher $teacher): void
     {

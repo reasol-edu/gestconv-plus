@@ -56,6 +56,10 @@ al instante, sin recargar la página.
 - **Grupos** — unidades de un curso (por ejemplo, 1ºA, 1ºB). Cada grupo pertenece a un único
   curso, y su formulario permite asignar tutores/as y docentes, y elegir su **color** (ver
   más abajo).
+- **Aviso de grupos sin tutoría** — sobre las columnas, un cuadro ámbar indica cuántos grupos del
+  curso activo no tienen tutor/a. Se despliega con **Ver los grupos**, lista los grupos agrupados
+  por curso y cada uno es un enlace que abre directamente su panel de detalle (también se puede
+  compartir esa dirección). Desaparece solo cuando todos los grupos tienen tutoría.
 
 #### Color de un grupo
 

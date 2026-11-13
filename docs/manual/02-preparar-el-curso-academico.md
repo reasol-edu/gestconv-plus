@@ -156,6 +156,12 @@ Esta asignación determina, entre otras cosas, qué docentes ven los partes y sa
 Se hace desde **Centro educativo › Oferta formativa**: al seleccionar un grupo, aparece debajo su
 panel de detalle, donde se asignan los tutores/as.
 
+Mientras haya grupos sin tutoría, la Oferta formativa lo avisa con un cuadro ámbar sobre las columnas
+(«Hay 3 grupos sin tutoría»). Se **despliega** con **Ver los grupos** y muestra los grupos pendientes
+agrupados por curso; pulsar uno abre directamente su panel de detalle para asignar el tutor o la tutora, y
+el aviso desaparece solo cuando el último grupo la tiene. Solo se muestra al ver el curso activo. La
+[lista de inicio de curso](#lista-de-comprobacion-de-inicio-de-curso) cuenta también este paso.
+
 ## 5. Indicar quién imparte clase en cada grupo (opcional)
 
 El último paso es opcional: registrar qué profesorado da clase en cada grupo, importando desde

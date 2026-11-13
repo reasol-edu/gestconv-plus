@@ -17,6 +17,48 @@
 
         <div data-loading="addClass(opacity-50 pointer-events-none)" class="transition-opacity space-y-3">
 
+            {# ── Aviso: grupos sin tutoría (desplegable, con enlace directo a la configuración de cada grupo) ── #}
+            {% set no_tutor = this.groupsWithoutTutor %}
+            {% if no_tutor is not empty %}
+                <section class="rounded-xl border border-amber-200 bg-amber-50" aria-label="{{ 'offer.tutors_warning.title'|trans({}, 'admin') }}">
+                    <button type="button" data-action="live#action" data-live-action-param="toggleTutorWarning"
+                            aria-expanded="{{ tutorWarningOpen ? 'true' : 'false' }}" aria-controls="offer-no-tutor-list"
+                            class="flex w-full items-center gap-3 px-4 py-3 text-left">
+                        {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-5 w-5 shrink-0 text-amber-500'}) }}
+                        <span class="flex-1 text-sm font-medium text-amber-900">
+                            {{ (no_tutor|length == 1 ? 'offer.tutors_warning.one' : 'offer.tutors_warning.many')|trans({'%count%': no_tutor|length}, 'admin') }}
+                        </span>
+                        <span class="text-xs font-medium text-amber-700">{{ (tutorWarningOpen ? 'offer.tutors_warning.hide' : 'offer.tutors_warning.show')|trans({}, 'admin') }}</span>
+                        {{ ux_icon(tutorWarningOpen ? 'heroicons:chevron-up' : 'heroicons:chevron-down', {class: 'h-4 w-4 shrink-0 text-amber-600'}) }}
+                    </button>
+                    {% if tutorWarningOpen %}
+                        <div id="offer-no-tutor-list" class="border-t border-amber-200 px-4 py-3">
+                            <p class="mb-3 text-xs text-amber-800">{{ 'offer.tutors_warning.help'|trans({}, 'admin') }}</p>
+                            {% set last_course = '' %}
+                            <div class="space-y-3">
+                                {% for g in no_tutor %}
+                                    {% if g.course.id.toRfc4122 != last_course %}
+                                        {% if not loop.first %}</ul>{% endif %}
+                                        <p class="text-xs font-semibold uppercase tracking-wider text-amber-800">{{ g.course.name }}</p>
+                                        <ul class="mt-1 flex flex-wrap gap-2">
+                                        {% set last_course = g.course.id.toRfc4122 %}
+                                    {% endif %}
+                                    <li>
+                                        <a href="{{ path('app_centre_offer_index', {centreId: centre.id, grupo: g.id}) }}#offer-detail"
+                                           class="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900
+                                                  hover:bg-amber-100 transition-colors">
+                                            {{ g.name }}
+                                            {{ ux_icon('heroicons:arrow-right', {class: 'h-3 w-3'}) }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                </section>
+            {% endif %}
+
             {# ── Dos columnas: Cursos | Grupos ────────────────────────────── #}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
@@ -175,7 +217,7 @@
                 {% set name_keys    = {course: 'course.field.name', group: 'group.field.name'} %}
                 {% set confirm_keys = {course: 'courses.delete_confirm', group: 'groups.delete_confirm'} %}
 
-                <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <div id="offer-detail" style="scroll-margin-top: 5rem" class="overflow-hidden rounded-xl border border-gray-200 bg-white">
                     <div class="flex items-center gap-2 bg-gray-50/70 px-4 py-2.5 border-b border-gray-100">
                         {{ ux_icon('heroicons:pencil-square', {class: 'h-4 w-4 text-gray-400'}) }}
                         <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ title_keys[type]|trans({}, 'admin') }}</span>

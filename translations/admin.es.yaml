@@ -713,6 +713,12 @@ offer.import.flash.unresolved: '{1} Se ha omitido 1 docente que no existe en el 
 offer.manage: 'Gestionar oferta formativa'
 offer.centre_link_help: 'Cursos y grupos del curso activo.'
 offer.no_active_year: 'Este centro no tiene un curso académico activo. Establece uno activo para gestionar la oferta formativa.'
+offer.tutors_warning.title: 'Grupos sin tutoría'
+offer.tutors_warning.one: 'Hay 1 grupo sin tutoría'
+offer.tutors_warning.many: 'Hay %count% grupos sin tutoría'
+offer.tutors_warning.show: 'Ver los grupos'
+offer.tutors_warning.hide: 'Ocultar'
+offer.tutors_warning.help: 'Sin tutor o tutora, nadie ve los partes y las notas del grupo como tutoría. Pulsa un grupo para abrir su configuración y asignarla.'
 
 
 # Partes de convivencia

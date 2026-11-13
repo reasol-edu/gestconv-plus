@@ -89,6 +89,13 @@ class OfferTreeComponent extends AbstractController
     #[LiveProp]
     public string $confirmDeleteTeacherId = '';
 
+    /**
+     * Si el aviso de «grupos sin tutoría» está desplegado. Es estado del componente (no un <details> del navegador)
+     * porque cada repintado del fragmento lo cerraría.
+     */
+    #[LiveProp(writable: true)]
+    public bool $tutorWarningOpen = false;
+
     public function __construct(
         private readonly GroupTeacherRemover $remover,
         private readonly EntityManagerInterface $em,
@@ -101,15 +108,62 @@ class OfferTreeComponent extends AbstractController
         private readonly GroupColorPalette $colorPalette,
     ) {}
 
-    public function mount(EducationalCentre $centre): void
+    /**
+     * @param string $openGroup Grupo que se abre al montar (viene del enlace `?grupo=` del aviso de grupos sin tutoría)
+     */
+    public function mount(EducationalCentre $centre, string $openGroup = ''): void
     {
         $this->denyAccessUnlessGranted(EducationalCentreVoter::SECTION, $centre);
         $this->centre = $centre;
+
+        if ($openGroup !== '') {
+            $this->preselectGroup($openGroup);
+        }
     }
 
     public function canWrite(): bool
     {
         return !$this->tenantContext->isViewingNonActiveYear($this->centre);
+    }
+
+    /**
+     * Los grupos del curso sin ningún tutor/a, para el aviso. Solo cuando se está viendo el curso activo: en uno
+     * pasado no se puede configurar nada, así que avisar no sirve de nada.
+     *
+     * @return list<Group>
+     */
+    public function getGroupsWithoutTutor(): array
+    {
+        $year = $this->tenantContext->getViewYear($this->centre);
+        if ($year === null || !$this->canWrite()) {
+            return [];
+        }
+
+        return $this->groups->findWithoutTutor($year);
+    }
+
+    #[LiveAction]
+    public function toggleTutorWarning(): void
+    {
+        $this->tutorWarningOpen = !$this->tutorWarningOpen;
+    }
+
+    /** Abre el grupo indicado si existe y es del curso que se está viendo; si no, lo ignora (el id viene de la URL). */
+    private function preselectGroup(string $id): void
+    {
+        $year = $this->tenantContext->getViewYear($this->centre);
+        if ($year === null || !Uuid::isValid($id)) {
+            return;
+        }
+
+        $group = $this->groups->findByIdAndCentre($id, $this->centre);
+        if ($group === null || $group->getCourse()->getAcademicYear()->getId()->toRfc4122() !== $year->getId()->toRfc4122()) {
+            return;
+        }
+
+        $this->courseId = $group->getCourse()->getId()->toRfc4122();
+        $this->groupId  = $group->getId()->toRfc4122();
+        $this->loadDetail();
     }
 
     // ── Column data ──────────────────────────────────────────────────────────
