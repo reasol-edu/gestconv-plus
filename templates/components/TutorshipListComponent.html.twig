@@ -32,7 +32,7 @@
                     data-live-action-param="resetPage"
                     class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
                            focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20
-                           transition-colors shrink-0">
+                           transition-colors shrink-0 w-full sm:w-auto">
                 <option value="">{{ 'tutorship.filter.all_groups'|trans({}, 'admin') }}</option>
                 {% for group in availableGroups %}
                     <option value="{{ group.id.toRfc4122 }}" {{ groupId == group.id.toRfc4122 ? 'selected' : '' }}>

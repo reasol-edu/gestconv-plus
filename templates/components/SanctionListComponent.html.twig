@@ -24,7 +24,7 @@
 
         {# Vigentes hoy #}
         <button data-action="live#action" data-live-action-param="toggleEffectiveToday"
-                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0 grow justify-center sm:grow-0
                        {{ effectiveToday ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
             {{ ux_icon('heroicons:calendar-days', {class: 'h-3.5 w-3.5'}) }}
             {{ 'sanction.filter.effective_today'|trans({}, 'admin') }}
@@ -32,7 +32,7 @@
 
         {# Pendientes de notificar #}
         <button data-action="live#action" data-live-action-param="togglePendingOnly"
-                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0 grow justify-center sm:grow-0
                        {{ pendingOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
             {{ ux_icon('heroicons:bell-alert', {class: 'h-3.5 w-3.5'}) }}
             {{ 'sanction.filter.pending_notification'|trans({}, 'admin') }}
@@ -41,7 +41,7 @@
         {# Con materias sin cumplimentar #}
         {% if feature_enabled('sanction_tasks') %}
         <button data-action="live#action" data-live-action-param="togglePendingTasksOnly"
-                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0 grow justify-center sm:grow-0
                        {{ pendingTasksOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
             {{ ux_icon('heroicons:clipboard-document-list', {class: 'h-3.5 w-3.5'}) }}
             {{ 'sanction.filter.pending_tasks'|trans({}, 'admin') }}
@@ -50,7 +50,7 @@
 
         {# Pendientes de registrar en Séneca #}
         <button data-action="live#action" data-live-action-param="togglePendingSenecaOnly"
-                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0 grow justify-center sm:grow-0
                        {{ pendingSenecaOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
             {{ ux_icon('heroicons:arrow-up-tray', {class: 'h-3.5 w-3.5'}) }}
             {{ 'sanction.filter.pending_seneca'|trans({}, 'admin') }}

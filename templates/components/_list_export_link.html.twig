@@ -1,6 +1,6 @@
 {# Enlace «Exportar a Excel» de un listado: `url` ya lleva los filtros que tiene puestos la pantalla. #}
 <a href="{{ url }}" data-export-link
-   class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600
+   class="inline-flex shrink-0 grow items-center justify-center gap-1.5 sm:ml-auto sm:grow-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600
           hover:bg-gray-50 hover:text-forest-700 transition-colors">
     {{ ux_icon('heroicons:table-cells', {class: 'h-3.5 w-3.5'}) }}
     {{ 'list_export.xlsx'|trans({}, 'admin') }}

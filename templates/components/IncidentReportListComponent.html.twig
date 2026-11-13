@@ -35,7 +35,7 @@
                         data-action="change->live#action"
                         data-live-action-param="resetPage"
                         class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
-                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0 min-w-[8rem]">
+                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0 min-w-[8rem] w-full sm:w-auto">
                     <option value="">{{ 'incident.filter.all'|trans({}, 'admin') }}</option>
                     {% for group in groups %}
                         <option value="{{ group.id.toRfc4122 }}"
@@ -51,7 +51,7 @@
                     data-action="change->live#action"
                     data-live-action-param="resetPage"
                     class="rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700
-                           focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0">
+                           focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors shrink-0 w-full sm:w-auto">
                 <option value="">{{ 'incident.filter.all'|trans({}, 'admin') }}</option>
                 <option value="1" {{ serious == '1' ? 'selected' : '' }}>{{ 'incident.filter.serious'|trans({}, 'admin') }}</option>
                 <option value="0" {{ serious == '0' ? 'selected' : '' }}>{{ 'behavior.badge.contrary'|trans({}, 'admin') }}</option>
@@ -80,7 +80,7 @@
 
             {# Solo mis partes #}
             <button data-action="live#action" data-live-action-param="toggleOwnOnly"
-                    class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0
+                    class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors shrink-0 grow justify-center sm:grow-0
                            {{ ownOnly ? 'border-forest-300 bg-forest-50 text-forest-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50' }}">
                 {{ ux_icon('heroicons:user', {class: 'h-3.5 w-3.5'}) }}
                 {{ 'incident.filter.own_only'|trans({}, 'admin') }}
