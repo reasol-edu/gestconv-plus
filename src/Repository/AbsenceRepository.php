@@ -55,6 +55,59 @@ class AbsenceRepository extends ServiceEntityRepository
     }
 
     /**
+     * Lo mismo que {@see findTeachersAbsentOn()} para varios días a la vez, con una sola consulta en vez de dos
+     * por día. La clave de cada entrada es el día en formato Y-m-d; los días sin ausencias llevan una lista vacía.
+     *
+     * @param list<\DateTimeImmutable> $days
+     *
+     * @return array<string, list<Teacher>>
+     */
+    public function findTeachersAbsentOnDays(AcademicYear $year, array $days): array
+    {
+        $result = [];
+        foreach ($days as $day) {
+            $result[$day->format('Y-m-d')] = [];
+        }
+        if ($days === []) {
+            return $result;
+        }
+
+        $first = min($days);
+        $last  = max($days);
+
+        // Una sola consulta: las ausencias del rango con su docente cargado, ya ordenadas por nombre.
+        /** @var list<Absence> $absences */
+        $absences = $this->createQueryBuilder('a')
+            ->addSelect('t')
+            ->join('a.teacher', 't')
+            ->where('a.academicYear = :year')
+            ->andWhere('a.hasSubstitute = false')
+            ->andWhere('a.startDate <= :last')
+            ->andWhere('a.endDate >= :first')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('first', $first, Types::DATE_IMMUTABLE)
+            ->setParameter('last', $last, Types::DATE_IMMUTABLE)
+            ->orderBy('t.name.lastName', 'ASC')
+            ->addOrderBy('t.name.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $seen = [];
+        foreach ($absences as $absence) {
+            $teacher = $absence->getTeacher();
+            foreach ($days as $day) {
+                $key = $day->format('Y-m-d');
+                if ($day >= $absence->getStartDate() && $day <= $absence->getEndDate() && !isset($seen[$key][$teacher->getId()->toRfc4122()])) {
+                    $seen[$key][$teacher->getId()->toRfc4122()] = true;
+                    $result[$key][]                              = $teacher;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * El profesorado ausente un día, sin las ausencias que tienen docente sustituto/a (están cubiertas).
      *
      * @return list<Teacher>

@@ -67,13 +67,16 @@ final class BoardUpcomingBuilder
             }
         }
 
+        // Una sola pasada para todos los días (antes, dos consultas por cada día mostrado).
+        $absentByDay = $showAbsences ? $this->absences->findTeachersAbsentOnDays($year, $days) : [];
+
         $result = [];
         foreach ($this->boardBuilder->build($sanctionItems, $days) as $entry) {
             $key      = $entry['day']->format('Y-m-d');
             $result[] = new BoardUpcomingDay(
                 $entry['day'],
                 $entry['groups'],
-                $showAbsences ? $this->absences->findTeachersAbsentOn($year, $entry['day']) : [],
+                $absentByDay[$key] ?? [],
                 $eventsByDay[$key] ?? [],
             );
         }

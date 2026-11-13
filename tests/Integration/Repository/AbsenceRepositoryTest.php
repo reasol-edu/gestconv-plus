@@ -88,6 +88,31 @@ class AbsenceRepositoryTest extends RepositoryTestCase
         );
     }
 
+    public function testAbsentTeachersForSeveralDaysMatchTheOneDayQueryForEachDay(): void
+    {
+        $year = $this->makeYear();
+        $ana  = $this->makeAbsence($year, $this->makeTeacher('ana.multi'), '2026-01-12', '2026-01-14');
+        $luis = $this->makeAbsence($year, $this->makeTeacher('luis.multi'), '2026-01-14', '2026-01-14');
+        $this->makeAbsence($year, $this->makeTeacher('cubierta.multi'), '2026-01-12', '2026-01-16')->setHasSubstitute(true);
+        $this->makeAbsence($this->makeYear(), $this->makeTeacher('otro.curso.multi'), '2026-01-12', '2026-01-16');
+        $this->flush();
+
+        $days = array_map(static fn (string $d): \DateTimeImmutable => new \DateTimeImmutable($d), ['2026-01-11', '2026-01-12', '2026-01-13', '2026-01-14', '2026-01-15']);
+        $ids  = static fn (array $teachers): array => array_map(static fn (Teacher $t): string => $t->getId()->toRfc4122(), $teachers);
+
+        $byDay = $this->repo->findTeachersAbsentOnDays($year, $days);
+
+        self::assertSame(['2026-01-11', '2026-01-12', '2026-01-13', '2026-01-14', '2026-01-15'], array_keys($byDay));
+        foreach ($days as $day) {
+            self::assertSame($ids($this->repo->findTeachersAbsentOn($year, $day)), $ids($byDay[$day->format('Y-m-d')]), $day->format('Y-m-d'));
+        }
+        self::assertSame([], $byDay['2026-01-11'], 'Un día sin ausencias lleva lista vacía.');
+        self::assertCount(2, $byDay['2026-01-14']);
+        self::assertSame([], $this->repo->findTeachersAbsentOnDays($year, []));
+        self::assertNotNull($ana);
+        self::assertNotNull($luis);
+    }
+
     public function testCreateFilteredQueryIgnoresInvalidDates(): void
     {
         $year = $this->makeYear();
