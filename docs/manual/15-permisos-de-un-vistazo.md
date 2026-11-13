@@ -242,3 +242,15 @@ aparte de los docentes y con los centros a los que pertenece cada una.
   entre todos ellos, solo el **tutor/a del grupo** puede además **editar** esos datos de contacto.
 - La sección [Mi tutoría](04-convivencia-profesorado.md#mi-tutoria) del menú lateral solo es visible
   para quien sea **tutor/a de al menos un grupo** en el curso académico visualizado.
+- El botón **Exportar a Excel** de los listados de [partes, sanciones, notas, notificaciones y Mi
+  tutoría](03-usar-la-aplicacion.md#exportar-un-listado-a-excel) está disponible para quien puede ver
+  ese listado, y la hoja contiene **solo las filas que ese perfil ve en pantalla** y sus mismas columnas
+  (sin datos de contacto). La exportación de Mi tutoría exige ser tutor/a de algún grupo; la de notas,
+  tener activada la sección Notas.
+- El **informe en PDF del estudiante** ([ficha](04-convivencia-profesorado.md#informe-de-convivencia-del-estudiante))
+  puede generarlo cualquiera que pueda abrir esa ficha, pero cada docente obtiene únicamente los partes y
+  sanciones que ya puede ver; los datos de contacto de la familia solo salen para quien los ve en la ficha.
+- Los **avisos push** ([Avisos push al móvil](13-administrar-la-plataforma.md#avisos-push-al-movil)) los activa
+  cada docente en su dispositivo, si el servidor tiene claves VAPID, y solo recibe los suyos (salidas que él
+  autorizó, sus tareas de sanción y los partes que le corresponde notificar).
+- La **búsqueda por número** (`#123`) solo devuelve el parte si el docente tiene permiso para verlo.

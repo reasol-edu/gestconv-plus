@@ -157,9 +157,13 @@ class PushControllerTest extends ControllerTestCase
         $this->client->request('GET', '/perfil/ajustes');
         self::assertSelectorExists('[data-controller="push"][data-push-public-key-value="BClavePublicaDePrueba"]');
 
+        // Con push configurado, cerrar sesión también da de baja el dispositivo (equipos compartidos).
+        self::assertSelectorExists('a[data-action="click->draft-clear#purge"][data-draft-clear-push-url-value$="/push/suscripcion"][data-draft-clear-push-csrf-value]');
+
         RecordingPushDispatcher::$configured = false;
         $this->client->request('GET', '/perfil/ajustes');
         self::assertSelectorNotExists('[data-controller="push"]');
+        self::assertSelectorNotExists('a[data-draft-clear-push-url-value]');
     }
 
     // ── el service worker ─────────────────────────────────────────────────────

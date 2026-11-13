@@ -26,7 +26,7 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
   <span class="num">2</span>
   <div class="text">
     <p><strong>Estudiante</strong>: busca por nombre o NIE, o usa la <strong>selección rápida</strong> de grupos. Puedes elegir a varios: se registra una nota para cada uno.</p>
-    <img src="img/registrar-nota-2.png" alt="Selector de estudiante">
+    <img src="img/registrar-nota-2.png" alt="Selector de estudiantes con la búsqueda abierta">
   </div>
 </div>
 

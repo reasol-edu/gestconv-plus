@@ -215,6 +215,43 @@ class DailyNoteRepository extends ServiceEntityRepository
         return $counts;
     }
 
+    /**
+     * Notas activas de varios estudiantes en el curso, agrupadas por estudiante y tipo, en una sola consulta.
+     *
+     * @param  list<Student> $students
+     * @return array<string, array<string, int>> número de notas por id (RFC 4122) de estudiante y de tipo; lo que no tiene notas no aparece
+     */
+    public function countActiveByStudentsGroupedByType(array $students, AcademicYear $year): array
+    {
+        if ($students === []) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('n')
+            ->select('st.id AS studentId', 't.id AS typeId', 'COUNT(n.id) AS total')
+            ->join('n.type', 't')
+            ->join('n.student', 'st')
+            ->where('n.academicYear = :year')
+            ->andWhere('n.active = true')
+            ->groupBy('st.id', 't.id')
+            ->setParameter('year', $year->getId(), 'uuid');
+        $placeholders = [];
+        foreach ($students as $i => $student) {
+            $placeholders[] = ":st{$i}";
+            $qb->setParameter("st{$i}", $student->getId(), 'uuid');
+        }
+
+        /** @var list<array{studentId: Uuid, typeId: Uuid, total: int|string}> $rows */
+        $rows = $qb->andWhere('st.id IN (' . implode(', ', $placeholders) . ')')->getQuery()->getResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[$row['studentId']->toRfc4122()][$row['typeId']->toRfc4122()] = (int) $row['total'];
+        }
+
+        return $counts;
+    }
+
     public function countByType(DailyNoteType $type): int
     {
         return (int) $this->createQueryBuilder('n')

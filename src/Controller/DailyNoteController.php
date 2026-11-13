@@ -102,21 +102,9 @@ class DailyNoteController extends AbstractController
             [$request->query->getString('studentId')],
             explode(',', $request->query->getString('studentIds')),
         ));
-        $students = [];
-        foreach (array_slice(array_values(array_unique($rawIds)), 0, self::MAX_STUDENTS_PER_FORM) as $rawId) {
-            $student = $this->students->findById($rawId);
-            if ($student !== null && $this->students->belongsToCentre($student, $centre)) {
-                $students[] = $student;
-            }
-        }
-
-        // Una consulta por estudiante (no una por estudiante y tipo).
-        $countsByStudent = [];
-        if ($year !== null) {
-            foreach ($students as $student) {
-                $countsByStudent[] = $this->notes->countActiveByStudentGroupedByType($student, $year);
-            }
-        }
+        // Una consulta para todos los estudiantes y otra para todos los recuentos (no una por estudiante).
+        $students        = $this->students->findByIdsInCentre(array_slice(array_values(array_unique($rawIds)), 0, self::MAX_STUDENTS_PER_FORM), $centre);
+        $countsByStudent = $year !== null ? array_values($this->notes->countActiveByStudentsGroupedByType($students, $year)) : [];
 
         $types = [];
         foreach ($this->types->findByCentreActive($centre) as $type) {
@@ -237,13 +225,21 @@ class DailyNoteController extends AbstractController
             /** @var list<array{0: Student, 1: Group}> $targets */
             $targets = [];
             $seen    = [];
+            // Una consulta para todos los estudiantes (con sus grupos cargados) y una por grupo distinto, no una por par.
+            $pairs = array_slice($pairs, 0, self::MAX_STUDENTS_PER_FORM + 1);
+            $studentsById = [];
+            foreach ($this->students->findByIdsInCentre(array_map(static fn (string $p): string => explode('::', $p, 2)[0], $pairs), $centre) as $found) {
+                $studentsById[$found->getId()->toRfc4122()] = $found;
+            }
+            /** @var array<string, Group|null> $groupsById */
+            $groupsById = [];
             foreach ($pairs as $pair) {
                 $parts = explode('::', $pair, 2);
                 if (count($parts) !== 2) {
                     continue;
                 }
-                $student = $this->students->findById($parts[0]);
-                $group   = $this->groups->findByIdAndCentre($parts[1], $centre);
+                $student = $studentsById[strtolower($parts[0])] ?? null;
+                $group   = $groupsById[$parts[1]] ??= $this->groups->findByIdAndCentre($parts[1], $centre);
                 if ($student === null || $group === null || !$student->getGroups()->contains($group)) {
                     continue;
                 }
@@ -346,7 +342,7 @@ class DailyNoteController extends AbstractController
 
         $this->denyAccessUnlessGranted(DailyNoteVoter::VIEW, $note);
 
-        return $this->render('daily_note/created.html.twig', ['entries' => [$this->createdEntry($note)]]);
+        return $this->render('daily_note/created.html.twig', ['entries' => $this->createdEntries([$note])]);
     }
 
     /** Resumen tras registrar la misma nota para varios estudiantes: solo se muestran las que el docente puede ver. */
@@ -355,26 +351,49 @@ class DailyNoteController extends AbstractController
     {
         $ids = array_slice(array_filter(explode(',', $request->query->getString('ids'))), 0, self::MAX_STUDENTS_PER_FORM);
 
-        $entries = [];
+        $visible = [];
         foreach ($this->notes->findByIds($ids) as $note) {
             if ($this->isGranted(DailyNoteVoter::VIEW, $note)) {
-                $entries[] = $this->createdEntry($note);
+                $visible[] = $note;
             }
         }
-        if ($entries === []) {
+        if ($visible === []) {
             throw $this->createNotFoundException();
         }
 
-        return $this->render('daily_note/created.html.twig', ['entries' => $entries]);
+        return $this->render('daily_note/created.html.twig', ['entries' => $this->createdEntries($visible)]);
     }
 
-    /** @return array{note: DailyNote, count: int} */
-    private function createdEntry(DailyNote $note): array
+    /**
+     * Cada nota con cuántas notas activas lleva su estudiante de ese tipo. Un recuento agrupado por curso (no uno
+     * por nota): la pantalla con 50 estudiantes hace las mismas consultas que con uno.
+     *
+     * @param  list<DailyNote> $notes
+     * @return list<array{note: DailyNote, count: int}>
+     */
+    private function createdEntries(array $notes): array
     {
-        return [
-            'note'  => $note,
-            'count' => $this->notes->countActiveByStudentAndType($note->getStudent(), $note->getType(), $note->getAcademicYear()),
-        ];
+        /** @var array<string, array{year: AcademicYear, students: array<string, Student>}> $byYear */
+        $byYear = [];
+        foreach ($notes as $note) {
+            $yearId = $note->getAcademicYear()->getId()->toRfc4122();
+            $byYear[$yearId] ??= ['year' => $note->getAcademicYear(), 'students' => []];
+            $byYear[$yearId]['students'][$note->getStudent()->getId()->toRfc4122()] = $note->getStudent();
+        }
+        $counts = [];
+        foreach ($byYear as $yearId => $group) {
+            $counts[$yearId] = $this->notes->countActiveByStudentsGroupedByType(array_values($group['students']), $group['year']);
+        }
+
+        $entries = [];
+        foreach ($notes as $note) {
+            $entries[] = [
+                'note'  => $note,
+                'count' => $counts[$note->getAcademicYear()->getId()->toRfc4122()][$note->getStudent()->getId()->toRfc4122()][$note->getType()->getId()->toRfc4122()] ?? 0,
+            ];
+        }
+
+        return $entries;
     }
 
     #[Route('/{id}/editar', name: 'app_daily_notes_edit', methods: ['GET', 'POST'])]

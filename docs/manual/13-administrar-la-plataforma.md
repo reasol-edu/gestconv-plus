@@ -814,7 +814,10 @@ Los avisos que se envían, a quien tenga el dispositivo suscrito, son:
 
 **Cómo lo activa cada docente.** En **Perfil › Ajustes** aparece la tarjeta **Avisos en este dispositivo**, con
 **Activar avisos**, **Enviar aviso de prueba** y **Desactivar avisos**. La activación es de cada dispositivo y
-es el consentimiento: quien no la activa no recibe nada. En **iPhone o iPad** solo funciona si antes se ha
+es el consentimiento: quien no la activa no recibe nada. Al **cerrar sesión** con el botón de la aplicación,
+el dispositivo se da de baja de los avisos (en un equipo compartido, la siguiente persona no vería en la pantalla
+de bloqueo avisos con nombres de estudiantes); quien los use en su móvil personal vuelve a activarlos desde
+Perfil › Ajustes al entrar de nuevo. En **iPhone o iPad** solo funciona si antes se ha
 añadido la aplicación a la pantalla de inicio (ver [La aplicación en el móvil](03-usar-la-aplicacion.md#la-aplicacion-en-el-movil)).
 
 **Seguridad y privacidad.** El texto de cada aviso es breve (nombre del estudiante y minutos, o un número de

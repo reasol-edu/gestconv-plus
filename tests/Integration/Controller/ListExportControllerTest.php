@@ -106,6 +106,52 @@ class ListExportControllerTest extends ControllerTestCase
         self::assertNotNull($one);
     }
 
+    /** Cada exportación hace las mismas consultas con 11 filas que con una (sin N+1 por fila). */
+    public function testExportQueryCountsDoNotGrowWithTheNumberOfRows(): void
+    {
+        $w    = $this->world();
+        $type = (new DailyNoteType())->setEducationalCentre($w['centre'])->setName('Retraso')->setPosition(0);
+        $this->persist($type);
+        $ref = [
+            'admin' => $w['admin']->getId(), 'author' => $w['author']->getId(), 'group' => $w['group']->getId(), 'year' => $w['year']->getId(),
+            'behavior' => $w['behavior']->getId(), 'type' => $type->getId(), 'centre' => $w['centre']->getId(),
+        ];
+        $this->makeReport($w, $w['author'], 'Parte 0');
+        $this->makeSanction($w, false);
+        $this->persist((new DailyNote())->setAcademicYear($w['year'])->setStudent($w['student'])->setGroup($w['group'])->setType($type)->setRegisteredBy($w['author']));
+        $this->loginAs($w['admin'], $w['centre']);
+
+        $urls = ['/exportar/partes', '/exportar/sanciones', '/exportar/notas', '/exportar/notificaciones'];
+        $one  = [];
+        foreach ($urls as $url) {
+            $one[$url] = $this->countQueries($url);
+        }
+
+        $author   = $this->em->find(Teacher::class, $ref['author']);
+        $admin    = $this->em->find(Teacher::class, $ref['admin']);
+        $group    = $this->em->find(Group::class, $ref['group']);
+        $year     = $this->em->find(AcademicYear::class, $ref['year']);
+        $behavior = $this->em->find(IncidentBehavior::class, $ref['behavior']);
+        $noteType = $this->em->find(DailyNoteType::class, $ref['type']);
+        for ($i = 0; $i < 10; ++$i) {
+            $student = (new Student(new PersonName('Extra' . $i, 'Alumno')))->setStudentId('NIE-X-' . $i . uniqid('', false));
+            $student->addGroup($group);
+            $this->persist($student);
+            $report = (new IncidentReport())->setAcademicYear($year)->setNumber(100 + $i)->setStudent($student)->setGroup($group)->setRegisteredBy($author)
+                ->setOccurredAt(new \DateTimeImmutable())->setDescription('x')->setExpelledFromClass(false);
+            $report->addBehavior($behavior);
+            $this->persist(
+                $report,
+                (new Sanction())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setRegisteredBy($admin)->setDetails('d')->setNoMeasureApplied(true),
+                (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($noteType)->setRegisteredBy($author),
+            );
+        }
+
+        foreach ($urls as $url) {
+            self::assertLessThanOrEqual($one[$url], $this->countQueries($url), $url . ' hace consultas por fila.');
+        }
+    }
+
     public function testNoteExportIsNotFoundWhenTheNotesSectionIsDisabled(): void
     {
         $w          = $this->world();

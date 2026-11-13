@@ -195,7 +195,8 @@ en **Perfil › Ajustes** verás la tarjeta **Avisos en este dispositivo**. Puls
 permiso del navegador y usa **Enviar aviso de prueba** para comprobarlo. A partir de ahí recibirás una
 notificación cuando un estudiante que has dejado salir lleve más de 30 minutos fuera, cuando tengas tareas
 de sanción pendientes y cuando haya partes a punto de prescribir; al tocarla se abre la pantalla
-correspondiente. Cada dispositivo se activa por separado y puedes **Desactivar avisos** cuando quieras. En
+correspondiente. Cada dispositivo se activa por separado, puedes **Desactivar avisos** cuando quieras, y al **cerrar sesión**
+con el botón de la aplicación el dispositivo se da de baja solo (hay que volver a activarlos al entrar). En
 iPhone o iPad, primero hay que añadir la aplicación a la pantalla de inicio (pasos de arriba) y activar los
 avisos desde esa aplicación instalada.
 

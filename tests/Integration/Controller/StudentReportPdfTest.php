@@ -187,6 +187,48 @@ class StudentReportPdfTest extends ControllerTestCase
         self::assertSame($old->getId()->toRfc4122(), $upTo->reports[0]->getId()->toRfc4122());
     }
 
+    /** El informe y el resumen de antecedentes hacen las mismas consultas con 11 partes, notas y salidas que con uno. */
+    public function testReportAndContextQueryCountsDoNotGrowWithTheStudentsHistory(): void
+    {
+        $w    = $this->world();
+        $type = (new DailyNoteType())->setEducationalCentre($w['centre'])->setName('Retraso')->setPosition(0);
+        $reason = (new ExitReason())->setEducationalCentre($w['centre'])->setName('Servicio')->setPosition(0);
+        $this->persist($type, $reason);
+        $ids = ['author' => $w['author']->getId(), 'year' => $w['year']->getId(), 'group' => $w['group']->getId(), 'student' => $w['student']->getId(),
+                'behavior' => $w['behavior']->getId(), 'type' => $type->getId(), 'reason' => $reason->getId()];
+        $this->makeReport($w, $w['author'], 'Parte 0');
+        $this->loginAs($w['admin'], $w['centre']);
+        $sid = $w['student']->getId()->toRfc4122();
+
+        $urls = ['/alumnado/' . $sid . '/informe', '/partes/contexto-alumno/' . $sid];
+        $one  = [];
+        foreach ($urls as $url) {
+            $one[$url] = $this->countQueries($url);
+        }
+
+        $author = $this->em->find(Teacher::class, $ids['author']);
+        $year   = $this->em->find(\App\Entity\AcademicYear::class, $ids['year']);
+        $group  = $this->em->find(\App\Entity\Group::class, $ids['group']);
+        $student = $this->em->find(\App\Entity\Student::class, $ids['student']);
+        $behavior = $this->em->find(\App\Entity\IncidentBehavior::class, $ids['behavior']);
+        $noteType = $this->em->find(DailyNoteType::class, $ids['type']);
+        $exitReason = $this->em->find(ExitReason::class, $ids['reason']);
+        for ($i = 0; $i < 10; ++$i) {
+            $report = (new IncidentReport())->setAcademicYear($year)->setNumber(200 + $i)->setStudent($student)->setGroup($group)->setRegisteredBy($author)
+                ->setOccurredAt(new \DateTimeImmutable())->setDescription('x')->setExpelledFromClass(false);
+            $report->addBehavior($behavior);
+            $this->persist(
+                $report,
+                (new DailyNote())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setType($noteType)->setRegisteredBy($author),
+                (new StudentExit())->setAcademicYear($year)->setStudent($student)->setGroup($group)->setReason($exitReason)->setAuthorizedBy($author),
+            );
+        }
+
+        foreach ($urls as $url) {
+            self::assertLessThanOrEqual($one[$url], $this->countQueries($url), $url . ' hace consultas por parte, nota o salida.');
+        }
+    }
+
     public function testNotesAndExitsAreOmittedWhenTheirSectionsAreDisabled(): void
     {
         $w = $this->world();

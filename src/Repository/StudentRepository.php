@@ -260,6 +260,42 @@ class StudentRepository extends ServiceEntityRepository
             ->getSingleScalarResult() > 0;
     }
 
+    /**
+     * Varios estudiantes por id en una sola consulta, solo los que pertenecen al centro (alguno de sus grupos es de
+     * un curso del centro), con todos sus grupos ya cargados. Los ids que no son UUID se ignoran. Evita una
+     * consulta por estudiante (`findById` + `belongsToCentre` + carga perezosa de los grupos) al procesar listas.
+     *
+     * @param  list<string> $ids
+     * @return list<Student>
+     */
+    public function findByIdsInCentre(array $ids, EducationalCentre $centre): array
+    {
+        $ids = array_values(array_unique(array_filter($ids, static fn (string $id): bool => Uuid::isValid($id))));
+        if ($ids === []) {
+            return [];
+        }
+
+        // Un alias filtra por centro y otro (sin filtrar) trae todos los grupos del estudiante.
+        $qb = $this->createQueryBuilder('s')
+            ->addSelect('g')
+            ->join('s.groups', 'fg')
+            ->join('fg.course', 'fc')
+            ->join('fc.academicYear', 'fay')
+            ->leftJoin('s.groups', 'g')
+            ->where('fay.educationalCentre = :centre')
+            ->setParameter('centre', $centre->getId(), 'uuid');
+        $placeholders = [];
+        foreach ($ids as $i => $id) {
+            $placeholders[] = ":sid{$i}";
+            $qb->setParameter("sid{$i}", $id, 'uuid');
+        }
+
+        /** @var list<Student> $result */
+        $result = $qb->andWhere('s.id IN (' . implode(', ', $placeholders) . ')')->getQuery()->getResult();
+
+        return $result;
+    }
+
     public function countByActiveYear(EducationalCentre $centre, ?Teacher $viewer = null, ?AcademicYear $year = null): int
     {
         $year ??= $centre->getActiveAcademicYear();

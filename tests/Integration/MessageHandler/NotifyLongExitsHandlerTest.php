@@ -107,13 +107,16 @@ class NotifyLongExitsHandlerTest extends RepositoryTestCase
 
     public function testTeachersWithoutSubscriptionsGetNothingButTheExitIsStillMarked(): void
     {
-        $w = $this->world('d');
-        $this->makeExit($w, '2026-10-14 09:00:00');
+        $w    = $this->world('d');
+        $exit = $this->makeExit($w, '2026-10-14 09:00:00');
         $this->em->flush();
+        $id = $exit->getId()->toRfc4122();
 
         ($this->handler)(new NotifyLongExitsMessage());
 
         self::assertSame([], RecordingPushDispatcher::$sent);
+        $this->em->clear();
+        self::assertNotNull($this->reload($id)->getLongNoticeSentAt(), 'Se marca igualmente: no se reenvía si luego se suscribe.');
     }
 
     public function testSkipsCentresWithTheExitsSectionDisabled(): void

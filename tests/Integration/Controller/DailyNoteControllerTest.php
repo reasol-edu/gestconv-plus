@@ -223,6 +223,40 @@ class DailyNoteControllerTest extends ControllerTestCase
         self::assertFalse($flag('studentIds=' . $without));
     }
 
+    /** El estado de tipos y el resumen de notas hacen las mismas consultas con 12 estudiantes que con uno (sin N+1). */
+    public function testTypeStatusAndCreatedManyQueryCountDoNotGrowWithTheNumberOfStudents(): void
+    {
+        [$teacher, $centre, $group, $student, $type] = $this->makeScenario(2);
+        $ids = ['teacher' => $teacher->getId(), 'centre' => $centre->getId(), 'group' => $group->getId(), 'type' => $type->getId()];
+        $first = $this->makeNote($centre, $student, $group, $type, $teacher);
+        $this->persist($first);
+        $studentIds = [$student->getId()->toRfc4122()];
+        $noteIds    = [$first->getId()->toRfc4122()];
+        $this->loginAs($teacher, $centre);
+
+        $statusUrl = static fn (array $studentIds): string => '/notas/estado-tipos?studentIds=' . implode(',', $studentIds);
+        $manyUrl   = static fn (array $noteIds): string => '/notas/creadas?ids=' . implode(',', $noteIds);
+        $statusOne = $this->countQueries($statusUrl($studentIds));
+        $manyOne   = $this->countQueries($manyUrl($noteIds));
+
+        $teacherRef = $this->em->find(Teacher::class, $ids['teacher']);
+        $groupRef   = $this->em->find(Group::class, $ids['group']);
+        $typeRef    = $this->em->find(DailyNoteType::class, $ids['type']);
+        $centreRef  = $this->em->find(EducationalCentre::class, $ids['centre']);
+        for ($i = 0; $i < 11; ++$i) {
+            $extra = (new Student(new PersonName('Extra' . $i, 'Alumno')))->setStudentId('NIE-N1-' . $i . uniqid('', false));
+            $extra->addGroup($groupRef);
+            $this->persist($extra);
+            $note = $this->makeNote($centreRef, $extra, $groupRef, $typeRef, $teacherRef);
+            $this->persist($note);
+            $studentIds[] = $extra->getId()->toRfc4122();
+            $noteIds[]    = $note->getId()->toRfc4122();
+        }
+
+        self::assertLessThanOrEqual($statusOne, $this->countQueries($statusUrl($studentIds)), '/notas/estado-tipos hace consultas por estudiante.');
+        self::assertLessThanOrEqual($manyOne, $this->countQueries($manyUrl($noteIds)), '/notas/creadas hace consultas por nota.');
+    }
+
     public function testFormOffersQuickSelectionByDefault(): void
     {
         [$teacher, $centre] = $this->makeScenario();
