@@ -17,6 +17,13 @@ parameters:
     # siguen guardándose en UTC; ver App\Doctrine\Type\UtcDateTimeImmutableType. Se cambia con APP_TIMEZONE.
     env(APP_TIMEZONE):          "Europe/Madrid"
     app.timezone:               "%env(APP_TIMEZONE)%"
+    # Carpeta de las copias de seguridad guardadas en el servidor. Tiene que ser una carpeta que sobreviva a las
+    # actualizaciones (en Docker, var/ es un volumen; en el binario nativo se apunta a data/backups con APP_BACKUP_DIR).
+    env(APP_BACKUP_DIR):        "%kernel.project_dir%/var/backups"
+    app.backup_dir:             "%env(APP_BACKUP_DIR)%"
+    # Estado de una restauración (bloqueo, resultado y hora de la última): ficheros, no base de datos, porque es la base de
+    # datos lo que se sustituye. Debe ser común a todos los procesos de la aplicación (web, consola y worker).
+    app.restore_state_dir:      "%kernel.project_dir%/var/restore"
     # Tiempo mínimo (en microsegundos) que tarda la rama POST de la solicitud
     # de restablecimiento de contraseña. Iguala las dos ramas (usuario existe /
     # no existe) para que el envío síncrono del correo no permita enumerar

@@ -6,12 +6,20 @@ when@test:
         # En tests se desactiva el padding anti-timing del reset de contraseña
         # para no añadir ~900 ms a cada POST a /contrasena/recuperar.
         app.password_reset.request_min_duration_us: 0
+        # El estado de las restauraciones y las copias guardadas, en la carpeta de caché de pruebas: un test que falle no deja
+        # un bloqueo que ponga en 503 a los siguientes (ControllerTestCase y RepositoryTestCase la vacían al terminar).
+        app.restore_state_dir: '%kernel.cache_dir%/restore-state'
+        app.backup_dir: '%kernel.cache_dir%/backups'
 
     services:
         # Los avisos push no salen a la red en los tests: se anotan en memoria (ver RecordingPushDispatcher).
         App\Tests\Support\RecordingPushDispatcher:
             public: true
         App\Service\Push\PushDispatcherInterface: '@App\Tests\Support\RecordingPushDispatcher'
+        # La restauración desde la web no lanza procesos reales en los tests: se anota (ver RecordingRestoreLauncher).
+        App\Tests\Support\RecordingRestoreLauncher:
+            public: true
+        App\Service\Backup\RestoreLauncher: '@App\Tests\Support\RecordingRestoreLauncher'
         # La consulta de la última versión no sale a la red en los tests (ver ReleaseHttpClient).
         App\Tests\Support\ReleaseHttpClient:
             public: true

@@ -735,7 +735,9 @@ Qué incluye cada una:
 
 Lo único imprescindible de respaldar es la **base de datos**: contiene todos los partes,
 sanciones, comunicaciones, estudiantes y ajustes. La carpeta `data/var` (caché, logs y sesiones)
-se regenera sola y no necesita copia. Los adjuntos de las incidencias y de las actividades, y las
+se regenera sola y no necesita copia, **salvo la subcarpeta de copias** (`var/backups`) si guardas
+copias en el servidor: ahí sí hay que cuidar que sobreviva a las actualizaciones (ver
+[Carpeta de copias del servidor](#carpeta-de-copias)). Los adjuntos de las incidencias y de las actividades, y las
 plantillas PDF de los informes, también están en la base de datos.
 
 ### Copia desde el panel de administración {#copia-desde-el-panel}
@@ -757,23 +759,71 @@ correos pendientes y el registro interno de migraciones. Cada descarga se anota 
 También se puede generar desde la línea de órdenes, por ejemplo con una tarea programada:
 
 ```bash
-php bin/console app:backup:create                      # var/backups/gestconv-copia-AAAAMMDD-HHMMSS.zip
+php bin/console app:backup:create                      # gestconv-copia-AAAAMMDD-HHMMSS.zip en la carpeta de copias
 php bin/console app:backup:create -o /ruta/copia.zip   # en la ruta indicada
 ```
 
 (En Docker, `docker compose exec app php bin/console …`; en el binario nativo,
 `./frankenphp php-cli bin/console …`.)
 
-**Restaurar** se hace solo desde la línea de órdenes, porque **sustituye todos los datos** de la base de
-datos actual:
+#### Carpeta de copias del servidor {#carpeta-de-copias}
+
+El botón **Guardar en el servidor** (y la orden `app:backup:create` sin `-o`) deja la copia en la
+**carpeta de copias**: `var/backups` por defecto, o la que indique la variable de entorno
+`APP_BACKUP_DIR`. Tiene que ser una carpeta que **sobreviva a las actualizaciones**, o la copia que
+hagas antes de actualizar se perdería con ellas:
+
+- **Docker**: `var/` es un volumen (`./data/var`), así que `var/backups` ya persiste.
+- **Binario nativo**: los scripts de arranque usan `data/backups`, junto a la base de datos, fuera de la
+  carpeta `app/` que se sustituye al actualizar.
+- **Ubuntu Server y Plesk**: `var/backups` dentro de la instalación se conserva al actualizar; si prefieres
+  otra ubicación (otro disco, un recurso montado), define `APP_BACKUP_DIR`.
+
+#### Restaurar desde la web {#restaurar-desde-la-web}
+
+En la misma página, **Copias guardadas en el servidor** lista las copias de esa carpeta con su fecha,
+tamaño, versión y plataforma, y señala las que **no se pueden restaurar en esta base de datos** (y por
+qué). Las copias **no se suben desde el navegador**, a propósito: así no hay un fichero ajeno que pueda
+colarse en la base de datos ni límites de tamaño de subida que molesten. Para restaurar una copia hecha
+en otro servidor, déjala en la carpeta de copias (por SSH, por ejemplo).
+
+**Restaurar** abre una pantalla de revisión con los datos de la copia y lo que va a pasar. Para
+confirmar hay que escribir **tu contraseña** y la palabra **RESTAURAR**; una cuenta sin contraseña propia
+(la que accede por otro sistema) no puede confirmar desde la web y tiene que usar la consola. Si tu
+usuario **no figura en la copia**, la pantalla lo avisa: al terminar entrarás con las cuentas de la copia.
+
+Al confirmar:
+
+1. La aplicación se pone en **mantenimiento para todo el mundo**, también para quien restaura: durante
+   unos minutos todas las páginas muestran «Restaurando una copia de seguridad» y se recargan solas.
+   Este bloqueo está en un fichero (`var/restore/`), no en la base de datos, que es lo que se sustituye.
+2. Se guarda automáticamente una **copia de los datos actuales** (`gestconv-antes-de-restaurar-…`) en la
+   carpeta de copias, por si hay que volver atrás.
+3. Se restauran los datos en una sola transacción: si algo falla, **no se cambia nada**.
+4. Al terminar bien se **cierran todas las sesiones** (los usuarios de la copia pueden ser otros) y hay
+   que volver a iniciar sesión. La página **Copia de seguridad y versión** muestra el resultado de la
+   última restauración, y el servidor la anota en su registro (`var/log`), porque el registro de
+   actividad de la aplicación es una de las tablas que se sustituyen.
+
+La restauración la hace un proceso aparte, que sigue aunque cierres el navegador. Algunos hostings
+compartidos (Plesk) desactivan el lanzamiento de procesos: entonces la página lo indica y la
+restauración solo se puede hacer desde la consola.
+
+!!! note "Colas y tareas programadas"
+    Mientras dura la restauración, el *worker* de correos y las tareas programadas siguen funcionando.
+    En SQLite pueden hacer fallar la restauración (que se deshace sola y se puede repetir); en PostgreSQL
+    y MySQL podrían dejar algún registro nuevo. Si te preocupa, para el *worker* mientras restauras.
+
+#### Restaurar desde la consola {#restaurar-desde-la-consola}
 
 ```bash
 php bin/console app:backup:restore /ruta/copia.zip
 ```
 
 Muestra de qué versión y de cuándo es la copia y pide confirmación (`--force` para no pedirla, necesario
-en tareas sin interacción). La restauración se hace en una sola transacción: si algo falla, no se cambia
-nada. Antes de tocar nada comprueba que:
+en tareas sin interacción; `--previous-backup` guarda antes una copia de los datos actuales). Como en la
+web, pone la aplicación en mantenimiento mientras dura, la hace en una sola transacción y cierra las
+sesiones al terminar. Antes de tocar nada comprueba que:
 
 - la copia es de la **misma plataforma** de base de datos (no se puede pasar de SQLite a PostgreSQL con
   esta herramienta);
@@ -782,8 +832,15 @@ nada. Antes de tocar nada comprueba que:
   después de la forma habitual: las migraciones posteriores se aplican solas.
 
 Para restaurar en un servidor nuevo: instala la misma versión, arranca la aplicación una vez (crea el
-esquema) y ejecuta la orden. Las sesiones abiertas dejan de ser válidas: todo el mundo debe volver a
-entrar.
+esquema) y ejecuta la orden.
+
+**Si la aplicación se queda en «Restaurando…» sin que haya nada en marcha** (el proceso murió, se apagó
+el servidor), el bloqueo se da por abandonado solo cuando su proceso ya no existe o tras unas horas; para
+quitarlo ya:
+
+```bash
+php bin/console app:backup:restore --unlock
+```
 
 ### Despliegue con Docker (PostgreSQL)
 

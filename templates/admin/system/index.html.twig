@@ -54,9 +54,17 @@
             <p class="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-amber-800">
                 {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4 w-4 inline -mt-0.5 mr-1'}) }}{{ 'system.backup.warning'|trans({}, 'admin') }}
             </p>
-            <p>{{ 'system.backup.restore_help'|trans({}, 'admin') }}</p>
         </div>
-        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-end rounded-b-2xl">
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex flex-wrap items-center justify-end gap-2 rounded-b-2xl">
+            <form method="post" action="{{ path('app_admin_system_backup_save') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('system_backup_save') }}">
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                               hover:bg-gray-50 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:archive-box-arrow-down', {class: 'h-4 w-4'}) }}
+                    {{ 'system.backup.save'|trans({}, 'admin') }}
+                </button>
+            </form>
             <form method="post" action="{{ path('app_admin_system_backup') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('system_backup') }}">
                 <button type="submit"
@@ -67,6 +75,74 @@
                 </button>
             </form>
         </div>
+    </section>
+
+    {# ── Resultado de la última restauración ── #}
+    {% if last_restore %}
+        <section class="rounded-2xl border {{ last_restore.ok ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50' }} px-6 py-4 text-sm {{ last_restore.ok ? 'text-green-800' : 'text-red-800' }}">
+            <p class="font-medium">
+                {{ ux_icon(last_restore.ok ? 'heroicons:check-circle' : 'heroicons:x-circle', {class: 'h-4 w-4 inline -mt-0.5 mr-1'}) }}
+                {{ (last_restore.ok ? 'system.restore.last_ok' : 'system.restore.last_failed')|trans({'%date%': last_restore.at|date('d/m/Y H:i'), '%by%': last_restore.by, '%file%': last_restore.file}, 'admin') }}
+            </p>
+            {% if not last_restore.ok and last_restore.message is defined %}
+                <p class="mt-1 whitespace-pre-line">{{ last_restore.message }}</p>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    {# ── Copias guardadas en el servidor y restauración ── #}
+    <section class="rounded-2xl border border-gray-200 bg-white shadow-xs">
+        <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-100 text-forest-600">
+                {{ ux_icon('heroicons:arrow-uturn-left', {class: 'h-5 w-5'}) }}
+            </div>
+            <h2 class="text-base font-semibold text-gray-900">{{ 'system.copies.title'|trans({}, 'admin') }}</h2>
+        </div>
+        <div class="px-6 py-4 space-y-3 text-sm text-gray-600">
+            <p>{{ 'system.copies.description'|trans({'%dir%': backup_dir}, 'admin') }}</p>
+            {% if not can_restore %}
+                <p class="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-amber-800">{{ 'system.restore.unavailable'|trans({}, 'admin') }}</p>
+            {% endif %}
+        </div>
+
+        {% if copies is empty %}
+            <p class="px-6 pb-5 text-sm text-gray-400">{{ 'system.copies.empty'|trans({}, 'admin') }}</p>
+        {% else %}
+            <ul class="divide-y divide-gray-100 border-t border-gray-100">
+                {% for copy in copies %}
+                    <li class="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-4">
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-medium text-gray-900" title="{{ copy.name }}">{{ copy.name }}</p>
+                            <p class="text-xs text-gray-500">
+                                {{ copy.modifiedAt|date('d/m/Y H:i') }} · {{ (copy.size / 1048576)|number_format(1, ',', '.') }} MB
+                                {% if copy.manifest %}· GestConv+ {{ copy.manifest.appVersion }} · {{ copy.manifest.platform }}{% endif %}
+                            </p>
+                            {% if copy.problems is not empty %}
+                                <p class="mt-1 text-xs text-red-600">{{ copy.problems|join(' ') }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="flex shrink-0 items-center gap-2">
+                            {% if copy.restorable and can_restore %}
+                                <a href="{{ path('app_admin_system_restore', {name: copy.name}) }}"
+                                   class="inline-flex items-center gap-1 rounded-lg border border-forest-200 px-2.5 py-1.5 text-xs font-medium text-forest-700 hover:bg-forest-50 transition-colors">
+                                    {{ ux_icon('heroicons:arrow-uturn-left', {class: 'h-3.5 w-3.5'}) }}{{ 'system.copies.restore'|trans({}, 'admin') }}
+                                </a>
+                            {% endif %}
+                            <form method="post" action="{{ path('app_admin_system_backup_delete', {name: copy.name}) }}"
+                                  class="js-confirm-form" data-confirm="{{ 'system.copies.delete_confirm'|trans({'%name%': copy.name}, 'admin')|e('html_attr') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('system_backup_delete_' ~ copy.name) }}">
+                                <button type="submit"
+                                        class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
+                                    {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}{{ 'system.copies.delete'|trans({}, 'admin') }}
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500 rounded-b-2xl">{{ 'system.restore.console_hint'|trans({}, 'admin') }}</div>
     </section>
 
 </div>

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Restaurar una copia de seguridad desde el panel de administración.** La página «Copia de seguridad y versión» lista las copias guardadas en el servidor (botón nuevo **Guardar en el servidor**; carpeta `var/backups`, o `APP_BACKUP_DIR`, que en el binario nativo es `data/backups` para que sobreviva a las actualizaciones) y permite restaurar una: pantalla de revisión, confirmación con la contraseña de quien la pide y la palabra «RESTAURAR», y aviso si su usuario no figura en la copia. Las copias no se suben desde el navegador. Mientras dura, la aplicación responde con una página de mantenimiento a todo el mundo (bloqueo en ficheros, sin tocar la base de datos); antes se guarda una copia de los datos actuales, la restauración es una sola transacción (si falla no cambia nada) y al terminar se cierran todas las sesiones. Si el servidor no permite lanzar procesos, la restauración sigue disponible solo por consola.
+- `app:backup:restore` pone ahora la aplicación en mantenimiento mientras restaura, cierra las sesiones al terminar, admite `--previous-backup` y `--unlock` (quita un bloqueo atascado). `symfony/process` pasa a ser una dependencia directa.
+
 ## [1.32.0] - 2026-11-13
 
 ### Added

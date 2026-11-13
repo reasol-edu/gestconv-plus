@@ -23,7 +23,7 @@ class BackupCreateCommand extends Command
         private readonly DatabaseBackup $backup,
         private readonly ClockInterface $clock,
         private readonly TranslatorInterface $translator,
-        #[Autowire('%kernel.project_dir%/var/backups')]
+        #[Autowire('%app.backup_dir%')]
         private readonly string $defaultDir,
     ) {
         parent::__construct();
