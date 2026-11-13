@@ -28,7 +28,7 @@
                 <p class="mt-1 text-xs text-gray-400">{{ 'absence.locked_past_end_date'|trans({}, 'admin') }}</p>
             {% endif %}
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
             {% if is_granted('absence.edit', absence) and not is_viewing_past_year() %}
                 <a href="{{ path('app_absences_edit', {id: absence.id}) }}"
                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700

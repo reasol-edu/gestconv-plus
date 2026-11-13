@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Botones en el móvil.** Pasada de usabilidad por unas 180 pantallas con un móvil emulado (320–768 px): las filas de botones de las fichas de parte, estudiante, ausencia y sanción se salían de la pantalla (ahora pasan a la línea siguiente); las tablas de «Tareas de sanción» y «Ausencias» recortaban su última columna sin dejar llegar a ella (ahora se desplazan); el desplegable de los ajustes y el botón de «Nuevo personal no docente» desbordaban a 320 px; y en las copias de seguridad el nombre quedaba aplastado por los botones. En pantallas táctiles, los botones compactos miden al menos 40 px y los iconos y etiquetas pequeñas tienen una zona de pulsación mayor, sin cambiar su aspecto.
+
 ## [1.34.0] - 2026-11-13
 
 ### Added

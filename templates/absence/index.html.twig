@@ -53,6 +53,8 @@
             {% if absences is empty %}
                 <p class="px-6 py-8 text-sm text-gray-400 text-center">{{ 'absence.empty'|trans({}, 'admin') }}</p>
             {% else %}
+                {# Contenedor con desplazamiento: la tarjeta recorta lo que sobresale y, en móvil, las últimas columnas quedaban inalcanzables. #}
+                <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-gray-100 text-left">
@@ -87,6 +89,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             {% endif %}
         </div>
     {% endif %}

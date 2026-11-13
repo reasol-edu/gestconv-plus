@@ -687,6 +687,46 @@ select:not([multiple]):not([size]):not(.ts-hidden-accessible) {
     scrollbar-color: rgb(255 255 255 / 0.25) transparent;
 }
 
+/* ── Objetivos táctiles ─────────────────────────────────────────────────────────────────────────────────────────────
+   En pantallas táctiles (puntero «grueso») los controles pequeños, pensados para el ratón, se quedan en 16–30 px: difíciles de
+   acertar y fáciles de confundir con el de al lado. Dos reglas, para no tocar cientos de plantillas:
+   · Botones y enlaces con forma de botón y relleno compacto (py-1, py-1.5, py-2): altura mínima de 2.5 rem (40 px).
+   · Iconos y «píldoras» (p-0.5, p-1, p-1.5, py-0.5, h-6/7/8): su aspecto no cambia, pero se les amplía la zona que responde
+     al dedo con un ::after transparente (la auditoría scripts/audit-touch-targets.mjs lo reconoce).
+   La barra lateral (nav) queda fuera: ya tiene filas altas. */
+@media (pointer: coarse) {
+    /* Solo min-height, sin tocar `display`: un `hidden sm:inline-flex` (botón que solo se ve en pantallas anchas) volvería a verse. Un
+       enlace en línea puro no admite altura mínima (no cambia nada), pero sí uno que es elemento de un flex o de una rejilla. */
+    :is(button, a):is(.py-1, .py-1\.5, .py-2, .py-2\.5):not(nav *) {
+        min-height: 2.5rem;
+    }
+    summary:is(.py-2, .py-2\.5):not(nav *) {
+        min-height: 2.5rem;
+    }
+
+    /* Zona táctil ampliada, solo en vertical: hacia los lados, un ::after que sobresaliera aunque fueran unos píxeles del borde de la
+       pantalla (los iconos de la cabecera están pegados a él) ensancharía la página y la haría desplazarse en horizontal. */
+    :is(button, a):is(.p-0\.5, .p-1, .p-1\.5, .py-0\.5, .h-6, .h-7, .h-8, .h-9):not(nav *):not(.absolute, .fixed, .sticky, .relative),
+    main th > button:not(.absolute, .fixed, .sticky, .relative),
+    main button:has(> svg:only-child):not(.absolute, .fixed, .sticky, .relative),
+    main a.rounded-md:not([class*="p-"], [class*="px-"], [class*="py-"]):not(.absolute, .fixed, .sticky, .relative) {
+        position: relative;
+    }
+    :is(button, a):is(.p-0\.5, .p-1, .p-1\.5, .py-0\.5, .h-6, .h-7, .h-8, .h-9):not(nav *)::after,
+    main th > button::after,
+    main button:has(> svg:only-child)::after,
+    main a.rounded-md:not([class*="p-"], [class*="px-"], [class*="py-"])::after {
+        content: '';
+        position: absolute;
+        inset: -0.625rem 0;
+    }
+
+    /* Los resúmenes de los desplegables («Más filtros», «Historial de cambios»…). */
+    main details > summary {
+        padding-block: 0.75rem;
+    }
+}
+
 /* Navegadores sin scrollbar-width / scrollbar-color. */
 @supports not (scrollbar-width: thin) {
     .sidebar-scroll::-webkit-scrollbar       { width: 8px; }

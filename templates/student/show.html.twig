@@ -34,7 +34,7 @@
                 {%- for group in activeGroups %} <twig:GroupChip :group="group" />{% endfor %}
             </p>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
             <a href="{{ firstGroup ? path('app_incidents_new', {studentId: student.id, groupId: firstGroup.id}) : path('app_incidents_new') }}"
                class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs
                       hover:bg-forest-700 transition-colors">

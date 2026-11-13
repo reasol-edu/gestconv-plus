@@ -43,7 +43,8 @@
                 {% endif %}
             </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        {# Los botones pasan a la línea siguiente en pantallas estrechas (con «shrink-0» y sin salto, se salían de la pantalla). #}
+        <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
             <a href="{{ path('app_incidents_pdf', {id: report.id}) }}" target="_blank" rel="noopener"
                class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
                       hover:bg-gray-50 transition-colors shadow-xs">

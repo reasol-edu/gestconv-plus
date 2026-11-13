@@ -16,6 +16,8 @@
         {% elseif tasks is empty %}
             <p class="px-6 py-8 text-sm text-gray-400 text-center">{{ 'sanction_task.empty'|trans({}, 'admin') }}</p>
         {% else %}
+            {# La tarjeta recorta lo que sobresale (overflow-hidden): sin este contenedor, en móvil la última columna (el botón de cumplimentar) no se veía ni se podía alcanzar. #}
+            <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b border-gray-100 text-left">
@@ -73,6 +75,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         {% endif %}
     </div>
 
