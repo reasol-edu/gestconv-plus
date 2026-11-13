@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Fechas de comienzo y de fin del curso académico**. Se indican al crear o editar el curso en Cursos académicos; por defecto, del 15 de septiembre del primer año del nombre al 14 de septiembre del siguiente (`2026-2027` → 15/09/2026 – 14/09/2027). Los cursos existentes las reciben al actualizar, calculadas del mismo modo. Los informes con rangos de fechas las usan como «Todo el curso»: estadísticas por grupo, salidas e incidencias estrenan ese rango rápido, y la analítica de convivencia pasa a abarcar por defecto desde el comienzo del curso hasta hoy (o hasta su fin).
 
+- **Exportar la analítica de convivencia a PDF**, del rango que se está viendo: cifras clave y gráficos (con la tabla de datos del gráfico mensual), con el encabezado, el margen y la plantilla PDF personalizables como en los demás informes. Los ajustes nuevos están en Personalización de informes.
+
+### Changed
+
+- El botón de «Todo el curso» y el rango por defecto de la analítica usan las fechas del curso en lugar del primer y el último parte.
+- Al registrar un parte, las **tarjetas de antecedentes** de los estudiantes elegidos aparecen después de la selección rápida, y ya no empujan hacia abajo los grupos y sus estudiantes.
+- La barra de desplazamiento de la navegación del panel lateral es fina y no tiene pista blanca en Windows.
+
 ## [1.30.2] - 2026-11-13
 
 ### Changed

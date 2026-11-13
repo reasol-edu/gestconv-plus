@@ -95,6 +95,44 @@ class ReportsController extends AbstractController
         ]);
     }
 
+    /** La analítica de convivencia en PDF, del mismo rango (y con el mismo tope de meses) que la pantalla. */
+    #[Route('/analitica/pdf', name: 'app_reports_analytics_pdf', methods: ['GET'])]
+    public function analyticsPdf(string $centreId, Request $request): Response
+    {
+        $centre = $this->requireCentre($centreId);
+        $year   = $this->tenantContext->getViewYear($centre);
+        if ($year === null) {
+            throw $this->createNotFoundException();
+        }
+
+        [$from, $to] = $this->parseRange($request);
+        [$defaultFrom, $defaultTo] = $this->conductAnalytics->defaultRange($year);
+        $from ??= $defaultFrom;
+        $to   ??= $defaultTo;
+        $from   = max($from, $to->modify('-' . (self::ANALYTICS_MAX_MONTHS - 1) . ' months')->modify('first day of this month'));
+
+        $report = $this->conductAnalytics->build($centre, $year, $from, $to);
+        $title  = $this->translator->trans('pdf.analytics.title', [], 'admin');
+
+        $header = $this->pdfHeaderBuilder->build('analytics', $centre, [
+            'title'         => $title,
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $year->getName(),
+            'date_from'     => $from->format('d/m/Y'),
+            'date_to'       => $to->format('d/m/Y'),
+        ]);
+
+        return $this->pdfRenderer->render(
+            'pdf/analytics.html.twig',
+            ['centre' => $centre, 'year' => $year, 'from' => $from, 'to' => $to, 'report' => $report],
+            $title,
+            sprintf('analitica-convivencia-%s-%s.pdf', $from->format('Y-m-d'), $to->format('Y-m-d')),
+            header: $header,
+            centre: $centre,
+            reportType: 'analytics',
+        );
+    }
+
     #[Route('/estadisticas-grupo', name: 'app_reports_group_stats', methods: ['GET'])]
     public function groupStats(string $centreId, Request $request): Response
     {

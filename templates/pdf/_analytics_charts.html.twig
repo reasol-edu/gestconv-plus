@@ -1,0 +1,93 @@
+{#
+   Gráficos de la analítica de convivencia para el PDF (mPDF): SVG con atributos de presentación (sin clases CSS) y barras
+   horizontales hechas con tablas y capas con ancho en %. Los de la pantalla (reports/_charts.html.twig) usan Tailwind y no
+   se podrían imprimir tal cual.
+#}
+
+{#
+   Columnas apiladas, con el valor sobre cada columna.
+   points: lista de {label, values (una por serie)}; series: lista de {name, color};
+   viewWidth: ancho del dibujo en unidades (640 a todo el ancho, 320 a media página); widthMm: ancho impreso.
+#}
+{% macro columns(points, series, height, viewWidth, widthMm) %}
+    {% set padLeft = 26 %}
+    {% set padRight = 4 %}
+    {% set padTop = 14 %}
+    {% set padBottom = 20 %}
+    {% set innerWidth = viewWidth - padLeft - padRight %}
+    {% set innerHeight = height - padTop - padBottom %}
+    {% set count = points|length %}
+
+    {% set totals = [] %}
+    {% for point in points %}
+        {% set totals = totals|merge([point.values|reduce((sum, value) => sum + value, 0)]) %}
+    {% endfor %}
+    {% set maxTotal = totals is empty ? 0 : max(totals) %}
+    {% set niceMax = maxTotal < 4 ? 4 : maxTotal + ((4 - (maxTotal % 4)) % 4) %}
+    {% set step = count > 0 ? innerWidth / count : innerWidth %}
+    {% set barWidth = min(step * 0.62, 36) %}
+    {% set labelEvery = count <= (viewWidth > 400 ? 14 : 7) ? 1 : (count / (viewWidth > 400 ? 12 : 6))|round(0, 'ceil') %}
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="{{ widthMm }}mm" height="{{ (widthMm * height / viewWidth)|round(1) }}mm" viewBox="0 0 {{ viewWidth }} {{ height }}">
+        {% for tick in 0..4 %}
+            {% set y = padTop + innerHeight - (innerHeight * tick / 4) %}
+            <line x1="{{ padLeft }}" x2="{{ viewWidth - padRight }}" y1="{{ y|round(2) }}" y2="{{ y|round(2) }}" stroke="{{ tick == 0 ? '#9ca3af' : '#e5e7eb' }}" stroke-width="1"/>
+            <text x="{{ padLeft - 5 }}" y="{{ (y + 3.5)|round(2) }}" text-anchor="end" font-size="10" fill="#6b7280">{{ (niceMax * tick / 4)|round }}</text>
+        {% endfor %}
+
+        {% for point in points %}
+            {% set index = loop.index0 %}
+            {% set x = padLeft + step * index + (step - barWidth) / 2 %}
+            {% set stacked = 0 %}
+            {% for value in point.values %}
+                {% if value > 0 %}
+                    {% set segment = innerHeight * value / niceMax %}
+                    <rect x="{{ x|round(2) }}" y="{{ (padTop + innerHeight - stacked - segment)|round(2) }}" width="{{ barWidth|round(2) }}" height="{{ segment|round(2) }}" fill="{{ series[loop.index0].color }}"/>
+                    {% set stacked = stacked + segment %}
+                {% endif %}
+            {% endfor %}
+            {% if totals[index] > 0 and count <= 14 %}
+                <text x="{{ (x + barWidth / 2)|round(2) }}" y="{{ (padTop + innerHeight - stacked - 3)|round(2) }}" text-anchor="middle" font-size="10" font-weight="bold" fill="#374151">{{ totals[index] }}</text>
+            {% endif %}
+            {% if index % labelEvery == 0 %}
+                <text x="{{ (padLeft + step * index + step / 2)|round(2) }}" y="{{ height - 6 }}" text-anchor="middle" font-size="10" fill="#6b7280">{{ point.label }}</text>
+            {% endif %}
+        {% endfor %}
+    </svg>
+
+    {% if series|length > 1 %}
+        <p class="cell-sub">
+            {% for item in series %}<span style="color: {{ item.color }};">&#9632;</span> {{ item.name }}&nbsp;&nbsp;&nbsp;{% endfor %}
+        </p>
+    {% endif %}
+{% endmacro %}
+
+{#
+   Barras horizontales: etiqueta (con su pista en texto pequeño), barra y valor, una fila por elemento.
+   rows: lista de {label, hint (opcional), value, text, color (opcional)}
+#}
+{% macro bars(rows, color) %}
+    {% set values = [] %}
+    {% for row in rows %}{% set values = values|merge([row.value]) %}{% endfor %}
+    {% set maxValue = values is empty ? 1 : max(values) %}
+    <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
+        {% for row in rows %}
+            {% set percent = maxValue > 0 ? (row.value / maxValue * 100)|round(1) : 0 %}
+            <tr>
+                <td style="width: 38%; padding: 3px 6px 3px 0; border-bottom: 1px solid #e5e6ee; vertical-align: middle;">
+                    {{ row.label }}{% if row.hint|default('') != '' %}<br><span class="cell-sub">{{ row.hint }}</span>{% endif %}
+                </td>
+                <td style="width: 52%; padding: 3px 6px; border-bottom: 1px solid #e5e6ee; vertical-align: middle;">
+                    {% if percent > 0 %}
+                        {# mPDF no pinta capas vacías con ancho en %: la barra es un rectángulo SVG (la pista mide 80 mm). #}
+                        {% set barMm = max(0.8, 80 * percent / 100)|round(2) %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="{{ barMm }}mm" height="2.6mm" viewBox="0 0 {{ barMm }} 2.6">
+                            <rect x="0" y="0" width="{{ barMm }}" height="2.6" fill="{{ row.color|default(color) }}"/>
+                        </svg>
+                    {% endif %}
+                </td>
+                <td style="width: 10%; padding: 3px 0 3px 6px; border-bottom: 1px solid #e5e6ee; vertical-align: middle; text-align: right; font-weight: bold;">{{ row.text }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endmacro %}

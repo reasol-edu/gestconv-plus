@@ -159,6 +159,71 @@ class ReportsAnalyticsTest extends ControllerTestCase
         self::assertStringContainsString('&lt;b&gt;1ºX&lt;/b&gt;', $html);
     }
 
+    // ── PDF ───────────────────────────────────────────────────────────────────
+
+    public function testThePageOffersThePdfWithTheCurrentRange(): void
+    {
+        $w = $this->world();
+        $this->makeReports($w, 3);
+        $this->loginAs($w['centreAdmin'], $w['centre']);
+
+        $this->client->request('GET', $this->url($w['centre']) . '?from=2026-02-01&to=2026-04-30');
+
+        self::assertSelectorExists('a[href$="/informes/analitica/pdf?from=2026-02-01&to=2026-04-30"]');
+    }
+
+    public function testThePageDoesNotOfferThePdfWithoutData(): void
+    {
+        $w = $this->world();
+        $this->loginAs($w['centreAdmin'], $w['centre']);
+
+        $this->client->request('GET', $this->url($w['centre']));
+
+        self::assertSelectorNotExists('a[href*="/analitica/pdf"]');
+    }
+
+    public function testThePdfIsGeneratedForTheRange(): void
+    {
+        $w = $this->world();
+        $this->makeReports($w, 6, true);
+        $this->loginAs($w['centreAdmin'], $w['centre']);
+
+        $this->client->request('GET', $this->url($w['centre']) . '/pdf?from=2026-02-01&to=2026-04-30');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringContainsString('analitica-convivencia-2026-02-01-2026-04-30.pdf', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+        self::assertStringStartsWith('%PDF', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testThePdfOfAnEmptyRangeIsStillGenerated(): void
+    {
+        $w = $this->world();
+        $this->makeReports($w, 2);
+        $this->loginAs($w['centreAdmin'], $w['centre']);
+
+        $this->client->request('GET', $this->url($w['centre']) . '/pdf?from=2024-01-01&to=2024-02-01');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringStartsWith('%PDF', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testThePdfIsForbiddenToAnUnprivilegedTeacherAndToAnotherCentre(): void
+    {
+        $mine  = $this->world();
+        $other = $this->world();
+        $teacher = $this->teacher('plain');
+        $this->persist($teacher);
+
+        $this->loginAs($teacher, $mine['centre']);
+        $this->client->request('GET', $this->url($mine['centre']) . '/pdf');
+        self::assertResponseStatusCodeSame(403);
+
+        $this->loginAs($mine['centreAdmin'], $mine['centre']);
+        $this->client->request('GET', $this->url($other['centre']) . '/pdf');
+        self::assertResponseStatusCodeSame(403);
+    }
+
     // ── consultas ─────────────────────────────────────────────────────────────
 
     public function testQueryCountDoesNotGrowWithTheNumberOfReports(): void

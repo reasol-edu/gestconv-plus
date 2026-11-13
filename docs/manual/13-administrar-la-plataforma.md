@@ -470,10 +470,13 @@ incidencias…): son un recuento de trabajo, no un correo.
 | Encabezado izquierdo (informe de incidencias) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (informe de incidencias) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de incidencias) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Encabezado izquierdo (analítica de convivencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (analítica de convivencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (analítica de convivencia) | Global, centro | Entero (mm) | 10-80 | 22 |
 | Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
 Los ajustes de **encabezado** controlan el contenido que se repite en cada página de los PDF de
-partes, sanciones, de los informes de estadísticas por grupo, de salidas y de incidencias, del informe de convivencia de un estudiante y del informe de profesorado de guardia
+partes, sanciones, de los informes de estadísticas por grupo, de salidas y de incidencias, de la analítica de convivencia, del informe de convivencia de un estudiante y del informe de profesorado de guardia
 (ver [Informes](06-convivencia-administracion.md#informes) y
 [Tramos horarios](12-administrar-el-centro.md#tramos-horarios)). Cada tipo de informe tiene dos
 zonas —izquierda y derecha, en la misma línea— que se editan con un editor de texto enriquecido
@@ -519,7 +522,7 @@ texto enriquecido de la categoría.
 | `{group_name}` | Nombre del grupo (en el informe del estudiante, todos sus grupos separados por comas) | Partes, sanciones e informe del estudiante |
 | `{centre_name}` | Nombre del centro educativo | Todos |
 | `{academic_year}` | Nombre del curso académico | Todos |
-| `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado (en el informe del estudiante quedan vacías si no se indicó fecha) | Solo estadísticas por grupo, salidas, incidencias e informe del estudiante |
+| `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado (en el informe del estudiante quedan vacías si no se indicó fecha) | Solo estadísticas por grupo, salidas, incidencias, analítica de convivencia e informe del estudiante |
 | `{issue_nr}` | Número de la incidencia | Solo incidencias |
 | `{issue_type}` | Tipo de la incidencia, con su ruta completa | Solo incidencias |
 | `{city}` | Ciudad del centro educativo | Todos |

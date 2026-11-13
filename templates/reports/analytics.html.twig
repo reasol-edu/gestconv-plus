@@ -65,6 +65,16 @@
                 {{ ux_icon('heroicons:chart-bar', {class: 'h-4 w-4'}) }}
                 {{ 'analytics.update'|trans({}, 'admin') }}
             </button>
+
+            {% if hasData and report is not null and not report.empty %}
+                <a href="{{ path('app_reports_analytics_pdf', {centreId: centre.id, from: from|date('Y-m-d'), to: to|date('Y-m-d')}) }}"
+                   target="_blank" rel="noopener"
+                   class="ml-auto inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
+                          hover:bg-gray-50 transition-colors shadow-xs">
+                    {{ ux_icon('heroicons:document-arrow-down', {class: 'h-4 w-4'}) }}
+                    {{ 'group_stats.export_pdf'|trans({}, 'admin') }}
+                </a>
+            {% endif %}
         </form>
 
         {% if not hasData %}

@@ -307,6 +307,18 @@ settings.key.reports_student_header_right.description: 'Contenido alineado a la 
 settings.key.reports_student_header_margin.label: 'Margen para encabezado de informe del estudiante'
 settings.key.reports_student_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
 
+settings.key.reports_analytics_header_left.label: 'Encabezado de la analítica de convivencia (izquierda)'
+settings.key.reports_analytics_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF de la analítica de convivencia. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_analytics_header_right.label: 'Encabezado de la analítica de convivencia (derecha)'
+settings.key.reports_analytics_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_analytics_header_margin.label: 'Margen para encabezado de la analítica de convivencia'
+settings.key.reports_analytics_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
+
+settings.key.reports_analytics_pdf_template.label: 'Plantilla PDF de la analítica de convivencia'
+settings.key.reports_analytics_pdf_template.description: 'Sustituye, solo para el PDF de la analítica de convivencia, a la plantilla general vertical. Si no se sube ninguna, se usa la plantilla general vertical (si la hay).'
+
 settings.key.reports_student_footer.label: 'Pie de contenido de informe del estudiante'
 settings.key.reports_student_footer.description: 'Texto que se añade al final del contenido del informe de convivencia de un estudiante, una sola vez (no se repite en cada página). Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
@@ -359,7 +371,7 @@ settings.placeholder_help.column.scope: 'Disponible en'
 settings.placeholder_help.scope.all: 'Todos'
 settings.placeholder_help.scope.reports_only: 'Solo partes'
 settings.placeholder_help.scope.reports_and_sanctions: 'Partes, sanciones e informe del estudiante'
-settings.placeholder_help.scope.group_stats_only: 'Solo informes con rango de fechas (estadísticas por grupo, salidas, incidencias e informe del estudiante)'
+settings.placeholder_help.scope.group_stats_only: 'Solo informes con rango de fechas (estadísticas por grupo, salidas, incidencias, analítica de convivencia e informe del estudiante)'
 settings.placeholder_help.scope.school_event_only: 'Solo actividades'
 settings.placeholder_help.scope.issue_only: 'Solo incidencias'
 settings.placeholder_help.marker.issue_nr: 'Número de la incidencia'

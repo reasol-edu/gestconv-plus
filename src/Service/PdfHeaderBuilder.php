@@ -28,7 +28,7 @@ final class PdfHeaderBuilder
     ) {}
 
     /**
-     * @param 'incident'|'sanction'|'group_stats'|'exit_stats'|'issue_stats'|'guard_duty'|'school_event'|'issue'|'student' $type
+     * @param 'incident'|'sanction'|'group_stats'|'exit_stats'|'issue_stats'|'analytics'|'guard_duty'|'school_event'|'issue'|'student' $type
      * @param array<string, string|int>      $placeholders keys without braces, e.g. 'title' => 'Informe…'
      */
     public function build(string $type, EducationalCentre $centre, array $placeholders): PdfHeader

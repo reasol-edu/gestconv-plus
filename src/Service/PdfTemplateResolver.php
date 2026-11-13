@@ -23,7 +23,7 @@ final class PdfTemplateResolver
      * cualquiera de las dos orientaciones (la elige el profesor en cada calendario), así que, a
      * diferencia del resto, tiene un ajuste específico por orientación y no uno compartido.
      *
-     * @param 'incident'|'sanction'|'group_stats'|'exit_stats'|'issue_stats'|'guard_duty'|'school_event'|'issue'|'student'|'printable_calendar' $reportType
+     * @param 'incident'|'sanction'|'group_stats'|'exit_stats'|'issue_stats'|'analytics'|'guard_duty'|'school_event'|'issue'|'student'|'printable_calendar' $reportType
      */
     public function resolve(string $reportType, string $orientation, EducationalCentre $centre): ?ResolvedSettingFile
     {

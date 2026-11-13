@@ -271,3 +271,10 @@ también con lector de pantalla). Los totales coinciden con los de las
 definición de «parte grave». Los gráficos se dibujan en el propio servidor, sin cargar nada de fuera,
 y se imprimen desde el navegador como cualquier otra pantalla.
 
+El botón **Exportar a PDF** descarga la analítica del rango que se está viendo: las cifras clave y los
+mismos gráficos, con el encabezado del centro (ver
+[Personalización de informes](13-administrar-la-plataforma.md#personalizacion-de-informes)). En el PDF no
+hay desplegables: el gráfico mensual lleva debajo su tabla de datos y los demás ponen el valor sobre cada
+columna o al final de cada barra. No hay versión en hoja de cálculo; para las cifras por grupo están las
+[estadísticas por grupo](#estadisticas-por-grupo).
+
