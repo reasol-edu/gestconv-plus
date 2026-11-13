@@ -785,7 +785,10 @@ En la misma página, **Copias guardadas en el servidor** lista las copias de esa
 tamaño, versión y plataforma, y señala las que **no se pueden restaurar en esta base de datos** (y por
 qué). Las copias **no se suben desde el navegador**, a propósito: así no hay un fichero ajeno que pueda
 colarse en la base de datos ni límites de tamaño de subida que molesten. Para restaurar una copia hecha
-en otro servidor, déjala en la carpeta de copias (por SSH, por ejemplo).
+en otro servidor, déjala en la carpeta de copias (por SSH, por ejemplo). El botón **Descargar** de cada
+copia la baja a tu equipo (para guardarla en otra máquina, como se recomienda); es una descarga como
+la de una copia nueva, con su anotación en el registro de actividad, y sirve también para las
+`gestconv-antes-de-restaurar-…`.
 
 ![Resultado de la última restauración y lista de copias guardadas en el servidor, con los botones Restaurar y Eliminar; una copia de otra plataforma aparece con su motivo en rojo y sin botón Restaurar](img/admin/admin-copias-servidor.png)
 

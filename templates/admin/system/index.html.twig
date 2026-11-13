@@ -128,6 +128,13 @@
                                     {{ ux_icon('heroicons:arrow-uturn-left', {class: 'h-3.5 w-3.5'}) }}{{ 'system.copies.restore'|trans({}, 'admin') }}
                                 </a>
                             {% endif %}
+                            <form method="post" action="{{ path('app_admin_system_backup_download_stored', {name: copy.name}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('system_backup_download_' ~ copy.name) }}">
+                                <button type="submit"
+                                        class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                    {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-3.5 w-3.5'}) }}{{ 'system.copies.download'|trans({}, 'admin') }}
+                                </button>
+                            </form>
                             <form method="post" action="{{ path('app_admin_system_backup_delete', {name: copy.name}) }}"
                                   class="js-confirm-form" data-confirm="{{ 'system.copies.delete_confirm'|trans({'%name%': copy.name}, 'admin')|e('html_attr') }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('system_backup_delete_' ~ copy.name) }}">

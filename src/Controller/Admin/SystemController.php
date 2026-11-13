@@ -146,6 +146,33 @@ class SystemController extends AbstractController
         return $this->redirectToRoute('app_admin_system');
     }
 
+    /**
+     * Descarga una copia guardada en el servidor (para llevarla a otra máquina). Mismas garantías que la descarga de una copia nueva:
+     * POST con token CSRF, anotada en el registro de actividad y sin caché; la copia se localiza por su nombre exacto en la carpeta.
+     */
+    #[Route('/copias/{name}/descargar', name: 'app_admin_system_backup_download_stored', methods: ['POST'], requirements: ['name' => '[^/]+'])]
+    public function downloadStored(string $name, Request $request): Response
+    {
+        $stored = $this->requireCopy($name);
+        if (!$this->isCsrfTokenValid('system_backup_download_' . $stored->name, $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $manifest = $stored->manifest;
+        $this->activityLog->log('backup.downloaded', [
+            'version' => $manifest === null ? $this->appVersion : $manifest->appVersion,
+            'tables'  => $manifest === null ? 0 : count($manifest->tables),
+            'rows'    => $manifest === null ? 0 : $manifest->totalRows(),
+        ]);
+
+        $response = new BinaryFileResponse($this->library->path($stored));
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $stored->name);
+        $response->headers->set('Content-Type', 'application/zip');
+        $response->headers->set('Cache-Control', 'no-store, private');
+
+        return $response;
+    }
+
     #[Route('/copias/{name}/eliminar', name: 'app_admin_system_backup_delete', methods: ['POST'], requirements: ['name' => '[^/]+'])]
     public function delete(string $name, Request $request): Response
     {

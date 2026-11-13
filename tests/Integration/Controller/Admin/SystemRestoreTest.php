@@ -116,6 +116,77 @@ class SystemRestoreTest extends ControllerTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    // ── descargar una copia guardada ─────────────────────────────────────────
+
+    public function testAStoredCopyCanBeDownloadedFromTheList(): void
+    {
+        $this->loginAsAdminWithPassword();
+        $name    = $this->aCopy();
+        $crawler = $this->client->request('GET', '/admin/sistema');
+        $token   = $crawler->filter('form[action$="/descargar"] input[name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/admin/sistema/copias/' . $name . '/descargar', ['_token' => $token]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('application/zip', $this->client->getResponse()->headers->get('Content-Type'));
+        self::assertStringContainsString('attachment; filename=' . $name, (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+        self::assertStringContainsString('no-store', (string) $this->client->getResponse()->headers->get('Cache-Control'));
+        self::assertSame(file_get_contents($this->library()->directory() . '/' . $name), $this->client->getInternalResponse()->getContent(), 'Es la copia guardada, tal cual.');
+    }
+
+    public function testDownloadingNeedsAValidTokenAndAnExistingCopy(): void
+    {
+        $this->loginAsAdminWithPassword();
+        $name = $this->aCopy();
+
+        $this->client->request('POST', '/admin/sistema/copias/' . $name . '/descargar', ['_token' => 'invalido']);
+        self::assertResponseStatusCodeSame(403);
+
+        // Nunca por GET: un enlace no puede iniciar la descarga de datos personales.
+        $this->client->request('GET', '/admin/sistema/copias/' . $name . '/descargar');
+        self::assertResponseStatusCodeSame(405);
+
+        $this->client->request('POST', '/admin/sistema/copias/nunca-existio.zip/descargar', ['_token' => 'x']);
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testOnlyFilesInsideTheCopiesFolderCanBeDownloaded(): void
+    {
+        $this->loginAsAdminWithPassword();
+        file_put_contents(dirname($this->library()->directory()) . '/secreto.zip', 'x');
+        @mkdir($this->library()->directory(), 0700, true);
+
+        foreach (['../secreto.zip', '..%2Fsecreto.zip', 'sub%2Fcopia.zip'] as $name) {
+            $this->client->request('POST', '/admin/sistema/copias/' . $name . '/descargar', ['_token' => 'x']);
+            self::assertContains($this->client->getResponse()->getStatusCode(), [403, 404], $name);
+        }
+        @unlink(dirname($this->library()->directory()) . '/secreto.zip');
+    }
+
+    public function testDownloadingIsLoggedInTheActivityLog(): void
+    {
+        putenv('APP_LOG=true');
+        $_ENV['APP_LOG']    = 'true';
+        $_SERVER['APP_LOG'] = 'true';
+
+        try {
+            $this->loginAsAdminWithPassword();
+            $name    = $this->aCopy();
+            $crawler = $this->client->request('GET', '/admin/sistema');
+            $token   = $crawler->filter('form[action$="/descargar"] input[name="_token"]')->attr('value');
+            $this->client->request('POST', '/admin/sistema/copias/' . $name . '/descargar', ['_token' => $token]);
+
+            self::assertResponseIsSuccessful();
+            $this->em->clear();
+            $actions = array_map(static fn (\App\Entity\ActivityLog $log): string => $log->getActionType(), $this->em->getRepository(\App\Entity\ActivityLog::class)->findAll());
+            self::assertContains('backup.downloaded', $actions);
+        } finally {
+            putenv('APP_LOG=false');
+            $_ENV['APP_LOG']    = 'false';
+            $_SERVER['APP_LOG'] = 'false';
+        }
+    }
+
     // ── revisión y confirmación ──────────────────────────────────────────────
 
     public function testTheReviewPageShowsTheCopyAndWhatWillHappen(): void
@@ -293,6 +364,8 @@ class SystemRestoreTest extends ControllerTestCase
         $this->client->request('POST', '/admin/sistema/copias/guardar', ['_token' => 'x']);
         self::assertResponseStatusCodeSame(403);
         $this->client->request('POST', '/admin/sistema/copias/' . $name . '/eliminar', ['_token' => 'x']);
+        self::assertResponseStatusCodeSame(403);
+        $this->client->request('POST', '/admin/sistema/copias/' . $name . '/descargar', ['_token' => 'x']);
         self::assertResponseStatusCodeSame(403);
         self::assertSame([], RecordingRestoreLauncher::$launched);
     }
