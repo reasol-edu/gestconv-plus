@@ -83,6 +83,12 @@ consulta la
 del manual.
 
 > [!NOTE]
+> **Avisos push (opcional).** Para activarlos, genera las claves con
+> `php bin/console app:push:generate-keys` y añade `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y
+> `VAPID_SUBJECT` (`mailto:…`) a `.env.local`. Requiere HTTPS, salida a internet y la extensión `curl` de PHP.
+> Ver [Avisos push al móvil](https://reasol-edu.github.io/gestconv-plus/13-administrar-la-plataforma.html#avisos-push-al-movil).
+
+> [!NOTE]
 > **PostgreSQL como alternativa.** Si el servidor dispone de PostgreSQL en lugar de MySQL, cambia
 > `DATABASE_URL` al formato:
 >

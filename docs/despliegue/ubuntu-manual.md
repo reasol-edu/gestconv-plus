@@ -71,6 +71,25 @@ MAILER_FROM=no-responder@tudominio.es
 `SERVER_ADDR` con el nombre de dominio (sin puerto) activa el **HTTPS automático** de
 FrankenPHP/Caddy vía Let's Encrypt.
 
+### Avisos push al móvil (opcional)
+
+Para activar los avisos push, genera las claves (una sola vez, **después del primer arranque**, cuando ya
+existe `app/.env`) y añade las tres variables a `.env.local`. Sin ellas la función no aparece y el resto no cambia:
+
+```bash
+cd /opt/gestconv-plus/app
+sudo -u gestconvplus ../frankenphp php-cli bin/console app:push:generate-keys
+```
+
+```bash
+VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:informatica@tudominio.es
+```
+
+Necesita HTTPS (ya lo da `SERVER_ADDR`) y salida a internet. Reinicia los dos servicios al terminar. Más
+detalle en el [manual](https://reasol-edu.github.io/gestconv-plus/13-administrar-la-plataforma.html#avisos-push-al-movil).
+
 ## 6. Crear los scripts de arranque
 
 Los scripts `gestconv-start.sh` y `gestconv-worker.sh` los genera `install-ubuntu.sh`; en la

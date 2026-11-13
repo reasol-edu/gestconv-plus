@@ -27,6 +27,10 @@ x-app-environment: &app-environment
   APP_EXTERNAL_ENABLED:         "${APP_EXTERNAL_ENABLED:-true}"
   APP_EXTERNAL_URL:             "${APP_EXTERNAL_URL:-https://seneca.juntadeandalucia.es/seneca/jsp/ComprobarUsuarioExt.jsp}"
   APP_EXTERNAL_URL_FORCE_SECURITY: "${APP_EXTERNAL_URL_FORCE_SECURITY:-true}"
+  # Avisos push (opcionales): vacías = función desactivada.
+  VAPID_PUBLIC_KEY:             "${VAPID_PUBLIC_KEY:-}"
+  VAPID_PRIVATE_KEY:            "${VAPID_PRIVATE_KEY:-}"
+  VAPID_SUBJECT:                "${VAPID_SUBJECT:-}"
 
 services:
 
