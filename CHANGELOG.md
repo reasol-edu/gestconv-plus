@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.30.1] - 2026-11-13
+
+### Added
+
+- **Aviso de grupos sin tutoría en Oferta formativa**: un cuadro ámbar indica cuántos grupos del curso activo no tienen tutor o tutora. Se despliega para ver los grupos, agrupados por curso, y cada uno es un enlace que abre directamente su configuración. Desaparece solo cuando todos tienen tutoría.
+
+### Fixed
+
+- Se eliminan los avisos de deprecación de Doctrine ORM 3.7 que aparecían en el registro del servidor (sentido de la ordenación y uniones entre entidades). No cambia el comportamiento de la aplicación.
+
 ## [1.30.0] - 2026-11-13
 
 ### Added
