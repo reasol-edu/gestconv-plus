@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.30.0] - 2026-11-13
+
+### Added
+
+- **Analítica de convivencia** (Informes): los partes y las sanciones del centro en gráficos —evolución mensual con los graves en rojo, partes por día de la semana y por hora, conductas más registradas, cursos y grupos (también por cada 100 estudiantes) y cuántos estudiantes acumulan uno, dos, tres o más partes—, con cifras clave y una tabla de datos bajo cada gráfico. Sin fechas abarca todo el curso y sus totales coinciden con los de las estadísticas por grupo. Solo para el equipo directivo y administración.
+- **Lista de inicio de curso** dentro de la aplicación (Centro educativo › Inicio de curso): detecta sola los pasos hechos del curso activo (profesorado, alumnado y grupos, tutorías, asignaciones docente-grupo, tramos horarios, días no lectivos y perfiles), deja confirmar a mano la revisión de catálogos y de ajustes, y distingue lo imprescindible de lo opcional. En el Inicio, el equipo directivo ve una tarjeta con el progreso mientras falten pasos imprescindibles. Requiere aplicar la migración 081 (se aplica sola al arrancar).
+- **Informe de convivencia del estudiante en PDF** desde su ficha, con rango de fechas opcional: datos del estudiante, contacto de la familia (solo si se tiene permiso), resumen, partes, sanciones, notas del día y salidas del aula, siempre limitado a lo que la persona puede ver. Su encabezado, margen, pie y plantilla de fondo se personalizan como los de los demás informes.
+- **Notas para varios estudiantes a la vez**, con la selección rápida por grupos; el ajuste pasa a llamarse **Selección rápida de alumnado** y gobierna los formularios de parte y de nota.
+- **Antecedentes del estudiante al registrar un parte**: al elegirlo se muestran sus partes del último mes, su sanción vigente y sus notas activas.
+- **Borrador del parte** guardado solo en el dispositivo: al volver a abrir Nuevo parte se ofrece recuperarlo o descartarlo (nunca se restaura solo). Se borra al guardar el parte y al cerrar sesión. Caduca a las 24 horas; un ajuste global (Visualización) cambia el plazo o desactiva los borradores con 0 horas, y los caducados se eliminan al abrir cualquier pantalla.
+- **Exportar a Excel** los listados de partes, sanciones, notas, notificaciones y Mi tutoría, con los filtros puestos y solo con lo que la persona ve.
+- **Búsqueda por número**: escribir `#123` en el buscador muestra ese parte (si se tiene permiso para verlo) entre los resultados.
+- Filtro **Pendientes de registrar en Séneca** en el listado de sanciones.
+- **Cierre automático de las salidas del aula olvidadas**: cada madrugada se cierran las salidas de días anteriores que siguen abiertas, marcadas como «Cierre automático» para no falsear los tiempos medios.
+- **Ayuda contextual**: un icono **?** en la cabecera abre el apartado del manual de la pantalla en la que estás. La dirección del manual se puede cambiar con `APP_HELP_URL` para instalaciones sin internet.
+- **Avisos push al móvil** (opcionales): salida del aula abierta más de 30 minutos, tareas de sanción pendientes y partes próximos a prescribir, que cada docente activa en su dispositivo desde Perfil › Ajustes. Solo aparecen si el servidor tiene claves VAPID (`php bin/console app:push:generate-keys`, variables `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT`) y HTTPS. Sin conexión se muestra una página de aviso; no se guarda ninguna pantalla con datos de estudiantes. Al cerrar sesión el dispositivo se da de baja de los avisos.
+- Cabeceras de seguridad con una **Content-Security-Policy** que limita la aplicación a su propio origen (Docker, binario nativo y Plesk).
+
+### Changed
+
+- Los filtros de los listados quedan alineados en el móvil y el botón **Exportar a Excel** se coloca a la derecha.
+- El tablón calcula el profesorado ausente de los próximos días con una sola consulta.
+- Las dependencias de PHP se han actualizado para corregir los avisos de seguridad de `composer audit` (incluye una vulnerabilidad de gravedad alta). Se añaden dos dependencias nuevas: `minishlink/web-push` y `nyholm/psr7`.
+- Las migraciones 076 a 081 se aplican solas al arrancar la nueva versión.
+
+### Fixed
+
+- En **Docker Compose**, `MAILER_DSN` y `MAILER_FROM` no llegaban al contenedor, así que el correo no se podía configurar desde `.env.local`. Ahora llegan: quien ya tuviera un `MAILER_DSN` definido empezará a enviar correo real al actualizar. Las variables `VAPID_*` también se pasan.
+- La aplicación cargaba un componente de compatibilidad (`es-module-shims`) desde un servidor de terceros; ahora se sirve desde la propia aplicación.
+
 ## [1.29.0] - 2026-11-11
 
 ### Added
