@@ -97,10 +97,12 @@
             "importmap:install": "symfony-cmd"
         },
         "post-install-cmd": [
-            "@auto-scripts"
+            "@auto-scripts",
+            "App\\Composer\\ProductionAssets::build"
         ],
         "post-update-cmd": [
-            "@auto-scripts"
+            "@auto-scripts",
+            "App\\Composer\\ProductionAssets::build"
         ]
     },
     "conflict": {

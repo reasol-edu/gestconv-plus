@@ -939,8 +939,11 @@ el aviso está desactivado.
       ```
       Ver [Actualización en Ubuntu Server](01-instalacion-y-puesta-en-marcha.md#actualizacion-en-ubuntu-server)
       para el flag `--force` y la alternativa manual.
-3. Las **migraciones de base de datos se aplican automáticamente** al arrancar la nueva versión;
-   no hay que ejecutar nada a mano.
+    - **Plesk** — `git pull` y `composer install --no-dev --optimize-autoloader`, que **recompila solo el
+      CSS y los assets**; después, las migraciones y la caché (ver la
+      [guía de Plesk](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/plesk.md#actualizar-a-una-nueva-version)).
+3. En Docker, el binario nativo y Ubuntu Server, las **migraciones de base de datos se aplican
+   automáticamente** al arrancar la nueva versión; en Plesk se ejecutan a mano (paso anterior).
 4. Comprueba que la aplicación arranca y revisa el
    [CHANGELOG](https://github.com/reasol-edu/gestconv-plus/blob/main/CHANGELOG.md) por si alguna
    novedad requiere ajustar la configuración.

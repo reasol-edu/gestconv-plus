@@ -103,14 +103,31 @@ del manual.
 ```bash
 cd ~/apps/gestconv-plus
 composer install --no-dev --optimize-autoloader
-php bin/console tailwind:build --env=prod
-php bin/console asset-map:compile
 ```
+
+`composer install --no-dev` **compila también el CSS y los assets** al terminar: ejecuta él mismo
+`tailwind:build --minify` y `asset-map:compile` (lo hace solo en producción, es decir, con `--no-dev`; en
+desarrollo no los toca). No hay que lanzarlos a mano.
 
 > [!NOTE]
 > **Por qué hace falta compilar los assets.** Los archivos CSS y JS generados no se incluyen en el
 > repositorio. `tailwind:build` genera el CSS a partir de las plantillas (sin necesidad de Node.js)
-> y `asset-map:compile` copia y versiona todos los assets en `public/assets/`.
+> y `asset-map:compile` copia y versiona todos los assets en `public/assets/`. Un CSS sin recompilar
+> deja sin estilo las pantallas nuevas de cada versión: por eso se hace en cada `composer install`.
+
+> [!WARNING]
+> **Si la compilación automática falla** (el servidor no tiene salida a internet para descargar el binario
+> de Tailwind la primera vez, el hosting no permite ejecutar procesos…), `composer install` **no se
+> interrumpe**: termina con un aviso que empieza por «AVISO: no se pudieron compilar los assets» y repite
+> estas dos órdenes, que hay que ejecutar a mano antes de usar la aplicación:
+>
+> ```bash
+> php bin/console tailwind:build --minify --env=prod
+> php bin/console asset-map:compile --env=prod
+> ```
+>
+> Para saltarse la compilación automática (por ejemplo, si compilas en otra máquina y subes
+> `public/assets/`), define `GESTCONV_SKIP_ASSET_BUILD=1` al ejecutar Composer.
 
 ## 6. Crear la base de datos y configurar la aplicación
 
@@ -174,20 +191,16 @@ php bin/console cache:clear
 ## Actualizar a una nueva versión
 
 1. Descarga o actualiza los archivos (con Git: `git pull`).
-2. Instala las dependencias actualizadas:
+2. Instala las dependencias actualizadas (esto **recompila también el CSS y los assets**, ver el paso 5 de
+   la instalación; no hace falta lanzar `tailwind:build` ni `asset-map:compile`):
    ```bash
    composer install --no-dev --optimize-autoloader
    ```
-3. Recompila los assets:
-   ```bash
-   php bin/console tailwind:build --env=prod
-   php bin/console asset-map:compile
-   ```
-4. Aplica las migraciones de base de datos:
+3. Aplica las migraciones de base de datos:
    ```bash
    php bin/console doctrine:migrations:migrate --no-interaction
    ```
-5. Regenera la caché:
+4. Regenera la caché:
    ```bash
    rm -rf var/cache/prod
    php bin/console cache:warmup --env=prod --no-debug

@@ -474,7 +474,8 @@ stack es PHP-FPM + MySQL + Apache/Nginx estándar: no requiere Docker ni Franken
 acceso SSH a la suscripción.
 
 La guía completa, con los ocho pasos detallados (dominio, PHP 8.4, variables de entorno,
-Composer, worker vía cron y HTTPS), está en el repositorio:
+Composer, worker vía cron y HTTPS), está en el repositorio. Las actualizaciones se reducen a
+`git pull` y `composer install --no-dev`, que también compila solo el CSS y los assets:
 
 **[Guía de despliegue en Plesk](https://github.com/reasol-edu/gestconv-plus/blob/main/docs/despliegue/plesk.md)**
 

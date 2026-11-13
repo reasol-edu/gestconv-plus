@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Plesk (y cualquier despliegue con Git y Composer): el CSS y los assets se compilan solos.** `composer install --no-dev` (y `composer update --no-dev`) ejecuta ahora `tailwind:build --minify` y `asset-map:compile` al terminar, así que actualizar se reduce a `git pull`, `composer install --no-dev`, migraciones y caché. En desarrollo no hace nada, la imagen Docker y los binarios siguen compilando por su cuenta, y si la compilación falla (sin internet para descargar Tailwind, hosting sin ejecución de procesos) `composer install` no se interrumpe: avisa y dice qué ejecutar a mano. `GESTCONV_SKIP_ASSET_BUILD=1` la omite. Guías de Plesk y del manual actualizadas.
+
 ## [1.35.0] - 2026-11-13
 
 ### Fixed
