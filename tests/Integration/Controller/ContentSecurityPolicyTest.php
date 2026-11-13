@@ -46,6 +46,14 @@ class ContentSecurityPolicyTest extends ControllerTestCase
         }
     }
 
+    public function testTheImportmapRendersCssAsDataModulesThatTheCspMustAllow(): void
+    {
+        $html = $this->fetch('/login');
+
+        // Si algún día el importmap deja de usar data:, este aviso indica que ya se puede retirar de la política.
+        self::assertStringContainsString('data:application/javascript,', $html, 'El importmap ya no usa módulos data:: se puede quitar `data:` de script-src.');
+    }
+
     public function testTheSamePolicyIsSentByDockerNativeBinaryAndPlesk(): void
     {
         $root     = dirname(__DIR__, 3);
@@ -61,6 +69,9 @@ class ContentSecurityPolicyTest extends ControllerTestCase
         foreach (["default-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'", "connect-src 'self'"] as $directive) {
             self::assertStringContainsString($directive, $policy);
         }
+        // AssetMapper convierte los `import 'x.css'` del importmap en módulos `data:application/javascript,…`. Sin `data:`
+        // en script-src el import falla y no se carga nada del JavaScript (comprobado en la imagen Docker real).
+        self::assertMatchesRegularExpression("/script-src[^;]*'self'[^;]*\\sdata:/", $policy, 'script-src necesita data: para los CSS del importmap.');
         self::assertStringNotContainsString('*', $policy, 'Nada de comodines: la aplicación no carga recursos de terceros.');
         self::assertDoesNotMatchRegularExpression('#https?:#', $policy, 'La política no debe autorizar ningún dominio concreto.');
     }

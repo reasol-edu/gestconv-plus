@@ -23,8 +23,12 @@
     # (connect/img/form-action), incrustar la aplicación (frame-ancestors) y
     # plugins (object-src), y cambiar <base>. Si algún día se pasa a nonces, quitar
     # 'unsafe-inline'. Misma política en dist/Caddyfile y public/.htaccess.
+    # `data:` en script-src es imprescindible: AssetMapper convierte los `import 'x.css'` del
+    # importmap en módulos `data:application/javascript,…`; sin él falla el import y no se carga
+    # NADA del JavaScript de la aplicación (verificado en la imagen Docker). Con nonces habría
+    # que revisar también este origen.
     header {
-        Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options    "nosniff"
         X-Frame-Options           "DENY"

@@ -27,9 +27,10 @@ DirectoryIndex index.php
 </IfModule>
 
 # Cabeceras de seguridad de base y Content-Security-Policy (misma política que
-# docker/Caddyfile y dist/Caddyfile; ver el comentario de allí sobre 'unsafe-inline').
+# docker/Caddyfile y dist/Caddyfile; ver allí el comentario sobre 'unsafe-inline' y sobre `data:`,
+# imprescindible para que AssetMapper cargue los CSS del importmap).
 <IfModule mod_headers.c>
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "DENY"

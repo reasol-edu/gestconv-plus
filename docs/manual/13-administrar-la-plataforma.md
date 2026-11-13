@@ -870,7 +870,9 @@ Medidas que la aplicación aporta de serie:
   terceros, así que no puede enviar datos a otro dominio, incrustarse en otra web ni cargar scripts ajenos.
   Si pones un proxy inverso delante, no hace falta repetirlas; si el proxy añade las suyas, que no sean más
   restrictivas que estas o la aplicación dejará de funcionar. La CSP admite `'unsafe-inline'` en scripts y
-  estilos porque las pantallas llevan scripts y estilos en línea.
+  estilos porque las pantallas llevan scripts y estilos en línea, y `data:` en scripts porque la
+  aplicación carga sus hojas de estilo mediante módulos de ese tipo: quitarlo deja la aplicación sin
+  JavaScript.
 - **Borradores en el dispositivo** — el borrador de un parte contiene datos del alumnado y solo se guarda
   en el navegador de quien lo escribe; caduca (24 horas por defecto, configurable o desactivable en
   [Visualización](#visualizacion)) y se borra al cerrar sesión.
