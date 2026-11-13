@@ -69,6 +69,11 @@ final class RestoreGuardSubscriber implements EventSubscriberInterface
         }
 
         $session = $request->getSession();
+        // Sin arrancar la sesión, los metadatos están vacíos y `getCreated()` vale 0: parecería anterior a cualquier restauración y
+        // cerraría hasta las sesiones nuevas (solo se nota con el almacenamiento nativo de PHP, no con el de las pruebas).
+        if (!$session->isStarted()) {
+            $session->start();
+        }
         // `getCreated()` es la hora en que PHP creó (o regeneró, al iniciar sesión) la sesión: se compara con time(), no con el reloj simulado.
         if ($session->getMetadataBag()->getCreated() < $restoredAt) {
             $session->invalidate();
