@@ -19,7 +19,8 @@
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
-    <body class="h-full font-sans antialiased">
+    {# Plazo vigente de los borradores del dispositivo (ajuste de la plataforma): la limpieza de assets/draft_sweep.js lo aplica en cualquier pantalla, también en el login. #}
+    <body class="h-full font-sans antialiased" data-draft-retention-hours="{{ draft_retention_hours() }}">
         {% block body %}{% endblock %}
     </body>
 </html>

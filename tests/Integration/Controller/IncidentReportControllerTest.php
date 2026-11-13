@@ -355,6 +355,21 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertSelectorExists('form[data-draft-ttl-hours-value="6"]');
     }
 
+    public function testEveryPageIncludingLoginCarriesTheRetentionForTheGlobalDraftSweep(): void
+    {
+        // Sin sesión: la limpieza de borradores caducados también corre en la pantalla de inicio de sesión.
+        $this->client->request('GET', '/login');
+        self::assertSelectorExists('body[data-draft-retention-hours="24"]');
+
+        $definition = (new SettingDefinition())->setKey('display.draft_retention_hours')->setType(SettingType::Integer)
+            ->setCategory('settings.category.display')->setDefaultValue('24')->setMinValue(0)->setMaxValue(168)
+            ->setGlobalScope(true)->setCentreScope(false)->setTeacherScope(false);
+        $this->persist($definition, (new GlobalSettingValue())->setDefinition($definition)->setValue('3'));
+
+        $this->client->request('GET', '/login');
+        self::assertSelectorExists('body[data-draft-retention-hours="3"]');
+    }
+
     public function testDraftsAreSwitchedOffWithZeroHours(): void
     {
         $definition = (new SettingDefinition())->setKey('display.draft_retention_hours')->setType(SettingType::Integer)
