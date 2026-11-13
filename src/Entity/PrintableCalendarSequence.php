@@ -76,7 +76,7 @@ class PrintableCalendarSequence
 
     /** @var Collection<int, PrintableCalendarSequenceItem> */
     #[ORM\OneToMany(targetEntity: PrintableCalendarSequenceItem::class, mappedBy: 'sequence', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => \SortDirection::Ascending])]
     private Collection $items;
 
     public function __construct(PrintableCalendar $calendar, string $name, \DateTimeImmutable $startDate, string $colorA, string $colorB, int $position)

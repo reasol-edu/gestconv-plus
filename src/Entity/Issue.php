@@ -98,17 +98,17 @@ class Issue
 
     /** @var Collection<int, IssueObservation> */
     #[ORM\OneToMany(targetEntity: IssueObservation::class, mappedBy: 'issue', orphanRemoval: true, cascade: ['persist'])]
-    #[ORM\OrderBy(['createdAt' => 'ASC'])]
+    #[ORM\OrderBy(['createdAt' => \SortDirection::Ascending])]
     private Collection $observations;
 
     /** @var Collection<int, IssueAttachment> */
     #[ORM\OneToMany(targetEntity: IssueAttachment::class, mappedBy: 'issue', orphanRemoval: true, cascade: ['persist'])]
-    #[ORM\OrderBy(['createdAt' => 'ASC'])]
+    #[ORM\OrderBy(['createdAt' => \SortDirection::Ascending])]
     private Collection $attachments;
 
     /** @var Collection<int, IssueChange> */
     #[ORM\OneToMany(targetEntity: IssueChange::class, mappedBy: 'issue', orphanRemoval: true, cascade: ['persist'])]
-    #[ORM\OrderBy(['createdAt' => 'ASC'])]
+    #[ORM\OrderBy(['createdAt' => \SortDirection::Ascending])]
     private Collection $changes;
 
     public function __construct(\DateTimeImmutable $now)

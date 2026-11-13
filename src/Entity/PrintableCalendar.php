@@ -90,17 +90,17 @@ class PrintableCalendar
 
     /** @var Collection<int, PrintableCalendarPeriod> */
     #[ORM\OneToMany(targetEntity: PrintableCalendarPeriod::class, mappedBy: 'calendar', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => \SortDirection::Ascending])]
     private Collection $periods;
 
     /** @var Collection<int, PrintableCalendarSequence> */
     #[ORM\OneToMany(targetEntity: PrintableCalendarSequence::class, mappedBy: 'calendar', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => \SortDirection::Ascending])]
     private Collection $sequences;
 
     /** @var Collection<int, PrintableCalendarDate> */
     #[ORM\OneToMany(targetEntity: PrintableCalendarDate::class, mappedBy: 'calendar', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['date' => 'ASC'])]
+    #[ORM\OrderBy(['date' => \SortDirection::Ascending])]
     private Collection $dates;
 
     public function __construct(EducationalCentre $centre, AcademicYear $year, Teacher $owner, string $title)

@@ -36,7 +36,7 @@ class Absence
 
     /** @var Collection<int, Activity> */
     #[ORM\OneToMany(targetEntity: Activity::class, mappedBy: 'absence', orphanRemoval: true, cascade: ['persist'])]
-    #[ORM\OrderBy(['date' => 'ASC'])]
+    #[ORM\OrderBy(['date' => \SortDirection::Ascending])]
     private Collection $activities;
 
     /**
