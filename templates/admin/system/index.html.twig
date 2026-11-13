@@ -114,7 +114,7 @@
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-medium text-gray-900" title="{{ copy.name }}">{{ copy.name }}</p>
                             <p class="text-xs text-gray-500">
-                                {{ copy.modifiedAt|date('d/m/Y H:i') }} · {{ (copy.size / 1048576)|number_format(1, ',', '.') }} MB
+                                {{ copy.modifiedAt|date('d/m/Y H:i') }} · {{ copy.size < 1048576 ? (copy.size / 1024)|round ~ ' KB' : (copy.size / 1048576)|number_format(1, ',', '.') ~ ' MB' }}
                                 {% if copy.manifest %}· GestConv+ {{ copy.manifest.appVersion }} · {{ copy.manifest.platform }}{% endif %}
                             </p>
                             {% if copy.problems is not empty %}

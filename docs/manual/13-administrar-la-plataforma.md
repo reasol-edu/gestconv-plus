@@ -787,16 +787,22 @@ qué). Las copias **no se suben desde el navegador**, a propósito: así no hay 
 colarse en la base de datos ni límites de tamaño de subida que molesten. Para restaurar una copia hecha
 en otro servidor, déjala en la carpeta de copias (por SSH, por ejemplo).
 
+![Resultado de la última restauración y lista de copias guardadas en el servidor, con los botones Restaurar y Eliminar; una copia de otra plataforma aparece con su motivo en rojo y sin botón Restaurar](img/admin/admin-copias-servidor.png)
+
 **Restaurar** abre una pantalla de revisión con los datos de la copia y lo que va a pasar. Para
 confirmar hay que escribir **tu contraseña** y la palabra **RESTAURAR**; una cuenta sin contraseña propia
 (la que accede por otro sistema) no puede confirmar desde la web y tiene que usar la consola. Si tu
 usuario **no figura en la copia**, la pantalla lo avisa: al terminar entrarás con las cuentas de la copia.
+
+![Pantalla «Restaurar una copia de seguridad»: datos de la copia, el aviso de que se sustituyen todos los datos y los campos de contraseña y palabra de confirmación](img/admin/admin-restaurar-copia.png)
 
 Al confirmar:
 
 1. La aplicación se pone en **mantenimiento para todo el mundo**, también para quien restaura: durante
    unos minutos todas las páginas muestran «Restaurando una copia de seguridad» y se recargan solas.
    Este bloqueo está en un fichero (`var/restore/`), no en la base de datos, que es lo que se sustituye.
+
+   ![Página «Restaurando una copia de seguridad» sobre fondo oscuro, con un indicador de progreso](img/admin/admin-restaurando.png)
 2. Se guarda automáticamente una **copia de los datos actuales** (`gestconv-antes-de-restaurar-…`) en la
    carpeta de copias, por si hay que volver atrás.
 3. Se restauran los datos en una sola transacción: si algo falla, **no se cambia nada**.
