@@ -790,7 +790,7 @@ copia la baja a tu equipo (para guardarla en otra máquina, como se recomienda);
 la de una copia nueva, con su anotación en el registro de actividad, y sirve también para las
 `gestconv-antes-de-restaurar-…`.
 
-![Resultado de la última restauración y lista de copias guardadas en el servidor, con los botones Restaurar y Eliminar; una copia de otra plataforma aparece con su motivo en rojo y sin botón Restaurar](img/admin/admin-copias-servidor.png)
+![Resultado de la última restauración y lista de copias guardadas en el servidor, con los botones Restaurar, Descargar y Eliminar; una copia de otra plataforma aparece con su motivo en rojo y sin botón Restaurar](img/admin/admin-copias-servidor.png)
 
 **Restaurar** abre una pantalla de revisión con los datos de la copia y lo que va a pasar. Para
 confirmar hay que escribir **tu contraseña** y la palabra **RESTAURAR**; una cuenta sin contraseña propia

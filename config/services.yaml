@@ -11,7 +11,7 @@ parameters:
     app.name:                   "GestConv+"
     # Repositorio del proyecto: enlaces del pie y consulta de la última versión publicada (releases de GitHub).
     app.repository:             "https://github.com/reasol-edu/gestconv-plus"
-    app.version:                "1.33.0"
+    app.version:                "1.34.0"
     app.pub_date:               "2026-11-13"
     # Zona horaria de la aplicación (la que ven las personas y la de «hoy», los tramos y los avisos). Las fechas con hora
     # siguen guardándose en UTC; ver App\Doctrine\Type\UtcDateTimeImmutableType. Se cambia con APP_TIMEZONE.
