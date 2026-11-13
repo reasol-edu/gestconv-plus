@@ -84,7 +84,7 @@ class PurgeEmailNotificationLogHandlerTest extends RepositoryTestCase
 
     private function makeCentre(): EducationalCentre
     {
-        $centre = (new EducationalCentre())->setCode('41000' . substr(md5(uniqid('', true)), 0, 3))->setName('IES Test')->setCity('Sevilla');
+        $centre = (new EducationalCentre())->setCode('41' . str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT))->setName('IES Test')->setCity('Sevilla');
         $this->persist($centre);
 
         return $centre;

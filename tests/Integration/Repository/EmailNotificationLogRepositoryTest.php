@@ -154,9 +154,13 @@ class EmailNotificationLogRepositoryTest extends RepositoryTestCase
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
+    private static int $centreCounter = 0;
+
     private function makeCentre(string $suffix = ''): EducationalCentre
     {
-        $centre = (new EducationalCentre())->setCode('41000' . substr(md5($suffix . uniqid('', true)), 0, 3))->setName('IES ' . $suffix)->setCity('Sevilla');
+        // Un contador, no un trozo de hash: con solo 3 caracteres hexadecimales dos centros de un mismo test chocaban de vez en cuando
+        // (UNIQUE educational_centre.code) y hacían fallar la integración continua al azar.
+        $centre = (new EducationalCentre())->setCode('41' . str_pad((string) ++self::$centreCounter, 6, '0', STR_PAD_LEFT))->setName('IES ' . $suffix)->setCity('Sevilla');
         $this->persist($centre);
 
         return $centre;

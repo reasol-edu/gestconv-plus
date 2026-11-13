@@ -177,7 +177,7 @@ class AbsenceVoterTest extends RepositoryTestCase
     /** @return array{0: Absence, 1: EducationalCentre} */
     private function makeScenario(bool $pastDates = false, bool $ownerIsAdmin = false): array
     {
-        $centre  = (new EducationalCentre())->setCode('41000' . substr(md5(uniqid('', true)), 0, 3))->setName('IES')->setCity('Sevilla');
+        $centre  = (new EducationalCentre())->setCode('41' . str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT))->setName('IES')->setCity('Sevilla');
         $year    = (new AcademicYear())->setName('2025-2026')->setEducationalCentre($centre);
         $teacher = $this->makeTeacher('owner.' . uniqid('', true), admin: $ownerIsAdmin);
         $this->persist($centre, $year, $teacher);
