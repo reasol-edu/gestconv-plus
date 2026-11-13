@@ -58,14 +58,14 @@
             </select>
 
             {# Filtro por fechas #}
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex w-full items-center gap-2 sm:w-auto sm:shrink-0">
                 <input type="date"
                        data-model="norender|dateFrom"
                        data-action="change->live#action"
                        data-live-action-param="resetPage"
                        value="{{ dateFrom }}"
                        placeholder="{{ 'incident.filter.date_from'|trans({}, 'admin') }}"
-                       class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                       class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
                 <span class="text-gray-400 text-xs">–</span>
                 <input type="date"
@@ -74,7 +74,7 @@
                        data-live-action-param="resetPage"
                        value="{{ dateTo }}"
                        placeholder="{{ 'incident.filter.date_to'|trans({}, 'admin') }}"
-                       class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                       class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
                               focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
             </div>
 
