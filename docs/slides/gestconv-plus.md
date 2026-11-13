@@ -267,8 +267,8 @@ incidente los afecta conjuntamente.
 
 ## Notas diarias: avisos sin abrir un parte
 
-- Sección **Notas**, para incidencias menores del día a día: retraso, salida
-  al baño, uso del móvil…
+- Sección **Notas**, para incidencias menores del día a día: retraso, uso del
+  móvil… (las salidas del aula, al baño incluidas, van en la sección Salidas).
 - Una misma nota se puede registrar para **varios estudiantes a la vez**, con la
   **selección rápida** de grupos (una nota independiente para cada uno).
 - Cada **tipo de nota** tiene un umbral de ocurrencias que, al alcanzarse, se
@@ -758,9 +758,8 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   desactivar, reordenar.
 - Cada tipo tiene un umbral de **ocurrencias que dan lugar a parte** (0 =
   nunca lo sugiere) y una **caducidad** en días (0 = no caduca nunca).
-- 4 tipos por defecto: **Salida al baño** (0, no caduca), **Uso del móvil**
-  (2, caduca a los 30 días), **Retraso a primera hora** (3, no caduca) y
-  **Otros** (0, no caduca).
+- 3 tipos por defecto en un centro nuevo: **Uso del móvil** (2, caduca a los 30
+  días), **Retraso a primera hora** (3, no caduca) y **Otros** (0, no caduca).
 - Exportable e importable en JSON, igual que el resto de catálogos del
   centro.
 

@@ -143,8 +143,9 @@ permiso para notificarlo ve también un botón **Notificar** junto a los de edit
 ## Notas {#notas}
 
 La sección **Notas** del menú lateral permite registrar avisos de comportamiento del día a día
-(un retraso, salir al baño, usar el móvil en clase…) sin necesidad de abrir un parte de
-convivencia formal. Cada tipo de nota tiene un umbral de ocurrencias configurable por el centro y
+(un retraso, usar el móvil en clase…) sin necesidad de abrir un parte de convivencia formal. Las
+salidas del aula (al baño, a conserjería…) no son notas: se registran en la sección
+[Salidas](07-salidas.md). Cada tipo de nota tiene un umbral de ocurrencias configurable por el centro y
 una caducidad opcional (ver [Tipos de notas diarias](06-convivencia-administracion.md#tipos-de-notas-diarias)).
 
 !!! note "Quién registra el parte al alcanzar el umbral"

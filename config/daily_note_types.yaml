@@ -1,7 +1,6 @@
+# Tipos de nota que reciben los centros nuevos. Las salidas al baño no figuran aquí: tienen su propia sección (Salidas).
+# Un centro que ya tuviera el tipo «Salida al baño» lo conserva; esto solo afecta a los centros que se creen a partir de ahora.
 types:
-    - name: 'Salida al baño'
-      occurrences_for_report: 0
-      expiry_days: 0
     - name: 'Uso del móvil'
       occurrences_for_report: 2
       expiry_days: 30

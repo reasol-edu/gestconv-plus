@@ -42,10 +42,12 @@ En **Centro educativo › Tipos de notas diarias** se configura la lista —plan
 tipos disponibles al [registrar una nota](04-convivencia-profesorado.md#notas), con dos campos
 adicionales por tipo: **Ocurrencias que dan lugar a parte** (0 = este tipo nunca lo sugiere) y
 **Caducidad**, en días desde el registro, pasados los cuales una nota activa de ese tipo se
-desactiva automáticamente (0 = no caduca nunca). Los 4 tipos por defecto son: Salida al baño (0
-ocurrencias, no caduca), Uso del móvil (2 ocurrencias, caduca a los 30 días), Retraso a primera
-hora (3 ocurrencias, no caduca) y Otros (0 ocurrencias, no caduca); los centros que ya existían
-antes de esta funcionalidad los reciben automáticamente al actualizar.
+desactiva automáticamente (0 = no caduca nunca). Los 3 tipos por defecto de un centro nuevo son:
+Uso del móvil (2 ocurrencias, caduca a los 30 días), Retraso a primera hora (3 ocurrencias, no
+caduca) y Otros (0 ocurrencias, no caduca). Las salidas al baño **no** son un tipo de nota: se
+registran en la sección [Salidas](07-salidas.md). Los centros que ya existían antes de esta
+funcionalidad recibieron entonces los tipos de entonces, entre ellos «Salida al baño»; si lo
+tienen, se conserva y se puede borrar desde esta misma pantalla.
 
 ![Administración de tipos de notas diarias](img/notas/admin-tipos-notas.png)
 
