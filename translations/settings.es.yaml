@@ -5,6 +5,16 @@ settings.global.description: 'Valores predeterminados para toda la aplicación. 
 settings.centre.title: 'Ajustes del centro'
 settings.centre.description: 'Valores predeterminados para este centro. Los docentes pueden sobrescribir los que sean aplicables a su perfil.'
 settings.teacher.title: 'Mis ajustes'
+push.title: 'Avisos en este dispositivo'
+push.intro: 'Recibe una notificación en este dispositivo cuando un estudiante lleve más de 30 minutos fuera del aula sin regreso, cuando tengas tareas de sanción pendientes o cuando haya partes a punto de prescribir. La activación es solo de este dispositivo y puedes quitarla cuando quieras.'
+push.status.on: 'Los avisos están activados en este dispositivo.'
+push.status.off: 'Los avisos no están activados en este dispositivo.'
+push.status.denied: 'El navegador tiene bloqueadas las notificaciones de este sitio. Permítelas en los ajustes del navegador para activar los avisos.'
+push.status.error: 'No se han podido activar los avisos. Inténtalo de nuevo más tarde.'
+push.unsupported: 'Este navegador no admite avisos. En iPhone o iPad hay que añadir antes la aplicación a la pantalla de inicio (ver el manual).'
+push.enable: 'Activar avisos'
+push.disable: 'Desactivar avisos'
+push.test: 'Enviar aviso de prueba'
 settings.teacher.description: 'Preferencias personales que tienen prioridad sobre los valores del centro y globales.'
 
 # ── Controles ─────────────────────────────────────────────────────────────────

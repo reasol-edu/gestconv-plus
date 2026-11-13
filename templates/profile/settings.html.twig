@@ -30,6 +30,44 @@
         </a>
     </div>
 
+    {# ── Avisos push en este dispositivo (solo si el servidor tiene claves VAPID) ── #}
+    {% if push_public_key() %}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-xs"
+             data-controller="push"
+             data-push-public-key-value="{{ push_public_key() }}"
+             data-push-csrf-value="{{ csrf_token('push_subscription') }}"
+             data-push-subscribe-url-value="{{ path('app_push_subscribe') }}"
+             data-push-test-url-value="{{ path('app_push_test') }}"
+             data-push-label-on-value="{{ 'push.status.on'|trans({}, 'settings') }}"
+             data-push-label-off-value="{{ 'push.status.off'|trans({}, 'settings') }}"
+             data-push-label-denied-value="{{ 'push.status.denied'|trans({}, 'settings') }}"
+             data-push-label-error-value="{{ 'push.status.error'|trans({}, 'settings') }}">
+            <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
+                {{ ux_icon('heroicons:bell-alert', {class: 'h-4 w-4 text-forest-500'}) }}
+                <h2 class="text-sm font-semibold text-gray-700">{{ 'push.title'|trans({}, 'settings') }}</h2>
+            </div>
+            <div class="space-y-3 px-6 py-4 text-sm text-gray-600">
+                <p>{{ 'push.intro'|trans({}, 'settings') }}</p>
+                <p data-push-target="status" class="font-medium text-gray-800" aria-live="polite"></p>
+                <p data-push-target="unsupported" class="hidden rounded-lg bg-amber-50 px-3 py-2 text-amber-900">{{ 'push.unsupported'|trans({}, 'settings') }}</p>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" data-push-target="enable" data-action="push#enable"
+                            class="hidden min-h-11 rounded-lg bg-forest-600 px-4 text-sm font-semibold text-white hover:bg-forest-700">
+                        {{ 'push.enable'|trans({}, 'settings') }}
+                    </button>
+                    <button type="button" data-push-target="test" data-action="push#test"
+                            class="hidden min-h-11 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        {{ 'push.test'|trans({}, 'settings') }}
+                    </button>
+                    <button type="button" data-push-target="disable" data-action="push#disable"
+                            class="hidden min-h-11 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        {{ 'push.disable'|trans({}, 'settings') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {# ── Ajustes del docente ────────────────────────────────────────────── #}
     {# overflow-clip (y no hidden) para que la barra de búsqueda de los ajustes pueda quedar fija al desplazarse. #}
     <div class="rounded-2xl border border-gray-200 bg-white shadow-xs overflow-clip">

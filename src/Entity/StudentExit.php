@@ -67,6 +67,10 @@ class StudentExit
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $autoClosedAt = null;
 
+    /** Cuándo se avisó por push, una sola vez, de que el estudiante lleva mucho rato fuera (ver NotifyLongExitsHandler). */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $longNoticeSentAt = null;
+
     public function __construct()
     {
         $this->exitedAt = now();
@@ -198,6 +202,18 @@ class StudentExit
     public function isOut(): bool
     {
         return $this->returnedAt === null && $this->autoClosedAt === null;
+    }
+
+    public function getLongNoticeSentAt(): ?\DateTimeImmutable
+    {
+        return $this->longNoticeSentAt;
+    }
+
+    public function markLongNoticeSent(?\DateTimeImmutable $at = null): static
+    {
+        $this->longNoticeSentAt = $at ?? now();
+
+        return $this;
     }
 
     public function markAutoClosed(?\DateTimeImmutable $at = null): static

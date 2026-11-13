@@ -1,0 +1,8 @@
+push.long_exit.title: 'Salida del aula sin regreso'
+push.long_exit.body: '%student% lleva más de %minutes% minutos fuera del aula.'
+push.sanction_tasks.title: 'Tareas de sanción pendientes'
+push.sanction_tasks.body: 'Tareas de sanción por cumplimentar: %count%.'
+push.prescription.title: 'Partes próximos a prescribir'
+push.prescription.body: 'Partes a punto de prescribir sin notificar a la familia: %count%.'
+push.test.title: 'Avisos activados'
+push.test.body: 'Este dispositivo recibirá los avisos de GestConv+.'

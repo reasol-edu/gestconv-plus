@@ -181,3 +181,17 @@ navegador. No requiere descargarla de ninguna tienda ni instalar nada aparte.
 
 En ambos casos queda un icono de GestConv+ en la pantalla de inicio del dispositivo que abre la
 aplicación a pantalla completa.
+
+### Avisos en el móvil {#avisos-en-el-movil}
+
+Si en tu centro está activada (ver [Avisos push al móvil](13-administrar-la-plataforma.md#avisos-push-al-movil)),
+en **Perfil › Ajustes** verás la tarjeta **Avisos en este dispositivo**. Pulsa **Activar avisos**, acepta el
+permiso del navegador y usa **Enviar aviso de prueba** para comprobarlo. A partir de ahí recibirás una
+notificación cuando un estudiante que has dejado salir lleve más de 30 minutos fuera, cuando tengas tareas
+de sanción pendientes y cuando haya partes a punto de prescribir; al tocarla se abre la pantalla
+correspondiente. Cada dispositivo se activa por separado y puedes **Desactivar avisos** cuando quieras. En
+iPhone o iPad, primero hay que añadir la aplicación a la pantalla de inicio (pasos de arriba) y activar los
+avisos desde esa aplicación instalada.
+
+Sin conexión a internet, la aplicación muestra una página de aviso con un botón **Reintentar**. Por seguridad no
+guarda en el dispositivo pantallas ni datos de estudiantes para usarlos sin conexión.

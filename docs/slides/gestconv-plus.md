@@ -1350,6 +1350,9 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
 - **iPhone/iPad (Safari)**: icono de compartir → **Añadir a pantalla de
   inicio**. Imprescindible usar Safari; ningún otro navegador puede hacerlo
   en iOS.
+- Opcional: **avisos push** (salida abierta más de 30 min, tareas pendientes,
+  partes a punto de prescribir) desde **Perfil › Ajustes**, si el servidor tiene
+  claves configuradas. En iPhone, solo con la app instalada.
 
 
 ---

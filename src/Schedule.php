@@ -9,6 +9,7 @@ use App\Message\AutoPrescribeSanctionsMessage;
 use App\Message\CloseForgottenExitsMessage;
 use App\Message\DeactivateExpiredDailyNotesMessage;
 use App\Message\IssueOverdueReminderMessage;
+use App\Message\NotifyLongExitsMessage;
 use App\Message\PurgeActivityAttachmentsMessage;
 use App\Message\PurgeActivityLogMessage;
 use App\Message\PurgeEmailNotificationLogMessage;
@@ -37,6 +38,7 @@ class Schedule implements ScheduleProviderInterface
             ->add(
                 RecurringMessage::cron('0 1 * * *', new DeactivateExpiredDailyNotesMessage()),
                 RecurringMessage::cron('10 1 * * *', new CloseForgottenExitsMessage()),
+                RecurringMessage::cron('* * * * *', new NotifyLongExitsMessage()),
                 RecurringMessage::cron('0 3 * * 0', new PurgeActivityLogMessage()),
                 RecurringMessage::cron('30 3 * * 0', new PurgeEmailNotificationLogMessage()),
                 RecurringMessage::cron('0 4 * * *', new AutoPrescribeIncidentReportsMessage()),

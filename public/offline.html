@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sin conexión · GestConv+</title>
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+               font-family: system-ui, sans-serif; background: #f3f4f6; color: #1f2937; text-align: center; padding: 1.5rem; }
+        main { max-width: 26rem; }
+        img { width: 4rem; height: 4rem; }
+        h1 { font-size: 1.4rem; margin: 1rem 0 .5rem; }
+        p { color: #4b5563; line-height: 1.5; }
+        button { margin-top: 1rem; padding: .75rem 1.5rem; border: 0; border-radius: .75rem; background: #576490; color: #fff;
+                 font-size: 1rem; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+<main>
+    <img src="/static/logo.svg" alt="">
+    <h1>Sin conexión</h1>
+    <p>No se puede llegar a GestConv+ ahora mismo. Por seguridad, la aplicación no guarda datos de estudiantes en este
+       dispositivo para usarlos sin conexión. Comprueba tu conexión e inténtalo de nuevo.</p>
+    <button type="button" onclick="location.reload()">Reintentar</button>
+</main>
+</body>
+</html>

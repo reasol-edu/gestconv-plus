@@ -97,6 +97,35 @@ class StudentExitRepository extends ServiceEntityRepository
     }
 
     /**
+     * Salidas de hoy que siguen abiertas desde `$threshold` o antes y de las que aún no se ha avisado, con el
+     * estudiante y quien las autorizó ya cargados (para el aviso push de «lleva mucho rato fuera»).
+     *
+     * @return list<StudentExit>
+     */
+    public function findOutLongerThan(EducationalCentre $centre, \DateTimeImmutable $startOfToday, \DateTimeImmutable $threshold): array
+    {
+        /** @var list<StudentExit> $result */
+        $result = $this->createQueryBuilder('e')
+            ->addSelect('st', 'au')
+            ->join('e.academicYear', 'ay')
+            ->join('e.student', 'st')
+            ->join('e.authorizedBy', 'au')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('e.returnedAt IS NULL')
+            ->andWhere('e.autoClosedAt IS NULL')
+            ->andWhere('e.longNoticeSentAt IS NULL')
+            ->andWhere('e.exitedAt >= :startOfToday')
+            ->andWhere('e.exitedAt <= :threshold')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('startOfToday', $startOfToday)
+            ->setParameter('threshold', $threshold)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
      * Salidas del estudiante cuyo instante de salida cae en [$from, $to), de la más reciente a
      * la más antigua.
      *

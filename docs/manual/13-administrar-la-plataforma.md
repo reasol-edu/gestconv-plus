@@ -788,6 +788,44 @@ php bin/console messenger:failed:retry   # reintentarlos
    [CHANGELOG](https://github.com/reasol-edu/gestconv-plus/blob/main/CHANGELOG.md) por si alguna
    novedad requiere ajustar la configuración.
 
+## Avisos push al móvil {#avisos-push-al-movil}
+
+Además del correo, la aplicación puede mandar **notificaciones push** al móvil u ordenador de cada docente
+que las active. Son opcionales y **están desactivadas mientras el servidor no tenga claves VAPID**; en ese caso
+no aparece nada en la aplicación y el resto funciona igual.
+
+Los avisos que se envían, a quien tenga el dispositivo suscrito, son:
+
+- **Salida del aula abierta más de 30 minutos**: al docente que la autorizó, una sola vez por salida (una
+  comprobación programada, cada minuto, de las salidas de hoy; solo en centros con la sección Salidas activa).
+- **Tareas de sanción pendientes**: con el recordatorio diario de tareas por cumplimentar.
+- **Partes próximos a prescribir**: con el aviso diario de prescripción próxima.
+
+**Cómo activarlo en el servidor**
+
+1. Genera el par de claves: `php bin/console app:push:generate-keys` (en Docker, dentro del contenedor).
+2. Pon `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` (un correo de contacto con `mailto:`) en el
+   fichero de entorno y reinicia (ver [Variables de entorno](01-instalacion-y-puesta-en-marcha.md#variables-de-entorno-opcionales)).
+   La clave privada es un secreto, igual que `APP_SECRET`.
+3. Requisitos: la aplicación servida por **HTTPS** (salvo `localhost`), **salida a internet** desde el servidor
+   hacia los servicios de push de los navegadores (Google, Mozilla, Apple, Microsoft) y la extensión `curl` de PHP. El
+   binario nativo con SQLite en un portátil suele no cumplir lo de HTTPS y la salida a internet: allí no se usa.
+4. Debe estar en marcha el planificador de tareas (el mismo que envía los correos y las prescripciones).
+
+**Cómo lo activa cada docente.** En **Perfil › Ajustes** aparece la tarjeta **Avisos en este dispositivo**, con
+**Activar avisos**, **Enviar aviso de prueba** y **Desactivar avisos**. La activación es de cada dispositivo y
+es el consentimiento: quien no la activa no recibe nada. En **iPhone o iPad** solo funciona si antes se ha
+añadido la aplicación a la pantalla de inicio (ver [La aplicación en el móvil](03-usar-la-aplicacion.md#la-aplicacion-en-el-movil)).
+
+**Seguridad y privacidad.** El texto de cada aviso es breve (nombre del estudiante y minutos, o un número de
+tareas o partes) y pasa por el servicio de push del navegador. Las direcciones de suscripción se validan contra
+una lista cerrada de esos servicios y se exige HTTPS, para que nadie pueda hacer que el servidor llame a otras
+direcciones. Las altas y bajas de dispositivos quedan en el [registro de actividad](#registro-de-actividad).
+
+**Uso sin conexión.** La aplicación instala un *service worker* que, sin conexión, muestra una página de aviso
+(«Sin conexión») en lugar del error del navegador. **No guarda en el dispositivo ninguna pantalla de la
+aplicación ni datos de estudiantes**: solo recursos estáticos públicos (hojas de estilo, iconos).
+
 ## Protección de datos (RGPD)
 
 La aplicación trata datos personales de menores (identidad, grupo, incidencias de convivencia y

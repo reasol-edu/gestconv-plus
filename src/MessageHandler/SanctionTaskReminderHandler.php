@@ -13,6 +13,7 @@ use App\Service\AppSettingsInterface;
 use App\Service\Feature;
 use App\Service\FeatureToggle;
 use App\Service\IncidentEmailNotifier;
+use App\Service\Push\PushNotifier;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -26,6 +27,7 @@ final class SanctionTaskReminderHandler
         private readonly IncidentEmailNotifier $notifier,
         private readonly ClockInterface $clock,
         private readonly FeatureToggle $features,
+        private readonly PushNotifier $push,
     ) {}
 
     public function __invoke(SanctionTaskReminderMessage $message): void
@@ -57,6 +59,7 @@ final class SanctionTaskReminderHandler
 
             foreach ($tasksByTeacher as $teacherId => $items) {
                 $this->notifier->sanctionTasksReminder($teachersById[$teacherId], $items);
+                $this->push->sanctionTasks($teachersById[$teacherId], count($items));
             }
         }
     }

@@ -11,6 +11,7 @@ use App\Repository\EducationalCentreRepository;
 use App\Repository\IncidentReportRepository;
 use App\Service\AppSettingsInterface;
 use App\Service\IncidentEmailNotifier;
+use App\Service\Push\PushNotifier;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -23,6 +24,7 @@ final class WarnUpcomingReportPrescriptionsHandler
         private readonly AppSettingsInterface $settings,
         private readonly IncidentEmailNotifier $notifier,
         private readonly ClockInterface $clock,
+        private readonly PushNotifier $push,
     ) {}
 
     public function __invoke(WarnUpcomingReportPrescriptionsMessage $message): void
@@ -65,6 +67,7 @@ final class WarnUpcomingReportPrescriptionsHandler
 
             foreach ($itemsByTeacher as $teacherId => $items) {
                 $this->notifier->reportsNearingPrescription($teachersById[$teacherId], $items);
+                $this->push->reportsNearingPrescription($teachersById[$teacherId], count($items));
             }
         }
     }

@@ -6,3 +6,9 @@ when@test:
         # En tests se desactiva el padding anti-timing del reset de contraseña
         # para no añadir ~900 ms a cada POST a /contrasena/recuperar.
         app.password_reset.request_min_duration_us: 0
+
+    services:
+        # Los avisos push no salen a la red en los tests: se anotan en memoria (ver RecordingPushDispatcher).
+        App\Tests\Support\RecordingPushDispatcher:
+            public: true
+        App\Service\Push\PushDispatcherInterface: '@App\Tests\Support\RecordingPushDispatcher'
