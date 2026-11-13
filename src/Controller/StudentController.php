@@ -18,6 +18,7 @@ use App\Repository\StudentRepository;
 use App\Security\Voter\StudentExitVoter;
 use App\Service\ActivityLogService;
 use App\Service\EntityChangeTracker;
+use App\Service\PdfHeaderBuilder;
 use App\Service\PdfRenderer;
 use App\Service\StudentConductReportBuilder;
 use App\Service\StudentContactVisibility;
@@ -61,6 +62,7 @@ class StudentController extends AbstractController
         private readonly ClockInterface $clock,
         private readonly StudentConductReportBuilder $reportBuilder,
         private readonly PdfRenderer $pdfRenderer,
+        private readonly PdfHeaderBuilder $pdfHeaderBuilder,
     ) {}
 
     #[Route('/{id}', name: 'app_students_show', methods: ['GET'])]
@@ -214,11 +216,28 @@ class StudentController extends AbstractController
 
         $title = $this->translator->trans('pdf.student_report.title', [], 'admin');
 
+        // Marcadores del encabezado y del pie personalizables (Ajustes › Personalización de informes).
+        $placeholders = [
+            'title'         => $title,
+            'student_name'  => $student->getName()->full(),
+            'group_name'    => implode(', ', $data->groupNames),
+            'centre_name'   => $centre->getName(),
+            'academic_year' => $year->getName(),
+            'date_from'     => $data->from?->format('d/m/Y') ?? '',
+            'date_to'       => $data->to?->format('d/m/Y') ?? '',
+        ];
+
         return $this->pdfRenderer->render(
             'pdf/student_report.html.twig',
-            ['centre' => $centre, 'data' => $data, 'viewer' => $viewer],
+            [
+                'centre'     => $centre,
+                'data'       => $data,
+                'viewer'     => $viewer,
+                'footerHtml' => $this->pdfHeaderBuilder->buildFooter('student', $centre, $placeholders),
+            ],
             $title,
             sprintf('informe-convivencia-%s.pdf', (new AsciiSlugger('es'))->slug($student->getName()->full())->lower()),
+            header: $this->pdfHeaderBuilder->build('student', $centre, $placeholders),
             centre: $centre,
             reportType: 'student',
         );

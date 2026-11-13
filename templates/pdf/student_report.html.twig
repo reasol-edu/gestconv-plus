@@ -213,4 +213,8 @@
             </table>
         {% endif %}
     {% endif %}
+
+    {% if footerHtml is defined and footerHtml %}
+        <div class="prose-block">{{ footerHtml|raw }}</div>
+    {% endif %}
 {% endblock %}

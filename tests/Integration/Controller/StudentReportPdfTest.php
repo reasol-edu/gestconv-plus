@@ -23,7 +23,10 @@ use App\Entity\Student;
 use App\Entity\StudentExit;
 use App\Entity\Teacher;
 use App\Service\StudentConductReportBuilder;
+use App\Service\PdfHeader;
+use App\Service\PdfRenderer;
 use App\Tests\Integration\ControllerTestCase;
+use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 
 /** Informe de convivencia del estudiante en PDF (ficha del estudiante). */
@@ -56,6 +59,63 @@ class StudentReportPdfTest extends ControllerTestCase
         self::assertSame('application/pdf', $this->client->getResponse()->headers->get('Content-Type'));
         self::assertStringContainsString('informe-convivencia-ana-garcia', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
         self::assertStringStartsWith('%PDF', (string) $this->client->getResponse()->getContent());    }
+
+    public function testHeaderFooterAndTemplateAreTheCentreSettingsOfTheStudentReport(): void
+    {
+        $w = $this->world();
+        $this->loginAs($w['admin'], $w['centre']);
+
+        $values = [
+            'reports.student_header_left'   => '<p>{student_name} · {group_name}</p>',
+            'reports.student_header_right'  => '<p>{academic_year} {date_from}-{date_to}</p>',
+            'reports.student_header_margin' => '30',
+            'reports.student_footer'        => '<p>Firmado en {city} para {centre_name}</p>',
+        ];
+        foreach ($values as $key => $value) {
+            $definition = $this->em->getRepository(SettingDefinition::class)->findOneBy(['key' => $key]);
+            self::assertNotNull($definition, "Falta la definición de $key");
+            $this->persist((new CentreSettingValue())->setDefinition($definition)->setCentre($w['centre'])->setValue($value));
+        }
+
+        $captured = [];
+        $renderer = $this->createStub(PdfRenderer::class);
+        $renderer->method('render')->willReturnCallback(
+            static function (string $template, array $context, string $title, string $filename, bool $inline, ?PdfHeader $header, bool $draftWatermark, string $orientation, mixed $centre, ?string $reportType) use (&$captured): Response {
+                $captured = compact('context', 'header', 'reportType');
+
+                return new Response('%PDF-fake');
+            },
+        );
+        self::getContainer()->set(PdfRenderer::class, $renderer);
+
+        $this->client->request('GET', '/alumnado/' . $w['student']->getId()->toRfc4122() . '/informe?from=2026-01-05&to=2026-02-10');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('student', $captured['reportType'], 'Usa los ajustes de plantilla propios del informe del estudiante.');
+        self::assertInstanceOf(PdfHeader::class, $captured['header']);
+        self::assertStringContainsString('Garc', $captured['header']->leftHtml);
+        self::assertStringContainsString('1ºA', $captured['header']->leftHtml);
+        self::assertStringContainsString('2025-2026', $captured['header']->rightHtml);
+        self::assertStringContainsString('05/01/2026-10/02/2026', $captured['header']->rightHtml);
+        self::assertSame(30, $captured['header']->marginTopMm);
+        self::assertSame('<p>Firmado en Sevilla para IES Informe ' . substr($w['centre']->getName(), -strlen((string) self::$counter)) . '</p>', $captured['context']['footerHtml']);
+    }
+
+    public function testTheContentFooterIsPrintedOnceAtTheEndOfTheReport(): void
+    {
+        $w    = $this->world();
+        $data = $this->builder()->build($w['admin'], $w['centre'], $w['student'], $w['year']);
+
+        /** @var Environment $twig */
+        $twig = self::getContainer()->get('twig');
+        $html = $twig->render('pdf/student_report.html.twig', [
+            'centre' => $w['centre'], 'data' => $data, 'viewer' => $w['admin'], 'pdfGeneratedAt' => new \DateTimeImmutable(),
+            'footerHtml' => '<p>PIE-PERSONALIZADO</p>',
+        ]);
+
+        self::assertSame(1, substr_count($html, 'PIE-PERSONALIZADO'));
+        self::assertGreaterThan((int) strpos($html, 'student_report.summary'), (int) strpos($html, 'PIE-PERSONALIZADO'));
+    }
 
     public function testAStudentOfAnotherCentreIsNotFound(): void
     {
