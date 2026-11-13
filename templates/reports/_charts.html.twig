@@ -1,0 +1,122 @@
+{#
+   Gráficos de la analítica de convivencia, dibujados en el servidor: SVG y HTML, sin JavaScript ni biblioteca de
+   gráficos (no hay nada que cargar de fuera, funciona con la CSP y se imprime tal cual). Cada gráfico lleva su
+   tabla de datos en un desplegable, para lectores de pantalla y para quien quiera las cifras exactas.
+#}
+
+{#
+   Columnas apiladas.
+   points: lista de {label, values (una por serie, en el orden de `series`), title (texto del tooltip y del lector de pantalla)}
+   series: lista de {name, color}
+#}
+{% macro columns(points, series, title, height) %}
+    {% set height = height|default(200) %}
+    {% set width = 640 %}
+    {% set padLeft = 32 %}
+    {% set padRight = 6 %}
+    {% set padTop = 14 %}
+    {% set padBottom = 24 %}
+    {% set innerWidth = width - padLeft - padRight %}
+    {% set innerHeight = height - padTop - padBottom %}
+    {% set count = points|length %}
+
+    {% set totals = [] %}
+    {% for point in points %}
+        {% set totals = totals|merge([point.values|reduce((sum, value) => sum + value, 0)]) %}
+    {% endfor %}
+    {% set maxTotal = totals is empty ? 0 : max(totals) %}
+    {# El eje llega a un múltiplo de 4 (cuatro tramos de igual altura) y como mínimo a 4. #}
+    {% set niceMax = maxTotal < 4 ? 4 : maxTotal + ((4 - (maxTotal % 4)) % 4) %}
+    {% set step = count > 0 ? innerWidth / count : innerWidth %}
+    {% set barWidth = min(step * 0.62, 44) %}
+    {% set labelEvery = count <= 14 ? 1 : (count / 12)|round(0, 'ceil') %}
+
+    <svg viewBox="0 0 {{ width }} {{ height }}" class="h-auto w-full" role="img" aria-label="{{ title }}" focusable="false">
+        <title>{{ title }}</title>
+
+        {# Rejilla y valores del eje vertical #}
+        {% for tick in 0..4 %}
+            {% set y = padTop + innerHeight - (innerHeight * tick / 4) %}
+            <line x1="{{ padLeft }}" x2="{{ width - padRight }}" y1="{{ y }}" y2="{{ y }}" stroke="{{ tick == 0 ? '#9ca3af' : '#e5e7eb' }}" stroke-width="1"/>
+            <text x="{{ padLeft - 6 }}" y="{{ y + 3.5 }}" text-anchor="end" font-size="10" fill="#6b7280">{{ (niceMax * tick / 4)|round }}</text>
+        {% endfor %}
+
+        {% for point in points %}
+            {% set index = loop.index0 %}
+            {% set x = padLeft + step * index + (step - barWidth) / 2 %}
+            {% set stacked = 0 %}
+            <g>
+                <title>{{ point.title }}</title>
+                {% for value in point.values %}
+                    {% if value > 0 %}
+                        {% set segment = innerHeight * value / niceMax %}
+                        <rect x="{{ x|round(2) }}" y="{{ (padTop + innerHeight - stacked - segment)|round(2) }}" width="{{ barWidth|round(2) }}" height="{{ segment|round(2) }}"
+                              fill="{{ series[loop.index0].color }}" rx="2"/>
+                        {% set stacked = stacked + segment %}
+                    {% endif %}
+                {% endfor %}
+                {% if totals[index] > 0 and count <= 14 %}
+                    <text x="{{ (x + barWidth / 2)|round(2) }}" y="{{ (padTop + innerHeight - stacked - 3)|round(2) }}" text-anchor="middle" font-size="10" font-weight="600" fill="#374151">{{ totals[index] }}</text>
+                {% endif %}
+            </g>
+            {% if index % labelEvery == 0 %}
+                <text x="{{ (padLeft + step * index + step / 2)|round(2) }}" y="{{ height - 8 }}" text-anchor="middle" font-size="10" fill="#6b7280">{{ point.label }}</text>
+            {% endif %}
+        {% endfor %}
+    </svg>
+
+    {% if series|length > 1 %}
+        <ul class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+            {% for item in series %}
+                <li class="inline-flex items-center gap-1.5">
+                    <span class="inline-block h-2.5 w-2.5 rounded-sm" style="background-color: {{ item.color }}"></span>{{ item.name }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}
+
+{#
+   Barras horizontales (las de «los más…»).
+   rows: lista de {label, hint (opcional, texto pequeño bajo la etiqueta), value, text (valor ya formateado), color (opcional)}
+#}
+{% macro bars(rows, color) %}
+    {% set values = [] %}
+    {% for row in rows %}{% set values = values|merge([row.value]) %}{% endfor %}
+    {% set maxValue = values is empty ? 1 : max(values) %}
+    <ul class="space-y-2.5">
+        {% for row in rows %}
+            <li class="grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-3 text-sm sm:grid-cols-[minmax(0,14rem)_1fr_auto]">
+                <div class="min-w-0">
+                    <p class="truncate text-gray-800" title="{{ row.label }}">{{ row.label }}</p>
+                    {% if row.hint|default('') != '' %}<p class="truncate text-xs text-gray-500">{{ row.hint }}</p>{% endif %}
+                </div>
+                <div class="h-2.5 overflow-hidden rounded-full bg-gray-100">
+                    <div class="h-full rounded-full" style="width: {{ maxValue > 0 ? (row.value / maxValue * 100)|round(1) : 0 }}%; background-color: {{ row.color|default(color) }}"></div>
+                </div>
+                <p class="whitespace-nowrap text-right font-medium tabular-nums text-gray-700">{{ row.text }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{# Tabla de datos de un gráfico en un desplegable. headers: lista de títulos; rows: lista de filas (listas de celdas). #}
+{% macro data(headers, rows, summary) %}
+    <details class="mt-3 text-xs text-gray-500">
+        <summary class="cursor-pointer select-none hover:text-forest-700">{{ summary }}</summary>
+        <div class="mt-2 overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-gray-200 text-gray-500">
+                        {% for header in headers %}<th scope="col" class="py-1 pr-4 font-medium">{{ header }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-gray-700">
+                    {% for row in rows %}
+                        <tr>{% for cell in row %}<td class="py-1 pr-4 tabular-nums">{{ cell }}</td>{% endfor %}</tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </details>
+{% endmacro %}

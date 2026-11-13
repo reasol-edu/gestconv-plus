@@ -228,6 +228,21 @@ class IncidentReport
         return $this;
     }
 
+    /**
+     * Un parte es «grave» si alguna de sus conductas es de una categoría grave. Es la definición única que usan
+     * las estadísticas por grupo y la analítica de convivencia: así sus totales coinciden siempre.
+     */
+    public function hasSeriousBehavior(): bool
+    {
+        foreach ($this->behaviors as $behavior) {
+            if ($behavior->getCategory()->isSerious()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function isExpelledFromClass(): bool
     {
         return $this->expelledFromClass;

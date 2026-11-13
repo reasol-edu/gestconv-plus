@@ -717,6 +717,33 @@ class IncidentReportRepository extends ServiceEntityRepository
     }
 
     /**
+     * Fecha del primer y del último parte del curso (para el rango por defecto de la analítica), o null si no hay partes.
+     *
+     * @return array{0: \DateTimeImmutable, 1: \DateTimeImmutable}|null
+     */
+    public function findOccurredAtBounds(EducationalCentre $centre, AcademicYear $year): ?array
+    {
+        /** @var array{first: string|null, last: string|null} $row */
+        $row = $this->createQueryBuilder('r')
+            ->select('MIN(r.occurredAt) AS first', 'MAX(r.occurredAt) AS last')
+            ->join('r.group', 'g')
+            ->join('g.course', 'c')
+            ->join('c.academicYear', 'ay')
+            ->where('ay.educationalCentre = :centre')
+            ->andWhere('ay = :year')
+            ->setParameter('centre', $centre->getId(), 'uuid')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleResult();
+
+        if ($row['first'] === null || $row['last'] === null) {
+            return null;
+        }
+
+        return [new \DateTimeImmutable($row['first']), new \DateTimeImmutable($row['last'])];
+    }
+
+    /**
      * All reports of the centre still un-notified and not prescribed, regardless of how close they
      * are to the centre's auto-prescription cutoff — used to compute upcoming-prescription warnings,
      * where the remaining days depend on each recipient's personal warning threshold.

@@ -1,0 +1,238 @@
+{% extends 'layouts/app.html.twig' %}
+{% import 'reports/_charts.html.twig' as charts %}
+
+{% block title %}{{ 'analytics.title'|trans({}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set colorContrary = '#7796cb' %}
+{% set colorSerious = '#dc2626' %}
+{% set colorSanction = '#d97706' %}
+
+<div class="px-6 py-8 max-w-6xl mx-auto space-y-6">
+
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">
+            {% include 'components/_breadcrumb_home.html.twig' %}
+            <a href="{{ path('app_reports_index', {centreId: centre.id}) }}" class="hover:text-forest-600 transition-colors">{{ 'reports'|trans({}, 'navigation') }}</a>
+            {{ ux_icon('heroicons:chevron-right', {class: 'h-4 w-4 shrink-0'}) }}
+            <span aria-current="page" class="text-gray-700 font-medium">{{ 'analytics.title'|trans({}, 'admin') }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ 'analytics.title'|trans({}, 'admin') }}</h1>
+        {% if year %}
+            <p class="mt-1 text-sm text-gray-500">{{ year.name }}</p>
+        {% endif %}
+    </div>
+
+    {% if year is null %}
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {{ 'group_stats.no_active_year'|trans({}, 'admin') }}
+        </div>
+    {% else %}
+        <form method="get" data-controller="quick-date-range" class="flex flex-wrap items-end gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-xs">
+            <div>
+                <label for="analytics-from" class="block text-xs font-medium text-gray-500 mb-1">{{ 'group_stats.field.from'|trans({}, 'admin') }}</label>
+                <input type="date" id="analytics-from" name="from" value="{{ from ? from|date('Y-m-d') : '' }}"
+                       data-quick-date-range-target="from"
+                       class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                              focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+            <div>
+                <label for="analytics-to" class="block text-xs font-medium text-gray-500 mb-1">{{ 'group_stats.field.to'|trans({}, 'admin') }}</label>
+                <input type="date" id="analytics-to" name="to" value="{{ to ? to|date('Y-m-d') : '' }}"
+                       data-quick-date-range-target="to"
+                       class="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-700
+                              focus:border-forest-500 focus:outline-none focus:ring-3 focus:ring-forest-500/20 transition-colors">
+            </div>
+
+            <div class="flex flex-wrap gap-1.5">
+                {% for days, key in {30: 'last_month', 90: 'last_three_months', 180: 'last_six_months', 365: 'last_year'} %}
+                    <button type="button" data-action="quick-date-range#apply" data-quick-date-range-days-param="{{ days }}"
+                            class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600
+                                   hover:bg-forest-50 hover:border-forest-200 hover:text-forest-700 transition-colors">
+                        {{ ('group_stats.quick_range.' ~ key)|trans({}, 'admin') }}
+                    </button>
+                {% endfor %}
+                <a href="{{ path('app_reports_analytics', {centreId: centre.id}) }}"
+                   class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600
+                          hover:bg-forest-50 hover:border-forest-200 hover:text-forest-700 transition-colors">
+                    {{ 'analytics.whole_year'|trans({}, 'admin') }}
+                </a>
+            </div>
+
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-medium text-white
+                           hover:bg-forest-700 transition-colors shadow-xs">
+                {{ ux_icon('heroicons:chart-bar', {class: 'h-4 w-4'}) }}
+                {{ 'analytics.update'|trans({}, 'admin') }}
+            </button>
+        </form>
+
+        {% if not hasData %}
+            <div class="rounded-xl border border-gray-200 bg-white px-6 py-12 text-center text-sm text-gray-500 shadow-xs">
+                {{ ux_icon('heroicons:chart-bar', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+                {{ 'analytics.no_data'|trans({}, 'admin') }}
+            </div>
+        {% elseif report is null or report.empty %}
+            <div class="rounded-xl border border-gray-200 bg-white px-6 py-12 text-center text-sm text-gray-500 shadow-xs">
+                {{ ux_icon('heroicons:chart-bar', {class: 'mx-auto h-10 w-10 text-gray-300 mb-3'}) }}
+                {{ 'analytics.empty_range'|trans({}, 'admin') }}
+            </div>
+        {% else %}
+            {% set seriousPercent = report.totalReports > 0 ? (report.seriousReports / report.totalReports * 100)|round(1) : 0 %}
+
+            {# ── Cifras clave ── #}
+            <dl class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {% for kpi in [
+                    {label: 'analytics.kpi.reports', value: report.totalReports, hint: 'analytics.kpi.reports_hint', params: {'%count%': report.totalBehaviours}},
+                    {label: 'analytics.kpi.serious', value: report.seriousReports, hint: 'analytics.kpi.serious_hint', params: {'%percent%': seriousPercent|number_format(1, ',', '.')}},
+                    {label: 'analytics.kpi.students', value: report.students, hint: null, params: {}},
+                    {label: 'analytics.kpi.repeat', value: report.repeatStudents, hint: report.repeatShare is not null and report.repeatStudents > 0 ? 'analytics.kpi.repeat_hint' : null, params: {'%percent%': (report.repeatShare ?? 0)|number_format(1, ',', '.')}},
+                    {label: 'analytics.kpi.sanctions', value: report.sanctions, hint: null, params: {}},
+                    {label: 'analytics.kpi.expelled', value: report.expelledReports, hint: null, params: {}},
+                ] %}
+                    <div class="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-xs">
+                        <dt class="text-xs font-medium text-gray-500">{{ kpi.label|trans({}, 'admin') }}</dt>
+                        <dd class="mt-1 text-2xl font-bold tabular-nums text-gray-900">{{ kpi.value }}</dd>
+                        {% if kpi.hint %}<p class="mt-0.5 text-xs text-gray-500">{{ kpi.hint|trans(kpi.params, 'admin') }}</p>{% endif %}
+                    </div>
+                {% endfor %}
+            </dl>
+
+            {# Etiquetas de los meses y de los días, de las traducciones del calendario #}
+            {% set monthPoints = [] %}
+            {% set sanctionPoints = [] %}
+            {% set monthRows = [] %}
+            {% for m in report.months %}
+                {% set abbr = ('month.' ~ m.month)|trans({}, 'calendar')|slice(0, 3) %}
+                {% set label = (loop.first or m.month == 1) ? abbr ~ ' ' ~ (m.year % 100) : abbr %}
+                {% set full = ('month.' ~ m.month)|trans({}, 'calendar') ~ ' ' ~ m.year %}
+                {% set monthPoints = monthPoints|merge([{label: label, values: [m.contrary, m.serious], title: full ~ ': ' ~ (m.contrary + m.serious) ~ ' · ' ~ 'analytics.legend.serious'|trans({}, 'admin') ~ ' ' ~ m.serious}]) %}
+                {% set sanctionPoints = sanctionPoints|merge([{label: label, values: [m.sanctions], title: full ~ ': ' ~ m.sanctions}]) %}
+                {% set monthRows = monthRows|merge([[full, m.contrary, m.serious, m.contrary + m.serious, m.sanctions]]) %}
+            {% endfor %}
+
+            {# ── Evolución mensual ── #}
+            <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+                <h2 class="text-base font-semibold text-gray-900">{{ 'analytics.chart.monthly'|trans({}, 'admin') }}</h2>
+                <p class="mb-3 text-xs text-gray-500">{{ 'analytics.chart.monthly_help'|trans({}, 'admin') }}</p>
+                {{ charts.columns(monthPoints, [{name: 'analytics.legend.contrary'|trans({}, 'admin'), color: colorContrary}, {name: 'analytics.legend.serious'|trans({}, 'admin'), color: colorSerious}], 'analytics.chart.monthly'|trans({}, 'admin'), 220) }}
+                {{ charts.data(['analytics.data.month'|trans({}, 'admin'), 'analytics.legend.contrary'|trans({}, 'admin'), 'analytics.legend.serious'|trans({}, 'admin'), 'analytics.data.total'|trans({}, 'admin'), 'analytics.legend.sanctions'|trans({}, 'admin')], monthRows, 'analytics.data.show'|trans({}, 'admin')) }}
+            </section>
+
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {# ── Día de la semana ── #}
+                {% set dayPoints = [] %}
+                {% set dayRows = [] %}
+                {% for d in report.weekdays %}
+                    {% set dayName = ('weekday.' ~ d.day)|trans({}, 'calendar') %}
+                    {% set dayPoints = dayPoints|merge([{label: dayName|slice(0, 3), values: [d.count], title: dayName ~ ': ' ~ d.count}]) %}
+                    {% set dayRows = dayRows|merge([[dayName, d.count]]) %}
+                {% endfor %}
+                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+                    <h2 class="text-base font-semibold text-gray-900">{{ 'analytics.chart.weekday'|trans({}, 'admin') }}</h2>
+                    <p class="mb-3 text-xs text-gray-500">{{ 'analytics.chart.weekday_help'|trans({}, 'admin') }}</p>
+                    {{ charts.columns(dayPoints, [{name: 'analytics.kpi.reports'|trans({}, 'admin'), color: colorContrary}], 'analytics.chart.weekday'|trans({}, 'admin'), 200) }}
+                    {{ charts.data(['analytics.data.day'|trans({}, 'admin'), 'analytics.kpi.reports'|trans({}, 'admin')], dayRows, 'analytics.data.show'|trans({}, 'admin')) }}
+                </section>
+
+                {# ── Hora del día ── #}
+                {% set hourPoints = [] %}
+                {% set hourRows = [] %}
+                {% for h in report.hours %}
+                    {% set hourPoints = hourPoints|merge([{label: h.hour ~ 'h', values: [h.count], title: h.hour ~ ':00 – ' ~ (h.hour + 1) ~ ':00 · ' ~ h.count}]) %}
+                    {% set hourRows = hourRows|merge([[h.hour ~ ':00', h.count]]) %}
+                {% endfor %}
+                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+                    <h2 class="text-base font-semibold text-gray-900">{{ 'analytics.chart.hour'|trans({}, 'admin') }}</h2>
+                    <p class="mb-3 text-xs text-gray-500">{{ 'analytics.chart.hour_help'|trans({}, 'admin') }}</p>
+                    {{ charts.columns(hourPoints, [{name: 'analytics.kpi.reports'|trans({}, 'admin'), color: colorContrary}], 'analytics.chart.hour'|trans({}, 'admin'), 200) }}
+                    {{ charts.data(['analytics.data.hour'|trans({}, 'admin'), 'analytics.kpi.reports'|trans({}, 'admin')], hourRows, 'analytics.data.show'|trans({}, 'admin')) }}
+                </section>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {# ── Conductas más registradas ── #}
+                {% set behaviourBars = [] %}
+                {% set behaviourRows = [] %}
+                {% for b in report.behaviours %}
+                    {% set behaviourBars = behaviourBars|merge([{label: b.name, hint: b.category, value: b.count, text: b.count, color: b.serious ? colorSerious : colorContrary}]) %}
+                    {% set behaviourRows = behaviourRows|merge([[b.name, b.category, b.count]]) %}
+                {% endfor %}
+                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+                    <h2 class="text-base font-semibold text-gray-900">{{ 'analytics.chart.behaviours'|trans({}, 'admin') }}</h2>
+                    <p class="mb-3 text-xs text-gray-500">{{ 'analytics.chart.behaviours_help'|trans({}, 'admin') }}</p>
+                    {% if behaviourBars is empty %}
+                        <p class="text-sm text-gray-500">{{ 'analytics.chart.none'|trans({}, 'admin') }}</p>
+                    {% else %}
+                        {{ charts.bars(behaviourBars, colorContrary) }}
+                        {{ charts.data(['analytics.data.behaviour'|trans({}, 'admin'), 'analytics.data.category'|trans({}, 'admin'), 'analytics.data.records'|trans({}, 'admin')], behaviourRows, 'analytics.data.show'|trans({}, 'admin')) }}
+                    {% endif %}
+                </section>
+
+                {# ── Estudiantes según su número de partes ── #}
+                {% set concentrationBars = [] %}
+                {% set concentrationRows = [] %}
+                {% for c in report.concentration %}
+                    {% set concentrationLabel = c.bucket == '1'
+                        ? 'analytics.concentration.label_one'|trans({}, 'admin')
+                        : (c.bucket == '5+' ? 'analytics.concentration.label_many'|trans({}, 'admin') : 'analytics.concentration.label'|trans({'%count%': c.bucket}, 'admin')) %}
+                    {% set concentrationBars = concentrationBars|merge([{label: concentrationLabel, hint: 'analytics.concentration.reports'|trans({'%count%': c.reports}, 'admin'), value: c.students, text: c.students, color: loop.index >= 3 ? colorSerious : colorContrary}]) %}
+                    {% set concentrationRows = concentrationRows|merge([[c.bucket, c.students, c.reports]]) %}
+                {% endfor %}
+                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+                    <h2 class="text-base font-semibold text-gray-900">{{ 'analytics.chart.concentration'|trans({}, 'admin') }}</h2>
+                    <p class="mb-3 text-xs text-gray-500">{{ 'analytics.chart.concentration_help'|trans({}, 'admin') }}</p>
+                    {{ charts.bars(concentrationBars, colorContrary) }}
+                    {% if report.repeatStudents > 0 %}
+                        <p class="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                            {{ 'analytics.concentration.summary'|trans({'%students%': report.repeatStudents, '%percent%': (report.repeatShare ?? 0)|number_format(1, ',', '.')}, 'admin') }}
+                        </p>
+                    {% endif %}
+                    {{ charts.data(['analytics.data.reports_per_student'|trans({}, 'admin'), 'analytics.data.students'|trans({}, 'admin'), 'analytics.kpi.reports'|trans({}, 'admin')], concentrationRows, 'analytics.data.show'|trans({}, 'admin')) }}
+                </section>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {# ── Cursos ── #}
+                {% set courseBars = [] %}
+                {% set courseRows = [] %}
+                {% for c in report.courses %}
+                    {% set per100 = c.per100 is not null ? 'analytics.per100'|trans({'%value%': c.per100|number_format(1, ',', '.')}, 'admin') : '' %}
+                    {% set courseBars = courseBars|merge([{label: c.name, hint: per100, value: c.reports, text: c.reports}]) %}
+                    {% set courseRows = courseRows|merge([[c.name, c.reports, c.students, c.per100 is not null ? c.per100|number_format(1, ',', '.') : '—']]) %}
+                {% endfor %}
+                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+                    <h2 class="text-base font-semibold text-gray-900">{{ 'analytics.chart.courses'|trans({}, 'admin') }}</h2>
+                    <p class="mb-3 text-xs text-gray-500">{{ 'analytics.chart.courses_help'|trans({}, 'admin') }}</p>
+                    {{ charts.bars(courseBars, colorContrary) }}
+                    {{ charts.data(['analytics.data.course'|trans({}, 'admin'), 'analytics.kpi.reports'|trans({}, 'admin'), 'analytics.data.students'|trans({}, 'admin'), 'analytics.data.per100'|trans({}, 'admin')], courseRows, 'analytics.data.show'|trans({}, 'admin')) }}
+                </section>
+
+                {# ── Grupos con más partes ── #}
+                {% set groupBars = [] %}
+                {% set groupRows = [] %}
+                {% for g in report.groups %}
+                    {% set per100 = g.per100 is not null ? 'analytics.per100'|trans({'%value%': g.per100|number_format(1, ',', '.')}, 'admin') : '' %}
+                    {% set groupBars = groupBars|merge([{label: g.name, hint: g.course ~ (per100 != '' ? ' · ' ~ per100 : ''), value: g.reports, text: g.reports}]) %}
+                    {% set groupRows = groupRows|merge([[g.name, g.course, g.reports, g.students, g.per100 is not null ? g.per100|number_format(1, ',', '.') : '—']]) %}
+                {% endfor %}
+                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+                    <h2 class="text-base font-semibold text-gray-900">{{ 'analytics.chart.groups'|trans({}, 'admin') }}</h2>
+                    <p class="mb-3 text-xs text-gray-500">{{ 'analytics.chart.groups_help'|trans({'%count%': constant('App\\Service\\ConductAnalyticsService::TOP')}, 'admin') }}</p>
+                    {{ charts.bars(groupBars, colorContrary) }}
+                    {{ charts.data(['analytics.data.group'|trans({}, 'admin'), 'analytics.data.course'|trans({}, 'admin'), 'analytics.kpi.reports'|trans({}, 'admin'), 'analytics.data.students'|trans({}, 'admin'), 'analytics.data.per100'|trans({}, 'admin')], groupRows, 'analytics.data.show'|trans({}, 'admin')) }}
+                </section>
+            </div>
+
+            {# ── Sanciones por mes ── #}
+            <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
+                <h2 class="text-base font-semibold text-gray-900">{{ 'analytics.chart.sanctions'|trans({}, 'admin') }}</h2>
+                <p class="mb-3 text-xs text-gray-500">{{ 'analytics.chart.sanctions_help'|trans({}, 'admin') }}</p>
+                {{ charts.columns(sanctionPoints, [{name: 'analytics.legend.sanctions'|trans({}, 'admin'), color: colorSanction}], 'analytics.chart.sanctions'|trans({}, 'admin'), 180) }}
+            </section>
+
+            <p class="text-xs text-gray-500">{{ 'analytics.footnote'|trans({}, 'admin') }}</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

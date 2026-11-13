@@ -620,6 +620,29 @@ class SanctionRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /**
+     * Fechas de alta de las sanciones del curso creadas en el rango (para la evolución mensual de la analítica).
+     * Solo las fechas: no hace falta hidratar nada más.
+     *
+     * @return list<\DateTimeImmutable>
+     */
+    public function findCreatedAtBetween(AcademicYear $year, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        /** @var list<array{createdAt: \DateTimeImmutable}> $rows */
+        $rows = $this->createQueryBuilder('s')
+            ->select('s.createdAt AS createdAt')
+            ->where('s.academicYear = :year')
+            ->andWhere('s.createdAt >= :from')
+            ->andWhere('s.createdAt <= :to')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->setParameter('from', $from->setTime(0, 0, 0))
+            ->setParameter('to', $to->setTime(23, 59, 59))
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static fn (array $row): \DateTimeImmutable => $row['createdAt'], $rows);
+    }
+
     /** @return list<Sanction> */
     public function findWithDatesForAcademicYear(AcademicYear $year): array
     {

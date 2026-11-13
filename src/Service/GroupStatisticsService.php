@@ -93,7 +93,7 @@ class GroupStatisticsService
 
         foreach ($reports as $report) {
             $studentIds[$report->getStudent()->getId()->toRfc4122()] = true;
-            $serious = $this->isSerious($report);
+            $serious = $report->hasSeriousBehavior();
 
             if ($serious) {
                 ++$reportsSerious;
@@ -145,16 +145,5 @@ class GroupStatisticsService
             count($sanctionIds),
             count($prescribedSanctionIds),
         );
-    }
-
-    private function isSerious(IncidentReport $report): bool
-    {
-        foreach ($report->getBehaviors() as $behavior) {
-            if ($behavior->getCategory()->isSerious()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

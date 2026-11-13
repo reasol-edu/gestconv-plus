@@ -232,3 +232,34 @@ mismo contenido en PDF (con el encabezado personalizable del centro, ver
 [Personalización de informes](13-administrar-la-plataforma.md#personalizacion-de-informes)) o en
 una hoja Excel con una fila por grupo, los subtotales y el total general.
 
+### Analítica de convivencia {#analitica-de-convivencia}
+
+La tarjeta **Analítica de convivencia** presenta los mismos partes y sanciones en **gráficos**, para ver
+de un vistazo cómo evoluciona la convivencia y dónde se concentra. Sin elegir fechas abarca desde el
+primer hasta el último parte del curso; con los campos de fecha y los rangos rápidos (último mes, tres
+meses, seis meses, año) o **Todo el curso** se acota. Solo la ve quien tiene acceso a la sección
+Informes (equipo directivo y administración) y recoge siempre el centro entero.
+
+Arriba, las **cifras clave** del rango: partes (y conductas registradas), partes graves y su
+porcentaje, estudiantes con partes, estudiantes con **tres o más partes** (y el porcentaje de los partes
+que acumulan), sanciones y partes con expulsión del aula. Debajo, los gráficos:
+
+- **Partes por mes** — una columna por mes natural, con los partes de conductas contrarias y, en rojo,
+  los que incluyen alguna conducta grave. Los meses sin partes aparecen a cero.
+- **Partes por día de la semana** y **por hora del día** — cuándo se concentran los incidentes (el
+  sábado y el domingo solo aparecen si hay partes).
+- **Conductas más registradas** — las diez más frecuentes, en rojo las de categorías graves. Un parte con
+  varias conductas cuenta una vez por cada una, así que la suma no coincide con el número de partes.
+- **Estudiantes según su número de partes** — cuántos estudiantes tienen uno, dos, tres, cuatro o cinco
+  o más partes: muestra si los partes se reparten entre muchos o los acumulan unos pocos.
+- **Partes por curso** y **grupos con más partes** — con el número de partes y los partes **por cada
+  100 estudiantes**, para comparar cursos y grupos de distinto tamaño. Un estudiante que figura en
+  varios grupos se cuenta en cada uno.
+- **Sanciones por mes** — según la fecha de alta de cada sanción.
+
+Cada gráfico lleva debajo un desplegable **Ver los datos en tabla** con las cifras exactas (útil
+también con lector de pantalla). Los totales coinciden con los de las
+[estadísticas por grupo](#estadisticas-por-grupo) para el mismo rango, porque comparten los datos y la
+definición de «parte grave». Los gráficos se dibujan en el propio servidor, sin cargar nada de fuera,
+y se imprimen desde el navegador como cualquier otra pantalla.
+

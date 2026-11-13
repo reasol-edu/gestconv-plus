@@ -40,6 +40,7 @@ final class HelpLinks
         'app_issues'                         => ['10-incidencias', 'incidencias'],
         'app_calendar'                       => ['11-calendario-actividades-y-tablon', 'calendario'],
         'app_events'                         => ['11-calendario-actividades-y-tablon', 'actividades-de-centro'],
+        'app_reports_analytics'              => ['06-convivencia-administracion', 'analitica-de-convivencia'],
         'app_reports'                        => ['06-convivencia-administracion', 'informes'],
         'app_utilities_calendar_generator'   => ['14-utilidades', 'generador-de-calendarios'],
         'app_utilities_date'                 => ['14-utilidades', 'calculadora-de-fechas'],

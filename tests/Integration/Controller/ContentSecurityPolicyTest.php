@@ -30,9 +30,11 @@ class ContentSecurityPolicyTest extends ControllerTestCase
 
         $teacher = (new Teacher(new PersonName('Test', 'Teacher')))->setUsername('csp.' . uniqid('', false))->setPassword('x');
         $centre  = (new EducationalCentre())->setCode('9' . str_pad((string) random_int(1, 9999999), 7, '0', STR_PAD_LEFT))->setName('IES CSP')->setCity('Sevilla');
+        $centre->addAdmin($teacher);
         $this->persist($teacher, $centre);
         $this->loginAs($teacher, $centre);
-        foreach (['/', '/partes', '/partes/nuevo', '/perfil/ajustes'] as $url) {
+        $centreId = $centre->getId()->toRfc4122();
+        foreach (['/', '/partes', '/partes/nuevo', '/perfil/ajustes', "/centro/$centreId/informes", "/centro/$centreId/informes/analitica"] as $url) {
             $pages[$url] = $this->fetch($url);
         }
 

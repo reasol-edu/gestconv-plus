@@ -8,6 +8,7 @@ use App\Entity\AcademicYear;
 use App\Entity\EducationalCentre;
 use App\Repository\EducationalCentreRepository;
 use App\Security\Voter\EducationalCentreVoter;
+use App\Service\ConductAnalyticsService;
 use App\Service\DurationFormatter;
 use App\Service\ExitGroupRow;
 use App\Service\ExitReasonStatistics;
@@ -36,6 +37,7 @@ class ReportsController extends AbstractController
         private readonly EducationalCentreRepository $centres,
         private readonly TenantContext $tenantContext,
         private readonly GroupStatisticsService $groupStatistics,
+        private readonly ConductAnalyticsService $conductAnalytics,
         private readonly ExitStatisticsService $exitStatistics,
         private readonly IssueStatisticsService $issueStatistics,
         private readonly PdfRenderer $pdfRenderer,
@@ -51,6 +53,46 @@ class ReportsController extends AbstractController
 
         return $this->render('reports/index.html.twig', [
             'centre' => $centre,
+        ]);
+    }
+
+    /** Máximo de meses que abarca el gráfico de evolución: un rango mayor se recorta por el principio. */
+    private const int ANALYTICS_MAX_MONTHS = 60;
+
+    /**
+     * Analítica de convivencia: los mismos partes y sanciones que las estadísticas por grupo, pero en gráficos
+     * (evolución, día y hora, conductas, cursos y grupos, concentración). Informe del centro entero, solo para el
+     * equipo directivo, igual que el resto de Informes. Sin fechas, abarca desde el primer hasta el último parte del curso.
+     */
+    #[Route('/analitica', name: 'app_reports_analytics', methods: ['GET'])]
+    public function analytics(string $centreId, Request $request): Response
+    {
+        $centre = $this->requireCentre($centreId);
+        $year   = $this->tenantContext->getViewYear($centre);
+
+        $report = null;
+        $from   = $to = null;
+        $hasData = false;
+        if ($year !== null) {
+            $default = $this->conductAnalytics->defaultRange($centre, $year);
+            $hasData = $default !== null;
+
+            [$from, $to] = $this->parseRange($request);
+            $from ??= $default[0] ?? null;
+            $to   ??= $default[1] ?? null;
+            if ($from !== null && $to !== null) {
+                $from = max($from, $to->modify('-' . (self::ANALYTICS_MAX_MONTHS - 1) . ' months')->modify('first day of this month'));
+                $report = $this->conductAnalytics->build($centre, $year, $from, $to);
+            }
+        }
+
+        return $this->render('reports/analytics.html.twig', [
+            'centre'  => $centre,
+            'year'    => $year,
+            'from'    => $from,
+            'to'      => $to,
+            'report'  => $report,
+            'hasData' => $hasData,
         ]);
     }
 
