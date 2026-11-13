@@ -677,3 +677,20 @@ select:not([multiple]):not([size]):not(.ts-hidden-accessible) {
 .ts-pos-option .ts-pos-sub      { font-size: 0.7rem; color: #9ca3af; margin-top: 0.1rem; }
 .ts-pos-option .ts-pos-details  { font-size: 0.7rem; color: #6b7280; font-style: italic; margin-top: 0.2rem;
                                   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Barra de desplazamiento de la navegación del panel lateral (fondo oscuro): en Windows, la barra clásica se
+   dibuja con una pista blanca. Fina, con la pista transparente y el pulgar claro y translúcido; macOS e iOS ya
+   usan barras superpuestas y no cambian. */
+.sidebar-scroll {
+    color-scheme: dark;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.25) transparent;
+}
+
+/* Navegadores sin scrollbar-width / scrollbar-color. */
+@supports not (scrollbar-width: thin) {
+    .sidebar-scroll::-webkit-scrollbar       { width: 8px; }
+    .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-scroll::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 0.25); border-radius: 9999px; }
+    .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgb(255 255 255 / 0.4); }
+}
