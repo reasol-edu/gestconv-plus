@@ -18,7 +18,7 @@
 
     {# ── La copia ── #}
     <section class="rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-xs">
-        <h2 class="text-base font-semibold text-gray-900 break-all">{{ copy.name }}</h2>
+        <h2 class="text-base font-semibold text-gray-900 break-words">{{ copy.name }}</h2>
         <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
             <div><dt class="text-xs text-gray-500">{{ 'system.restore.info.version'|trans({}, 'admin') }}</dt><dd class="font-medium text-gray-900">{{ manifest.appVersion }}</dd></div>
             <div><dt class="text-xs text-gray-500">{{ 'system.restore.info.date'|trans({}, 'admin') }}</dt><dd class="font-medium text-gray-900">{{ manifest.createdAt|date('d/m/Y H:i') }}</dd></div>
@@ -65,12 +65,13 @@
             <p class="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800">{{ 'system.restore.error.no_password'|trans({}, 'admin') }}</p>
         {% endif %}
 
-        <div class="flex items-center justify-end gap-3 pt-2">
-            <a href="{{ path('app_admin_system') }}" class="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+        {# En móvil, los botones van apilados y a todo el ancho, con el de restaurar (el peligroso) arriba y Cancelar debajo; desde «sm», en una fila. #}
+        <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
+            <a href="{{ path('app_admin_system') }}" class="rounded-xl border border-gray-200 px-4 py-3 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors sm:py-2.5">
                 {{ 'system.restore.cancel'|trans({}, 'admin') }}
             </a>
             {% if has_password %}
-                <button type="submit" class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors shadow-xs">
+                <button type="submit" class="rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 transition-colors shadow-xs sm:py-2.5">
                     {{ 'system.restore.submit'|trans({}, 'admin') }}
                 </button>
             {% endif %}

@@ -55,12 +55,13 @@
                 {{ ux_icon('heroicons:exclamation-triangle', {class: 'h-4 w-4 inline -mt-0.5 mr-1'}) }}{{ 'system.backup.warning'|trans({}, 'admin') }}
             </p>
         </div>
-        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex flex-wrap items-center justify-end gap-2 rounded-b-2xl">
+        {# En móvil, los dos botones ocupan todo el ancho, uno bajo otro; desde «sm», alineados a la derecha. #}
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex flex-col gap-2 rounded-b-2xl sm:flex-row sm:items-center sm:justify-end">
             <form method="post" action="{{ path('app_admin_system_backup_save') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('system_backup_save') }}">
                 <button type="submit"
-                        class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700
-                               hover:bg-gray-50 transition-colors shadow-xs">
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700
+                               hover:bg-gray-50 transition-colors shadow-xs sm:w-auto sm:py-2.5">
                     {{ ux_icon('heroicons:archive-box-arrow-down', {class: 'h-4 w-4'}) }}
                     {{ 'system.backup.save'|trans({}, 'admin') }}
                 </button>
@@ -68,8 +69,8 @@
             <form method="post" action="{{ path('app_admin_system_backup') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('system_backup') }}">
                 <button type="submit"
-                        class="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white
-                               hover:bg-forest-700 transition-colors shadow-xs">
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-forest-600 px-4 py-3 text-sm font-semibold text-white
+                               hover:bg-forest-700 transition-colors shadow-xs sm:w-auto sm:py-2.5">
                     {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-4 w-4'}) }}
                     {{ 'system.backup.download'|trans({}, 'admin') }}
                 </button>
@@ -113,7 +114,7 @@
                     <li class="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-4">
                         {# En pantallas estrechas el nombre ocupa toda la fila (y se parte si hace falta) y los botones van debajo; desde «sm», todo en una línea. #}
                         <div class="min-w-0 basis-full sm:flex-1 sm:basis-0">
-                            <p class="break-all text-sm font-medium text-gray-900 sm:truncate sm:break-normal" title="{{ copy.name }}">{{ copy.name }}</p>
+                            <p class="break-words text-sm font-medium text-gray-900 sm:truncate" title="{{ copy.name }}">{{ copy.name }}</p>
                             <p class="text-xs text-gray-500">
                                 {{ copy.modifiedAt|date('d/m/Y H:i') }} · {{ copy.size < 1048576 ? (copy.size / 1024)|round ~ ' KB' : (copy.size / 1048576)|number_format(1, ',', '.') ~ ' MB' }}
                                 {% if copy.manifest %}· GestConv+ {{ copy.manifest.appVersion }} · {{ copy.manifest.platform }}{% endif %}
@@ -122,17 +123,18 @@
                                 <p class="mt-1 text-xs text-red-600">{{ copy.problems|join(' ') }}</p>
                             {% endif %}
                         </div>
-                        <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
+                        {# Botones: en móvil, en columnas del mismo ancho y de altura táctil (~40 px); desde «sm», compactos y en línea. #}
+                        <div class="grid w-full grid-flow-col auto-cols-fr gap-2 sm:flex sm:w-auto sm:shrink-0 sm:items-center">
                             {% if copy.restorable and can_restore %}
                                 <a href="{{ path('app_admin_system_restore', {name: copy.name}) }}"
-                                   class="inline-flex items-center gap-1 rounded-lg border border-forest-200 px-2.5 py-1.5 text-xs font-medium text-forest-700 hover:bg-forest-50 transition-colors">
+                                   class="inline-flex items-center justify-center gap-1 rounded-lg border border-forest-200 px-2.5 py-3 text-xs font-medium text-forest-700 hover:bg-forest-50 transition-colors sm:py-1.5">
                                     {{ ux_icon('heroicons:arrow-uturn-left', {class: 'h-3.5 w-3.5'}) }}{{ 'system.copies.restore'|trans({}, 'admin') }}
                                 </a>
                             {% endif %}
                             <form method="post" action="{{ path('app_admin_system_backup_download_stored', {name: copy.name}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('system_backup_download_' ~ copy.name) }}">
                                 <button type="submit"
-                                        class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                        class="inline-flex w-full items-center justify-center gap-1 rounded-lg border border-gray-200 px-2.5 py-3 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors sm:w-auto sm:py-1.5">
                                     {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-3.5 w-3.5'}) }}{{ 'system.copies.download'|trans({}, 'admin') }}
                                 </button>
                             </form>
@@ -140,7 +142,7 @@
                                   class="js-confirm-form" data-confirm="{{ 'system.copies.delete_confirm'|trans({'%name%': copy.name}, 'admin')|e('html_attr') }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('system_backup_delete_' ~ copy.name) }}">
                                 <button type="submit"
-                                        class="js-confirm-trigger inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
+                                        class="js-confirm-trigger inline-flex w-full items-center justify-center gap-1 rounded-lg border border-red-200 px-2.5 py-3 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors sm:w-auto sm:py-1.5">
                                     {{ ux_icon('heroicons:trash', {class: 'h-3.5 w-3.5'}) }}{{ 'system.copies.delete'|trans({}, 'admin') }}
                                 </button>
                             </form>
