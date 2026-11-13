@@ -13,6 +13,8 @@ reúne en tarjetas la gestión de toda la plataforma: centros educativos, usuari
 personal no docente), registro de actividad, copia de seguridad y versión instalada, y ajustes
 globales.
 
+![Panel de Administración con las tarjetas de usuarios, centros, registro de actividad, copia de seguridad y versión, y ajustes globales](img/admin/admin-sistema-tarjeta.png)
+
 ### Centros educativos
 
 La tarjeta **Centros educativos** lista los centros alojados en el servidor y permite crearlos,
@@ -637,7 +639,7 @@ eliminado. Un valor de 0 desactiva esta eliminación automática para ese ámbit
 | Modo mantenimiento | Solo global | Activado / Desactivado | Desactivado |
 | Avisar de versiones nuevas | Solo global | Activado / Desactivado | Activado |
 
-![Categoría «Mantenimiento» de los ajustes globales: el ajuste «Modo mantenimiento», con su desplegable en «Por defecto (Desactivado)»](img/admin/admin-mantenimiento-ajuste.png)
+![Categoría «Mantenimiento» de los ajustes globales: los ajustes «Modo mantenimiento» y «Avisar de versiones nuevas», cada uno con su desplegable en «Por defecto»](img/admin/admin-mantenimiento-ajuste.png)
 
 **Modo mantenimiento** (en **Administración → Ajustes globales**, categoría **Mantenimiento**,
 la primera de la lista) cierra la aplicación a todo el mundo salvo a los **administradores
@@ -746,6 +748,8 @@ aplicación, plataforma, fecha y filas de cada tabla) y un fichero por tabla. Qu
 correos pendientes y el registro interno de migraciones. Cada descarga se anota en el
 [registro de actividad](#registro-de-actividad).
 
+![Página «Copia de seguridad y versión»: versión instalada y botón para descargar la copia, con el aviso sobre los datos personales](img/admin/admin-copia-seguridad.png)
+
 !!! warning "La copia contiene datos personales"
     Incluye datos del alumnado y los *hashes* de las contraseñas. Guárdala cifrada y en otra máquina,
     no la compartas y bórrala cuando ya no la necesites.
@@ -846,6 +850,14 @@ al día, con un tiempo máximo de pocos segundos, y una hora después si falló�
 repositorio del proyecto; solo recibe el número de versión y **no envía ningún dato** del centro ni de las
 personas. Si el servidor no tiene salida a internet, o no quieres esa consulta, desactiva el ajuste global
 **Avisar de versiones nuevas** (categoría **Mantenimiento**): entonces no se hace ninguna petición.
+
+![Panel de Administración con una franja «Hay una versión nueva de GestConv+» y el enlace «Cómo actualizar»](img/admin/admin-version-nueva-panel.png)
+
+La página **Copia de seguridad y versión** da el detalle —cuál es la versión nueva, con un enlace a sus
+novedades— o indica que ya tienes la última, que no se pudo consultar (se reintenta una hora después) o que
+el aviso está desactivado.
+
+![Página «Copia de seguridad y versión» con el aviso de la versión nueva y el enlace a sus novedades en GitHub](img/admin/admin-version-nueva-pagina.png)
 
 1. Haz una **copia de seguridad** de la base de datos (ver arriba; lo más rápido es descargarla desde
    [Administración › Copia de seguridad y versión](#copia-desde-el-panel)). Si quieres que nadie use la
