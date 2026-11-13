@@ -162,6 +162,8 @@ agrupados por curso; pulsar uno abre directamente su panel de detalle para asign
 el aviso desaparece solo cuando el último grupo la tiene. Solo se muestra al ver el curso activo. La
 [lista de inicio de curso](#lista-de-comprobacion-de-inicio-de-curso) cuenta también este paso.
 
+![Aviso desplegado de grupos sin tutoría en la oferta formativa](img/centro/centro-oferta-sin-tutoria.png)
+
 ## 5. Indicar quién imparte clase en cada grupo (opcional)
 
 El último paso es opcional: registrar qué profesorado da clase en cada grupo, importando desde
@@ -221,9 +223,13 @@ quitar la marca). La lista distingue los pasos **imprescindibles** de los opcion
 pasan a ser imprescindibles si el centro usa la sección de Ausencias y guardias— y muestra el progreso.
 Cada curso nuevo empieza con la lista limpia.
 
+![Lista de comprobación de inicio de curso con el progreso](img/centro/centro-inicio-de-curso.png)
+
 Mientras falten pasos imprescindibles, el equipo directivo ve en el **Inicio** una tarjeta «Prepara el
 curso» con el progreso y el siguiente paso; desaparece sola cuando está todo hecho. Sin curso activo
 (justo al empezar) la tarjeta ya está ahí para recordar el primer paso: crearlo.
+
+![Tarjeta «Prepara el curso» del Inicio](img/inicio/tarjeta-inicio-de-curso.png)
 
 Esta es la lista completa:
 

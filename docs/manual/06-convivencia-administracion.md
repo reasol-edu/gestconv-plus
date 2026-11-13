@@ -242,6 +242,8 @@ primer hasta el último parte del curso; con los campos de fecha y los rangos r�
 meses, seis meses, año) o **Todo el curso** se acota. Solo la ve quien tiene acceso a la sección
 Informes (equipo directivo y administración) y recoge siempre el centro entero.
 
+![Analítica de convivencia: cifras clave y partes por mes](img/informes/informes-analitica.png)
+
 Arriba, las **cifras clave** del rango: partes (y conductas registradas), partes graves y su
 porcentaje, estudiantes con partes, estudiantes con **tres o más partes** (y el porcentaje de los partes
 que acumulan), sanciones y partes con expulsión del aula. Debajo, los gráficos:
@@ -258,6 +260,8 @@ que acumulan), sanciones y partes con expulsión del aula. Debajo, los gráficos
   100 estudiantes**, para comparar cursos y grupos de distinto tamaño. Un estudiante que figura en
   varios grupos se cuenta en cada uno.
 - **Sanciones por mes** — según la fecha de alta de cada sanción.
+
+![Analítica de convivencia: conductas más registradas y estudiantes según su número de partes](img/informes/informes-analitica-graficos.png)
 
 Cada gráfico lleva debajo un desplegable **Ver los datos en tabla** con las cifras exactas (útil
 también con lector de pantalla). Los totales coinciden con los de las
