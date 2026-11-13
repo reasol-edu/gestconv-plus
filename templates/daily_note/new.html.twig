@@ -61,7 +61,7 @@
                     <select name="registered_by" aria-required="true"
                             {% if errors.registered_by is defined %}aria-invalid="true"{% endif %}
                             data-controller="symfony--ux-autocomplete--autocomplete"
-                            data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
+                            data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
                             data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
                             data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                             data-symfony--ux-autocomplete--autocomplete-preload-value="false"

@@ -30,7 +30,7 @@
                 <p class="text-xs text-gray-400 mb-2">{{ 'centre_profiles.committee.help'|trans({}, 'admin') }}</p>
                 <select name="committee_members[]" multiple
                         data-controller="symfony--ux-autocomplete--autocomplete"
-                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
+                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
                         data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
                         data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                         data-symfony--ux-autocomplete--autocomplete-preload-value="false"
@@ -49,7 +49,7 @@
                 <p class="text-xs text-gray-400 mb-2">{{ 'centre_profiles.counselors.help'|trans({}, 'admin') }}</p>
                 <select name="counselors[]" multiple
                         data-controller="symfony--ux-autocomplete--autocomplete"
-                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
+                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
                         data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
                         data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                         data-symfony--ux-autocomplete--autocomplete-preload-value="false"
@@ -69,7 +69,7 @@
                 <p class="text-xs text-gray-400 mb-2">{{ 'centre_profiles.activity_coordinators.help'|trans({}, 'admin') }}</p>
                 <select name="activity_coordinators[]" multiple
                         data-controller="symfony--ux-autocomplete--autocomplete"
-                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_entity_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
+                        data-symfony--ux-autocomplete--autocomplete-url-value="{{ path('ux_autocomplete', {alias: 'teacher_centre', academicYearId: centre.activeAcademicYear.id}) }}"
                         data-symfony--ux-autocomplete--autocomplete-min-characters-value="2"
                         data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                         data-symfony--ux-autocomplete--autocomplete-preload-value="false"
