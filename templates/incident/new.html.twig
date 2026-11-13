@@ -132,7 +132,18 @@
                     <p class="mt-1 text-xs text-red-600">{{ errors.students }}</p>
                 {% endif %}
 
-                {# ── Contexto de los estudiantes elegidos: partes del último mes, sanción vigente, notas activas. ── #}
+                {# ── Selección rápida: grupos → estudiantes. Se oculta al escribir en el buscador. ── #}
+                {% if not lockedStudent %}
+                    {% include 'components/_quick_selection.html.twig' with {
+                        select_id: 'students-select',
+                        url: path('app_incidents_group_students', {groupId: '00000000-0000-0000-0000-000000000000'}),
+                        mine: quickMine,
+                        others: quickOthers,
+                    } only %}
+                {% endif %}
+
+                {# ── Contexto de los estudiantes elegidos (partes del último mes, sanción vigente, notas activas). Va tras la
+                       selección rápida, para que no empuje hacia abajo los grupos y sus estudiantes. ── #}
                 <div class="mt-3 hidden"
                      data-controller="student-context"
                      {% if lockedStudent %}data-student-context-initial-value="{{ [{id: preloadedStudents[0].value|split('::')|first, label: preloadedStudents[0].label}]|json_encode }}"
@@ -151,17 +162,6 @@
                      data-student-context-profile-label-value="{{ 'incident.context.profile'|trans({}, 'admin') }}">
                     <ul data-student-context-target="list" class="space-y-2" aria-live="polite"></ul>
                 </div>
-
-                {# ── Selección rápida: grupos → estudiantes. Va tras los antecedentes, para que estos se vean junto a los elegidos
-                       aunque la lista de un grupo sea larga. Se oculta al escribir en el buscador. ── #}
-                {% if not lockedStudent %}
-                    {% include 'components/_quick_selection.html.twig' with {
-                        select_id: 'students-select',
-                        url: path('app_incidents_group_students', {groupId: '00000000-0000-0000-0000-000000000000'}),
-                        mine: quickMine,
-                        others: quickOthers,
-                    } only %}
-                {% endif %}
 
                 <p class="mt-1 text-xs text-gray-400">{{ 'incident.field.students_help'|trans({}, 'admin') }}</p>
             </div>

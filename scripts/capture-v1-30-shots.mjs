@@ -3,7 +3,7 @@
  * estudiantes, borrador del parte, búsqueda por número, filtro de Séneca, exportación a Excel, cierre automático
  * de salidas, informe PDF del estudiante, icono de ayuda y avisos push):
  *
- *  · partes/nuevo-parte-selector-alumnado.png, partes/nuevo-parte-seleccion-rapida.png, partes/nuevo-parte-borrador.png
+ *  · partes/nuevo-parte-selector-alumnado.png, partes/nuevo-parte-antecedentes.png, partes/nuevo-parte-seleccion-rapida.png, partes/nuevo-parte-borrador.png
  *  · notas/nueva-nota-vacio.png, notas/nueva-nota-varios.png, notas/notas-creadas-varios.png
  *  · partes/partes-listado.png (con el botón «Exportar a Excel»), sanciones/sanciones-listado.png (filtro de Séneca)
  *  · salidas/salidas-historial.png, salidas/salidas-cierre-automatico.png
@@ -95,6 +95,8 @@ async function quickPick(page, count) {
     await page.waitForTimeout(500);
     await hideToolbar(page);
     await cardShot(page, `${root}/partes/nuevo-parte-selector-alumnado.png`, 760);
+    // Las tarjetas de antecedentes van tras la selección rápida: se captura solo su bloque.
+    await page.locator('[data-controller="student-context"]').screenshot({ path: `${root}/partes/nuevo-parte-antecedentes.png` });
 
     // Borrador: se escribe, se espera al guardado y se vuelve a abrir el formulario.
     await page.locator('.ql-editor').first().click();
