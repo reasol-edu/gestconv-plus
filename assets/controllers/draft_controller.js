@@ -20,6 +20,7 @@ export default class extends Controller {
         ttlHours: { type: Number, default: 24 },
         studentsId: String,
         locationId: String,
+        justNow: String,
         // true si la página se muestra tras un envío con errores: el formulario ya trae lo enviado.
         posted: Boolean,
     };
@@ -183,7 +184,8 @@ export default class extends Controller {
 
     #ago(savedAt) {
         const minutes = Math.max(0, Math.round((Date.now() - savedAt) / 60000));
-        const rtf = new Intl.RelativeTimeFormat('es', { numeric: 'auto' });
+        if (minutes < 1) return this.justNowValue;
+        const rtf = new Intl.RelativeTimeFormat('es', { numeric: 'always' });
         if (minutes < 60) return rtf.format(-minutes, 'minute');
         return rtf.format(-Math.round(minutes / 60), 'hour');
     }

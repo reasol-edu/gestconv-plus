@@ -51,6 +51,8 @@ no cuenta en los tiempos fuera de los informes y se muestra con la etiqueta **Ci
 lugar del cronómetro. En el [historial](#historial) puede filtrarse con **Cerradas
 automáticamente** (el filtro **Siguen fuera** no las incluye).
 
+![Historial de salidas filtrado por «Cerradas automáticamente»: la salida figura con la etiqueta Cierre automático](img/salidas/salidas-cierre-automatico.png)
+
 ## Pase prioritario {#pase-prioritario}
 
 Algunos estudiantes necesitan un trato especial al salir del aula (por ejemplo, por motivos de

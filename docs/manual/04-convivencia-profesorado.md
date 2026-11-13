@@ -29,7 +29,7 @@ especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de
    estudiantes (incluso de grupos distintos), selecciónalos todos: se creará un parte
    independiente para cada uno con los mismos datos.
 
-   ![Selector de alumnado con un estudiante seleccionado](img/partes/nuevo-parte-selector-alumnado.png)
+   ![Selección rápida: botones con los grupos de la persona que registra el parte, bajo el buscador](img/partes/nuevo-parte-seleccion-rapida.png)
 
    **Selección rápida.** Debajo del buscador aparecen botones con tus grupos (los que impartes o
    tutorizas), pensados para elegir con pocos toques incluso en la pantalla de un móvil. Pulsa un
@@ -43,6 +43,8 @@ especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de
    parte y de [nota](#registrar-una-nota-nueva)) permite
    desactivarla para toda la plataforma, para un centro o para ti (ver
    [Ajustes disponibles](13-administrar-la-plataforma.md#ajustes-disponibles)).
+
+   ![Dos estudiantes elegidos, con la tarjeta de antecedentes de cada una y la lista del grupo para marcar más](img/partes/nuevo-parte-selector-alumnado.png)
 
    **Antecedentes.** Al elegir a un estudiante, justo debajo aparece una tarjeta con un resumen de su
    situación: los **partes del último mes** (y cuántos incluyen conductas graves), si tiene una
@@ -75,6 +77,8 @@ especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de
 
 Los campos obligatorios están marcados con un asterisco; si falta alguno al guardar, cada error
 se muestra junto al campo afectado.
+
+![Aviso de borrador recuperable al abrir de nuevo el formulario de nuevo parte](img/partes/nuevo-parte-borrador.png)
 
 **Borrador automático.** Mientras rellenas el formulario, lo escrito se va guardando **en tu propio
 dispositivo** (no en el servidor), también al cambiar de aplicación o bloquear el móvil. Si se cierra la
@@ -160,6 +164,8 @@ una caducidad opcional (ver [Tipos de notas diarias](06-convivencia-administraci
    elegir a **varios estudiantes** (hasta 50): se registra **una nota independiente para cada uno**,
    con el mismo tipo y las mismas observaciones, y cada una cuenta por separado para su umbral. Es lo
    más cómodo para anotar, por ejemplo, los cinco retrasos de primera hora de una vez.
+
+   ![Formulario de nota con tres estudiantes elegidos con la selección rápida](img/notas/nueva-nota-varios.png)
 3. **Tipo de nota** — elige uno de los tipos activos del centro. Los tipos que, de añadir esta
    nota, alcanzarían el umbral de ocurrencias que dan lugar a parte se muestran resaltados en
    rojo (con varios estudiantes, si lo alcanzaría **cualquiera** de ellos). Al elegir un tipo
@@ -174,6 +180,8 @@ una caducidad opcional (ver [Tipos de notas diarias](06-convivencia-administraci
    umbral configurado, cuántas ocurrencias lleva el estudiante sobre el total; con varios
    estudiantes, una tarjeta por cada uno (el contador se resalta en rojo si ya ha alcanzado el
    umbral). La edición de una nota existente sigue siendo de un solo estudiante.
+
+   ![Pantalla de notas registradas, con una tarjeta por estudiante](img/notas/notas-creadas-varios.png)
 
 > La fecha y hora de la nota se registran automáticamente en el momento de guardarla, y no se
 > pueden elegir manualmente.
@@ -394,6 +402,10 @@ El botón **Informe en PDF** de la cabecera de la ficha genera un documento con 
 convivencia del estudiante en el curso que estás viendo, útil para reuniones con la familia, sesiones de
 evaluación o la comisión de convivencia. Si rellenas **Desde** y/o **Hasta** solo incluye ese periodo; con
 las fechas vacías, todo el curso. Contiene, de más antiguo a más reciente:
+
+![Botón Informe en PDF de la ficha, con el desplegable para elegir las fechas](img/alumnado/alumnado-informe-pdf.png)
+
+![Primera página del informe de convivencia de un estudiante](img/alumnado/alumnado-informe-pdf-pagina.png)
 
 - los datos del estudiante, su grupo, el periodo y quién genera el informe y cuándo;
 - los **datos de contacto de la familia**, solo si tienes permiso para verlos en la ficha;

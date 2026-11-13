@@ -186,7 +186,8 @@ const studentSelect = new TomSelect('#student-select', {
     },
     render: {
         option: (data, esc) => `<div><span class="font-medium">${esc(data.label)}</span> <span class="text-xs text-gray-400 ml-1">${esc(data.secondary || '')}</span></div>`,
-        item: (data, esc) => `<span>${esc(data.label)}</span>`,
+        // Mismo aspecto que las etiquetas del formulario de parte: nombre y grupo.
+        item: (data, esc) => `<span>${esc(data.label)}${data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${esc(data.secondary)}</span>` : ''}</span>`,
         no_results: () => `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`,
     },
     shouldLoad: (q) => q.length >= 2,

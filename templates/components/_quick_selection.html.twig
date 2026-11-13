@@ -10,7 +10,7 @@
             data-action="quick-selection#open"
             data-group-id="{{ group.id }}"
             data-group-name="{{ group.name }}"
-            class="flex min-h-12 items-center justify-center rounded-xl border-2 px-2 py-2 text-center text-base font-semibold shadow-xs transition-colors
+            class="flex min-h-12 items-center justify-center rounded-xl border-2 px-2 py-2 text-center text-base font-semibold leading-tight break-words shadow-xs transition-colors
                    {{ mine ? 'border-forest-600 bg-forest-600 text-white hover:bg-forest-700 active:bg-forest-800' : 'border-gray-200 bg-white text-gray-800 hover:border-forest-300 hover:bg-forest-50 active:bg-forest-100' }}">
         {{ group.name }}
     </button>
@@ -37,7 +37,7 @@
                 {% if mine is not empty %}
                     <div>
                         <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-forest-800">{{ 'incident.quick.my_groups'|trans({}, 'admin') }}</p>
-                        <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                        <div class="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
                             {% for group in mine %}{{ q.quick_group(group, true) }}{% endfor %}
                         </div>
                     </div>
@@ -53,7 +53,7 @@
                         </button>
                     {% endif %}
                     <div data-quick-selection-target="others" class="{{ mine is not empty ? 'hidden' : '' }}">
-                        <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                        <div class="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
                             {% for group in others %}{{ q.quick_group(group, false) }}{% endfor %}
                         </div>
                     </div>
@@ -75,7 +75,7 @@
                     <p data-quick-selection-target="count" class="text-xs text-gray-500"></p>
                 </div>
                 <p data-quick-selection-target="status" class="hidden rounded-xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-500"></p>
-                <ul data-quick-selection-target="list" class="space-y-2"></ul>
+                <ul data-quick-selection-target="list" class="grid gap-2 sm:grid-cols-2"></ul>
             </div>
         </div>
     </div>

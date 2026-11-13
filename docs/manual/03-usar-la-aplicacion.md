@@ -116,6 +116,8 @@ agrupan por tipo y se filtran mientras se escribe, sin distinguir mayúsculas ni
   alumnado** (a quienes se imparte clase o se tutoriza) y **Otro alumnado**; sobre estos últimos
   la ficha no muestra datos de contacto ni el historial de convivencia, solo las notas diarias.
 - **Docentes** — solo para administradores.
+![Paleta de búsqueda con «#1»: abre directamente el parte número 1](img/buscar/buscar-por-numero.png)
+
 - **Partes** — escribe el número del parte con la almohadilla, por ejemplo `#123`, para abrirlo
   directamente. Es el número que aparece en la primera columna del listado, dentro del curso que
   estás viendo, y solo se ofrece si tienes permiso para ver ese parte. La almohadilla es
@@ -132,6 +134,8 @@ tienen, en su barra de filtros, el botón **Exportar a Excel**. Descarga una hoj
 filas del listado tal como lo tienes filtrado** (no solo la página que ves): si has buscado un nombre o has
 marcado «Pendientes de notificar», la hoja contiene justo eso.
 
+![Listado de partes con el botón Exportar a Excel en la barra de filtros](img/partes/partes-listado.png)
+
 - La hoja trae **solo lo que tu perfil ve en esa pantalla**, con las mismas columnas del listado: un docente
   sin permisos especiales exporta únicamente sus partes y los de los grupos que tutoriza, igual que los ve.
   No se incluyen datos de contacto de las familias.
@@ -140,6 +144,8 @@ marcado «Pendientes de notificar», la hoja contiene justo eso.
 - Cada exportación queda anotada en el [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
 
 ## Ayuda en cada pantalla {#ayuda-en-cada-pantalla}
+
+![Cabecera con el buscador, la campana y el icono de ayuda](img/inicio/ayuda-cabecera.png)
 
 En la cabecera, junto a la campana, el icono de **ayuda** (**?**) abre este manual en el apartado que
 explica la pantalla en la que estás (por ejemplo, en el formulario de un nuevo parte, el apartado
@@ -193,5 +199,9 @@ correspondiente. Cada dispositivo se activa por separado y puedes **Desactivar a
 iPhone o iPad, primero hay que añadir la aplicación a la pantalla de inicio (pasos de arriba) y activar los
 avisos desde esa aplicación instalada.
 
+![Tarjeta Avisos en este dispositivo, en Perfil › Ajustes](img/ajustes/avisos-push-perfil.png)
+
 Sin conexión a internet, la aplicación muestra una página de aviso con un botón **Reintentar**. Por seguridad no
 guarda en el dispositivo pantallas ni datos de estudiantes para usarlos sin conexión.
+
+![Página «Sin conexión» con el botón Reintentar](img/inicio/sin-conexion.png)
