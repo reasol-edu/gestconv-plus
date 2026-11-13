@@ -42,4 +42,5 @@ return [
     'lodash.isequal' => ['version' => '4.5.0'],
     'quill/dist/quill.snow.css' => ['version' => '2.0.3', 'type' => 'css'],
     'lodash-es' => ['version' => '4.18.1'],
+    'es-module-shims' => ['version' => '2.8.4'],
 ];
