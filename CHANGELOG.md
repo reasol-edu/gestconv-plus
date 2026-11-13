@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.30.2] - 2026-11-13
+
+### Changed
+
+- Las **etiquetas de las selecciones múltiples** se ven igual en toda la aplicación, y llevan un icono distinto según elijas estudiantes (gorro de graduación), docentes (pizarra) u otros usuarios (persona). El buscador de estudiantes de **Notas** ya se ve igual que el del parte de convivencia.
+- **«Salida al baño» deja de crearse como tipo de nota** en los centros nuevos: las salidas al baño se registran en la sección Salidas. Los centros que ya tenían ese tipo lo conservan. La ayuda del acceso rápido «Nueva nota» y el manual ya no asocian las salidas al baño con las notas.
+
+### Fixed
+
+- Se eliminan más avisos de deprecación del registro del servidor: el alias antiguo de la ruta del autocompletado, el alias de mapeo de Doctrine y una opción obsoleta del perfilador. No cambia el comportamiento de la aplicación.
+
 ## [1.30.1] - 2026-11-13
 
 ### Added
