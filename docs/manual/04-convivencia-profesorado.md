@@ -86,8 +86,10 @@ pestaña o se pierde la sesión antes de guardar, al abrir de nuevo **Nuevo part
 («Hay un borrador de parte sin guardar en este dispositivo…») con dos botones: **Recuperar**, que rellena
 el formulario (estudiantes, fecha, lugar, conductas, descripción y expulsión), y **Descartar**. Nunca se
 restaura solo, porque el dispositivo puede ser compartido. El borrador es personal (de tu usuario y tu
-centro), caduca a las 24 horas, se borra al guardar el parte y al **cerrar sesión** con el botón de la
-aplicación. No se ofrece al registrar un parte desde la lista de estudiantes de las notas, donde el
+centro), caduca a las 24 horas (la administración de la plataforma puede cambiar el plazo o
+desactivar los borradores, ver [Visualización](13-administrar-la-plataforma.md#visualizacion)), se borra al guardar el
+parte y al **cerrar sesión** con el botón de la aplicación. Además, los borradores caducados se eliminan
+solos al abrir cualquier pantalla de la aplicación, también si la sesión se cerró sin pulsar «Cerrar sesión». No se ofrece al registrar un parte desde la lista de estudiantes de las notas, donde el
 estudiante viene fijado.
 
 > Cada parte queda vinculado al docente que lo registra. La fecha y hora de creación se registran
@@ -418,6 +420,11 @@ las fechas vacías, todo el curso. Contiene, de más antiguo a más reciente:
 y sanciones que puede ver, y si no tienes relación con el estudiante el informe lo advierte en lugar de
 dar a entender que «no tiene partes». Cada generación queda en el
 [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad).
+
+El encabezado, el pie, el margen superior y la plantilla de fondo del informe los personaliza cada centro
+como los de los demás informes (ver
+[Personalización de informes](13-administrar-la-plataforma.md#personalizacion-de-informes)); sin
+personalizar, lleva el título y el nombre del centro arriba y la fecha y localidad al final.
 
 Se llega a la ficha desde el buscador global, los listados y detalles de partes y sanciones, y la
 lista *Alumnado con partes pendientes de sanción* del inicio.

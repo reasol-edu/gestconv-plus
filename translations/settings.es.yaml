@@ -63,6 +63,9 @@ settings.key.page_size.description: 'Número de elementos que se muestran en los
 settings.key.display_quick_student_selection.label: 'Selección rápida de alumnado'
 settings.key.display_quick_student_selection.description: 'Muestra, bajo el buscador de los formularios de parte y de nota, botones con los grupos para marcar a los estudiantes con pocos toques (pensado para el móvil). Desactivada, solo queda el buscador.'
 
+settings.key.display_draft_retention_hours.label: 'Caducidad de los borradores de partes (horas)'
+settings.key.display_draft_retention_hours.description: 'Horas que se conserva en el dispositivo el borrador de un parte sin enviar (0-168). Pasado ese tiempo se elimina solo, al abrir cualquier pantalla de la aplicación. Un valor de 0 desactiva los borradores: no se guarda nada. El borrador contiene datos del alumnado y solo vive en el dispositivo de quien lo escribe, nunca en el servidor.'
+
 settings.key.email_notifications.label: 'Activar notificaciones automáticas'
 settings.key.email_notifications.description: 'Activa o desactiva todos los correos automáticos de la aplicación.'
 
@@ -295,6 +298,21 @@ settings.key.reports_issue_footer.description: 'Texto que se añade al final del
 settings.key.reports_issue_pdf_template.label: 'Plantilla PDF de informe de incidencia'
 settings.key.reports_issue_pdf_template.description: 'Sustituye, solo para el PDF de una incidencia, a la plantilla general vertical. Si no se sube ninguna, se usa la plantilla general vertical (si la hay).'
 
+settings.key.reports_student_header_left.label: 'Encabezado de informe del estudiante (izquierda)'
+settings.key.reports_student_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del informe de convivencia de un estudiante. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_student_header_right.label: 'Encabezado de informe del estudiante (derecha)'
+settings.key.reports_student_header_right.description: 'Contenido alineado a la derecha del encabezado, en la misma línea que el izquierdo. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_student_header_margin.label: 'Margen para encabezado de informe del estudiante'
+settings.key.reports_student_header_margin.description: 'Milímetros reservados en la parte superior de cada página para el encabezado; el contenido del informe empieza tras este margen. Auméntalo si el encabezado tiene varias líneas.'
+
+settings.key.reports_student_footer.label: 'Pie de contenido de informe del estudiante'
+settings.key.reports_student_footer.description: 'Texto que se añade al final del contenido del informe de convivencia de un estudiante, una sola vez (no se repite en cada página). Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
+
+settings.key.reports_student_pdf_template.label: 'Plantilla PDF de informe del estudiante'
+settings.key.reports_student_pdf_template.description: 'Sustituye, solo para el informe de convivencia de un estudiante, a la plantilla general vertical. Si no se sube ninguna, se usa la plantilla general vertical (si la hay).'
+
 settings.key.reports_exit_stats_header_left.label: 'Encabezado del informe de salidas (izquierda)'
 settings.key.reports_exit_stats_header_left.description: 'Contenido alineado a la izquierda del encabezado de cada página del PDF del informe de salidas. Admite marcadores de sustitución (consulta la lista completa con el icono de información).'
 
@@ -340,8 +358,8 @@ settings.placeholder_help.column.scope: 'Disponible en'
 
 settings.placeholder_help.scope.all: 'Todos'
 settings.placeholder_help.scope.reports_only: 'Solo partes'
-settings.placeholder_help.scope.reports_and_sanctions: 'Partes y sanciones'
-settings.placeholder_help.scope.group_stats_only: 'Solo informes con rango de fechas (estadísticas por grupo, salidas e incidencias)'
+settings.placeholder_help.scope.reports_and_sanctions: 'Partes, sanciones e informe del estudiante'
+settings.placeholder_help.scope.group_stats_only: 'Solo informes con rango de fechas (estadísticas por grupo, salidas, incidencias e informe del estudiante)'
 settings.placeholder_help.scope.school_event_only: 'Solo actividades'
 settings.placeholder_help.scope.issue_only: 'Solo incidencias'
 settings.placeholder_help.marker.issue_nr: 'Número de la incidencia'
@@ -363,7 +381,7 @@ settings.placeholder_help.marker.current_day: 'Día del mes de generación del P
 settings.placeholder_help.marker.current_month_name: 'Nombre del mes de generación del PDF, en minúscula (p. ej. «julio»)'
 settings.placeholder_help.marker.current_year: 'Año de generación del PDF'
 
-settings.placeholder_help.footer_default_note: 'Si no se personaliza, el pie de contenido de partes y sanciones usa por defecto el texto «En {city} a {current_day} de {current_month_name} de {current_year}».'
+settings.placeholder_help.footer_default_note: 'Si no se personaliza, el pie de contenido de partes, sanciones, actividades, incidencias e informe del estudiante usa por defecto el texto «En {city} a {current_day} de {current_month_name} de {current_year}».'
 
 # ── Errores de validación ──────────────────────────────────────────────────────
 settings.error.integer_range: 'Debe ser un número entre %min% y %max%'

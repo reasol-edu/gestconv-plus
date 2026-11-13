@@ -252,6 +252,17 @@ desactivarla para todo el servidor, uno de centro para su centro, y cada docente
 (por ejemplo, quien prefiere buscar siempre por nombre). Desactivada, el formulario conserva el
 buscador, que funciona igual.
 
+| Ajuste | Ámbito | Tipo | Rango | Por defecto |
+|---|---|---|---|---|
+| Caducidad de los borradores de partes (horas) | Global | Entero | 0-168 | 24 |
+
+Tiempo que se conserva, en el dispositivo de cada docente, el
+[borrador de un parte](04-convivencia-profesorado.md#registrar-un-nuevo-parte) sin enviar. Pasado ese
+tiempo se elimina solo al abrir cualquier pantalla de la aplicación. **Con 0 los borradores quedan
+desactivados**: no se guarda nada y se borra el que hubiera. Los borradores contienen datos del alumnado y
+nunca salen del dispositivo; un centro con equipos compartidos o con una política de protección de datos
+estricta puede acortar el plazo o desactivarlos. Es un ajuste solo global: afecta a toda la plataforma.
+
 ### Correo electrónico
 
 | Ajuste | Ámbito | Tipo | Por defecto |
@@ -449,6 +460,10 @@ incidencias…): son un recuento de trabajo, no un correo.
 | Encabezado derecho (informe de incidencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de incidencia) | Global, centro | Entero (mm) | 10-80 | 22 |
 | Pie de contenido (informe de incidencia) | Global, centro | Texto enriquecido | 0-5000 caracteres | `En {city} a {current_day} de {current_month_name} de {current_year}` |
+| Encabezado izquierdo (informe del estudiante) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
+| Encabezado derecho (informe del estudiante) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
+| Margen superior (informe del estudiante) | Global, centro | Entero (mm) | 10-80 | 22 |
+| Pie de contenido (informe del estudiante) | Global, centro | Texto enriquecido | 0-5000 caracteres | `En {city} a {current_day} de {current_month_name} de {current_year}` |
 | Encabezado izquierdo (informe de salidas) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{title}` en negrita |
 | Encabezado derecho (informe de salidas) | Global, centro | Texto enriquecido | 0-5000 caracteres | `{centre_name}` |
 | Margen superior (informe de salidas) | Global, centro | Entero (mm) | 10-80 | 22 |
@@ -458,7 +473,7 @@ incidencias…): son un recuento de trabajo, no un correo.
 | Marca de agua de borrador | Global, centro | Booleano | — | Desactivada |
 
 Los ajustes de **encabezado** controlan el contenido que se repite en cada página de los PDF de
-partes, sanciones, de los informes de estadísticas por grupo, de salidas y de incidencias y del informe de profesorado de guardia
+partes, sanciones, de los informes de estadísticas por grupo, de salidas y de incidencias, del informe de convivencia de un estudiante y del informe de profesorado de guardia
 (ver [Informes](06-convivencia-administracion.md#informes) y
 [Tramos horarios](12-administrar-el-centro.md#tramos-horarios)). Cada tipo de informe tiene dos
 zonas —izquierda y derecha, en la misma línea— que se editan con un editor de texto enriquecido
@@ -466,8 +481,8 @@ zonas —izquierda y derecha, en la misma línea— que se editan con un editor 
 milímetros, a qué altura empieza el cuerpo del documento en cada página: conviene aumentarlo si
 el encabezado personalizado ocupa más líneas que el original.
 
-Los ajustes de **pie de contenido** (uno para partes, otro para sanciones y otro para actividades,
-sin equivalente en estadísticas por grupo ni en profesorado de guardia) añaden un bloque de texto enriquecido al
+Los ajustes de **pie de contenido** (uno para partes, otro para sanciones, actividades, incidencias y
+el informe de un estudiante, sin equivalente en estadísticas por grupo ni en profesorado de guardia) añaden un bloque de texto enriquecido al
 final del documento, una sola vez. Por defecto muestran la fecha y localidad de generación del
 PDF (por ejemplo, «En Sevilla a 10 de julio de 2026»); se pueden sustituir por cualquier otro
 texto o vaciar por completo.
@@ -494,11 +509,11 @@ texto enriquecido de la categoría.
 |---|---|---|
 | `{title}` | Título genérico del informe («Informe de parte de convivencia» / «Informe de sanción de convivencia» / «Estadísticas por grupo» / «Profesorado de guardia» / «Informe de incidencia») | Todos |
 | `{report_nr}` | Número del parte | Solo partes |
-| `{student_name}` | Nombre completo del estudiante | Partes y sanciones |
-| `{group_name}` | Nombre del grupo | Partes y sanciones |
+| `{student_name}` | Nombre completo del estudiante | Partes, sanciones e informe del estudiante |
+| `{group_name}` | Nombre del grupo (en el informe del estudiante, todos sus grupos separados por comas) | Partes, sanciones e informe del estudiante |
 | `{centre_name}` | Nombre del centro educativo | Todos |
 | `{academic_year}` | Nombre del curso académico | Todos |
-| `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado | Solo estadísticas por grupo, salidas e incidencias |
+| `{date_from}` / `{date_to}` | Fechas de inicio y fin del rango consultado (en el informe del estudiante quedan vacías si no se indicó fecha) | Solo estadísticas por grupo, salidas, incidencias e informe del estudiante |
 | `{issue_nr}` | Número de la incidencia | Solo incidencias |
 | `{issue_type}` | Tipo de la incidencia, con su ruta completa | Solo incidencias |
 | `{city}` | Ciudad del centro educativo | Todos |
@@ -522,6 +537,7 @@ texto enriquecido de la categoría.
 | Plantilla PDF del informe de incidencias | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de informe de actividad | Centro | Fichero PDF | Sin plantilla |
 | Plantilla PDF de informe de incidencia | Centro | Fichero PDF | Sin plantilla |
+| Plantilla PDF de informe del estudiante | Centro | Fichero PDF | Sin plantilla |
 
 Además del encabezado, el pie y el margen, cada centro puede subir un **PDF de una sola página**
 que se usa como fondo de cada página de sus informes — por ejemplo, un membrete oficial ya
@@ -535,10 +551,6 @@ general de la orientación que necesita (vertical para partes, sanciones, estad�
 y el informe de convivencia de un estudiante;
 apaisada para profesorado de guardia y para el informe de salidas); si tampoco hay ninguna general, el informe se genera sin
 fondo, igual que antes de existir este ajuste.
-
-El [informe de convivencia de un estudiante](04-convivencia-profesorado.md#informe-de-convivencia-del-estudiante)
-usa siempre la plantilla general vertical y un encabezado fijo (título y nombre del centro): de momento no
-tiene ajustes propios de encabezado, margen, pie ni plantilla.
 
 ![Ajustes de plantillas de informes](img/ajustes/ajustes-plantillas-pdf.png)
 
@@ -852,6 +864,16 @@ Medidas que la aplicación aporta de serie:
   [Notificaciones a familias](#notificaciones-a-familias)).
 - **Contraseñas** almacenadas con algoritmos de *hashing* modernos, y verificación TLS activada
   por defecto en la autenticación externa contra iSéneca.
+- **Cabeceras de seguridad y Content-Security-Policy** — el servidor web de la aplicación (los ficheros
+  `Caddyfile` de Docker y del binario nativo, y `public/.htaccess` en Plesk) envía HSTS, `X-Frame-Options`,
+  `X-Content-Type-Options` y una **CSP** que limita todo al propio origen: la aplicación no carga nada de
+  terceros, así que no puede enviar datos a otro dominio, incrustarse en otra web ni cargar scripts ajenos.
+  Si pones un proxy inverso delante, no hace falta repetirlas; si el proxy añade las suyas, que no sean más
+  restrictivas que estas o la aplicación dejará de funcionar. La CSP admite `'unsafe-inline'` en scripts y
+  estilos porque las pantallas llevan scripts y estilos en línea.
+- **Borradores en el dispositivo** — el borrador de un parte contiene datos del alumnado y solo se guarda
+  en el navegador de quien lo escribe; caduca (24 horas por defecto, configurable o desactivable en
+  [Visualización](#visualizacion)) y se borra al cerrar sesión.
 
 Responsabilidades del centro al desplegar:
 
