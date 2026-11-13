@@ -3,7 +3,9 @@
 {% block title %}{{ 'incident.created.title'|trans({'%count%': reports|length}, 'admin') }} · {{ centre.name }} · {{ app_name }}{% endblock %}
 
 {% block content %}
-<div class="px-6 py-8 max-w-3xl mx-auto space-y-6">
+<div class="px-6 py-8 max-w-3xl mx-auto space-y-6"
+     data-controller="draft-clear"
+     data-draft-clear-key-value="gestconv:draft:incident:{{ app.user.id }}:{{ centre.id }}">
 
     <div>
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-1 flex-wrap">

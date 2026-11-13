@@ -76,6 +76,16 @@ especiales amplían esa visibilidad (ver [Permisos de un vistazo](15-permisos-de
 Los campos obligatorios están marcados con un asterisco; si falta alguno al guardar, cada error
 se muestra junto al campo afectado.
 
+**Borrador automático.** Mientras rellenas el formulario, lo escrito se va guardando **en tu propio
+dispositivo** (no en el servidor), también al cambiar de aplicación o bloquear el móvil. Si se cierra la
+pestaña o se pierde la sesión antes de guardar, al abrir de nuevo **Nuevo parte** aparece un aviso ámbar
+(«Hay un borrador de parte sin guardar en este dispositivo…») con dos botones: **Recuperar**, que rellena
+el formulario (estudiantes, fecha, lugar, conductas, descripción y expulsión), y **Descartar**. Nunca se
+restaura solo, porque el dispositivo puede ser compartido. El borrador es personal (de tu usuario y tu
+centro), caduca a las 24 horas, se borra al guardar el parte y al **cerrar sesión** con el botón de la
+aplicación. No se ofrece al registrar un parte desde la lista de estudiantes de las notas, donde el
+estudiante viene fijado.
+
 > Cada parte queda vinculado al docente que lo registra. La fecha y hora de creación se registran
 > automáticamente.
 

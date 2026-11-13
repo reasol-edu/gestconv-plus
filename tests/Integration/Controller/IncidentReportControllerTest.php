@@ -324,6 +324,44 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertSelectorExists('header a[href$="/04-convivencia-profesorado.html#registrar-un-nuevo-parte"][target="_blank"]');
     }
 
+    public function testNewFormOffersADraftKeyedByTeacherAndCentreAndLogoutPurgesDrafts(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        $expected = 'gestconv:draft:incident:' . $teacher->getId()->toRfc4122() . ':' . $centre->getId()->toRfc4122();
+        self::assertSelectorExists('form[data-controller~="draft"][data-draft-key-value="' . $expected . '"][data-draft-posted-value="false"]');
+        self::assertSelectorExists('[data-draft-target="banner"].hidden');
+        self::assertSelectorExists('a[data-action="click->draft-clear#purge"][data-draft-clear-prefix-value="gestconv:draft:"]');
+    }
+
+    public function testDraftIsNotOfferedWhenTheStudentIsLocked(): void
+    {
+        [$teacher, $centre, $group, $student] = $this->makeScenario();
+        $student->addGroup($group);
+        $this->flush();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo?studentId=' . $student->getId()->toRfc4122() . '&groupId=' . $group->getId()->toRfc4122() . '&fromDailyNotes=1');
+
+        self::assertSelectorNotExists('[data-draft-target="banner"]');
+    }
+
+    public function testCreatedPageClearsTheDraftOfThatTeacherAndCentre(): void
+    {
+        [$teacher, $centre, $group, $student, $behavior] = $this->makeScenario();
+        $student->addGroup($group);
+        $report = $this->makeReport($student, $group, $teacher, $behavior);
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/creados?ids=' . $report->getId()->toRfc4122());
+
+        $expected = 'gestconv:draft:incident:' . $teacher->getId()->toRfc4122() . ':' . $centre->getId()->toRfc4122();
+        self::assertSelectorExists('[data-controller="draft-clear"][data-draft-clear-key-value="' . $expected . '"]');
+    }
+
     public function testFormEmbedsTheStudentContextBlock(): void
     {
         [$teacher, $centre] = $this->makeScenario();

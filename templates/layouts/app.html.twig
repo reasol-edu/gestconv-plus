@@ -297,6 +297,7 @@
                     {{ 'profile'|trans({}, 'navigation') }}
                 </a>
                 <a href="{{ path('app_logout', {'_csrf_token': csrf_token('logout')}) }}"
+                   data-controller="draft-clear" data-draft-clear-prefix-value="gestconv:draft:" data-action="click->draft-clear#purge"
                    class="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-xs font-medium
                           text-forest-300 hover:bg-red-500/15 hover:text-red-300 transition-colors">
                     {{ ux_icon('heroicons:arrow-right-on-rectangle', {class: 'h-4 w-4 shrink-0'}) }}
