@@ -10,7 +10,8 @@ instalación inicial se explica en
 
 La sección **Administración** del menú lateral, visible solo para los administradores globales,
 reúne en tarjetas la gestión de toda la plataforma: centros educativos, usuarios (docentes y
-personal no docente), registro de actividad y ajustes globales.
+personal no docente), registro de actividad, copia de seguridad y versión instalada, y ajustes
+globales.
 
 ### Centros educativos
 
@@ -731,11 +732,58 @@ Qué incluye cada una:
 
 Lo único imprescindible de respaldar es la **base de datos**: contiene todos los partes,
 sanciones, comunicaciones, estudiantes y ajustes. La carpeta `data/var` (caché, logs y sesiones)
-se regenera sola y no necesita copia.
+se regenera sola y no necesita copia. Los adjuntos de las incidencias y de las actividades, y las
+plantillas PDF de los informes, también están en la base de datos.
+
+### Copia desde el panel de administración {#copia-desde-el-panel}
+
+**Administración › Copia de seguridad y versión** (solo para administradores globales) descarga un
+fichero `gestconv-copia-AAAAMMDD-HHMM.zip` con **todos los datos** de la plataforma, sin parar la
+aplicación y sin importar qué base de datos use el servidor: es igual en SQLite, PostgreSQL y
+MySQL/MariaDB, y no necesita `pg_dump` ni `mysqldump`. Dentro hay un `manifest.json` (versión de la
+aplicación, plataforma, fecha y filas de cada tabla) y un fichero por tabla. Quedan fuera la cola de
+correos pendientes y el registro interno de migraciones. Cada descarga se anota en el
+[registro de actividad](#registro-de-actividad).
+
+!!! warning "La copia contiene datos personales"
+    Incluye datos del alumnado y los *hashes* de las contraseñas. Guárdala cifrada y en otra máquina,
+    no la compartas y bórrala cuando ya no la necesites.
+
+También se puede generar desde la línea de órdenes, por ejemplo con una tarea programada:
+
+```bash
+php bin/console app:backup:create                      # var/backups/gestconv-copia-AAAAMMDD-HHMMSS.zip
+php bin/console app:backup:create -o /ruta/copia.zip   # en la ruta indicada
+```
+
+(En Docker, `docker compose exec app php bin/console …`; en el binario nativo,
+`./frankenphp php-cli bin/console …`.)
+
+**Restaurar** se hace solo desde la línea de órdenes, porque **sustituye todos los datos** de la base de
+datos actual:
+
+```bash
+php bin/console app:backup:restore /ruta/copia.zip
+```
+
+Muestra de qué versión y de cuándo es la copia y pide confirmación (`--force` para no pedirla, necesario
+en tareas sin interacción). La restauración se hace en una sola transacción: si algo falla, no se cambia
+nada. Antes de tocar nada comprueba que:
+
+- la copia es de la **misma plataforma** de base de datos (no se puede pasar de SQLite a PostgreSQL con
+  esta herramienta);
+- el esquema está en la **misma migración** que la copia. Para restaurar una copia hecha con otra versión,
+  instala esa versión de la aplicación (así se crean las tablas tal como eran), restaura y actualiza
+  después de la forma habitual: las migraciones posteriores se aplican solas.
+
+Para restaurar en un servidor nuevo: instala la misma versión, arranca la aplicación una vez (crea el
+esquema) y ejecuta la orden. Las sesiones abiertas dejan de ser válidas: todo el mundo debe volver a
+entrar.
 
 ### Despliegue con Docker (PostgreSQL)
 
-Genera un volcado consistente sin parar la aplicación:
+Si prefieres las herramientas del propio gestor de base de datos, genera un volcado consistente sin
+parar la aplicación:
 
 ```bash
 docker compose exec database pg_dump -U gestconv -Fc gestconv > gestconv-$(date +%F).dump
@@ -790,7 +838,8 @@ php bin/console messenger:failed:retry   # reintentarlos
 
 ## Actualización
 
-1. Haz una **copia de seguridad** de la base de datos (ver arriba). Si quieres que nadie use la
+1. Haz una **copia de seguridad** de la base de datos (ver arriba; lo más rápido es descargarla desde
+   [Administración › Copia de seguridad y versión](#copia-desde-el-panel)). Si quieres que nadie use la
    aplicación mientras tanto, activa antes el [modo mantenimiento](#modo-mantenimiento).
 2. Actualiza según el tipo de despliegue:
     - **Docker** — `docker compose pull && docker compose up -d`.

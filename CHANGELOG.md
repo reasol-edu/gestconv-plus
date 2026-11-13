@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Copia de seguridad descargable** desde Administración › Copia de seguridad y versión (solo administradores globales): un `.zip` portable con todos los datos, igual en SQLite, PostgreSQL y MySQL, sin depender de `pg_dump` ni `mysqldump`. Cada descarga queda en el registro de actividad. También por línea de órdenes: `app:backup:create` (p. ej. desde cron) y `app:backup:restore` (solo CLI; sustituye todos los datos, en una transacción, y exige la misma plataforma y la misma migración). Procedimiento de restauración en el capítulo «Administrar la plataforma».
+
 ## [1.31.0] - 2026-11-13
 
 ### Added

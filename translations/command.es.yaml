@@ -22,4 +22,23 @@ setup.skipped: 'La base de datos ya contiene datos. Se omite la inicialización.
 setup.success: 'Aplicación inicializada: usuario "admin" creado. No se ha creado ningún centro educativo de demostración.'
 setup.success_demo_data: 'Aplicación inicializada: usuario "admin" y centro "IES Test" (23999999, Linares) creados.'
 
+backup_create.description: 'Genera una copia de seguridad completa de la base de datos (un .zip portable)'
+backup_create.option.output: 'Ruta del .zip (por defecto, var/backups/gestconv-copia-AAAAMMDD-HHMMSS.zip)'
+backup_create.error.dir: 'No se pudo crear la carpeta "%dir%".'
+backup_create.success: 'Copia de seguridad creada en %file% (%tables% tablas, %rows% filas).'
+backup_create.sensitive: 'La copia contiene datos personales del alumnado y los hashes de las contraseñas: guárdala en un lugar seguro y no la compartas.'
+
+backup_restore.description: 'Restaura una copia de seguridad, SUSTITUYENDO todos los datos de la base de datos actual'
+backup_restore.argument.file: 'Ruta del .zip de la copia'
+backup_restore.option.force: 'No pedir confirmación (necesario si se ejecuta sin interacción)'
+backup_restore.info.app_version: 'Versión de la aplicación de la copia'
+backup_restore.info.schema: 'Migración de la copia'
+backup_restore.info.platform: 'Plataforma'
+backup_restore.info.created: 'Fecha de la copia'
+backup_restore.info.rows: 'Filas'
+backup_restore.error.force_required: 'Sin interacción hay que añadir --force: la restauración sustituye todos los datos.'
+backup_restore.confirm: 'Esto BORRARÁ todos los datos actuales y los sustituirá por los de la copia. ¿Continuar?'
+backup_restore.cancelled: 'Restauración cancelada; no se ha cambiado nada.'
+backup_restore.success: 'Restauración completada (%tables% tablas, %rows% filas). Las sesiones abiertas dejarán de ser válidas si la copia es de otro momento: vuelve a entrar.'
+
 field.required: 'Este campo es obligatorio.'
