@@ -74,7 +74,9 @@ final class DatabaseTables
     {
         $primary = $this->connection->createSchemaManager()->introspectTable($table)->getPrimaryKey();
 
-        return $primary === null ? [] : $primary->getColumns();
+        return $primary === null
+            ? []
+            : array_map(static fn ($column): string => $column->getColumnName()->toString(), $primary->getIndexedColumns());
     }
 
     /** La última migración aplicada (la mayor), o null si la base de datos no lleva el registro de migraciones (p. ej. en los tests). */
