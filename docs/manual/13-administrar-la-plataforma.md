@@ -635,6 +635,7 @@ eliminado. Un valor de 0 desactiva esta eliminación automática para ese ámbit
 | Ajuste | Ámbito | Tipo | Por defecto |
 |---|---|---|---|
 | Modo mantenimiento | Solo global | Activado / Desactivado | Desactivado |
+| Avisar de versiones nuevas | Solo global | Activado / Desactivado | Activado |
 
 ![Categoría «Mantenimiento» de los ajustes globales: el ajuste «Modo mantenimiento», con su desplegable en «Por defecto (Desactivado)»](img/admin/admin-mantenimiento-ajuste.png)
 
@@ -837,6 +838,14 @@ php bin/console messenger:failed:retry   # reintentarlos
 (En el binario nativo, usa `./frankenphp php-cli bin/console …` en lugar de `php bin/console …`.)
 
 ## Actualización
+
+**Aviso de versión nueva.** En **Administración** (y con más detalle en **Copia de seguridad y versión**),
+los administradores globales ven una franja cuando existe una versión publicada más reciente que la
+instalada, con un enlace a sus novedades en GitHub. Para saberlo, el servidor consulta —como mucho una vez
+al día, con un tiempo máximo de pocos segundos, y una hora después si falló— la última *release* del
+repositorio del proyecto; solo recibe el número de versión y **no envía ningún dato** del centro ni de las
+personas. Si el servidor no tiene salida a internet, o no quieres esa consulta, desactiva el ajuste global
+**Avisar de versiones nuevas** (categoría **Mantenimiento**): entonces no se hace ninguna petición.
 
 1. Haz una **copia de seguridad** de la base de datos (ver arriba; lo más rápido es descargarla desde
    [Administración › Copia de seguridad y versión](#copia-desde-el-panel)). Si quieres que nadie use la

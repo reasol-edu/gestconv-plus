@@ -7,6 +7,7 @@ namespace App\Controller\Admin;
 use App\Service\ActivityLogService;
 use App\Service\Backup\BackupException;
 use App\Service\Backup\DatabaseBackup;
+use App\Service\Update\LatestReleaseChecker;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -28,6 +29,7 @@ class SystemController extends AbstractController
         private readonly ActivityLogService $activityLog,
         private readonly ClockInterface $clock,
         private readonly TranslatorInterface $translator,
+        private readonly LatestReleaseChecker $latestRelease,
         #[Autowire('%app.version%')]
         private readonly string $appVersion,
     ) {}
@@ -37,6 +39,7 @@ class SystemController extends AbstractController
     {
         return $this->render('admin/system/index.html.twig', [
             'version' => $this->appVersion,
+            'update'  => $this->latestRelease->status(),
         ]);
     }
 

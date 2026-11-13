@@ -12,3 +12,11 @@ when@test:
         App\Tests\Support\RecordingPushDispatcher:
             public: true
         App\Service\Push\PushDispatcherInterface: '@App\Tests\Support\RecordingPushDispatcher'
+        # La consulta de la última versión no sale a la red en los tests (ver ReleaseHttpClient).
+        App\Tests\Support\ReleaseHttpClient:
+            public: true
+        App\Service\Update\LatestReleaseChecker:
+            autowire: true
+            public: true
+            arguments:
+                $client: '@App\Tests\Support\ReleaseHttpClient'

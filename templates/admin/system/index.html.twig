@@ -23,10 +23,21 @@
             </div>
             <h2 class="text-base font-semibold text-gray-900">{{ 'system.version.title'|trans({}, 'admin') }}</h2>
         </div>
-        <div class="px-6 py-4">
-            <p class="text-sm text-gray-700">
-                {{ 'system.version.installed'|trans({'%version%': version}, 'admin') }}
-            </p>
+        <div class="px-6 py-4 space-y-2 text-sm">
+            <p class="text-gray-700">{{ 'system.version.installed'|trans({'%version%': version}, 'admin') }}</p>
+            {% if update.state == 'newer' %}
+                <p class="rounded-xl border border-forest-200 bg-forest-50 px-3.5 py-2.5 text-forest-800">
+                    {{ 'system.version.newer'|trans({'%version%': update.version}, 'admin') }}
+                    <a href="{{ update.url }}" target="_blank" rel="noopener noreferrer" class="font-medium underline hover:text-forest-950">{{ 'system.version.see_release'|trans({}, 'admin') }}</a>
+                </p>
+                <p class="text-gray-500">{{ 'system.version.update_help'|trans({}, 'admin') }}</p>
+            {% elseif update.state == 'current' %}
+                <p class="text-green-700">{{ 'system.version.current'|trans({}, 'admin') }}</p>
+            {% elseif update.state == 'unknown' %}
+                <p class="text-gray-500">{{ 'system.version.unknown'|trans({}, 'admin') }}</p>
+            {% else %}
+                <p class="text-gray-500">{{ 'system.version.disabled'|trans({}, 'admin') }}</p>
+            {% endif %}
         </div>
     </section>
 

@@ -10,6 +10,14 @@
         <p class="mt-1 text-sm text-gray-500">{{ 'dashboard.subtitle'|trans({}, 'admin') }}</p>
     </div>
 
+    {% if update.newer %}
+        <div role="status" data-update-notice class="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-forest-200 bg-forest-50 px-5 py-3 text-sm text-forest-800">
+            {{ ux_icon('heroicons:arrow-down-tray', {class: 'h-5 w-5 shrink-0'}) }}
+            <span>{{ 'system.version.newer'|trans({'%version%': update.version}, 'admin') }}</span>
+            <a href="{{ path('app_admin_system') }}" class="font-medium underline hover:text-forest-950">{{ 'system.version.more_info'|trans({}, 'admin') }}</a>
+        </div>
+    {% endif %}
+
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
         {# ── Card: Docentes ───────────────────────────────────────────────────── #}

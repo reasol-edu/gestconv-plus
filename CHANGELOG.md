@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Copia de seguridad descargable** desde Administración › Copia de seguridad y versión (solo administradores globales): un `.zip` portable con todos los datos, igual en SQLite, PostgreSQL y MySQL, sin depender de `pg_dump` ni `mysqldump`. Cada descarga queda en el registro de actividad. También por línea de órdenes: `app:backup:create` (p. ej. desde cron) y `app:backup:restore` (solo CLI; sustituye todos los datos, en una transacción, y exige la misma plataforma y la misma migración). Procedimiento de restauración en el capítulo «Administrar la plataforma».
+- **Aviso de versión nueva** en el panel de administración: una franja avisa a los administradores globales si hay una *release* de GitHub más reciente que la instalada. El servidor solo consulta el número de versión (como mucho una vez al día; si falla, se reintenta a la hora) y no envía ningún dato. El ajuste global **Avisar de versiones nuevas** (Mantenimiento) lo desactiva, para servidores sin salida a internet.
 
 ## [1.31.0] - 2026-11-13
 

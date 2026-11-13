@@ -9,6 +9,7 @@ use App\Entity\EducationalCentre;
 use App\Entity\PersonName;
 use App\Entity\Teacher;
 use App\Tests\Integration\ControllerTestCase;
+use App\Tests\Support\ReleaseHttpClient;
 
 /** Copia de seguridad descargable desde el panel de administración. */
 class SystemControllerTest extends ControllerTestCase
@@ -59,6 +60,43 @@ class SystemControllerTest extends ControllerTestCase
         $this->client->request('GET', '/admin');
 
         self::assertSelectorExists('a[href="/admin/sistema"]');
+    }
+
+    // ── aviso de versión nueva ────────────────────────────────────────────────
+
+    public function testANewerVersionIsAnnouncedOnTheDashboardAndThePage(): void
+    {
+        ReleaseHttpClient::clear();
+        ReleaseHttpClient::willPublish('v99.0.0');
+        $this->loginAsAdmin();
+
+        $this->client->request('GET', '/admin');
+        self::assertSelectorTextContains('[data-update-notice]', 'la 99.0.0');
+        self::assertSelectorExists('[data-update-notice] a[href="/admin/sistema"]');
+
+        $this->client->request('GET', '/admin/sistema');
+        self::assertSelectorTextContains('main, body', 'Hay una versión nueva de GestConv+: la 99.0.0');
+        self::assertSelectorExists('a[href="https://github.com/reasol-edu/gestconv-plus/releases/tag/v99.0.0"][rel="noopener noreferrer"]');
+        self::assertStringNotContainsString('alert(1)', (string) $this->client->getResponse()->getContent(), 'El texto de la release nunca se muestra.');
+        self::assertStringNotContainsString('evil.example', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testNothingIsShownWhenThereIsNoNewerVersionOrTheCheckFails(): void
+    {
+        ReleaseHttpClient::clear();
+        ReleaseHttpClient::willPublish('v0.0.1');
+        $this->loginAsAdmin();
+
+        $this->client->request('GET', '/admin');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('[data-update-notice]');
+        $this->client->request('GET', '/admin/sistema');
+        self::assertSelectorTextContains('main, body', 'Tienes la última versión publicada');
+
+        ReleaseHttpClient::clear();   // sin red
+        $this->client->request('GET', '/admin');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('[data-update-notice]');
     }
 
     // ── descarga ──────────────────────────────────────────────────────────────

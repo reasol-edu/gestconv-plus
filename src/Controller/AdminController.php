@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Repository\ActivityLogRepository;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\TeacherRepository;
+use App\Service\Update\LatestReleaseChecker;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,12 +20,14 @@ class AdminController extends AbstractController
         private readonly TeacherRepository $teachers,
         private readonly EducationalCentreRepository $centres,
         private readonly ActivityLogRepository $activityLogs,
+        private readonly LatestReleaseChecker $latestRelease,
     ) {}
 
     #[Route('/admin', name: 'app_admin')]
     public function index(): Response
     {
         return $this->render('admin/index.html.twig', [
+            'update' => $this->latestRelease->status(),
             'stats' => [
                 'teachers_total'  => $this->teachers->countAll(),
                 'teachers_active' => $this->teachers->countActive(),

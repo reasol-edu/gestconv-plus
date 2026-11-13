@@ -118,6 +118,7 @@ abstract class ControllerTestCase extends WebTestCase
             ['reports.student_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 320, null],
             ['reports.student_footer', SettingType::RichText, '<p>En {city} a {current_day} de {current_month_name} de {current_year}</p>', true, true, false, 0, 5000, 'settings.category.reports', 60, 330, null],
             ['reports.student_pdf_template', SettingType::Pdf, '', false, true, false, null, null, 'settings.category.report_templates', 65, 130, null],
+            ['updates.check_enabled', SettingType::Boolean, 'true', true, false, false, null, null, 'settings.category.maintenance', 5, 20, null],
             ['reports.analytics_header_left',   SettingType::RichText, '<p><strong>{title}</strong></p>', true, true, false, 0,  5000, 'settings.category.reports', 60, 340, null],
             ['reports.analytics_header_right',  SettingType::RichText, '<p>{centre_name}</p>',            true, true, false, 0,  5000, 'settings.category.reports', 60, 350, null],
             ['reports.analytics_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 360, null],

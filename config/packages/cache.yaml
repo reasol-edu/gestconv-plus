@@ -15,5 +15,15 @@ framework:
         #app: cache.adapter.apcu
 
         # Namespaced pools use the above "app" backend by default
-        #pools:
-            #my.dedicated.cache: null
+        pools:
+            # Resultado de la consulta de la última versión publicada (ver LatestReleaseChecker).
+            app.update_check: ~
+
+when@test:
+    framework:
+        cache:
+            pools:
+                # En memoria: cada test empieza con la caché vacía (si no, la consulta de la última versión se arrastraría de uno a
+                # otro). Solo esta: el limitador de intentos de acceso usa la caché de la aplicación y necesita persistir entre peticiones.
+                app.update_check:
+                    adapter: cache.adapter.array
