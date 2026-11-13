@@ -337,6 +337,39 @@ class IncidentReportControllerTest extends ControllerTestCase
         self::assertSelectorExists('a[data-action="click->draft-clear#purge"][data-draft-clear-prefix-value="gestconv:draft:"]');
     }
 
+    public function testDraftRetentionDefaultsToTwentyFourHoursAndFollowsThePlatformSetting(): void
+    {
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        // Sin definición ni valor: el plazo por defecto, nunca «desactivado».
+        $this->client->request('GET', '/partes/nuevo');
+        self::assertSelectorExists('form[data-controller~="draft"][data-draft-ttl-hours-value="24"]');
+
+        $definition = (new SettingDefinition())->setKey('display.draft_retention_hours')->setType(SettingType::Integer)
+            ->setCategory('settings.category.display')->setDefaultValue('24')->setMinValue(0)->setMaxValue(168)
+            ->setGlobalScope(true)->setCentreScope(false)->setTeacherScope(false);
+        $this->persist($definition, (new GlobalSettingValue())->setDefinition($definition)->setValue('6'));
+
+        $this->client->request('GET', '/partes/nuevo');
+        self::assertSelectorExists('form[data-draft-ttl-hours-value="6"]');
+    }
+
+    public function testDraftsAreSwitchedOffWithZeroHours(): void
+    {
+        $definition = (new SettingDefinition())->setKey('display.draft_retention_hours')->setType(SettingType::Integer)
+            ->setCategory('settings.category.display')->setDefaultValue('24')->setMinValue(0)->setMaxValue(168)
+            ->setGlobalScope(true)->setCentreScope(false)->setTeacherScope(false);
+        $this->persist($definition, (new GlobalSettingValue())->setDefinition($definition)->setValue('0'));
+        [$teacher, $centre] = $this->makeScenario();
+        $this->loginAs($teacher, $centre);
+
+        $this->client->request('GET', '/partes/nuevo');
+
+        // El controlador sigue puesto para borrar el borrador que hubiera, pero con 0 horas no guarda nada.
+        self::assertSelectorExists('form[data-controller~="draft"][data-draft-ttl-hours-value="0"]');
+    }
+
     public function testDraftIsNotOfferedWhenTheStudentIsLocked(): void
     {
         [$teacher, $centre, $group, $student] = $this->makeScenario();

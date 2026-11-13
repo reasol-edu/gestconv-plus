@@ -1,5 +1,6 @@
 import './stimulus_bootstrap.js';
 import './styles/app.css';
+import './draft_sweep.js';
 
 // Service worker (avisos push y página «sin conexión»). Solo se registra donde el navegador lo permite
 // (HTTPS o localhost) y un fallo al registrarlo nunca afecta al resto de la aplicación.

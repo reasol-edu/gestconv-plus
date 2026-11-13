@@ -85,6 +85,7 @@
           data-controller="form-submit unsaved-changes{{ lockedStudent ? '' : ' draft' }}"
           {% if not lockedStudent %}
           data-draft-key-value="{{ draftKey }}"
+          data-draft-ttl-hours-value="{{ draft_retention_hours() }}"
           data-draft-students-id-value="students-select"
           data-draft-just-now-value="{{ 'incident.draft.just_now'|trans({}, 'admin') }}"
           data-draft-location-id-value="location-select"

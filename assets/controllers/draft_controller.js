@@ -8,7 +8,8 @@ const SKIPPED_FIELDS = ['_token', 'registered_by', 'students[]', 'location_id'];
  * clase; al volver, un aviso ofrece recuperarlo o descartarlo. No restaura nada en silencio: en equipos
  * compartidos, el borrador de otra persona no debe aparecer solo.
  *
- * La clave lleva el docente y el centro. Caduca a las `ttlHours` horas. No se borra al enviar el formulario
+ * La clave lleva el docente y el centro. Caduca a las `ttlHours` horas (ajuste global de la plataforma; 0 las
+ * desactiva) y, además, `draft_sweep.js` elimina los caducados al abrir cualquier pantalla. No se borra al enviar el formulario
  * (un error de validación lo perdería) sino en la pantalla de «partes creados» (`draft-clear`) o al cerrar sesión.
  *
  * Mientras el aviso está pendiente no se guarda, para no pisar el borrador que se está ofreciendo.
@@ -29,6 +30,13 @@ export default class extends Controller {
         this.pending = false;
         this.timer = null;
 
+        // Con 0 horas (ajuste de la plataforma) los borradores están desactivados: se borra el que hubiera y no se guarda nada.
+        this.disabled = this.ttlHoursValue <= 0;
+        if (this.disabled) {
+            localStorage.removeItem(this.keyValue);
+            return;
+        }
+
         const draft = this.#read();
         if (draft !== null && !this.postedValue) {
             this.pending = true;
@@ -48,6 +56,7 @@ export default class extends Controller {
     }
 
     disconnect() {
+        if (this.disabled) return;
         clearTimeout(this.timer);
         this.element.removeEventListener('input', this.onChange);
         this.element.removeEventListener('change', this.onChange);
@@ -91,7 +100,7 @@ export default class extends Controller {
     }
 
     save = () => {
-        if (this.pending) return;
+        if (this.pending || this.disabled) return;
 
         const fields = [];
         for (const [name, value] of new FormData(this.element).entries()) {
@@ -112,8 +121,11 @@ export default class extends Controller {
         const location = this.#locationSelect();
         const locationValue = location ? location.getValue() : '';
         try {
+            const now = Date.now();
             localStorage.setItem(this.keyValue, JSON.stringify({
-                savedAt: Date.now(),
+                savedAt: now,
+                // Fecha de caducidad propia: así la limpieza global (`draft_sweep.js`) no necesita saber el ajuste.
+                expiresAt: now + this.ttlHoursValue * 3600 * 1000,
                 fields,
                 students,
                 location: locationValue ? this.#option(location, locationValue) : null,
@@ -135,8 +147,10 @@ export default class extends Controller {
         } catch {
             draft = null;
         }
+        // Caduca con el ajuste actual (puede haberse acortado desde que se guardó) o con la fecha con la que se guardó.
         if (draft === null || typeof draft.savedAt !== 'number'
-            || Date.now() - draft.savedAt > this.ttlHoursValue * 3600 * 1000) {
+            || Date.now() - draft.savedAt > this.ttlHoursValue * 3600 * 1000
+            || (typeof draft.expiresAt === 'number' && Date.now() > draft.expiresAt)) {
             localStorage.removeItem(this.keyValue);
             return null;
         }
