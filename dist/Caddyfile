@@ -25,10 +25,18 @@
 
     encode gzip
 
-    # Cabeceras de seguridad de base. La CSP no se aplica aquí (se irá afinando
-    # aparte: UX-Live, Quill y TomSelect requieren validación cuidadosa de los
-    # orígenes). Solo se aplican las que no rompen ninguna funcionalidad.
+    # Cabeceras de seguridad de base y Content-Security-Policy.
+    # La aplicación no carga nada de terceros (Quill, Tom Select y los controladores
+    # Stimulus se sirven desde /assets/), así que todo se limita al propio origen.
+    # 'unsafe-inline' en script-src/style-src sigue haciendo falta: hay <script> y
+    # manejadores on*="" en línea y atributos style="". Con ello no se frena un XSS
+    # que inyecte script en línea (las plantillas escapan todo y no hay hallazgos),
+    # pero sí se impide cargar scripts de otro origen, enviar datos a otro dominio
+    # (connect/img/form-action), incrustar la aplicación (frame-ancestors) y
+    # plugins (object-src), y cambiar <base>. Si algún día se pasa a nonces, quitar
+    # 'unsafe-inline'. Misma política en docker/Caddyfile y public/.htaccess.
     header {
+        Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options    "nosniff"
         X-Frame-Options           "DENY"
