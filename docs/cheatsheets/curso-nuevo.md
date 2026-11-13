@@ -76,7 +76,9 @@ footer: 'v{{VERSION}} ({{PUB_DATE}}) · GestConv+'
   <span class="num">1</span>
   <div class="text">
     <p>Desde <strong>Centro educativo › Cursos académicos</strong>, crea el curso nuevo (por
-    ejemplo, <strong>2026-2027</strong>) y márcalo como <strong>activo</strong>.</p>
+    ejemplo, <strong>2026-2027</strong>) y márcalo como <strong>activo</strong>. Puedes indicar su
+    <strong>fecha de comienzo y de fin</strong>; si las dejas en blanco, se toman del nombre (del
+    15/09/2026 al 14/09/2027) y los informes las usan como «Todo el curso».</p>
     <p>Solo puede haber un curso activo por centro: es el curso de referencia para las altas de
     estudiantes, la oferta formativa, los partes y las sanciones. Los cursos anteriores no se
     pierden — quedan disponibles como histórico.</p>

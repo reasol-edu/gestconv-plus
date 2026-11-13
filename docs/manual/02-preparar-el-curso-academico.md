@@ -12,7 +12,9 @@ repite una vez al año, al abrir cada curso nuevo.
 ## 1. Crear y activar el curso académico
 
 Desde **Centro educativo › Cursos académicos**, crea el curso nuevo (por ejemplo, `2026-2027`) y
-márcalo como **activo**. Solo puede haber un curso activo por centro: es el curso de referencia
+márcalo como **activo**. Puedes indicar su fecha de comienzo y la de fin; si las dejas en blanco se
+toman del nombre (del 15/09/2026 al 14/09/2027) y los informes las usan como «Todo el curso» (ver
+[Cursos académicos](12-administrar-el-centro.md#cursos-academicos)). Solo puede haber un curso activo por centro: es el curso de referencia
 para las altas de estudiantes, la oferta formativa, los partes y las sanciones. Los cursos
 anteriores no se pierden: quedan disponibles para consulta como histórico (ver
 [Cambio de curso académico](03-usar-la-aplicacion.md#cambio-de-curso-academico-administradores)).
