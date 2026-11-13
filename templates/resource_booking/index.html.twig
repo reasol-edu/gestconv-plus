@@ -85,7 +85,7 @@
         </div>
 
         <div class="w-full sm:w-56">
-            <select name="teacher" data-action="change->auto-submit#submit" class="ts-local ts-filter w-full text-sm" data-no-results="{{ noResults }}"
+            <select name="teacher" data-action="change->auto-submit#submit" class="ts-local ts-filter ts-person-teacher w-full text-sm" data-no-results="{{ noResults }}"
                     aria-label="{{ 'booking.filter.teacher'|trans({}, 'admin') }}">
                 <option value="">{{ 'booking.filter.all_teachers'|trans({}, 'admin') }}</option>
                 {% for teacher in filterOptions.teachers %}

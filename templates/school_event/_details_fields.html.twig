@@ -55,7 +55,7 @@
 
     <div>
         <label for="coordinator" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'school_event.field.coordinator'|trans({}, 'admin') }}</label>
-        <select id="coordinator" name="coordinator" class="w-full text-sm ts-local"
+        <select id="coordinator" name="coordinator" class="w-full text-sm ts-local ts-person-teacher"
                 data-placeholder="{{ 'school_event.field.coordinator_placeholder'|trans({}, 'admin')|e('html_attr') }}"
                 data-no-results="{{ 'school_event.field.groups_no_results'|trans({}, 'admin')|e('html_attr') }}">
             <option value=""></option>
@@ -67,7 +67,7 @@
 
     <div>
         <label for="companions" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'school_event.field.companions'|trans({}, 'admin') }}</label>
-        <select id="companions" name="companions[]" multiple class="w-full text-sm ts-local"
+        <select id="companions" name="companions[]" multiple class="w-full text-sm ts-local ts-person-teacher"
                 data-placeholder="{{ 'school_event.field.companions_placeholder'|trans({}, 'admin')|e('html_attr') }}"
                 data-no-results="{{ 'school_event.field.groups_no_results'|trans({}, 'admin')|e('html_attr') }}">
             {% for teacher in availableTeachers %}

@@ -220,7 +220,7 @@
                                     <label class="mb-1 block text-xs font-medium text-gray-600" for="staff-guards">{{ 'time_slot.field.guards'|trans({}, 'admin') }}</label>
                                     {% set guard_ids = [] %}
                                     {% for g in sel.guards %}{% set guard_ids = guard_ids|merge([g.id.toRfc4122]) %}{% endfor %}
-                                    <select id="staff-guards" multiple class="js-staff-select w-full"
+                                    <select id="staff-guards" multiple class="js-staff-select w-full ts-person-teacher"
                                             data-staff-action="setGuards" data-staff-arg="ids"
                                             data-placeholder="{{ 'time_slot.field.guards_help'|trans({}, 'admin') }}">
                                         {% for t in teacher_options %}
@@ -270,8 +270,6 @@
     .ts-wrapper { font-size: 0.875rem; }
     .ts-control { border-radius: 0.75rem !important; border-color: #e5e7eb !important; background-color: #fff !important; padding: 0.5rem 0.875rem !important; box-shadow: none !important; gap: 0.25rem; }
     .ts-control:focus-within { border-color: #876baf !important; box-shadow: 0 0 0 3px rgb(135 107 175 / 0.2) !important; }
-    .ts-control .item { background: #ece6f4; color: #574a68; border: 1px solid #d8cce8; border-radius: 0.5rem; padding: 0.125rem 0.375rem; font-size: 0.8125rem; }
-    .ts-control .item .remove { color: #876baf; border-left-color: #d8cce8; }
     .ts-dropdown { border-radius: 0.75rem; border-color: #e5e7eb; box-shadow: 0 4px 12px rgb(0 0 0 / 0.08); overflow: hidden; }
     .ts-dropdown .option { padding: 0.5rem 0.875rem; }
     .ts-dropdown .option.active { background-color: #f6f3f9; color: #1f192a; }

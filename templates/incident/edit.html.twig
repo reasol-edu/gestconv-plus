@@ -69,7 +69,7 @@
                         </label>
                         <select id="student-select" name="student_group" required
                                 {% if errors.student_group is defined %}aria-invalid="true"{% endif %}
-                                class="w-full"></select>
+                                class="w-full ts-person-student"></select>
                         {% if errors.student_group is defined %}
                             <p class="mt-1 text-xs text-red-600">{{ errors.student_group }}</p>
                         {% endif %}
@@ -87,7 +87,7 @@
                                 data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                                 data-symfony--ux-autocomplete--autocomplete-preload-value="false"
                                 data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
-                                class="w-full">
+                                class="w-full ts-person-teacher">
                             <option value="{{ report.registeredBy.id }}" selected>
                                 {{ report.registeredBy.name.lastName }}, {{ report.registeredBy.name.firstName }}
                             </option>
@@ -292,6 +292,7 @@
 {% if is_granted('incident_report.reassign', report) %}
 <script type="module">
 import TomSelect from 'tom-select';
+import { studentSelectRender } from 'student-select';
 
 const preload = {
     value: {{ (report.student.id.toRfc4122 ~ '::' ~ report.group.id.toRfc4122)|json_encode(constant('JSON_HEX_TAG'))|raw }},
@@ -313,18 +314,7 @@ new TomSelect('#student-select', {
             .then(callback)
             .catch(() => callback());
     },
-    render: {
-        option: (data, esc) => {
-            return `<div><span class="font-medium">${esc(data.label)}</span> <span class="text-xs text-gray-400 ml-1">${esc(data.secondary || '')}</span></div>`;
-        },
-        item: (data, esc) => {
-            const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${esc(data.secondary)}</span>` : '';
-            return `<span>${esc(data.label)}${secondary}</span>`;
-        },
-        no_results: function() {
-            return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;
-        },
-    },
+    render: studentSelectRender('{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}'),
     shouldLoad: (q) => q.length >= 2,
     dropdownParent: 'body',
 });

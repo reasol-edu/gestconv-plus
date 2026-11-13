@@ -126,7 +126,7 @@
                     {% if canManage %}
                     <div>
                         <label for="manage-assignee" class="block text-xs font-medium text-gray-500 mb-1">{{ 'issue.field.assignee'|trans({}, 'admin') }}</label>
-                        <select id="manage-assignee" name="assignee" class="w-full text-sm ts-local"
+                        <select id="manage-assignee" name="assignee" class="w-full text-sm ts-local ts-person-user"
                                 data-placeholder="{{ 'issue.field.assignee_placeholder'|trans({}, 'admin')|e('html_attr') }}"
                                 data-no-results="{{ 'tom_select.no_results'|trans({}, 'admin')|e('html_attr') }}">
                             <option value="">{{ 'issue.field.assignee_none'|trans({}, 'admin') }}</option>

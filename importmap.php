@@ -24,6 +24,8 @@
  */
 return [
     'app' => ['path' => './assets/app.js', 'entrypoint' => true],
+    // Presentación común del buscador de estudiantes (formularios de parte y de nota); se importa desde scripts en línea.
+    'student-select' => ['path' => './assets/student_select.js'],
     '@hotwired/stimulus' => ['version' => '3.2.2'],
     '@symfony/stimulus-bundle' => ['path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js'],
     '@symfony/ux-live-component' => ['path' => './vendor/symfony/ux-live-component/assets/dist/live_controller.js'],

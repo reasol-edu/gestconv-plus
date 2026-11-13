@@ -18,41 +18,6 @@
     background-color: #fff !important;
     box-shadow: 0 0 0 3px rgb(119 150 203 / 0.18) !important;
 }
-:root .ts-wrapper.multi .ts-control .item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3125rem;
-    background-color: var(--color-forest-50) !important;
-    background-image: none !important;
-    color: var(--color-forest-800) !important;
-    border: 1px solid var(--color-forest-200) !important;
-    border-radius: 9999px !important;
-    padding: 0.25rem 0.3125rem 0.25rem 0.625rem !important;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    line-height: 1.25;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05) !important;
-    text-shadow: none !important;
-}
-:root .ts-wrapper.multi .ts-control .item .remove {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.125rem;
-    height: 1.125rem;
-    flex-shrink: 0;
-    border-radius: 9999px;
-    background: var(--color-forest-100) !important;
-    background-image: none !important;
-    color: var(--color-forest-600);
-    font-size: 0.75rem;
-    line-height: 1;
-    opacity: 0.85;
-    border: none !important;
-    text-decoration: none !important;
-    transition: opacity 0.15s, background-color 0.15s;
-}
-:root .ts-wrapper.multi .ts-control .item .remove:hover { opacity: 1; background: var(--color-forest-200) !important; }
 .ts-dropdown { border-radius: 0.75rem; border-color: #e5e7eb; box-shadow: 0 4px 12px rgb(0 0 0 / 0.08); overflow: hidden; }
 .ts-dropdown .option { padding: 0.5rem 0.875rem; font-size: 0.875rem; }
 .ts-dropdown .active { background: var(--color-forest-50); color: var(--color-forest-800); }
@@ -132,7 +97,7 @@
                             data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                             data-symfony--ux-autocomplete--autocomplete-preload-value="false"
                             data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
-                            class="w-full">
+                            class="w-full ts-person-teacher">
                         {% if selectedTeacher is not null %}
                             <option value="{{ selectedTeacher.id }}" selected>
                                 {{ selectedTeacher.name.lastName }}, {{ selectedTeacher.name.firstName }}
@@ -160,7 +125,7 @@
                     <select id="students-select" name="students[]" multiple aria-required="true"
                             {% if errors.students is defined %}aria-invalid="true"{% endif %}
                             placeholder="{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}"
-                            class="w-full">
+                            class="w-full ts-person-student">
                     </select>
                 {% endif %}
                 {% if errors.students is defined %}
@@ -377,6 +342,7 @@
 {% block javascripts %}{{ parent() }}
 <script type="module">
 import TomSelect from 'tom-select';
+import { studentSelectRender } from 'student-select';
 
 const preloaded = {{ preloadedStudents|json_encode(constant('JSON_HEX_TAG'))|raw }};
 
@@ -395,19 +361,7 @@ const select = new TomSelect('#students-select', {
             .then(callback)
             .catch(() => callback());
     },
-    render: {
-        option: (data, esc) => {
-            return `<div><span class="font-medium">${esc(data.label)}</span> <span class="text-xs text-gray-400 ml-1">${esc(data.secondary || '')}</span></div>`;
-        },
-        item: (data, esc) => {
-            const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" style="width:.875rem;height:.875rem;opacity:.55;flex-shrink:0"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z"/></svg>`;
-            const secondary = data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${esc(data.secondary)}</span>` : '';
-            return `<span style="display:inline-flex;align-items:center;gap:.25rem">${icon}${esc(data.label)}${secondary}</span>`;
-        },
-        no_results: function() {
-            return `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`;
-        },
-    },
+    render: studentSelectRender('{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}'),
     shouldLoad: (q) => q.length >= 2,
 });
 // Avisa a la «selección rápida», que puede haberse conectado antes de que exista el buscador.

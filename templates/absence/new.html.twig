@@ -44,7 +44,7 @@
                             data-symfony--ux-autocomplete--autocomplete-placeholder-value="{{ 'absence.field.teacher_placeholder'|trans({}, 'admin') }}"
                             data-symfony--ux-autocomplete--autocomplete-preload-value="false"
                             data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
-                            class="w-full">
+                            class="w-full ts-person-teacher">
                         {% if selectedTeacher is not null %}
                             <option value="{{ formData.teacher_id }}" selected>
                                 {{ selectedTeacher.name.lastName }}, {{ selectedTeacher.name.firstName }}

@@ -40,7 +40,7 @@
 
             <div>
                 <label for="managers" class="block text-sm font-medium text-gray-700 mb-1.5">{{ 'issue_settings.types.managers'|trans({}, 'admin') }}</label>
-                <select id="managers" name="managers[]" multiple class="w-full text-sm ts-local"
+                <select id="managers" name="managers[]" multiple class="w-full text-sm ts-local ts-person-teacher"
                         data-placeholder="{{ 'issue_settings.types.managers_placeholder'|trans({}, 'admin')|e('html_attr') }}"
                         data-no-results="{{ 'tom_select.no_results'|trans({}, 'admin')|e('html_attr') }}">
                     {% for teacher in availableTeachers %}

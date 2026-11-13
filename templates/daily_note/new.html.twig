@@ -66,7 +66,7 @@
                             data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                             data-symfony--ux-autocomplete--autocomplete-preload-value="false"
                             data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
-                            class="w-full">
+                            class="w-full ts-person-teacher">
                         {% if selectedTeacher is not null %}
                             <option value="{{ selectedTeacher.id }}" selected>
                                 {{ selectedTeacher.name.lastName }}, {{ selectedTeacher.name.firstName }}
@@ -86,7 +86,7 @@
                 <select id="student-select" name="students[]" multiple aria-required="true"
                         {% if errors.student is defined %}aria-invalid="true"{% endif %}
                         placeholder="{{ 'incident.field.students_placeholder'|trans({}, 'admin') }}"
-                        class="w-full">
+                        class="w-full ts-person-student">
                     {% for preloaded in preloadedStudents %}
                         <option value="{{ preloaded.value }}" selected>{{ preloaded.label }}</option>
                     {% endfor %}
@@ -167,6 +167,7 @@
 {% block javascripts %}{{ parent() }}
 <script type="module">
 import TomSelect from 'tom-select';
+import { studentSelectRender } from 'student-select';
 
 const preloadedStudents = {{ preloadedStudents|json_encode(constant('JSON_HEX_TAG'))|raw }};
 
@@ -184,12 +185,8 @@ const studentSelect = new TomSelect('#student-select', {
             .then(callback)
             .catch(() => callback());
     },
-    render: {
-        option: (data, esc) => `<div><span class="font-medium">${esc(data.label)}</span> <span class="text-xs text-gray-400 ml-1">${esc(data.secondary || '')}</span></div>`,
-        // Mismo aspecto que las etiquetas del formulario de parte: nombre y grupo.
-        item: (data, esc) => `<span>${esc(data.label)}${data.secondary ? `<span style="opacity:.5;font-size:.6875rem;font-weight:400"> · ${esc(data.secondary)}</span>` : ''}</span>`,
-        no_results: () => `<div class="no-results">{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}</div>`,
-    },
+    // La misma presentación que el formulario de parte (módulo compartido; el aspecto de las etiquetas es CSS global).
+    render: studentSelectRender('{{ 'autocomplete.no_results'|trans({}, 'admin')|e('js') }}'),
     shouldLoad: (q) => q.length >= 2,
     onChange: onStudentChanged,
 });

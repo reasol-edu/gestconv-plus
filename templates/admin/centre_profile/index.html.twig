@@ -35,7 +35,7 @@
                         data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                         data-symfony--ux-autocomplete--autocomplete-preload-value="false"
                         data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
-                        class="w-full">
+                        class="w-full ts-person-teacher">
                     {% for teacher in selectedCommitteeMembers %}
                         <option value="{{ teacher.id }}" selected>{{ teacher.name.lastName }}, {{ teacher.name.firstName }}</option>
                     {% endfor %}
@@ -54,7 +54,7 @@
                         data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                         data-symfony--ux-autocomplete--autocomplete-preload-value="false"
                         data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
-                        class="w-full">
+                        class="w-full ts-person-teacher">
                     {% for teacher in selectedCounselors %}
                         <option value="{{ teacher.id }}" selected>{{ teacher.name.lastName }}, {{ teacher.name.firstName }}</option>
                     {% endfor %}
@@ -74,7 +74,7 @@
                         data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'autocomplete.no_results'|trans({}, 'admin') }}"
                         data-symfony--ux-autocomplete--autocomplete-preload-value="false"
                         data-symfony--ux-autocomplete--autocomplete-tom-select-options-value='{"dropdownParent":"body"}'
-                        class="w-full">
+                        class="w-full ts-person-teacher">
                     {% for teacher in selectedActivityCoordinators %}
                         <option value="{{ teacher.id }}" selected>{{ teacher.name.lastName }}, {{ teacher.name.firstName }}</option>
                     {% endfor %}
