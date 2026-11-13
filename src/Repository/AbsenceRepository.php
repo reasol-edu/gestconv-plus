@@ -47,7 +47,7 @@ class AbsenceRepository extends ServiceEntityRepository
             ->where('a.academicYear = :year')
             ->andWhere('a.hasSubstitute = false')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('a.startDate', 'ASC')
+            ->orderBy('a.startDate', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -87,8 +87,8 @@ class AbsenceRepository extends ServiceEntityRepository
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('first', $first, Types::DATE_IMMUTABLE)
             ->setParameter('last', $last, Types::DATE_IMMUTABLE)
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC')
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -138,8 +138,8 @@ class AbsenceRepository extends ServiceEntityRepository
             ->from(Teacher::class, 't')
             ->where('t.id IN (:ids)')
             ->setParameter('ids', array_unique($teacherIds))
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC')
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -185,7 +185,7 @@ class AbsenceRepository extends ServiceEntityRepository
             ->andWhere('a.academicYear = :year')
             ->setParameter('teacher', $teacher->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('a.startDate', 'DESC')
+            ->orderBy('a.startDate', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
     }
@@ -205,7 +205,7 @@ class AbsenceRepository extends ServiceEntityRepository
             ->join('a.teacher', 't')
             ->where('a.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('a.endDate', 'DESC');
+            ->orderBy('a.endDate', \SortDirection::Descending);
 
         if (!empty($filters['teacherId'])) {
             $qb->andWhere('t.id = :teacher')->setParameter('teacher', $filters['teacherId'], 'uuid');

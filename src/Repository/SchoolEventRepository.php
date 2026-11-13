@@ -78,8 +78,8 @@ class SchoolEventRepository extends ServiceEntityRepository
         return $this->preloadGroups($year, $this->baseQueryBuilder($year)
             ->andWhere('se.date >= :from')
             ->andWhere('se.date <= :to')
-            ->orderBy('se.date', 'ASC')
-            ->addOrderBy('se.startTime', 'ASC')
+            ->orderBy('se.date', \SortDirection::Ascending)
+            ->addOrderBy('se.startTime', \SortDirection::Ascending)
             ->setParameter('from', $from, 'date_immutable')
             ->setParameter('to', $to, 'date_immutable')
             ->getQuery()
@@ -155,8 +155,8 @@ class SchoolEventRepository extends ServiceEntityRepository
         string $typeId = '',
     ): Query {
         $qb = $this->baseQueryBuilder($year, includeDrafts: true)
-            ->orderBy('se.date', 'DESC')
-            ->addOrderBy('se.startTime', 'ASC');
+            ->orderBy('se.date', \SortDirection::Descending)
+            ->addOrderBy('se.startTime', \SortDirection::Ascending);
 
         // Un docente sin gestión de actividades solo lista las que ha publicado él.
         if ($onlyOwnedBy !== null) {

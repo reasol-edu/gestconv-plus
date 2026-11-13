@@ -29,7 +29,7 @@ class ResourceCategoryRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('c')
             ->where('c.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.name', 'ASC');
+            ->orderBy('c.name', \SortDirection::Ascending);
 
         if ($onlyActive) {
             $qb->andWhere('c.active = true');
@@ -55,7 +55,7 @@ class ResourceCategoryRepository extends ServiceEntityRepository
             ->andWhere('m.id = :teacher')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('teacher', $teacher->getId(), 'uuid')
-            ->orderBy('c.name', 'ASC')
+            ->orderBy('c.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

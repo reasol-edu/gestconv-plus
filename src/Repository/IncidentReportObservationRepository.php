@@ -28,7 +28,7 @@ class IncidentReportObservationRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('o')
             ->where('o.incidentReport = :report')
             ->setParameter('report', $report->getId(), 'uuid')
-            ->orderBy('o.registeredAt', 'DESC')
+            ->orderBy('o.registeredAt', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
 
@@ -61,7 +61,7 @@ class IncidentReportObservationRepository extends ServiceEntityRepository
 
         $rows = $qb
             ->where('IDENTITY(o.incidentReport) IN (' . implode(', ', $placeholders) . ')')
-            ->orderBy('o.registeredAt', 'DESC')
+            ->orderBy('o.registeredAt', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
 

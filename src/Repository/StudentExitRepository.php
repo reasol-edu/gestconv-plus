@@ -66,7 +66,7 @@ class StudentExitRepository extends ServiceEntityRepository
             ->andWhere('e.returnedAt IS NULL')
             ->andWhere('e.autoClosedAt IS NULL')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('e.exitedAt', 'ASC')
+            ->orderBy('e.exitedAt', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -140,7 +140,7 @@ class StudentExitRepository extends ServiceEntityRepository
             ->setParameter('student', $student->getId(), 'uuid')
             ->setParameter('from', $from)
             ->setParameter('to', $to)
-            ->orderBy('e.exitedAt', 'DESC')
+            ->orderBy('e.exitedAt', \SortDirection::Descending)
             ->getQuery();
     }
 
@@ -154,7 +154,7 @@ class StudentExitRepository extends ServiceEntityRepository
         return $this->baseQuery()
             ->where('e.student = :student')
             ->setParameter('student', $student->getId(), 'uuid')
-            ->orderBy('e.exitedAt', 'DESC')
+            ->orderBy('e.exitedAt', \SortDirection::Descending)
             ->getQuery();
     }
 
@@ -209,7 +209,7 @@ class StudentExitRepository extends ServiceEntityRepository
         }
 
         $sortDirRaw = $filters['sortDir'] ?? 'desc';
-        $sortDir    = is_string($sortDirRaw) && strtolower($sortDirRaw) === 'asc' ? 'ASC' : 'DESC';
+        $sortDir    = is_string($sortDirRaw) && strtolower($sortDirRaw) === 'asc' ? \SortDirection::Ascending : \SortDirection::Descending;
         $sort       = is_string($filters['sort'] ?? null) ? $filters['sort'] : '';
 
         match ($sort) {
@@ -217,7 +217,7 @@ class StudentExitRepository extends ServiceEntityRepository
             'teacher' => $qb->orderBy('a.name.lastName', $sortDir)->addOrderBy('a.name.firstName', $sortDir),
             'group'   => $qb->orderBy('g.name', $sortDir),
             'reason'  => $qb->orderBy('r.name', $sortDir),
-            default   => $qb->orderBy('e.exitedAt', $sort === 'exitedAt' ? $sortDir : 'DESC'),
+            default   => $qb->orderBy('e.exitedAt', $sort === 'exitedAt' ? $sortDir : \SortDirection::Descending),
         };
 
         return $qb->getQuery();
@@ -244,7 +244,7 @@ class StudentExitRepository extends ServiceEntityRepository
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('from', $from->setTime(0, 0, 0))
             ->setParameter('to', $to->setTime(23, 59, 59))
-            ->orderBy('e.exitedAt', 'ASC')
+            ->orderBy('e.exitedAt', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

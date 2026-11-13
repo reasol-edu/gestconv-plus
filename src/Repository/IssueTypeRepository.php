@@ -31,7 +31,7 @@ class IssueTypeRepository extends ServiceEntityRepository
             ->leftJoin('t.managers', 'm')
             ->where('t.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('t.name', 'ASC')
+            ->orderBy('t.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

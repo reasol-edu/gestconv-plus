@@ -31,8 +31,8 @@ class SanctionMeasureRepository extends ServiceEntityRepository
             ->join('m.category', 'c')
             ->where('m.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.position', 'ASC')
-            ->addOrderBy('m.position', 'ASC')
+            ->orderBy('c.position', \SortDirection::Ascending)
+            ->addOrderBy('m.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -51,8 +51,8 @@ class SanctionMeasureRepository extends ServiceEntityRepository
             ->where('m.educationalCentre = :centre')
             ->andWhere('m.active = true')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.position', 'ASC')
-            ->addOrderBy('m.position', 'ASC')
+            ->orderBy('c.position', \SortDirection::Ascending)
+            ->addOrderBy('m.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -68,7 +68,7 @@ class SanctionMeasureRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('m')
             ->where('m.category = :category')
             ->setParameter('category', $category->getId(), 'uuid')
-            ->orderBy('m.position', 'ASC')
+            ->orderBy('m.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

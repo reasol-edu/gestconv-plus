@@ -31,8 +31,8 @@ class TeacherAutocompleter implements EntityAutocompleterInterface
             ->orWhere('UNACCENT(LOWER(t.name.lastName)) LIKE UNACCENT(LOWER(:q))')
             ->orWhere('UNACCENT(LOWER(t.username)) LIKE UNACCENT(LOWER(:q))')
             ->setParameter('q', $q)
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC');
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending);
     }
 
     public function getLabel(object $entity): string

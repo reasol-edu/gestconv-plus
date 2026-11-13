@@ -57,15 +57,15 @@ class StudentRepository extends ServiceEntityRepository
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid');
 
-        $dir = strtolower($sortDir) === 'desc' ? 'DESC' : 'ASC';
+        $dir = strtolower($sortDir) === 'desc' ? \SortDirection::Descending : \SortDirection::Ascending;
         if (isset(self::SORTABLE[$sort])) {
             $qb->orderBy(self::SORTABLE[$sort], $dir);
             if ($sort === 'name') {
                 $qb->addOrderBy('s.name.firstName', $dir);
             }
         } else {
-            $qb->orderBy('s.name.lastName', 'ASC')
-               ->addOrderBy('s.name.firstName', 'ASC');
+            $qb->orderBy('s.name.lastName', \SortDirection::Ascending)
+               ->addOrderBy('s.name.firstName', \SortDirection::Ascending);
         }
 
         if ($groupId !== '') {
@@ -111,8 +111,8 @@ class StudentRepository extends ServiceEntityRepository
             ->leftJoin('s.groups', 'sg')->addSelect('sg')
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid')
-            ->orderBy('s.name.lastName', 'ASC')
-            ->addOrderBy('s.name.firstName', 'ASC');
+            ->orderBy('s.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('s.name.firstName', \SortDirection::Ascending);
 
         if ($groupId !== '') {
             $qb->andWhere('g.id = :groupId')
@@ -152,8 +152,8 @@ class StudentRepository extends ServiceEntityRepository
             ->join('s.groups', 'g')
             ->where('g = :group')
             ->setParameter('group', $group->getId(), 'uuid')
-            ->orderBy('s.name.lastName', 'ASC')
-            ->addOrderBy('s.name.firstName', 'ASC')
+            ->orderBy('s.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('s.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -187,8 +187,8 @@ class StudentRepository extends ServiceEntityRepository
         /** @var list<Student> $result */
         $result = $qb
             ->where('g IN (' . implode(', ', $placeholders) . ')')
-            ->orderBy('s.name.lastName', 'ASC')
-            ->addOrderBy('s.name.firstName', 'ASC')
+            ->orderBy('s.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('s.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -344,8 +344,8 @@ class StudentRepository extends ServiceEntityRepository
             ->join('c.academicYear', 'ay')
             ->where('ay = :activeYear')
             ->setParameter('activeYear', $year->getId(), 'uuid')
-            ->orderBy('s.name.lastName', 'ASC')
-            ->addOrderBy('s.name.firstName', 'ASC');
+            ->orderBy('s.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('s.name.firstName', \SortDirection::Ascending);
 
         $qb->andWhere(
             $qb->expr()->orX(

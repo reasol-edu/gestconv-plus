@@ -144,7 +144,7 @@ class IssueRepository extends ServiceEntityRepository
             ))->setParameter('search', '%' . $search . '%');
         }
 
-        $dir = $filter->sortDir === 'asc' ? 'ASC' : 'DESC';
+        $dir = $filter->sortDir === 'asc' ? \SortDirection::Ascending : \SortDirection::Descending;
         switch ($filter->sort) {
             case 'number':
                 $qb->orderBy('i.number', $dir);
@@ -164,13 +164,13 @@ class IssueRepository extends ServiceEntityRepository
 
                 break;
             case 'due':
-                $qb->addSelect('CASE WHEN i.maxDue IS NULL THEN 1 ELSE 0 END AS HIDDEN dueMissing')->orderBy('dueMissing', 'ASC')->addOrderBy('i.maxDue', $dir);
+                $qb->addSelect('CASE WHEN i.maxDue IS NULL THEN 1 ELSE 0 END AS HIDDEN dueMissing')->orderBy('dueMissing', \SortDirection::Ascending)->addOrderBy('i.maxDue', $dir);
 
                 break;
             default:
                 $qb->orderBy('i.createdAt', $dir);
         }
-        $qb->addOrderBy('i.number', 'DESC');
+        $qb->addOrderBy('i.number', \SortDirection::Descending);
 
         return $qb->getQuery();
     }
@@ -231,7 +231,7 @@ class IssueRepository extends ServiceEntityRepository
             ->andWhere('i.duplicateOf IS NULL OR i.duplicateOf != :self')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('self', $issue->getId(), 'uuid')
-            ->orderBy('i.number', 'DESC')
+            ->orderBy('i.number', \SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -254,7 +254,7 @@ class IssueRepository extends ServiceEntityRepository
             ->where('i.educationalCentre = :centre')
             ->andWhere('i.booking IS NOT NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('i.createdAt', 'ASC')
+            ->orderBy('i.createdAt', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -278,8 +278,8 @@ class IssueRepository extends ServiceEntityRepository
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('open', IssueStatus::openValues())
             ->setParameter('today', $today->setTime(0, 0), Types::DATE_IMMUTABLE)
-            ->orderBy('i.maxDue', 'ASC')
-            ->addOrderBy('i.number', 'ASC')
+            ->orderBy('i.maxDue', \SortDirection::Ascending)
+            ->addOrderBy('i.number', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

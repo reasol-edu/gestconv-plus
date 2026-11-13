@@ -28,7 +28,7 @@ class CommunicationMethodRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('m')
             ->where('m.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('m.position', 'ASC')
+            ->orderBy('m.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -45,7 +45,7 @@ class CommunicationMethodRepository extends ServiceEntityRepository
             ->where('m.educationalCentre = :centre')
             ->andWhere('m.active = true')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('m.position', 'ASC')
+            ->orderBy('m.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

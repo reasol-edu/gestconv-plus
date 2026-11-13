@@ -44,7 +44,7 @@ class SanctionTaskAttachmentRepository extends ServiceEntityRepository
             ->join('a.task', 't')
             ->where('t.sanction = :sanction')
             ->setParameter('sanction', $sanction->getId(), 'uuid')
-            ->orderBy('a.filename', 'ASC')
+            ->orderBy('a.filename', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

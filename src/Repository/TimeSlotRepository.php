@@ -38,8 +38,8 @@ class TimeSlotRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('t')
             ->where('t.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('t.dayOfWeek', 'ASC')
-            ->addOrderBy('t.startTime', 'ASC')
+            ->orderBy('t.dayOfWeek', \SortDirection::Ascending)
+            ->addOrderBy('t.startTime', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
@@ -54,7 +54,7 @@ class TimeSlotRepository extends ServiceEntityRepository
             ->andWhere('t.dayOfWeek = :day')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('day', $dayOfWeek)
-            ->orderBy('t.startTime', 'ASC')
+            ->orderBy('t.startTime', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
@@ -67,8 +67,8 @@ class TimeSlotRepository extends ServiceEntityRepository
             ->addSelect('g')
             ->where('t.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('t.dayOfWeek', 'ASC')
-            ->addOrderBy('t.startTime', 'ASC')
+            ->orderBy('t.dayOfWeek', \SortDirection::Ascending)
+            ->addOrderBy('t.startTime', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

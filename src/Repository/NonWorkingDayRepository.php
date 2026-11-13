@@ -35,7 +35,7 @@ class NonWorkingDayRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('d')
             ->where('d.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('d.date', 'ASC')
+            ->orderBy('d.date', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

@@ -30,7 +30,7 @@ class PrintableCalendarRepository extends ServiceEntityRepository
             ->andWhere('c.academicYear = :year')
             ->setParameter('owner', $owner->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('c.createdAt', 'DESC')
+            ->orderBy('c.createdAt', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
     }

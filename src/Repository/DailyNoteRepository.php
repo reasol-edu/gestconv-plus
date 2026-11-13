@@ -107,7 +107,7 @@ class DailyNoteRepository extends ServiceEntityRepository
         }
 
         $sortDirRaw = $filters['sortDir'] ?? 'desc';
-        $sortDir    = is_string($sortDirRaw) && strtolower($sortDirRaw) === 'asc' ? 'ASC' : 'DESC';
+        $sortDir    = is_string($sortDirRaw) && strtolower($sortDirRaw) === 'asc' ? \SortDirection::Ascending : \SortDirection::Descending;
 
         $sortRaw = $filters['sort'] ?? '';
         $sort    = is_string($sortRaw) ? $sortRaw : '';
@@ -116,7 +116,7 @@ class DailyNoteRepository extends ServiceEntityRepository
             'student' => $qb->orderBy('s.name.lastName', $sortDir)->addOrderBy('s.name.firstName', $sortDir),
             'teacher' => $qb->orderBy('t.name.lastName', $sortDir)->addOrderBy('t.name.firstName', $sortDir),
             'group'   => $qb->orderBy('g.name', $sortDir),
-            default   => $qb->orderBy('n.occurredAt', 'DESC'),
+            default   => $qb->orderBy('n.occurredAt', \SortDirection::Descending),
         };
 
         return $qb->distinct()->getQuery();
@@ -141,7 +141,7 @@ class DailyNoteRepository extends ServiceEntityRepository
             ->andWhere('ty.active = true')
             ->setParameter('student', $student->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('n.occurredAt', 'DESC')
+            ->orderBy('n.occurredAt', \SortDirection::Descending)
             ->getQuery();
     }
 
@@ -161,7 +161,7 @@ class DailyNoteRepository extends ServiceEntityRepository
             ->setParameter('student', $student->getId(), 'uuid')
             ->setParameter('type', $type->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('n.occurredAt', 'DESC')
+            ->orderBy('n.occurredAt', \SortDirection::Descending)
             ->getQuery();
     }
 
@@ -274,10 +274,10 @@ class DailyNoteRepository extends ServiceEntityRepository
             ->select('g')
             ->distinct()
             ->from(Group::class, 'g')
-            ->join(DailyNote::class, 'n', 'WITH', 'n.group = g')
+            ->join(DailyNote::class, 'n', 'ON', 'n.group = g')
             ->where('n.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('g.name', 'ASC');
+            ->orderBy('g.name', \SortDirection::Ascending);
 
         $hasFullAccess = $viewer->isAdmin() || $centre->getAdmins()->contains($viewer);
         if (!$hasFullAccess) {
@@ -309,12 +309,12 @@ class DailyNoteRepository extends ServiceEntityRepository
             ->select('g')
             ->distinct()
             ->from(Group::class, 'g')
-            ->join(DailyNote::class, 'n', 'WITH', 'n.group = g')
+            ->join(DailyNote::class, 'n', 'ON', 'n.group = g')
             ->where('n.academicYear = :year')
             ->andWhere('n.type = :type')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('type', $type->getId(), 'uuid')
-            ->orderBy('g.name', 'ASC');
+            ->orderBy('g.name', \SortDirection::Ascending);
 
         $hasFullAccess = $viewer->isAdmin() || $centre->getAdmins()->contains($viewer);
         if (!$hasFullAccess) {
@@ -613,7 +613,7 @@ class DailyNoteRepository extends ServiceEntityRepository
             ->setParameter('student', $student->getId(), 'uuid')
             ->setParameter('type', $type->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('n.occurredAt', 'DESC')
+            ->orderBy('n.occurredAt', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
 

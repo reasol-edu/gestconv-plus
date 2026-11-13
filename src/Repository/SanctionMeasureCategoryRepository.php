@@ -28,7 +28,7 @@ class SanctionMeasureCategoryRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('c')
             ->where('c.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.position', 'ASC')
+            ->orderBy('c.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

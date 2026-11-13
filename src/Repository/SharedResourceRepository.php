@@ -33,8 +33,8 @@ class SharedResourceRepository extends ServiceEntityRepository
             ->join('r.category', 'c')
             ->where('c.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.name', 'ASC')
-            ->addOrderBy('r.name', 'ASC');
+            ->orderBy('c.name', \SortDirection::Ascending)
+            ->addOrderBy('r.name', \SortDirection::Ascending);
 
         if ($onlyActive) {
             $qb->andWhere('r.active = true')->andWhere('c.active = true');

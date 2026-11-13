@@ -44,7 +44,7 @@ class GroupRepository extends ServiceEntityRepository
             ->join('g.course', 'c')
             ->where('c = :course')
             ->setParameter('course', $course->getId(), 'uuid')
-            ->orderBy('g.name', 'ASC')
+            ->orderBy('g.name', \SortDirection::Ascending)
             ->distinct()
             ->getQuery()
             ->getResult();
@@ -95,10 +95,10 @@ class GroupRepository extends ServiceEntityRepository
             ->join('c.academicYear', 'ay')
             ->where('ay = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('c.name', 'ASC')
-            ->addOrderBy('g.name', 'ASC')
-            ->addOrderBy('s.name.lastName', 'ASC')
-            ->addOrderBy('s.name.firstName', 'ASC')
+            ->orderBy('c.name', \SortDirection::Ascending)
+            ->addOrderBy('g.name', \SortDirection::Ascending)
+            ->addOrderBy('s.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('s.name.firstName', \SortDirection::Ascending)
             ->distinct()
             ->getQuery()
             ->getResult();
@@ -147,7 +147,7 @@ class GroupRepository extends ServiceEntityRepository
             ->join('c.academicYear', 'ay')
             ->where('ay = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('g.name', 'ASC')
+            ->orderBy('g.name', \SortDirection::Ascending)
             ->distinct()
             ->getQuery()
             ->getResult();
@@ -172,7 +172,7 @@ class GroupRepository extends ServiceEntityRepository
             ->andWhere(':viewer MEMBER OF g.tutors')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('viewer', $viewer->getId(), 'uuid')
-            ->orderBy('g.name', 'ASC')
+            ->orderBy('g.name', \SortDirection::Ascending)
             ->distinct()
             ->getQuery()
             ->getResult();
@@ -290,7 +290,7 @@ class GroupRepository extends ServiceEntityRepository
             ))
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('viewer', $viewer->getId(), 'uuid')
-            ->orderBy('g.name', 'ASC')
+            ->orderBy('g.name', \SortDirection::Ascending)
             ->distinct()
             ->getQuery()
             ->getResult();
@@ -314,8 +314,8 @@ class GroupRepository extends ServiceEntityRepository
             ->join('c.academicYear', 'ay')
             ->where('ay = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('c.name', 'ASC')
-            ->addOrderBy('g.name', 'ASC')
+            ->orderBy('c.name', \SortDirection::Ascending)
+            ->addOrderBy('g.name', \SortDirection::Ascending)
             ->distinct()
             ->getQuery()
             ->getResult();

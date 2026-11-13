@@ -29,8 +29,8 @@ class IssuePriorityRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('p')
             ->where('p.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('p.position', 'ASC')
-            ->addOrderBy('p.name', 'ASC')
+            ->orderBy('p.position', \SortDirection::Ascending)
+            ->addOrderBy('p.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

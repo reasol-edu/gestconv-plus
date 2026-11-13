@@ -28,7 +28,7 @@ class SanctionObservationRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('o')
             ->where('o.sanction = :sanction')
             ->setParameter('sanction', $sanction->getId(), 'uuid')
-            ->orderBy('o.registeredAt', 'DESC')
+            ->orderBy('o.registeredAt', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
 

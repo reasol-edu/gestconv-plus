@@ -37,7 +37,7 @@ class AcademicYearRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('ay')
             ->where('ay.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('ay.name', 'DESC')
+            ->orderBy('ay.name', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
     }

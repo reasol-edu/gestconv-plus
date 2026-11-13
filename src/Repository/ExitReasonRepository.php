@@ -29,7 +29,7 @@ class ExitReasonRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('r')
             ->where('r.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('r.position', 'ASC')
+            ->orderBy('r.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -46,7 +46,7 @@ class ExitReasonRepository extends ServiceEntityRepository
             ->where('r.educationalCentre = :centre')
             ->andWhere('r.active = true')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('r.position', 'ASC')
+            ->orderBy('r.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

@@ -56,7 +56,7 @@ class ResourceBookingRepository extends ServiceEntityRepository
         $result = $this->baseQueryBuilder()
             ->where('b.seriesId = :series')
             ->setParameter('series', $seriesId, 'uuid')
-            ->orderBy('b.date', 'ASC')
+            ->orderBy('b.date', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -81,7 +81,7 @@ class ResourceBookingRepository extends ServiceEntityRepository
             ->setParameter('from', $from, Types::DATE_IMMUTABLE)
             ->setParameter('to', $to, Types::DATE_IMMUTABLE)
             ->setParameter('occupying', ResourceBookingStatus::occupyingValues())
-            ->orderBy('b.date', 'ASC')
+            ->orderBy('b.date', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -104,7 +104,7 @@ class ResourceBookingRepository extends ServiceEntityRepository
             ->setParameter('from', $from, Types::DATE_IMMUTABLE)
             ->setParameter('to', $to, Types::DATE_IMMUTABLE)
             ->setParameter('occupying', ResourceBookingStatus::occupyingValues())
-            ->orderBy('b.date', 'ASC');
+            ->orderBy('b.date', \SortDirection::Ascending);
 
         $this->applyFilters($qb, $filters);
 
@@ -126,8 +126,8 @@ class ResourceBookingRepository extends ServiceEntityRepository
         $qb = $this->baseQueryBuilder()
             ->where('b.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('b.date', 'ASC')
-            ->addOrderBy('b.id', 'ASC');
+            ->orderBy('b.date', \SortDirection::Ascending)
+            ->addOrderBy('b.id', \SortDirection::Ascending);
 
         if ($viewer !== null) {
             if ($managedCategories === []) {
@@ -197,7 +197,7 @@ class ResourceBookingRepository extends ServiceEntityRepository
             ->andWhere('b.status = :pending')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('pending', ResourceBookingStatus::Pending->value)
-            ->orderBy('b.date', 'ASC');
+            ->orderBy('b.date', \SortDirection::Ascending);
 
         if ($categories !== null) {
             $qb->andWhere('c.id IN (' . $this->uuidList($qb, 'categories', array_map(static fn (ResourceCategory $c): Uuid => $c->getId(), $categories)) . ')');
@@ -225,7 +225,7 @@ class ResourceBookingRepository extends ServiceEntityRepository
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('teacher', $teacher->getId(), 'uuid')
             ->setParameter('resolved', [ResourceBookingStatus::Approved->value, ResourceBookingStatus::Rejected->value])
-            ->orderBy('b.date', 'ASC')
+            ->orderBy('b.date', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

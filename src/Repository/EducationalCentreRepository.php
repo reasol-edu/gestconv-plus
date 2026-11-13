@@ -63,7 +63,7 @@ class EducationalCentreRepository extends ServiceEntityRepository
     public function findAllOrderedByName(): array
     {
         return $this->createQueryBuilder('ec')
-            ->orderBy('ec.name', 'ASC')
+            ->orderBy('ec.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
@@ -79,7 +79,7 @@ class EducationalCentreRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('ec')
             ->addSelect('nts')
             ->leftJoin('ec.nonTeachingStaff', 'nts')
-            ->orderBy('ec.name', 'ASC')
+            ->orderBy('ec.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -92,7 +92,7 @@ class EducationalCentreRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('ec')
             ->leftJoin('ec.activeAcademicYear', 'ay')
             ->addSelect('ay')
-            ->orderBy('ec.name', 'ASC')
+            ->orderBy('ec.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
@@ -117,8 +117,8 @@ class EducationalCentreRepository extends ServiceEntityRepository
             ->leftJoin('ec.activeAcademicYear', 'ay')
             ->addSelect('ay');
 
-        $dir = strtolower($sortDir) === 'desc' ? 'DESC' : 'ASC';
-        $qb->orderBy(self::SORTABLE[$sort] ?? 'ec.name', isset(self::SORTABLE[$sort]) ? $dir : 'ASC');
+        $dir = strtolower($sortDir) === 'desc' ? \SortDirection::Descending : \SortDirection::Ascending;
+        $qb->orderBy(self::SORTABLE[$sort] ?? 'ec.name', isset(self::SORTABLE[$sort]) ? $dir : \SortDirection::Ascending);
 
         if ($search !== '') {
             $q = '%' . $search . '%';
@@ -157,7 +157,7 @@ class EducationalCentreRepository extends ServiceEntityRepository
                                LEFT JOIN g.groupTeachers ggt LEFT JOIN g.tutors gtu
                                WHERE ayG.educationalCentre = ec AND (ggt.teacher = :tid OR gtu.id = :tid))')
             ->setParameter('tid', $teacher->getId(), 'uuid')
-            ->orderBy('ec.name', 'ASC')
+            ->orderBy('ec.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

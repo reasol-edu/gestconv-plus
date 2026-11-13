@@ -26,7 +26,7 @@ class CourseRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->where('c.academicYear = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('c.name', 'ASC')
+            ->orderBy('c.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

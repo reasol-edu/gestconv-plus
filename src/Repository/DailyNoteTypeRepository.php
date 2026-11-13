@@ -28,7 +28,7 @@ class DailyNoteTypeRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('t')
             ->where('t.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('t.position', 'ASC')
+            ->orderBy('t.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -45,7 +45,7 @@ class DailyNoteTypeRepository extends ServiceEntityRepository
             ->where('t.educationalCentre = :centre')
             ->andWhere('t.active = true')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('t.position', 'ASC')
+            ->orderBy('t.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

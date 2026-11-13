@@ -108,7 +108,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('ay = :year')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('s.createdAt', 'DESC');
+            ->orderBy('s.createdAt', \SortDirection::Descending);
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -395,7 +395,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('s.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('s.createdAt', 'ASC');
+            ->orderBy('s.createdAt', \SortDirection::Ascending);
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -432,7 +432,7 @@ class SanctionRepository extends ServiceEntityRepository
         ?Student $student = null,
     ): Query {
         $qb = $this->buildNotifiableQueryBuilder($centre, $viewer, $notifierSetting, $year)
-            ->orderBy('s.createdAt', 'ASC');
+            ->orderBy('s.createdAt', \SortDirection::Ascending);
 
         if ($student !== null) {
             $qb->andWhere('s.student = :student')
@@ -462,7 +462,7 @@ class SanctionRepository extends ServiceEntityRepository
         $qb = $this->getEntityManager()->createQueryBuilder()
             ->select('st', 'COUNT(s.id) AS sanctionCount')
             ->from(Student::class, 'st')
-            ->join(Sanction::class, 's', 'WITH', 's.student = st')
+            ->join(Sanction::class, 's', 'ON', 's.student = st')
             ->join('s.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
@@ -473,9 +473,9 @@ class SanctionRepository extends ServiceEntityRepository
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
             ->groupBy('st.id')
-            ->orderBy('COUNT(s.id)', 'DESC')
-            ->addOrderBy('st.name.lastName', 'ASC')
-            ->addOrderBy('st.name.firstName', 'ASC');
+            ->orderBy('COUNT(s.id)', \SortDirection::Descending)
+            ->addOrderBy('st.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('st.name.firstName', \SortDirection::Ascending);
 
         $this->applyNotifiableRestriction($qb, $centre, $viewer, $notifierSetting);
 
@@ -579,9 +579,9 @@ class SanctionRepository extends ServiceEntityRepository
             ->setParameter('rangeStart', $rangeStart)
             ->setParameter('rangeEnd', $rangeEnd)
             ->setParameter('viewer', $viewer->getId(), 'uuid')
-            ->orderBy('s.effectiveFrom', 'ASC')
-            ->addOrderBy('g.name', 'ASC')
-            ->addOrderBy('st.name.lastName', 'ASC');
+            ->orderBy('s.effectiveFrom', \SortDirection::Ascending)
+            ->addOrderBy('g.name', \SortDirection::Ascending)
+            ->addOrderBy('st.name.lastName', \SortDirection::Ascending);
 
         $qb->andWhere($qb->expr()->orX(
             'EXISTS (SELECT 1 FROM ' . GroupTeacher::class . ' xgt WHERE xgt.group = g AND xgt.teacher = :viewer)',
@@ -611,9 +611,9 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('s.effectiveTo IS NULL OR s.effectiveTo >= :date')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('date', $date, Types::DATE_IMMUTABLE)
-            ->orderBy('g.name', 'ASC')
-            ->addOrderBy('st.name.lastName', 'ASC')
-            ->addOrderBy('st.name.firstName', 'ASC')
+            ->orderBy('g.name', \SortDirection::Ascending)
+            ->addOrderBy('st.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('st.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -655,7 +655,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('s.effectiveFrom IS NOT NULL')
             ->andWhere('s.notifiedCommunication IS NOT NULL')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('s.effectiveFrom', 'ASC')
+            ->orderBy('s.effectiveFrom', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -684,7 +684,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('r.notifiedCommunication IS NOT NULL')
             ->setParameter('student', $student->getId(), 'uuid')
             ->setParameter('group', $group->getId(), 'uuid')
-            ->orderBy('r.occurredAt', 'DESC')
+            ->orderBy('r.occurredAt', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
 
@@ -752,7 +752,7 @@ class SanctionRepository extends ServiceEntityRepository
             ->andWhere('s.notifiedCommunication IS NULL')
             ->andWhere('s.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('s.createdAt', 'ASC')
+            ->orderBy('s.createdAt', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

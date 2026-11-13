@@ -26,7 +26,7 @@ class PaginatorTest extends RepositoryTestCase
         return $this->em->createQueryBuilder()
             ->select('t')
             ->from(Teacher::class, 't')
-            ->orderBy('t.name.lastName', 'ASC')
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
             ->getQuery();
     }
 

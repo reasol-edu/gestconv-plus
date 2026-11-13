@@ -34,8 +34,8 @@ class LocationOptionRepository extends ServiceEntityRepository
             ->join('o.category', 'c')
             ->where('o.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.position', 'ASC')
-            ->addOrderBy('o.position', 'ASC')
+            ->orderBy('c.position', \SortDirection::Ascending)
+            ->addOrderBy('o.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -55,8 +55,8 @@ class LocationOptionRepository extends ServiceEntityRepository
             ->where('o.educationalCentre = :centre')
             ->andWhere('o.active = true')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.position', 'ASC')
-            ->addOrderBy('o.position', 'ASC');
+            ->orderBy('c.position', \SortDirection::Ascending)
+            ->addOrderBy('o.position', \SortDirection::Ascending);
 
         // Fuera de los partes (incidencias, actividades) no se ofrecen las categorías «solo para partes».
         if ($forAllPlacesOnly) {
@@ -78,7 +78,7 @@ class LocationOptionRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('o')
             ->where('o.category = :category')
             ->setParameter('category', $category->getId(), 'uuid')
-            ->orderBy('o.position', 'ASC')
+            ->orderBy('o.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -132,8 +132,8 @@ class LocationOptionRepository extends ServiceEntityRepository
             ->andWhere('UNACCENT(LOWER(o.name)) LIKE UNACCENT(LOWER(:search))')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('search', '%' . $q . '%')
-            ->orderBy('c.position', 'ASC')
-            ->addOrderBy('o.position', 'ASC')
+            ->orderBy('c.position', \SortDirection::Ascending)
+            ->addOrderBy('o.position', \SortDirection::Ascending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

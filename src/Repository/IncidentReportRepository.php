@@ -164,7 +164,7 @@ class IncidentReportRepository extends ServiceEntityRepository
 
         // sorting
         $sortDirRaw = $filters['sortDir'] ?? 'desc';
-        $sortDir    = is_string($sortDirRaw) && strtolower($sortDirRaw) === 'asc' ? 'ASC' : 'DESC';
+        $sortDir    = is_string($sortDirRaw) && strtolower($sortDirRaw) === 'asc' ? \SortDirection::Ascending : \SortDirection::Descending;
 
         $sortRaw = $filters['sort'] ?? '';
         $sort    = is_string($sortRaw) ? $sortRaw : '';
@@ -173,7 +173,7 @@ class IncidentReportRepository extends ServiceEntityRepository
             'student' => $qb->orderBy('s.name.lastName', $sortDir)->addOrderBy('s.name.firstName', $sortDir),
             'teacher' => $qb->orderBy('t.name.lastName', $sortDir)->addOrderBy('t.name.firstName', $sortDir),
             'group'   => $qb->orderBy('g.name', $sortDir),
-            default   => $qb->orderBy('r.occurredAt', 'DESC'),
+            default   => $qb->orderBy('r.occurredAt', \SortDirection::Descending),
         };
 
         return $qb->distinct()->getQuery();
@@ -249,7 +249,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         $result = $this->buildPendingPrescriptionQueryBuilder($centre, $viewer, $year, $cutoff)
             ->addSelect('s', 'g', 'c')
             ->join('r.student', 's')
-            ->orderBy('r.occurredAt', 'ASC')
+            ->orderBy('r.occurredAt', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -304,12 +304,12 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->from(Group::class, 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
-            ->join(IncidentReport::class, 'r', 'WITH', 'r.group = g')
+            ->join(IncidentReport::class, 'r', 'ON', 'r.group = g')
             ->where('ay.educationalCentre = :centre')
             ->andWhere('ay = :year')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('g.name', 'ASC');
+            ->orderBy('g.name', \SortDirection::Ascending);
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -361,9 +361,9 @@ class IncidentReportRepository extends ServiceEntityRepository
             )
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('search', '%' . $q . '%')
-            ->orderBy('s.name.lastName', 'ASC')
-            ->addOrderBy('s.name.firstName', 'ASC')
-            ->addOrderBy('g.name', 'ASC')
+            ->orderBy('s.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('s.name.firstName', \SortDirection::Ascending)
+            ->addOrderBy('g.name', \SortDirection::Ascending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -437,7 +437,7 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->andWhere('r.prescribedAt IS NULL')
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('r.occurredAt', 'ASC');
+            ->orderBy('r.occurredAt', \SortDirection::Ascending);
 
         $hasFullAccess = $centre->getAdmins()->contains($viewer)
             || $centre->getCommitteeMembers()->contains($viewer)
@@ -472,7 +472,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         ?Student $student = null,
     ): Query {
         $qb = $this->buildNotifiableQueryBuilder($centre, $viewer, $notifierSetting, $year)
-            ->orderBy('r.occurredAt', 'ASC');
+            ->orderBy('r.occurredAt', \SortDirection::Ascending);
 
         if ($student !== null) {
             $qb->andWhere('r.student = :student')
@@ -502,7 +502,7 @@ class IncidentReportRepository extends ServiceEntityRepository
         $qb = $this->getEntityManager()->createQueryBuilder()
             ->select('st', 'COUNT(r.id) AS reportCount')
             ->from(Student::class, 'st')
-            ->join(IncidentReport::class, 'r', 'WITH', 'r.student = st')
+            ->join(IncidentReport::class, 'r', 'ON', 'r.student = st')
             ->join('r.group', 'g')
             ->join('g.course', 'c')
             ->join('c.academicYear', 'ay')
@@ -513,9 +513,9 @@ class IncidentReportRepository extends ServiceEntityRepository
             ->setParameter('centre', $centre->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
             ->groupBy('st.id')
-            ->orderBy('COUNT(r.id)', 'DESC')
-            ->addOrderBy('st.name.lastName', 'ASC')
-            ->addOrderBy('st.name.firstName', 'ASC');
+            ->orderBy('COUNT(r.id)', \SortDirection::Descending)
+            ->addOrderBy('st.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('st.name.firstName', \SortDirection::Ascending);
 
         $this->applyNotifiableRestriction($qb, $centre, $viewer, $notifierSetting);
 

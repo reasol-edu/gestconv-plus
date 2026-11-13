@@ -55,8 +55,8 @@ class GroupTeacherRepository extends ServiceEntityRepository
             ->andWhere('c.academicYear = :year')
             ->setParameter('teacher', $teacher->getId(), 'uuid')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('g.name', 'ASC')
-            ->addOrderBy('gt.subject', 'ASC')
+            ->orderBy('g.name', \SortDirection::Ascending)
+            ->addOrderBy('gt.subject', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

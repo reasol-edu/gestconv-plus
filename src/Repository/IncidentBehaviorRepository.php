@@ -33,8 +33,8 @@ class IncidentBehaviorRepository extends ServiceEntityRepository
             ->join('b.category', 'c')
             ->where('b.educationalCentre = :centre')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.position', 'ASC')
-            ->addOrderBy('b.position', 'ASC')
+            ->orderBy('c.position', \SortDirection::Ascending)
+            ->addOrderBy('b.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -55,8 +55,8 @@ class IncidentBehaviorRepository extends ServiceEntityRepository
             ->where('b.educationalCentre = :centre')
             ->andWhere('b.active = true')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('c.position', 'ASC')
-            ->addOrderBy('b.position', 'ASC')
+            ->orderBy('c.position', \SortDirection::Ascending)
+            ->addOrderBy('b.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -72,7 +72,7 @@ class IncidentBehaviorRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('b')
             ->where('b.category = :category')
             ->setParameter('category', $category->getId(), 'uuid')
-            ->orderBy('b.position', 'ASC')
+            ->orderBy('b.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

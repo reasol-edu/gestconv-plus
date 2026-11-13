@@ -45,7 +45,7 @@ class AbsenceTeacherAutocompleter implements EntityAutocompleterInterface
             (string) ($this->requestStack->getCurrentRequest()?->query->getString('academicYearId') ?? '')
         );
 
-        $qb->join(Absence::class, 'a', 'WITH', 'a.teacher = t')
+        $qb->join(Absence::class, 'a', 'ON', 'a.teacher = t')
            ->andWhere('a.academicYear = :yearId')
            ->setParameter('yearId', $academicYearId, 'uuid');
 
@@ -61,8 +61,8 @@ class AbsenceTeacherAutocompleter implements EntityAutocompleterInterface
             )
             ->setParameter('q', $q)
             ->distinct()
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC');
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending);
     }
 
     public function getLabel(object $entity): string

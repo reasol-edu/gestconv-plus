@@ -78,7 +78,7 @@ class ActivityLogRepository extends ServiceEntityRepository
 
         $allowedSorts = ['createdAt' => 'l.createdAt', 'ip' => 'l.ip', 'actionType' => 'l.actionType'];
         $sort    = $allowedSorts[$filters['sort'] ?? ''] ?? 'l.createdAt';
-        $sortDir = strtoupper($filters['sortDir'] ?? 'DESC') === 'ASC' ? 'ASC' : 'DESC';
+        $sortDir = strtoupper($filters['sortDir'] ?? 'DESC') === 'ASC' ? \SortDirection::Ascending : \SortDirection::Descending;
 
         $qb->orderBy($sort, $sortDir)->addOrderBy('l.id', $sortDir);
 
@@ -91,7 +91,7 @@ class ActivityLogRepository extends ServiceEntityRepository
         /** @var list<array{actionType: string}> $rows */
         $rows = $this->createQueryBuilder('l')
             ->select('DISTINCT l.actionType')
-            ->orderBy('l.actionType', 'ASC')
+            ->orderBy('l.actionType', \SortDirection::Ascending)
             ->getQuery()
             ->getArrayResult();
 

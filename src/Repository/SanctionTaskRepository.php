@@ -95,9 +95,9 @@ class SanctionTaskRepository extends ServiceEntityRepository
             ->join('gt.teacher', 'te')
             ->where('t.sanction = :sanction')
             ->setParameter('sanction', $sanction->getId(), 'uuid')
-            ->orderBy('gt.subject', 'ASC')
-            ->addOrderBy('te.name.lastName', 'ASC')
-            ->addOrderBy('te.name.firstName', 'ASC')
+            ->orderBy('gt.subject', \SortDirection::Ascending)
+            ->addOrderBy('te.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('te.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -131,9 +131,9 @@ class SanctionTaskRepository extends ServiceEntityRepository
             ->join('t.groupTeacher', 'gt')
             ->join('gt.teacher', 'te')
             ->where('IDENTITY(t.sanction) IN (' . implode(', ', $placeholders) . ')')
-            ->orderBy('gt.subject', 'ASC')
-            ->addOrderBy('te.name.lastName', 'ASC')
-            ->addOrderBy('te.name.firstName', 'ASC')
+            ->orderBy('gt.subject', \SortDirection::Ascending)
+            ->addOrderBy('te.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('te.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -163,7 +163,7 @@ class SanctionTaskRepository extends ServiceEntityRepository
             ->andWhere('gt.teacher = :teacher')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('teacher', $teacher->getId(), 'uuid')
-            ->orderBy('s.createdAt', 'DESC')
+            ->orderBy('s.createdAt', \SortDirection::Descending)
             ->getQuery()
             ->getResult();
 
@@ -195,7 +195,7 @@ class SanctionTaskRepository extends ServiceEntityRepository
             ->andWhere('t.completedAt IS NULL')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('teacher', $teacher->getId(), 'uuid')
-            ->orderBy('s.effectiveFrom', 'ASC')
+            ->orderBy('s.effectiveFrom', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

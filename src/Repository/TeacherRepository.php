@@ -75,8 +75,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
         // El personal no docente no sale en los listados de docentes: se gestiona en su propia sección del centro.
         return $this->createQueryBuilder('t')
             ->where('t.nonTeaching = false')
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC')
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
@@ -92,8 +92,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
     {
         $qb = $this->createQueryBuilder('t')
             ->where('t.nonTeaching = false')
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC');
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending);
 
         if ($search !== '') {
             $q = '%' . $search . '%';
@@ -118,8 +118,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->join('t.academicYears', 'ay')
             ->where('ay.id = :year')
             ->setParameter('year', $year->getId(), 'uuid')
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC');
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending);
 
         if ($search !== '') {
             $q = '%' . $search . '%';
@@ -231,11 +231,11 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
     {
         /** @var list<Teacher> $result */
         $result = $this->createQueryBuilder('t')
-            ->join(EducationalCentre::class, 'c', 'WITH', 'c.id = :centre')
+            ->join(EducationalCentre::class, 'c', 'ON', 'c.id = :centre')
             ->where('t MEMBER OF c.nonTeachingStaff')
             ->setParameter('centre', $centre->getId(), 'uuid')
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC')
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -252,8 +252,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
     {
         $qb = $this->createQueryBuilder('t')
             ->where('t.nonTeaching = true')
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC');
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending);
 
         $search = trim($search);
         if ($search !== '') {
@@ -342,8 +342,8 @@ class TeacherRepository extends ServiceEntityRepository implements PasswordUpgra
             ->orWhere('UNACCENT(LOWER(t.username)) LIKE UNACCENT(LOWER(:q))')
             ->andWhere('t.nonTeaching = false')
             ->setParameter('q', $q)
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC')
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

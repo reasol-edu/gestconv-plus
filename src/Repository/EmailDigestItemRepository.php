@@ -31,7 +31,7 @@ class EmailDigestItemRepository extends ServiceEntityRepository
             ->join('i.recipient', 'r')
             ->join('i.educationalCentre', 'c')
             ->where('i.sentAt IS NULL')
-            ->orderBy('i.createdAt', 'ASC')
+            ->orderBy('i.createdAt', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

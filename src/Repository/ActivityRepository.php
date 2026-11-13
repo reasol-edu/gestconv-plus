@@ -50,8 +50,8 @@ class ActivityRepository extends ServiceEntityRepository
             ->andWhere('act.date = :date')
             ->setParameter('year', $year->getId(), 'uuid')
             ->setParameter('date', $date, Types::DATE_IMMUTABLE)
-            ->orderBy('t.name.lastName', 'ASC')
-            ->addOrderBy('t.name.firstName', 'ASC')
+            ->orderBy('t.name.lastName', \SortDirection::Ascending)
+            ->addOrderBy('t.name.firstName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
