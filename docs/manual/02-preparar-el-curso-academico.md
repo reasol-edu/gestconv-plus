@@ -203,7 +203,23 @@ página.
     Séneca; de lo contrario, la importación de estudiantes no podrá asignar cada estudiante a su
     grupo.
 
-## Lista de comprobación de inicio de curso
+## Lista de comprobación de inicio de curso {#lista-de-comprobacion-de-inicio-de-curso}
+
+La aplicación lleva esta misma lista dentro: **Centro educativo › Inicio de curso**. Evalúa el **curso
+activo** y marca sola los pasos que puede detectar a partir de los datos —curso activo, profesorado
+importado, alumnado y grupos, tutorías en todos los grupos, asignaciones docente-grupo, tramos horarios,
+días no lectivos y perfiles— y cada paso lleva un botón **Ir** a su pantalla. Dos pasos no se pueden
+detectar porque lo de serie siempre existe: **revisar conductas, medidas y métodos de comunicación** y
+**revisar los ajustes y plantillas de informes**; los confirmas tú con **Marcar como revisado** (y puedes
+quitar la marca). La lista distingue los pasos **imprescindibles** de los opcionales —los tramos horarios
+pasan a ser imprescindibles si el centro usa la sección de Ausencias y guardias— y muestra el progreso.
+Cada curso nuevo empieza con la lista limpia.
+
+Mientras falten pasos imprescindibles, el equipo directivo ve en el **Inicio** una tarjeta «Prepara el
+curso» con el progreso y el siguiente paso; desaparece sola cuando está todo hecho. Sin curso activo
+(justo al empezar) la tarjeta ya está ahí para recordar el primer paso: crearlo.
+
+Esta es la lista completa:
 
 1. Curso académico creado y marcado como **activo**.
 2. Conductas, medidas y métodos de comunicación revisados y adaptados al plan de convivencia.

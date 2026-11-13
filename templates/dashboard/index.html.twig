@@ -36,6 +36,11 @@
         {% endif %}
     </div>
 
+    {# Lista de inicio de curso: solo el equipo directivo y mientras falten pasos imprescindibles #}
+    {% if setupChecklist|default(null) %}
+        {% include 'dashboard/_setup_card.html.twig' with {centre: active_centre, checklist: setupChecklist} only %}
+    {% endif %}
+
     {% if active_year is null %}
     <div class="rounded-2xl border border-amber-200 bg-amber-50 px-6 py-8 text-center">
         {{ ux_icon('heroicons:exclamation-triangle', {class: 'mx-auto h-8 w-8 text-amber-400 mb-2'}) }}

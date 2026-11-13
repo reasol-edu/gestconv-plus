@@ -1,0 +1,28 @@
+{# Aviso de «Prepara el curso» para el equipo directivo mientras queden pasos imprescindibles. Variables: centre, checklist. #}
+{% set next = checklist.pendingRequired|first %}
+<section aria-labelledby="setup-card-title" class="rounded-2xl border border-forest-200 bg-forest-50/60 px-6 py-5">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0 flex-1">
+            <h2 id="setup-card-title" class="text-base font-semibold text-gray-900">{{ 'setup.card.title'|trans({}, 'admin') }}</h2>
+            {% if checklist.year %}
+                <p class="mt-0.5 text-sm text-gray-600">
+                    {{ 'setup.progress'|trans({'%done%': checklist.requiredDone, '%total%': checklist.requiredTotal}, 'admin') }}
+                    {% if next %}
+                        · {{ 'setup.card.next'|trans({}, 'admin') }} <strong class="font-medium text-gray-800">{{ ('setup.step.' ~ next.step.value ~ '.title')|trans({}, 'admin') }}</strong>
+                    {% endif %}
+                </p>
+                <div class="mt-3 h-2 overflow-hidden rounded-full bg-white" role="progressbar" aria-valuenow="{{ checklist.percent }}" aria-valuemin="0" aria-valuemax="100"
+                     aria-label="{{ 'setup.progress'|trans({'%done%': checklist.requiredDone, '%total%': checklist.requiredTotal}, 'admin') }}">
+                    <div class="h-full rounded-full bg-forest-500" style="width: {{ checklist.percent }}%"></div>
+                </div>
+            {% else %}
+                <p class="mt-0.5 text-sm text-gray-600">{{ 'setup.card.no_year'|trans({}, 'admin') }}</p>
+            {% endif %}
+        </div>
+        <a href="{{ path('app_centre_setup', {centreId: centre.id}) }}"
+           class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-medium text-white shadow-xs hover:bg-forest-700 transition-colors">
+            {{ 'setup.card.cta'|trans({}, 'admin') }}
+            {{ ux_icon('heroicons:arrow-right', {class: 'h-4 w-4'}) }}
+        </a>
+    </div>
+</section>

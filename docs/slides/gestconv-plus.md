@@ -648,6 +648,10 @@ el centro**, no solo de sus propios grupos:
 - Se define la **oferta formativa**: los **cursos** del año (por ejemplo,
   «1º ESO», «2º Bachillerato») y los **grupos** de cada curso.
 - Cada grupo pertenece a un único curso.
+- **Centro educativo › Inicio de curso** es la **lista de comprobación** del
+  proceso: detecta sola los pasos hechos (profesorado, alumnado, tutorías…) y
+  deja **confirmar a mano** la revisión de catálogos y ajustes. En el Inicio
+  aparece una tarjeta con el progreso hasta que está todo lo imprescindible.
 
 
 ---
@@ -779,6 +783,26 @@ está disponible para un docente normal, para el tutor/a, o para ambos.
   general.
 - Se puede **exportar a PDF** (con el mismo encabezado personalizable que
   partes y sanciones) o a una **hoja de cálculo Excel**.
+
+
+---
+
+
+<!-- _class: tight -->
+
+## Informes: analítica de convivencia
+
+- La tarjeta **Analítica de convivencia** de Informes muestra los partes y
+  las sanciones del centro en **gráficos**: evolución **mensual** (con los
+  graves en rojo), por **día de la semana** y por **hora**, las **conductas**
+  más registradas, **cursos y grupos** (también por cada 100 estudiantes) y
+  **cuántos estudiantes** acumulan uno, dos, tres o más partes.
+- Cifras clave arriba: partes, graves, estudiantes con partes, con **3 o más**
+  partes (y qué parte del total acumulan), sanciones y expulsiones del aula.
+- Sin fechas abarca **todo el curso**; los totales **coinciden** con las
+  estadísticas por grupo. Cada gráfico lleva su **tabla de datos** debajo.
+- Solo para el equipo directivo y administración; los gráficos se dibujan en
+  el servidor, sin cargar nada de fuera.
 
 
 ---

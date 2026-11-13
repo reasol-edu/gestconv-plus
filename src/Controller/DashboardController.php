@@ -21,8 +21,10 @@ use App\Security\Voter\EducationalCentreVoter;
 use App\Security\Voter\IssueVoter;
 use App\Security\Voter\SanctionVoter;
 use App\Service\AppSettingsInterface;
+use App\Service\CourseSetupChecklist;
 use App\Service\Feature;
 use App\Service\FeatureToggle;
+use App\Service\SetupChecklist;
 use App\Service\IssueAccess;
 use App\Service\PendingNotificationQueue;
 use App\Service\ResourceBookingAccess;
@@ -54,7 +56,24 @@ class DashboardController extends AbstractController
         private readonly ResourceBookingAccess $bookingAccess,
         private readonly IssueRepository $issues,
         private readonly IssueAccess $issueAccess,
+        private readonly CourseSetupChecklist $setupChecklist,
     ) {}
+
+    /**
+     * Lista de inicio de curso para el equipo directivo, solo mientras queden pasos imprescindibles. Se evalúa
+     * también cuando no hay curso activo (justo entonces el primer paso es crearlo). El resto del profesorado no
+     * la ve y no paga ninguna consulta por ella.
+     */
+    private function pendingSetupChecklist(EducationalCentre $centre): ?SetupChecklist
+    {
+        if (!$this->isGranted(EducationalCentreVoter::SECTION, $centre)) {
+            return null;
+        }
+
+        $checklist = $this->setupChecklist->build($centre);
+
+        return $checklist->isComplete() ? null : $checklist;
+    }
 
     #[Route('/', name: 'app_dashboard')]
     public function index(#[CurrentCentre] EducationalCentre $centre): Response
@@ -65,6 +84,7 @@ class DashboardController extends AbstractController
 
         if ($year === null || $viewer === null) {
             return $this->render('dashboard/index.html.twig', [
+                'setupChecklist'       => $this->pendingSetupChecklist($centre),
                 'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
                 'groupCount'           => 0,
                 'teacherCount'         => 0,
@@ -193,6 +213,7 @@ class DashboardController extends AbstractController
             : 0;
 
         return $this->render('dashboard/index.html.twig', [
+            'setupChecklist'       => $this->pendingSetupChecklist($centre),
             'studentCount'         => $this->studentRepository->countByActiveYear($centre, $viewer, $year),
             'groupCount'           => $this->groupRepository->countByActiveYearOfCentre($centre, $year),
             'teacherCount'         => $this->teacherRepository->countByAcademicYear($year),

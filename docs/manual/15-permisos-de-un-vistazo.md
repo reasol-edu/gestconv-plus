@@ -157,6 +157,8 @@ corresponda ninguno, ve la pantalla vacía para ese día en lugar de los tramos 
 |---|:---:|:---:|:---:|
 | Ver el panel del centro | — | ✓ | ✓ |
 | Generar los informes agregados (estadísticas por grupo, [salidas](07-salidas.md#informe-de-salidas) e [incidencias](10-incidencias.md#informe-de-incidencias)) | — | ✓ | ✓ |
+| Ver la [analítica de convivencia](06-convivencia-administracion.md#analitica-de-convivencia) (gráficos de todo el centro) | — | ✓ | ✓ |
+| Ver y confirmar la [lista de inicio de curso](02-preparar-el-curso-academico.md#lista-de-comprobacion-de-inicio-de-curso), y ver su aviso en el Inicio | — | ✓ | ✓ |
 | Gestionar docentes del curso | — | ✓ | ✓ |
 | Gestionar el [personal no docente](12-administrar-el-centro.md#personal-no-docente) del centro | — | ✓ | ✓ |
 | Gestionar oferta formativa | — | ✓ | ✓ |

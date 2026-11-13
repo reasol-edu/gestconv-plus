@@ -31,6 +31,19 @@ class GroupTeacherRepository extends ServiceEntityRepository
         return $result instanceof GroupTeacher ? $result : null;
     }
 
+    /** Asignaciones docente-grupo del curso (paso opcional de la lista de inicio de curso). */
+    public function countByAcademicYear(AcademicYear $year): int
+    {
+        return (int) $this->createQueryBuilder('gt')
+            ->select('COUNT(gt.id)')
+            ->join('gt.group', 'g')
+            ->join('g.course', 'c')
+            ->where('c.academicYear = :year')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /** @return GroupTeacher[] */
     public function findByTeacherAndAcademicYearOrdered(Teacher $teacher, AcademicYear $year): array
     {

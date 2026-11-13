@@ -19,6 +19,16 @@ class NonWorkingDayRepository extends ServiceEntityRepository
         parent::__construct($registry, NonWorkingDay::class);
     }
 
+    public function countByAcademicYear(AcademicYear $year): int
+    {
+        return (int) $this->createQueryBuilder('d')
+            ->select('COUNT(d.id)')
+            ->where('d.academicYear = :year')
+            ->setParameter('year', $year->getId(), 'uuid')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /** @return NonWorkingDay[] */
     public function findByAcademicYearOrdered(AcademicYear $year): array
     {
