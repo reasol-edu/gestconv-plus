@@ -14,7 +14,7 @@ final class RestoreStateCleaner
 {
     public static function clean(ContainerInterface $container): void
     {
-        foreach (['app.restore_state_dir', 'app.backup_dir'] as $parameter) {
+        foreach (['app.restore_state_dir', 'app.backup_dir', 'app.state_dir'] as $parameter) {
             try {
                 $dir = $container->get('parameter_bag')->get($parameter);
             } catch (\Throwable) {

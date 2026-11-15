@@ -10,6 +10,7 @@ when@test:
         # un bloqueo que ponga en 503 a los siguientes (ControllerTestCase y RepositoryTestCase la vacían al terminar).
         app.restore_state_dir: '%kernel.cache_dir%/restore-state'
         app.backup_dir: '%kernel.cache_dir%/backups'
+        app.state_dir: '%kernel.cache_dir%/state'
 
     services:
         # Los avisos push no salen a la red en los tests: se anotan en memoria (ver RecordingPushDispatcher).

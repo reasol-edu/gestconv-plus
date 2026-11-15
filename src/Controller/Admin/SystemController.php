@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Teacher;
 use App\Service\ActivityLogService;
+use App\Service\Backup\AutomaticBackup;
 use App\Service\Backup\BackupException;
 use App\Service\Backup\BackupLibrary;
 use App\Service\Backup\DatabaseBackup;
@@ -44,6 +45,7 @@ class SystemController extends AbstractController
     public function __construct(
         private readonly DatabaseBackup $backup,
         private readonly BackupLibrary $library,
+        private readonly AutomaticBackup $automaticBackup,
         private readonly RestoreState $restoreState,
         private readonly RestoreLauncher $launcher,
         private readonly ActivityLogService $activityLog,
@@ -63,6 +65,7 @@ class SystemController extends AbstractController
             'version'        => $this->appVersion,
             'update'         => $this->latestRelease->status(),
             'copies'         => $this->library->list(),
+            'backup'         => $this->automaticBackup->status(),
             'backup_dir'     => $this->library->directory(),
             'can_restore'    => $this->launcher->isAvailable(),
             'last_restore'   => $this->restoreState->lastResult(),

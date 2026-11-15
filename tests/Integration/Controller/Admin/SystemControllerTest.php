@@ -62,6 +62,33 @@ class SystemControllerTest extends ControllerTestCase
         self::assertSelectorExists('a[href="/admin/sistema"]');
     }
 
+    // ── estado de las copias ──────────────────────────────────────────────────
+
+    public function testThePageAndTheDashboardWarnWhenThereIsNoBackupAndExplainTheAutomaticOnes(): void
+    {
+        $this->loginAsAdmin();
+
+        $this->client->request('GET', '/admin/sistema');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('main', 'No hay ninguna copia de seguridad guardada en el servidor');
+        self::assertSelectorTextContains('main', 'Copias automáticas desactivadas');
+        self::assertSelectorExists('main a[href$="/admin/ajustes"]');
+
+        $this->client->request('GET', '/admin');
+        self::assertSelectorTextContains('main', 'No hay ninguna copia de seguridad guardada en el servidor');
+    }
+
+    public function testASavedBackupSilencesTheWarning(): void
+    {
+        $this->loginAsAdmin();
+        $this->client->request('GET', '/admin/sistema');
+        $this->client->submitForm('Guardar en el servidor');
+        $this->client->followRedirect();
+
+        self::assertSelectorTextContains('main', 'Última copia:');
+        self::assertSelectorTextNotContains('main', 'No hay ninguna copia de seguridad guardada');
+    }
+
     // ── aviso de versión nueva ────────────────────────────────────────────────
 
     public function testANewerVersionIsAnnouncedOnTheDashboardAndThePage(): void

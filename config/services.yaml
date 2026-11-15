@@ -24,6 +24,11 @@ parameters:
     # Estado de una restauración (bloqueo, resultado y hora de la última): ficheros, no base de datos, porque es la base de
     # datos lo que se sustituye. Debe ser común a todos los procesos de la aplicación (web, consola y worker).
     app.restore_state_dir:      "%kernel.project_dir%/var/restore"
+    # Pequeños datos del sistema en marcha (última copia automática, señal de vida del planificador): ficheros compartidos
+    # por la web, la consola y el worker (ver App\Service\SystemState).
+    app.state_dir:              "%kernel.project_dir%/var/state"
+    # Días sin ninguna copia guardada a partir de los cuales Administración avisa de que toca hacer una.
+    app.backup_stale_days:      7
     # Tiempo mínimo (en microsegundos) que tarda la rama POST de la solicitud
     # de restablecimiento de contraseña. Iguala las dos ramas (usuario existe /
     # no existe) para que el envío síncrono del correo no permita enumerar

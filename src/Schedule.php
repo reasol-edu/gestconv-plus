@@ -7,6 +7,7 @@ namespace App;
 use App\Message\AutoPrescribeIncidentReportsMessage;
 use App\Message\AutoPrescribeSanctionsMessage;
 use App\Message\CloseForgottenExitsMessage;
+use App\Message\CreateAutomaticBackupMessage;
 use App\Message\DeactivateExpiredDailyNotesMessage;
 use App\Message\IssueOverdueReminderMessage;
 use App\Message\NotifyLongExitsMessage;
@@ -36,6 +37,9 @@ class Schedule implements ScheduleProviderInterface
     {
         return (new SymfonySchedule())
             ->add(
+                // Antes de las purgas (03:00–06:30) para que la copia aún contenga lo que van a borrar. No hace nada si el
+                // ajuste global backup.auto_policy está en «Desactivadas».
+                RecurringMessage::cron('30 2 * * *', new CreateAutomaticBackupMessage()),
                 RecurringMessage::cron('0 1 * * *', new DeactivateExpiredDailyNotesMessage()),
                 RecurringMessage::cron('10 1 * * *', new CloseForgottenExitsMessage()),
                 RecurringMessage::cron('* * * * *', new NotifyLongExitsMessage()),
