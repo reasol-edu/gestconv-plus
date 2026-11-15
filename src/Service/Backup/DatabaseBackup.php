@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Service\Backup;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ParameterType;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -19,11 +21,18 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 final class DatabaseBackup
 {
-    /** Filas por página en las tablas con binarios (adjuntos): evita cargar de golpe todos los ficheros del cliente. */
-    private const int PAGE_SIZE = 50;
+    /** Filas por página en las tablas normales y en las que guardan ficheros (de una en una: un fichero puede pesar decenas de MB). */
+    private const int BATCH      = 200;
+    private const int FILE_BATCH = 1;
+
+    private const int MEMORY_LIMIT_BYTES = 512 * 1024 * 1024;
+
+    /** @var list<string>|null */
+    private ?array $fileTables = null;
 
     public function __construct(
         private readonly Connection $connection,
+        private readonly EntityManagerInterface $entityManager,
         private readonly DatabaseTables $tables,
         private readonly ClockInterface $clock,
         #[Autowire('%app.version%')]
@@ -32,6 +41,8 @@ final class DatabaseBackup
 
     public function create(string $zipPath): BackupManifest
     {
+        $this->raiseMemoryLimit();
+
         $tmp = sys_get_temp_dir() . '/gestconv-backup-' . bin2hex(random_bytes(6));
         if (!mkdir($tmp, 0700) && !is_dir($tmp)) {
             throw new BackupException('No se pudo crear la carpeta temporal de la copia de seguridad.');
@@ -80,7 +91,7 @@ final class DatabaseBackup
                 }
 
                 $rows = 0;
-                foreach ($this->rows($table, in_array(true, $columns, true)) as $row) {
+                foreach ($this->rows($table) as $row) {
                     $encoded = [];
                     foreach ($row as $name => $value) {
                         $encoded[$name] = $this->encode($value, $columns[$name] ?? false);
@@ -100,24 +111,101 @@ final class DatabaseBackup
         return $info;
     }
 
-    /** @return iterable<array<string, mixed>> */
-    private function rows(string $table, bool $hasBinaries): iterable
+    /**
+     * pdo_mysql y pdo_pgsql cargan en memoria el resultado completo antes de devolver la primera fila, así que un
+     * `SELECT *` sobre la tabla de ficheros los tendría todos a la vez. Por eso se lee por páginas de la clave primaria
+     * (`WHERE pk > ? ORDER BY pk LIMIT n`, que además no se degrada como OFFSET): de una en una en las tablas con
+     * ficheros y de 200 en 200 en las demás. SQLite recorre el resultado de forma perezosa y no lo necesita; las tablas
+     * de unión (clave compuesta) son pequeñas y se recorren tal cual.
+     *
+     * @return iterable<array<string, mixed>>
+     */
+    private function rows(string $table): iterable
     {
         $quoted = $this->tables->quote($table);
+        $key    = $this->tables->primaryKey($table);
 
-        if (!$hasBinaries) {
-            yield from $this->connection->iterateAssociative('SELECT * FROM ' . $quoted);
+        if ($this->tables->platform() === 'sqlite' || count($key) !== 1) {
+            yield from $this->connection->iterateAssociative('SELECT * FROM ' . $quoted . ($key === [] ? '' : ' ORDER BY ' . implode(', ', array_map($this->tables->quote(...), $key))));
 
             return;
         }
 
-        $order = implode(', ', array_map($this->tables->quote(...), $this->tables->primaryKey($table) ?: array_keys($this->tables->columns($table))));
-        for ($offset = 0;; $offset += self::PAGE_SIZE) {
-            $page = $this->connection->fetchAllAssociative(sprintf('SELECT * FROM %s ORDER BY %s LIMIT %d OFFSET %d', $quoted, $order, self::PAGE_SIZE, $offset));
-            yield from $page;
-            if (count($page) < self::PAGE_SIZE) {
+        $pk        = $key[0];
+        $quotedPk  = $this->tables->quote($pk);
+        $batch     = in_array($table, $this->fileTables(), true) ? self::FILE_BATCH : self::BATCH;
+        $binaryKey = $this->tables->columns($table)[$pk] ?? false;
+        $last      = null;
+
+        while (true) {
+            $page = $last === null
+                ? $this->connection->fetchAllAssociative(sprintf('SELECT * FROM %s ORDER BY %s LIMIT %d', $quoted, $quotedPk, $batch))
+                : $this->connection->fetchAllAssociative(
+                    sprintf('SELECT * FROM %s WHERE %s > ? ORDER BY %s LIMIT %d', $quoted, $quotedPk, $quotedPk, $batch),
+                    [$last],
+                    [$binaryKey ? ParameterType::BINARY : (is_int($last) ? ParameterType::INTEGER : ParameterType::STRING)],
+                );
+
+            if ($page === []) {
                 return;
             }
+
+            yield from $page;
+
+            $next = end($page)[$pk] ?? null;
+            if (is_resource($next)) {
+                $next = stream_get_contents($next);
+            }
+            if ($next === null || $next === $last || count($page) < $batch) {
+                return; // sin clave que seguir (o que no avanza): se acabó, sin riesgo de bucle infinito
+            }
+            $last = $next;
+        }
+    }
+
+    /**
+     * Las tablas con ficheros (columnas BLOB), según las entidades: no según el tipo de columna en la base de datos,
+     * porque en SQLite los uuid también se declaran BLOB.
+     *
+     * @return list<string>
+     */
+    private function fileTables(): array
+    {
+        if ($this->fileTables !== null) {
+            return $this->fileTables;
+        }
+
+        $tables = [];
+        foreach ($this->entityManager->getMetadataFactory()->getAllMetadata() as $metadata) {
+            foreach ($metadata->getFieldNames() as $field) {
+                if ($metadata->getTypeOfField($field) === 'blob') {
+                    $tables[] = $metadata->getTableName();
+                    break;
+                }
+            }
+        }
+
+        return $this->fileTables = $tables;
+    }
+
+    /** Una copia con ficheros necesita más de los 128 MB habituales de PHP: se sube a 512 MB si el límite es menor. */
+    private function raiseMemoryLimit(): void
+    {
+        $limit = trim((string) ini_get('memory_limit'));
+        if ($limit === '' || $limit === '-1') {
+            return;
+        }
+
+        $bytes = (int) $limit;
+        $bytes *= match (strtoupper(substr($limit, -1))) {
+            'G' => 1024 ** 3,
+            'M' => 1024 ** 2,
+            'K' => 1024,
+            default => 1,
+        };
+
+        if ($bytes < self::MEMORY_LIMIT_BYTES) {
+            ini_set('memory_limit', '512M');
         }
     }
 
