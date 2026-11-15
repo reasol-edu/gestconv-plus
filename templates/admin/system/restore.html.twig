@@ -33,6 +33,9 @@
         <ul class="list-disc space-y-1 pl-5">
             <li>{{ 'system.restore.warning.replaces'|trans({}, 'admin') }}</li>
             <li>{{ 'system.restore.warning.previous'|trans({}, 'admin') }}</li>
+            {% if upgrade %}
+                <li class="font-medium">{{ 'system.restore.warning.upgrade'|trans({'%version%': manifest.appVersion}, 'admin') }}</li>
+            {% endif %}
             <li>{{ 'system.restore.warning.maintenance'|trans({}, 'admin') }}</li>
             <li>{{ 'system.restore.warning.sessions'|trans({}, 'admin') }}</li>
             <li>{{ 'system.restore.warning.credentials'|trans({}, 'admin') }}</li>

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Restaurar copias de seguridad hechas con una versión anterior.** Antes, una copia cuya migración no coincidía con la de la base de datos se rechazaba y había que instalar la versión antigua. Ahora, si la migración de la copia es anterior y la aplicación la conoce, la restauración borra las tablas, las recrea ejecutando las migraciones desde cero hasta la versión de la copia (sin ejecutar ningún `down()`), carga los datos y migra hasta la última, con lo que las migraciones que transforman datos se aplican sobre los de la copia. Este camino no es transaccional, así que la **copia previa de los datos actuales es obligatoria** (en la consola también sin `--previous-backup`) y, si la restauración falla después de reconstruir el esquema, se vuelve sola a los datos de antes con esa copia (si tampoco eso es posible, el resultado indica qué copia restaurar a mano). La pantalla de restauración avisa cuando la copia es de este tipo. Una copia de una migración que la aplicación no conoce (de una versión posterior) sigue rechazándose antes de tocar nada. Probado en SQLite, PostgreSQL y MySQL.
+
 ## [1.37.0] - 2026-11-15
 
 ### Added

@@ -9,6 +9,8 @@ use App\Service\Backup\BackupLibrary;
 use App\Service\Backup\BackupManifest;
 use App\Service\Backup\DatabaseRestore;
 use App\Service\Backup\RestoreState;
+use App\Service\Backup\SchemaTouchedException;
+use App\Service\Backup\StoredBackup;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -125,19 +127,30 @@ class BackupRestoreCommand extends Command
     {
         $t = fn (string $key, array $params = []): string => $this->translator->trans($key, $params, 'command');
 
+        // Si hay que reconstruir el esquema (copia de otra migración), la copia previa es obligatoria: ese camino no se deshace
+        // solo, y es lo único con lo que volver atrás si falla.
+        $rebuild  = $this->restore->needsRebuild($manifest);
+        $previous = null;
+
         try {
-            if ($previousBackup) {
+            if ($previousBackup || $rebuild) {
                 $previous = $this->library->save('gestconv-antes-de-restaurar');
                 $io->note($t('backup_restore.previous_saved', ['%name%' => $previous->name]));
             }
 
-            $this->logger->warning('Restauración de copia de seguridad iniciada.', ['by' => $by, 'file' => basename($file), 'copy_version' => $manifest->appVersion]);
+            if ($rebuild) {
+                $io->note($t('backup_restore.upgrading', ['%from%' => $manifest->schemaVersion ?? '—']));
+            }
+
+            $this->logger->warning('Restauración de copia de seguridad iniciada.', ['by' => $by, 'file' => basename($file), 'copy_version' => $manifest->appVersion, 'rebuild_schema' => $rebuild]);
 
             $restored = $this->restore->restore($file, static function (string $table, int $rows) use ($io): void {
                 if ($io->isVerbose()) {
                     $io->writeln(sprintf('  %s: %d', $table, $rows));
                 }
             });
+        } catch (SchemaTouchedException $e) {
+            return $this->recover($io, $e, $previous, $by, $file);
         } catch (BackupException $e) {
             return $this->fail($io, $e->getMessage(), $by, $file, true);
         }
@@ -150,6 +163,28 @@ class BackupRestoreCommand extends Command
         $io->success($t('backup_restore.success', ['%tables%' => count($restored), '%rows%' => $rows]));
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * La restauración falló con el esquema ya reconstruido: se vuelve a los datos de antes con la copia previa (reconstruyendo
+     * el esquema otra vez, porque puede haber quedado a medias). Si tampoco eso funciona, se dice qué copia hay que restaurar.
+     */
+    private function recover(SymfonyStyle $io, SchemaTouchedException $e, ?StoredBackup $previous, string $by, string $file): int
+    {
+        $t = fn (string $key, array $params = []): string => $this->translator->trans($key, $params, 'command');
+
+        if ($previous === null) {
+            return $this->fail($io, $e->getMessage(), $by, $file, true);
+        }
+
+        $io->warning($t('backup_restore.recovering', ['%name%' => $previous->name]));
+        try {
+            $this->restore->restore($this->library->path($previous), null, true);
+        } catch (BackupException $again) {
+            return $this->fail($io, $e->getMessage() . "\n" . $t('backup_restore.recover_failed', ['%name%' => $previous->name, '%reason%' => $again->getMessage()]), $by, $file, true);
+        }
+
+        return $this->fail($io, $e->getMessage() . "\n" . $t('backup_restore.recovered', ['%name%' => $previous->name]), $by, $file, true);
     }
 
     /** Falla dejando constancia: en el registro del servidor y, para la pantalla de administración, en el resultado de la última restauración. */

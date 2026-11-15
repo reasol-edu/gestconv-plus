@@ -15,8 +15,12 @@ use App\Service\Backup\BackupException;
 use App\Service\Backup\BackupManifest;
 use App\Service\Backup\DatabaseBackup;
 use App\Service\Backup\DatabaseRestore;
+use App\Service\Backup\SchemaMigrator;
+use App\Service\Backup\SchemaTouchedException;
 use App\Tests\Integration\RepositoryTestCase;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Symfony\Component\Uid\Uuid;
 
 /** Copia de seguridad portable y su restauración (SQLite, la base de datos de los tests). */
 class DatabaseBackupRestoreTest extends RepositoryTestCase
@@ -159,17 +163,86 @@ class DatabaseBackupRestoreTest extends RepositoryTestCase
         $otherPlatform = new BackupManifest(1, '1.0.0', $manifest->schemaVersion, 'postgresql', $manifest->createdAt, $manifest->tables, []);
         self::assertStringContainsString('misma plataforma', implode(' ', $this->restore->problems($otherPlatform)));
 
+        // Una copia de una migración anterior que la aplicación conoce se admite (se reconstruye el esquema y se migra después).
         $older = new BackupManifest(1, '1.30.0', 'DoctrineMigrations\Version20260101000079', 'sqlite', $manifest->createdAt, $manifest->tables, []);
-        $text  = implode(' ', $this->restore->problems($older));
-        self::assertStringContainsString('migra la base de datos', $text);
-        self::assertStringContainsString('1.30.0', $text);
+        self::assertSame([], $this->restore->problems($older));
+        self::assertTrue($this->restore->needsRebuild($older));
+        self::assertFalse($this->restore->needsRebuild($manifest));
+
+        // Una de una migración que esta aplicación no trae (de una versión posterior) se rechaza antes de tocar nada.
+        $newer = new BackupManifest(1, '9.0.0', 'DoctrineMigrations\Version29990101000000', 'sqlite', $manifest->createdAt, $manifest->tables, []);
+        $text  = implode(' ', $this->restore->problems($newer));
+        self::assertStringContainsString('no conoce', $text);
+        self::assertStringContainsString('9.0.0', $text);
 
         $withoutTable = $manifest->tables;
         unset($withoutTable['group_tutor']);
         self::assertStringContainsString('group_tutor', implode(' ', $this->restore->problems(new BackupManifest(1, '1', $manifest->schemaVersion, 'sqlite', $manifest->createdAt, $withoutTable, []))));
 
-        $this->expectException(BackupException::class);
-        $this->restore->restore($this->zipWithManifest($older));
+        $before = (int) $this->db->fetchOne('SELECT COUNT(*) FROM educational_centre');
+        try {
+            $this->restore->restore($this->zipWithManifest($newer));
+            self::fail('Debería rechazarse.');
+        } catch (BackupException $e) {
+            self::assertNotInstanceOf(SchemaTouchedException::class, $e);
+        }
+        self::assertSame($before, (int) $this->db->fetchOne('SELECT COUNT(*) FROM educational_centre'), 'No se ha tocado nada.');
+    }
+
+    public function testACopyOfAnOlderMigrationIsRestoredRebuildingTheSchemaAndMigratingUpToTheLatest(): void
+    {
+        /** @var SchemaMigrator $migrator */
+        $migrator = self::getContainer()->get(SchemaMigrator::class);
+
+        // Esquema en la migración anterior a las copias automáticas (085), con sus datos sembrados, y copia de él.
+        $old = 'DoctrineMigrations\Version20260101000084';
+        $migrator->rebuildAt($old);
+        self::assertSame($old, $this->db->fetchOne('SELECT MAX(version) FROM doctrine_migration_versions'));
+        self::assertSame(0, $this->countDefinition('backup.auto_policy'));
+        $this->db->executeStatement("INSERT INTO educational_centre (id, code, name, city) VALUES (?, '41000009', 'IES Antiguo', 'Cádiz')", [$this->newId()]);
+        $definitions = (int) $this->db->fetchOne('SELECT COUNT(*) FROM setting_definition');
+
+        $path     = $this->zipPath();
+        $manifest = $this->backup->create($path);
+        self::assertSame($old, $manifest->schemaVersion);
+
+        // La base de datos pasa a la última migración (con otros datos): la copia ya es «antigua».
+        $migrator->migrateToLatest();
+        $this->db->executeStatement("INSERT INTO educational_centre (id, code, name, city) VALUES (?, '41000010', 'IES Nuevo', 'Huelva')", [$this->newId()]);
+        self::assertTrue($this->restore->needsRebuild($manifest));
+        self::assertSame([], $this->restore->problems($manifest));
+
+        $restored = $this->restore->restore($path);
+
+        self::assertGreaterThan(0, $restored['setting_definition']);
+        self::assertSame($migrator->latest(), $this->db->fetchOne('SELECT MAX(version) FROM doctrine_migration_versions'), 'Después de restaurar se migra hasta la última.');
+        self::assertSame(['IES Antiguo'], $this->db->fetchFirstColumn('SELECT name FROM educational_centre'), 'Están los datos de la copia, no los de antes.');
+        self::assertSame(1, $this->countDefinition('backup.auto_policy'), 'Las migraciones posteriores se han aplicado.');
+        self::assertGreaterThan($definitions, (int) $this->db->fetchOne('SELECT COUNT(*) FROM setting_definition'));
+    }
+
+    public function testAFailureAfterRebuildingTheSchemaIsReportedAsTouched(): void
+    {
+        /** @var SchemaMigrator $migrator */
+        $migrator = self::getContainer()->get(SchemaMigrator::class);
+        $old      = 'DoctrineMigrations\Version20260101000084';
+        $migrator->rebuildAt($old);
+
+        $path = $this->zipPath();
+        $this->backup->create($path);
+        $migrator->migrateToLatest();
+        $this->corruptRows($path, $copy = $this->tmpFile(), 'setting_definition');
+
+        try {
+            $this->restore->restore($copy);
+            self::fail('Debería fallar.');
+        } catch (SchemaTouchedException $e) {
+            self::assertStringContainsString('estado intermedio', $e->getMessage());
+        }
+
+        // Con la copia buena y `rebuild`, se vuelve a un estado coherente.
+        $this->restore->restore($path, null, true);
+        self::assertSame($migrator->latest(), $this->db->fetchOne('SELECT MAX(version) FROM doctrine_migration_versions'));
     }
 
     public function testAFileThatIsNotACopyIsRejected(): void
@@ -193,6 +266,17 @@ class DatabaseBackupRestoreTest extends RepositoryTestCase
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
+
+    /** Un id para insertar a mano: binario en MySQL (BINARY(16)) y texto en las demás. */
+    private function newId(): string
+    {
+        return $this->db->getDatabasePlatform() instanceof AbstractMySQLPlatform ? Uuid::v7()->toBinary() : Uuid::v7()->toRfc4122();
+    }
+
+    private function countDefinition(string $key): int
+    {
+        return (int) $this->db->fetchOne(sprintf('SELECT COUNT(*) FROM setting_definition WHERE %s = ?', $this->db->quoteSingleIdentifier('key')), [$key]);
+    }
 
     /** @return array{centre: EducationalCentre, group: Group, file: SettingFile, bytes: string} */
     private function world(): array

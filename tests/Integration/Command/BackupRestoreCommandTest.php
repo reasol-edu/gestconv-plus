@@ -7,8 +7,11 @@ namespace App\Tests\Integration\Command;
 use App\Entity\EducationalCentre;
 use App\Service\Backup\BackupLibrary;
 use App\Service\Backup\RestoreState;
+use App\Service\Backup\SchemaMigrator;
 use App\Tests\Integration\RepositoryTestCase;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -142,6 +145,62 @@ class BackupRestoreCommandTest extends RepositoryTestCase
         $names = array_map(static fn ($c): string => $c->name, $this->library->list());
         self::assertCount(2, $names);
         self::assertNotEmpty(array_filter($names, static fn (string $n): bool => str_starts_with($n, 'gestconv-antes-de-restaurar-')));
+    }
+
+    /** @return string la ruta de una copia hecha con el esquema en la migración 084, estando la base de datos ya en la última (con otro centro más) */
+    private function oldSchemaCopyWhileTheDatabaseIsAhead(): string
+    {
+        /** @var SchemaMigrator $migrator */
+        $migrator = self::getContainer()->get(SchemaMigrator::class);
+        $migrator->rebuildAt('DoctrineMigrations\Version20260101000084');
+        $this->insertCentre('41000001', 'IES Antiguo');
+        $copy = $this->library->save();
+        $migrator->migrateToLatest();
+        $this->insertCentre('41000002', 'IES Nuevo');
+        self::assertSame(['IES Antiguo', 'IES Nuevo'], $this->db->fetchFirstColumn('SELECT name FROM educational_centre ORDER BY code'));
+
+        return $this->library->path($copy);
+    }
+
+    private function insertCentre(string $code, string $name): void
+    {
+        $this->db->executeStatement('INSERT INTO educational_centre (id, code, name, city) VALUES (?, ?, ?, ?)', [$this->db->getDatabasePlatform() instanceof AbstractMySQLPlatform ? Uuid::v7()->toBinary() : Uuid::v7()->toRfc4122(), $code, $name, 'Sevilla']);
+    }
+
+    public function testACopyOfAnOlderSchemaAlwaysSavesThePreviousBackupAndLeavesTheDatabaseUpToDate(): void
+    {
+        $path = $this->oldSchemaCopyWhileTheDatabaseIsAhead();
+
+        // Sin --previous-backup: con esquema distinto la copia previa es obligatoria.
+        $tester = $this->restoreWith(['file' => $path, '--force' => true, '--by' => 'ana']);
+
+        self::assertSame(0, $tester->getStatusCode(), $tester->getDisplay());
+        self::assertSame(['IES Antiguo'], $this->db->fetchFirstColumn('SELECT name FROM educational_centre'));
+        /** @var SchemaMigrator $migrator */
+        $migrator = self::getContainer()->get(SchemaMigrator::class);
+        self::assertSame($migrator->latest(), $this->db->fetchOne('SELECT MAX(version) FROM doctrine_migration_versions'));
+        $names = array_map(static fn ($c): string => $c->name, $this->library->list());
+        self::assertNotEmpty(array_filter($names, static fn (string $n): bool => str_starts_with($n, 'gestconv-antes-de-restaurar-')));
+        self::assertTrue($this->state->lastResult()['ok'] ?? false);
+    }
+
+    public function testIfRestoringAnOlderSchemaFailsHalfwayItGoesBackToThePreviousData(): void
+    {
+        $path = $this->oldSchemaCopyWhileTheDatabaseIsAhead();
+        $zip  = new \ZipArchive();
+        $zip->open($path);
+        $zip->addFromString('data/setting_definition.ndjson', "{esto no es json\n");
+        $zip->close();
+        $this->state->acquire('ana', 'copia.zip');
+
+        $tester = $this->restoreWith(['file' => $path, '--force' => true, '--lock-held' => true, '--by' => 'ana']);
+
+        self::assertSame(1, $tester->getStatusCode());
+        self::assertStringContainsString('recuperado', preg_replace('/\s+/', ' ', $tester->getDisplay()) ?? '');
+        self::assertSame(['IES Antiguo', 'IES Nuevo'], $this->db->fetchFirstColumn('SELECT name FROM educational_centre ORDER BY code'), 'Vuelven los datos de antes.');
+        self::assertFalse($this->state->isRunning());
+        self::assertFalse($this->state->lastResult()['ok'] ?? true);
+        self::assertNull($this->state->restoredAt());
     }
 
     public function testUnlockRemovesAStuckLock(): void

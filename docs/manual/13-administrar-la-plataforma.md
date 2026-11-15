@@ -843,7 +843,9 @@ Al confirmar:
    ![Página «Restaurando una copia de seguridad» sobre fondo oscuro, con un indicador de progreso](img/admin/admin-restaurando.png)
 2. Se guarda automáticamente una **copia de los datos actuales** (`gestconv-antes-de-restaurar-…`) en la
    carpeta de copias, por si hay que volver atrás.
-3. Se restauran los datos en una sola transacción: si algo falla, **no se cambia nada**.
+3. Se restauran los datos en una sola transacción: si algo falla, **no se cambia nada**. (Si la copia es
+   de una versión anterior de la aplicación, el proceso es otro: ver
+   [Copias de versiones anteriores](#copias-de-versiones-anteriores).)
 4. Al terminar bien se **cierran todas las sesiones** (los usuarios de la copia pueden ser otros) y hay
    que volver a iniciar sesión. La página **Copia de seguridad y versión** muestra el resultado de la
    última restauración, y el servidor la anota en su registro (`var/log`), porque el registro de
@@ -871,12 +873,33 @@ sesiones al terminar. Antes de tocar nada comprueba que:
 
 - la copia es de la **misma plataforma** de base de datos (no se puede pasar de SQLite a PostgreSQL con
   esta herramienta);
-- el esquema está en la **misma migración** que la copia. Para restaurar una copia hecha con otra versión,
-  instala esa versión de la aplicación (así se crean las tablas tal como eran), restaura y actualiza
-  después de la forma habitual: las migraciones posteriores se aplican solas.
+- la migración de la copia es **una que esta versión de la aplicación conoce**. Si es la misma que la de
+  la base de datos, se restaura en una transacción; si es anterior, se actualiza sola como se explica
+  abajo; si es de una versión posterior a la instalada, se rechaza (actualiza primero la aplicación).
 
-Para restaurar en un servidor nuevo: instala la misma versión, arranca la aplicación una vez (crea el
-esquema) y ejecuta la orden.
+Para restaurar en un servidor nuevo: instala la aplicación (la misma versión de la copia o una posterior),
+arranca la aplicación una vez (crea el esquema) y ejecuta la orden.
+
+#### Copias de versiones anteriores {#copias-de-versiones-anteriores}
+
+Una copia hecha con una versión anterior de GestConv+ se puede restaurar en la versión actual: no hace
+falta instalar la versión antigua. Como la estructura de las tablas ha cambiado desde entonces, el proceso
+es distinto del de una copia actual:
+
+1. **Se guarda siempre una copia previa** de los datos actuales (`gestconv-antes-de-restaurar-…`). Aquí no
+   es opcional, aunque en la consola no pases `--previous-backup`.
+2. Se **borran todas las tablas** y se vuelven a crear ejecutando las migraciones desde cero hasta la
+   versión de la copia (sin deshacer ninguna migración).
+3. Se cargan los datos de la copia.
+4. Se ejecutan las **migraciones que faltan** hasta la última, que transforman los datos de la copia a la
+   estructura actual.
+
+La pantalla de restauración avisa cuando la copia es de este tipo. Tiene una diferencia importante con la
+restauración normal: **no es transaccional** (en MySQL, cada cambio de estructura se confirma solo), así
+que si algo falla a medias la base de datos no se queda como estaba. Por eso la aplicación intenta volver
+sola a los datos de antes con la copia previa; si tampoco eso funciona, el resultado de la última
+restauración dice qué copia previa hay que restaurar a mano (`php bin/console app:backup:restore <copia>`).
+Una copia de una versión **posterior** a la instalada no se puede restaurar: actualiza antes la aplicación.
 
 **Si la aplicación se queda en «Restaurando…» sin que haya nada en marcha** (el proceso murió, se apagó
 el servidor), el bloqueo se da por abandonado solo cuando su proceso ya no existe o tras unas horas; para

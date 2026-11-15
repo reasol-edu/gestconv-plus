@@ -9,8 +9,10 @@ use Doctrine\DBAL\ParameterType;
 
 /**
  * Restaura una copia hecha con DatabaseBackup **sustituyendo todos los datos** de la base de datos actual. Solo es posible
- * en la misma plataforma (SQLite, PostgreSQL o MySQL) y con el esquema en la misma versión de migración que la copia: si no,
- * se rechaza antes de tocar nada (hay que migrar o actualizar la aplicación primero).
+ * en la misma plataforma (SQLite, PostgreSQL o MySQL). Si la copia es de la misma migración que la base de datos, se
+ * sustituyen los datos en una transacción. Si es de otra migración que esta aplicación conoce (una versión anterior), se
+ * reconstruye antes el esquema en esa versión y se migra después hasta la última (ver SchemaMigrator; esa vía no es
+ * transaccional). Una copia de una migración que la aplicación no conoce se rechaza antes de tocar nada.
  *
  * Las claves foráneas se difieren o se desactivan mientras dura la restauración (hay ciclos entre tablas, p. ej. el centro
  * y su curso activo) y se comprueban al terminar, así que una copia incoherente falla sin dejar datos a medias: todo va en
@@ -21,6 +23,7 @@ final class DatabaseRestore
     public function __construct(
         private readonly Connection $connection,
         private readonly DatabaseTables $tables,
+        private readonly SchemaMigrator $migrator,
     ) {}
 
     /** Lee y valida el manifiesto de un .zip sin tocar la base de datos. */
@@ -48,7 +51,7 @@ final class DatabaseRestore
      *
      * @return list<string>
      */
-    public function problems(BackupManifest $manifest): array
+    public function problems(BackupManifest $manifest, bool $rebuild = false): array
     {
         $problems = [];
 
@@ -57,6 +60,21 @@ final class DatabaseRestore
         }
         if ($manifest->platform !== $this->tables->platform()) {
             $problems[] = sprintf('La copia es de %s y esta base de datos es %s: solo se puede restaurar en la misma plataforma.', $manifest->platform, $this->tables->platform());
+        }
+        if ($this->needsRebuild($manifest, $rebuild)) {
+            // Una copia de un esquema anterior (o distinto del actual) se admite si la aplicación conoce esa migración: se
+            // reconstruye el esquema en esa versión, se restaura y se migra hasta la última. Una copia de una versión
+            // posterior a esta aplicación no se puede restaurar.
+            if (!$this->migrator->isKnown((string) $manifest->schemaVersion)) {
+                $problems[] = sprintf(
+                    'La copia es del esquema «%s», que esta versión de la aplicación no conoce (la última que trae es «%s»): actualiza la aplicación a la versión de la copia, la %s, o a una posterior, y repite la restauración.',
+                    $manifest->schemaVersion,
+                    $this->migrator->latest(),
+                    $manifest->appVersion,
+                );
+            }
+
+            return $problems;
         }
         if ($manifest->schemaVersion !== $this->tables->schemaVersion()) {
             $problems[] = sprintf(
@@ -70,7 +88,29 @@ final class DatabaseRestore
             return $problems;
         }
 
-        $present = $this->tables->names();
+        return $this->tableProblems($manifest);
+    }
+
+    /**
+     * Si para restaurar la copia hay que reconstruir antes el esquema en la versión de la copia (y migrarlo después): ambas
+     * versiones se conocen y son distintas. Con `$force` (para volver a una copia tras un fallo, cuando el registro de
+     * migraciones puede haber desaparecido) basta con que la copia traiga versión.
+     */
+    public function needsRebuild(BackupManifest $manifest, bool $force = false): bool
+    {
+        if ($manifest->schemaVersion === null) {
+            return false;
+        }
+        $current = $this->tables->schemaVersion();
+
+        return $force || ($current !== null && $current !== $manifest->schemaVersion);
+    }
+
+    /** @return list<string> */
+    private function tableProblems(BackupManifest $manifest): array
+    {
+        $problems = [];
+        $present  = $this->tables->names();
         foreach (array_diff($present, array_keys($manifest->tables)) as $missing) {
             $problems[] = sprintf('La copia no incluye la tabla «%s».', $missing);
         }
@@ -91,16 +131,50 @@ final class DatabaseRestore
     /**
      * @param callable(string $table, int $rows): void|null $progress
      *
+     * @param bool $rebuild reconstruir el esquema aunque la base de datos parezca estar en la versión de la copia (para
+     *                      volver a una copia después de un fallo que dejó el esquema a medias)
+     *
      * @return array<string, int> filas restauradas por tabla
+     *
+     * @throws SchemaTouchedException si falla después de haber reconstruido el esquema (ya no está como estaba)
+     * @throws BackupException        si falla antes de tocar nada, o dentro de la transacción de los datos (se deshace)
      */
-    public function restore(string $zipPath, ?callable $progress = null): array
+    public function restore(string $zipPath, ?callable $progress = null, bool $rebuild = false): array
     {
         $manifest = $this->readManifest($zipPath);
-        $problems = $this->problems($manifest);
+        $problems = $this->problems($manifest, $rebuild);
         if ($problems !== []) {
             throw new BackupException(implode("\n", $problems));
         }
 
+        if (!$this->needsRebuild($manifest, $rebuild)) {
+            return $this->replaceData($zipPath, $manifest, $progress, true);
+        }
+
+        // La copia es de otro esquema: se reconstruye en esa versión, se restaura y se migra hasta la última. Desde que se
+        // borran las tablas ya no hay vuelta atrás automática.
+        try {
+            $this->migrator->rebuildAt((string) $manifest->schemaVersion);
+            $problems = $this->tableProblems($manifest);
+            if ($problems !== []) {
+                throw new BackupException(implode("\n", $problems));
+            }
+            $restored = $this->replaceData($zipPath, $manifest, $progress, false);
+            $this->migrator->migrateToLatest();
+        } catch (\Throwable $e) {
+            throw new SchemaTouchedException('La restauración ha fallado cuando ya se había reconstruido la base de datos, que ha quedado en un estado intermedio: ' . $e->getMessage(), 0, $e);
+        }
+
+        return $restored;
+    }
+
+    /**
+     * @param callable(string $table, int $rows): void|null $progress
+     *
+     * @return array<string, int>
+     */
+    private function replaceData(string $zipPath, BackupManifest $manifest, ?callable $progress, bool $untouchedOnFailure): array
+    {
         $zip      = $this->open($zipPath);
         $platform = $this->tables->platform();
         $restored = [];
@@ -135,7 +209,7 @@ final class DatabaseRestore
                 if ($this->connection->isTransactionActive()) {
                     $this->connection->rollBack();
                 }
-                throw $e instanceof BackupException ? $e : new BackupException('La restauración ha fallado y no se ha cambiado nada: ' . $e->getMessage(), 0, $e);
+                throw $e instanceof BackupException ? $e : new BackupException(($untouchedOnFailure ? 'La restauración ha fallado y no se ha cambiado nada: ' : 'La carga de los datos ha fallado: ') . $e->getMessage(), 0, $e);
             } finally {
                 $this->afterRestore($platform);
             }

@@ -10,6 +10,7 @@ use App\Service\Backup\AutomaticBackup;
 use App\Service\Backup\BackupException;
 use App\Service\Backup\BackupLibrary;
 use App\Service\Backup\DatabaseBackup;
+use App\Service\Backup\DatabaseRestore;
 use App\Service\Backup\RestoreLauncher;
 use App\Service\Backup\RestoreState;
 use App\Service\Backup\StoredBackup;
@@ -45,6 +46,7 @@ class SystemController extends AbstractController
     public function __construct(
         private readonly DatabaseBackup $backup,
         private readonly BackupLibrary $library,
+        private readonly DatabaseRestore $restore,
         private readonly AutomaticBackup $automaticBackup,
         private readonly RestoreState $restoreState,
         private readonly RestoreLauncher $launcher,
@@ -222,6 +224,7 @@ class SystemController extends AbstractController
         return $this->render('admin/system/restore.html.twig', [
             'copy'         => $stored,
             'manifest'     => $stored->manifest,
+            'upgrade'      => $stored->manifest !== null && $this->restore->needsRebuild($stored->manifest),
             'confirm_word' => self::CONFIRM_WORD,
             'error'        => $error,
             'has_password' => $user->getPassword() !== null,
