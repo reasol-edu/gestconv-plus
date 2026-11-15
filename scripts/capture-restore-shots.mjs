@@ -4,6 +4,7 @@
  *  · admin/admin-copias-servidor.png   — resultado de la última restauración y lista de copias guardadas en el servidor
  *                                        (una de ellas de otra plataforma, que no se puede restaurar)
  *  · admin/admin-restaurar-copia.png   — pantalla de revisión y confirmación de una restauración
+ *  · admin/admin-restaurar-copia-antigua.png — la misma pantalla con una copia de una versión anterior (aviso de que se actualiza)
  *  · admin/admin-restaurando.png       — la página de mantenimiento que ve todo el mundo mientras se restaura
  *
  * Necesita un servidor arrancado en SHOTS_BASE_URL con una BD DESECHABLE con fixtures (usuario `admin`/`admin`) y con
@@ -67,6 +68,18 @@ execFileSync('php', ['-r', `
     $z->close();
 `]);
 
+// Una copia de una versión anterior (migración 084, versión 1.36.0): se puede restaurar, reconstruyendo el esquema. Solo se mira.
+const oldCopy = 'gestconv-copia-20260913-070000.zip';
+copyFileSync(`${backupDir}/${first}`, `${backupDir}/${oldCopy}`);
+execFileSync('php', ['-r', `
+    $z = new ZipArchive(); $z->open('${backupDir}/${oldCopy}');
+    $m = json_decode($z->getFromName('manifest.json'), true);
+    $m['app_version'] = '1.36.0';
+    $m['schema_version'] = 'DoctrineMigrations\\\\Version20260101000084';
+    $z->addFromString('manifest.json', json_encode($m));
+    $z->close();
+`]);
+
 // Más copias, para que la lista se parezca a la de un servidor con uso: la de antes de una restauración anterior y una antigua.
 for (const extra of ['gestconv-antes-de-restaurar-20260930-081500.zip', 'gestconv-copia-20260928-070000.zip']) {
     copyFileSync(`${backupDir}/${first}`, `${backupDir}/${extra}`);
@@ -100,6 +113,10 @@ await page.screenshot({
 const name = (await page.locator('a[href$="/restaurar"]').first().getAttribute('href')).split('/copias/')[1].split('/')[0];
 await open(`/admin/sistema/copias/${name}/restaurar`);
 await page.screenshot({ path: `${root}/admin/admin-restaurar-copia.png`, fullPage: true });
+
+// La misma pantalla con una copia de una versión anterior: avisa de que se reconstruye el esquema y se migra después.
+await open(`/admin/sistema/copias/${oldCopy}/restaurar`);
+await page.screenshot({ path: `${root}/admin/admin-restaurar-copia-antigua.png`, fullPage: true });
 
 // La página 503 de mantenimiento mientras se restaura: bloqueo escrito a mano (sin proceso: caduca al minuto, se borra al terminar).
 writeFileSync('var/restore/restore.lock', JSON.stringify({ started: Math.floor(Date.now() / 1000), pid: 0, by: 'admin', file: name }));

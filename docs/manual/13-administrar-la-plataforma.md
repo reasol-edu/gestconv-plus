@@ -894,7 +894,11 @@ es distinto del de una copia actual:
 4. Se ejecutan las **migraciones que faltan** hasta la última, que transforman los datos de la copia a la
    estructura actual.
 
-La pantalla de restauración avisa cuando la copia es de este tipo. Tiene una diferencia importante con la
+La pantalla de restauración avisa cuando la copia es de este tipo:
+
+![Pantalla «Restaurar una copia de seguridad» con una copia de la versión 1.36.0: entre los avisos, el de que se reconstruye la base de datos con la estructura de esa versión y después se actualiza](img/admin/admin-restaurar-copia-antigua.png)
+
+Tiene una diferencia importante con la
 restauración normal: **no es transaccional** (en MySQL, cada cambio de estructura se confirma solo), así
 que si algo falla a medias la base de datos no se queda como estaba. Por eso la aplicación intenta volver
 sola a los datos de antes con la copia previa; si tampoco eso funciona, el resultado de la última

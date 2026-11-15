@@ -32,7 +32,7 @@
         <h2 class="text-base font-semibold">{{ ux_icon('heroicons:exclamation-triangle', {class: 'h-5 w-5 inline -mt-0.5 mr-1'}) }}{{ 'system.restore.warning.title'|trans({}, 'admin') }}</h2>
         <ul class="list-disc space-y-1 pl-5">
             <li>{{ 'system.restore.warning.replaces'|trans({}, 'admin') }}</li>
-            <li>{{ 'system.restore.warning.previous'|trans({}, 'admin') }}</li>
+            <li>{{ 'system.restore.warning.previous'|trans({}, 'admin') }}{% if not upgrade %} {{ 'system.restore.warning.atomic'|trans({}, 'admin') }}{% endif %}</li>
             {% if upgrade %}
                 <li class="font-medium">{{ 'system.restore.warning.upgrade'|trans({'%version%': manifest.appVersion}, 'admin') }}</li>
             {% endif %}
