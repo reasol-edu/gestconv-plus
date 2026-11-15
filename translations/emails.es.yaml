@@ -127,6 +127,9 @@ emails.invitation.username: 'Tu nombre de usuario es: %username%'
 emails.invitation.cta: 'Establecer mi contraseña'
 emails.invitation.expiry_notice: 'El enlace es válido durante 7 días. Si caduca, pide a la dirección del centro que te envíe otra invitación.'
 
+emails.test.subject: 'Correo de prueba de %app%'
+emails.test.body: 'Si lees este mensaje, el correo de %app% está bien configurado. Lo has pedido tú desde Administración → Estado del sistema.'
+
 emails.email_verification.subject: 'Verifica tu nueva dirección de correo'
 emails.email_verification.intro: 'Has solicitado cambiar tu dirección de correo electrónico. Haz clic en el botón para confirmar el cambio. El enlace es válido durante 24 horas.'
 emails.email_verification.cta: 'Verificar dirección de correo'

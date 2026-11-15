@@ -8,6 +8,8 @@ use App\Repository\ActivityLogRepository;
 use App\Repository\EducationalCentreRepository;
 use App\Repository\TeacherRepository;
 use App\Service\Backup\AutomaticBackup;
+use App\Service\FailedMessages;
+use App\Service\SystemStatus;
 use App\Service\Update\LatestReleaseChecker;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +25,8 @@ class AdminController extends AbstractController
         private readonly ActivityLogRepository $activityLogs,
         private readonly LatestReleaseChecker $latestRelease,
         private readonly AutomaticBackup $automaticBackup,
+        private readonly SystemStatus $systemStatus,
+        private readonly FailedMessages $failedMessages,
     ) {}
 
     #[Route('/admin', name: 'app_admin')]
@@ -31,6 +35,8 @@ class AdminController extends AbstractController
         return $this->render('admin/index.html.twig', [
             'update' => $this->latestRelease->status(),
             'backup' => $this->automaticBackup->status(),
+            'worker' => $this->systemStatus->worker(),
+            'failed_count' => $this->failedMessages->count(),
             'stats' => [
                 'teachers_total'  => $this->teachers->countAll(),
                 'teachers_active' => $this->teachers->countActive(),

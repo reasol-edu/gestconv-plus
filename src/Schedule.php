@@ -9,6 +9,7 @@ use App\Message\AutoPrescribeSanctionsMessage;
 use App\Message\CloseForgottenExitsMessage;
 use App\Message\CreateAutomaticBackupMessage;
 use App\Message\DeactivateExpiredDailyNotesMessage;
+use App\Message\HeartbeatMessage;
 use App\Message\IssueOverdueReminderMessage;
 use App\Message\NotifyLongExitsMessage;
 use App\Message\PurgeActivityAttachmentsMessage;
@@ -40,6 +41,8 @@ class Schedule implements ScheduleProviderInterface
                 // Antes de las purgas (03:00–06:30) para que la copia aún contenga lo que van a borrar. No hace nada si el
                 // ajuste global backup.auto_policy está en «Desactivadas».
                 RecurringMessage::cron('30 2 * * *', new CreateAutomaticBackupMessage()),
+                // Señal de vida del worker, que Administración → Estado del sistema muestra.
+                RecurringMessage::cron('*/5 * * * *', new HeartbeatMessage()),
                 RecurringMessage::cron('0 1 * * *', new DeactivateExpiredDailyNotesMessage()),
                 RecurringMessage::cron('10 1 * * *', new CloseForgottenExitsMessage()),
                 RecurringMessage::cron('* * * * *', new NotifyLongExitsMessage()),
