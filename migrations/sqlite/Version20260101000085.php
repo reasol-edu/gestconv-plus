@@ -25,11 +25,11 @@ final class Version20260101000085 extends AbstractMigration
 
         // Los ids van como parámetro con los 16 bytes del UUID, que es como los envía Doctrine en SQLite (ver la migración 050).
         $this->addSql(
-            "INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, choices, category, category_order, position) VALUES (?, 'backup.auto_policy', 'choice', 'off', 1, 0, 0, NULL, NULL, 'off,basic,recommended,extended', 'settings.category.backup', 6, 10)",
+            "INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, choices, category, category_order, position) VALUES (?, 'backup.auto_policy', 'choice', 'off', 1, 0, 0, NULL, NULL, 'off,basic,recommended,extended', 'settings.category.backup', 7, 10)",
             [Uuid::v4()->toBinary()]
         );
         $this->addSql(
-            "INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, choices, category, category_order, position) VALUES (?, 'backup.auto_max_size_mb', 'integer', '0', 1, 0, 0, 0, 1048576, NULL, 'settings.category.backup', 6, 20)",
+            "INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, choices, category, category_order, position) VALUES (?, 'backup.auto_max_size_mb', 'integer', '0', 1, 0, 0, 0, 1048576, NULL, 'settings.category.backup', 7, 20)",
             [Uuid::v4()->toBinary()]
         );
     }

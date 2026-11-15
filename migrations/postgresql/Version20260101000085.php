@@ -24,8 +24,8 @@ final class Version20260101000085 extends AbstractMigration
 
         $this->addSql(<<<'SQL'
             INSERT INTO setting_definition (id, key, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, choices, category, category_order, position) VALUES
-                (gen_random_uuid(), 'backup.auto_policy', 'choice', 'off', TRUE, FALSE, FALSE, NULL, NULL, 'off,basic,recommended,extended', 'settings.category.backup', 6, 10),
-                (gen_random_uuid(), 'backup.auto_max_size_mb', 'integer', '0', TRUE, FALSE, FALSE, 0, 1048576, NULL, 'settings.category.backup', 6, 20)
+                (gen_random_uuid(), 'backup.auto_policy', 'choice', 'off', TRUE, FALSE, FALSE, NULL, NULL, 'off,basic,recommended,extended', 'settings.category.backup', 7, 10),
+                (gen_random_uuid(), 'backup.auto_max_size_mb', 'integer', '0', TRUE, FALSE, FALSE, 0, 1048576, NULL, 'settings.category.backup', 7, 20)
         SQL);
     }
 

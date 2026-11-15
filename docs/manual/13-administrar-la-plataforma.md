@@ -13,7 +13,7 @@ reúne en tarjetas la gestión de toda la plataforma: centros educativos, usuari
 personal no docente), registro de actividad, copia de seguridad y versión instalada, estado del
 sistema (si el worker funciona y si hay mensajes fallidos) y ajustes globales.
 
-![Panel de Administración con las tarjetas de usuarios, centros, registro de actividad, copia de seguridad y versión, y ajustes globales](img/admin/admin-sistema-tarjeta.png)
+![Panel de Administración con las tarjetas de usuarios, centros, registro de actividad, copia de seguridad y versión (con la fecha de la última copia), estado del sistema y ajustes globales](img/admin/admin-sistema-tarjeta.png)
 
 ### Centros educativos
 
@@ -750,7 +750,7 @@ aplicación, plataforma, fecha y filas de cada tabla) y un fichero por tabla. Qu
 correos pendientes y el registro interno de migraciones. Cada descarga se anota en el
 [registro de actividad](#registro-de-actividad).
 
-![Página «Copia de seguridad y versión»: versión instalada y botón para descargar la copia, con el aviso sobre los datos personales](img/admin/admin-copia-seguridad.png)
+![Página «Copia de seguridad y versión»: versión instalada, botones para descargar o guardar la copia, fecha de la última copia y estado de las copias automáticas](img/admin/admin-copia-seguridad.png)
 
 !!! warning "La copia contiene datos personales"
     Incluye datos del alumnado y los *hashes* de las contraseñas. Guárdala cifrada y en otra máquina,
@@ -789,6 +789,8 @@ antes de las purgas nocturnas) en esa misma carpeta. Vienen **desactivadas** y s
 |---|---|---|
 | Copias automáticas | Política de conservación: *Desactivadas*, *Básica* (7 diarias), *Recomendada* (7 diarias, 4 semanales y 3 mensuales, unos tres meses atrás) o *Ampliada* (14 diarias, 8 semanales y 12 mensuales, hasta un año atrás) | Desactivadas |
 | Espacio máximo de las copias automáticas (MB) | Tope de espacio entre todas ellas; 0 = sin límite | 0 |
+
+![Ajustes globales, categoría «Copias de seguridad»: política «Recomendada» y espacio máximo sin límite](img/admin/admin-copias-automaticas.png)
 
 Con el tiempo, la poda va dejando la copia más reciente de cada día, de cada semana y de cada mes que
 pida la política y borra el resto, de modo que se puede volver atrás aunque un problema se descubra tarde.
@@ -960,6 +962,8 @@ antes obligaba a abrir una consola:
 - **Espacio.** Tamaño de la base de datos (ficheros incluidos), de las copias de seguridad guardadas y
   espacio libre en el disco donde se guardan. Cada copia ocupa tanto como la base de datos.
 - **Copias de seguridad.** El aviso de «última copia» y el resultado de la última copia automática.
+
+![Pantalla «Estado del sistema»: worker en marcha, un mensaje fallido con los botones Reintentar y Descartar, correo de prueba, espacio ocupado y estado de las copias](img/admin/admin-estado-sistema.png)
 
 No existe ninguna ruta de salud sin autenticar: todo esto requiere iniciar sesión como administrador global.
 
