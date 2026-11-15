@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Copias de seguridad automáticas y aviso de «última copia».** Dos ajustes globales nuevos, en Ajustes globales → Copias de seguridad: una política de conservación (desactivadas por defecto; «Básica» 7 diarias; «Recomendada» 7 diarias, 4 semanales y 3 mensuales; «Ampliada» 14, 8 y 12) y el espacio máximo que pueden ocupar (0 = sin límite). Con ella activada, el planificador guarda una copia cada noche a las 02:30 (antes de las purgas) en la carpeta de copias y poda las antiguas dejando la más reciente de cada día, semana y mes; con tope de espacio borra además las más antiguas hasta que quepan, conservando siempre la última. Solo se tocan los ficheros `gestconv-copia-auto-*.zip`: las copias manuales no se borran nunca. Se escribe primero un `.part` que se renombra al terminar, no se hace mientras hay una restauración en curso y un fallo se anota sin que Messenger lo reintente. Administración y «Copia de seguridad y versión» muestran la fecha de la última copia, con aviso en ámbar si tiene más de 7 días o no hay ninguna, y el resultado de la última copia automática.
+- **Estado del sistema en Administración.** Una pantalla nueva y una tarjeta en el panel que muestran si el worker está vivo (el planificador deja una señal cada 5 minutos; con más de 15 sin señal se avisa en rojo), los mensajes de Messenger que fallaron y agotaron sus reintentos (se pueden reintentar, devolviéndolos a la cola, o descartar; ambas acciones con POST y token CSRF y anotadas en el registro de actividad), un botón de correo de prueba a la dirección del propio administrador (envío directo, sin cola, con el motivo del fallo, 3 cada 15 minutos) y el espacio que ocupan la base de datos, las copias y lo que queda libre en el disco. No hay ninguna ruta de salud sin autenticar.
+
+### Fixed
+
+- **Copias de seguridad de bases de datos grandes.** La copia leía las tablas con un único `SELECT *` (pdo_mysql y pdo_pgsql cargan todo el resultado en memoria antes de devolver la primera fila) o con `OFFSET`, que se degrada con las tablas grandes. Ahora se lee por páginas de la clave primaria (de una en una fila en las tablas con ficheros, de 200 en 200 en las demás), de modo que la memoria no crece con el número de adjuntos, y el límite de memoria de PHP se sube a 512 MB durante la copia si era menor.
+
 ## [1.36.0] - 2026-11-13
 
 ### Changed

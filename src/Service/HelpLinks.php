@@ -48,6 +48,8 @@ final class HelpLinks
         'app_admin_settings'                 => ['13-administrar-la-plataforma', 'sistema-de-ajustes'],
         'app_profile_settings'               => ['13-administrar-la-plataforma', 'sistema-de-ajustes'],
         'app_admin'                          => ['13-administrar-la-plataforma', 'administrar-la-plataforma'],
+        'app_admin_system'                   => ['13-administrar-la-plataforma', 'copia-desde-el-panel'],
+        'app_admin_system_status'            => ['13-administrar-la-plataforma', 'estado-del-sistema'],
         'app_centre_setup'                   => ['02-preparar-el-curso-academico', 'lista-de-comprobacion-de-inicio-de-curso'],
         'app_centre'                         => ['12-administrar-el-centro', 'administrar-el-centro-educativo'],
     ];

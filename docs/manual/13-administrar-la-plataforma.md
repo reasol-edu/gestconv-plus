@@ -10,8 +10,8 @@ instalación inicial se explica en
 
 La sección **Administración** del menú lateral, visible solo para los administradores globales,
 reúne en tarjetas la gestión de toda la plataforma: centros educativos, usuarios (docentes y
-personal no docente), registro de actividad, copia de seguridad y versión instalada, y ajustes
-globales.
+personal no docente), registro de actividad, copia de seguridad y versión instalada, estado del
+sistema (si el worker funciona y si hay mensajes fallidos) y ajustes globales.
 
 ![Panel de Administración con las tarjetas de usuarios, centros, registro de actividad, copia de seguridad y versión, y ajustes globales](img/admin/admin-sistema-tarjeta.png)
 
@@ -779,6 +779,39 @@ hagas antes de actualizar se perdería con ellas:
 - **Ubuntu Server y Plesk**: `var/backups` dentro de la instalación se conserva al actualizar; si prefieres
   otra ubicación (otro disco, un recurso montado), define `APP_BACKUP_DIR`.
 
+#### Copias automáticas {#copias-automaticas}
+
+Si no quieres depender de acordarte, la aplicación puede guardar **una copia cada noche** (a las 02:30,
+antes de las purgas nocturnas) en esa misma carpeta. Vienen **desactivadas** y se activan en
+**Administración › Ajustes globales › Copias de seguridad** (solo ámbito global):
+
+| Ajuste | Qué hace | Por defecto |
+|---|---|---|
+| Copias automáticas | Política de conservación: *Desactivadas*, *Básica* (7 diarias), *Recomendada* (7 diarias, 4 semanales y 3 mensuales, unos tres meses atrás) o *Ampliada* (14 diarias, 8 semanales y 12 mensuales, hasta un año atrás) | Desactivadas |
+| Espacio máximo de las copias automáticas (MB) | Tope de espacio entre todas ellas; 0 = sin límite | 0 |
+
+Con el tiempo, la poda va dejando la copia más reciente de cada día, de cada semana y de cada mes que
+pida la política y borra el resto, de modo que se puede volver atrás aunque un problema se descubra tarde.
+Si se fija un tope de espacio y se supera, se borran las más antiguas hasta que quepan; **la más reciente
+se conserva siempre**. La poda solo toca los ficheros `gestconv-copia-auto-AAAA-MM-DD-HHMMSS.zip`: las
+copias que guardas a mano o dejas por SSH **no se borran nunca**. Cada copia ocupa lo que la base de
+datos, ficheros incluidos, y se guarda **sin cifrar en el mismo disco**: no sustituye a una copia fuera
+del servidor.
+
+La copia se escribe con un nombre provisional (`.part`) y solo se renombra al terminar, así que una
+interrupción no deja un fichero a medias que parezca una copia. El resultado de cada ejecución (hora y
+nombre, o el motivo del fallo) se ve en **Copia de seguridad y versión**, y no se hace mientras hay una
+restauración en curso.
+
+!!! note "Hace falta el worker"
+    Las copias automáticas las lanza el planificador, que corre dentro del worker de Messenger
+    (ver [Correos en cola](#correos-en-cola-messenger)). Si el worker está parado, no se hacen.
+    [Estado del sistema](#estado-del-sistema) avisa cuando eso ocurre.
+
+**Aviso de «última copia».** Tanto en el panel de Administración como en **Copia de seguridad y
+versión** se muestra la fecha de la última copia guardada (manual o automática) y, si tiene más de 7 días
+o no hay ninguna, un aviso en ámbar para que guardes una.
+
 #### Restaurar desde la web {#restaurar-desde-la-web}
 
 En la misma página, **Copias guardadas en el servidor** lista las copias de esa carpeta con su fecha,
@@ -879,8 +912,9 @@ o simplemente copiar el fichero con la aplicación parada.
 
 ### Recomendaciones
 
-- Automatiza la copia con una tarea programada (cron) **diaria** y conserva varias generaciones
-  (por ejemplo, 7 diarias y 4 semanales).
+- Automatiza la copia: activa las [copias automáticas](#copias-automaticas) con la política
+  *Recomendada* (7 diarias, 4 semanales y 3 mensuales) o, si prefieres, una tarea programada (cron)
+  **diaria** con tu propia rotación.
 - Guarda las copias en una máquina distinta de la del servidor.
 - Al contener datos personales de menores, **cifra las copias** o almacénalas en un soporte
   cifrado.
@@ -906,6 +940,28 @@ php bin/console messenger:failed:retry   # reintentarlos
 ```
 
 (En el binario nativo, usa `./frankenphp php-cli bin/console …` en lugar de `php bin/console …`.)
+
+### Estado del sistema {#estado-del-sistema}
+
+**Administración › Estado del sistema** (solo administradores globales) reúne en una pantalla lo que
+antes obligaba a abrir una consola:
+
+- **Tareas en segundo plano.** El planificador deja una señal de vida cada 5 minutos. Si la última tiene
+  más de 15 minutos, la pantalla avisa en rojo de que el worker no responde: mientras no se reinicie no
+  se envían correos ni recordatorios ni se hacen las copias automáticas. Si todavía no hay ninguna señal
+  (la aplicación acaba de arrancar o el worker nunca se ha lanzado) lo indica, sin alarma.
+- **Mensajes fallidos.** Los correos o tareas que fallaron y agotaron sus reintentos. Cada uno se puede
+  **reintentar** (vuelve a la cola y lo procesa el worker; no se ejecuta durante la petición web) o
+  **descartar**. Ambas acciones quedan en el [registro de actividad](#registro-de-actividad). La tarjeta
+  de Administración avisa cuando hay alguno.
+- **Correo de prueba.** Envía un mensaje a **tu propia dirección** (la de tu perfil), directamente y no
+  por la cola, para que un fallo de configuración del correo aparezca al instante con el motivo que
+  devuelve el servidor. Se limita a 3 envíos cada 15 minutos.
+- **Espacio.** Tamaño de la base de datos (ficheros incluidos), de las copias de seguridad guardadas y
+  espacio libre en el disco donde se guardan. Cada copia ocupa tanto como la base de datos.
+- **Copias de seguridad.** El aviso de «última copia» y el resultado de la última copia automática.
+
+No existe ninguna ruta de salud sin autenticar: todo esto requiere iniciar sesión como administrador global.
 
 ## Actualización
 
