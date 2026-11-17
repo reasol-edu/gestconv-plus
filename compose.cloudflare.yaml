@@ -29,6 +29,12 @@ services:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN:?Define CLOUDFLARE_TUNNEL_TOKEN en tu .env.local}
+    environment:
+      # Protocolo con el que cloudflared llega a Cloudflare. Por defecto, http2 (TCP): el QUIC de cloudflared (UDP 7844) lo
+      # bloquean muchos cortafuegos y hostings ("failed to dial to edge with quic"). Con CLOUDFLARED_PROTOCOL en .env.local
+      # se cambia a "quic" o "auto" (prueba QUIC y, si falla, cae a http2). Un túnel con token ignora el config.yml local,
+      # por eso va como variable de entorno y no en un fichero.
+      TUNNEL_TRANSPORT_PROTOCOL: ${CLOUDFLARED_PROTOCOL:-http2}
     depends_on:
       - app
 

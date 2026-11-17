@@ -217,6 +217,27 @@ ejemplo, desde datos móviles) y que el
 muestra IPs de clientes reales y no `127.0.0.1` — confirma que `SYMFONY_TRUSTED_PROXIES` se está
 aplicando correctamente.
 
+### Si el túnel no llega a conectar: «failed to dial to edge with quic»
+
+Por defecto `cloudflared` habla con Cloudflare por **QUIC** (UDP, puerto 7844), y muchos cortafuegos,
+hostings y operadores bloquean ese tráfico. La alternativa es **HTTP/2** (TCP, mismo puerto), que casi
+nunca da problemas. El valor `auto` prueba QUIC y, si falla varias veces, cae a HTTP/2.
+
+- **Docker:** el overlay `compose.cloudflare.yaml` ya usa `http2`. Para cambiarlo, define
+  `CLOUDFLARED_PROTOCOL` (`http2`, `quic` o `auto`) en `.env.local` y recrea el contenedor.
+- **Ubuntu Server:** añade la variable al servicio con `sudo systemctl edit cloudflared` y estas
+  líneas, y reinicia con `sudo systemctl restart cloudflared`:
+
+  ```ini
+  [Service]
+  Environment=TUNNEL_TRANSPORT_PROTOCOL=http2
+  ```
+
+Un túnel creado con token se gestiona desde el panel de Cloudflare e **ignora el `config.yml` local**,
+así que el protocolo se fija con la variable de entorno y no en ese fichero. Si aun así no conecta,
+comprueba que el servidor puede salir por el puerto 7844 (TCP) hacia `region1.v2.argotunnel.com` y
+`region2.v2.argotunnel.com`.
+
 ## 9. Opcional: Cloudflare Access
 
 Además del propio inicio de sesión de GestConv+, se puede añadir una capa extra de autenticación
