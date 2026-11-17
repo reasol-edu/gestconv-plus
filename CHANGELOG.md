@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.38.1] - 2026-11-17
+
+### Fixed
+
+- **Cloudflare Tunnel en Docker: el túnel no conectaba en redes que bloquean QUIC** (`failed to dial to edge with quic`). `cloudflared` usa por defecto QUIC (UDP, puerto 7844), que muchos cortafuegos y hostings bloquean. El overlay `compose.cloudflare.yaml` arranca ahora `cloudflared` con HTTP/2 (TCP), que casi nunca da problemas; si hace falta otro protocolo, se cambia con `CLOUDFLARED_PROTOCOL` (`http2`, `quic` o `auto`) en `.env.local`. El capítulo del manual sobre Cloudflare Tunnel explica el síntoma y cómo hacer lo mismo en Ubuntu Server (variable `TUNNEL_TRANSPORT_PROTOCOL` en el servicio). Para actualizar basta con volver a levantar el overlay: `docker compose -f compose.yaml -f compose.cloudflare.yaml up -d`.
+
 ## [1.38.0] - 2026-11-16
 
 ### Added
