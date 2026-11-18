@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\EventSubscriber;
 
-use App\Entity\CentreSettingValue;
 use App\Entity\EducationalCentre;
 use App\Entity\GlobalSettingValue;
 use App\Entity\PersonName;
 use App\Entity\SettingDefinition;
 use App\Entity\Teacher;
-use App\Entity\TeacherSettingValue;
 use App\EventSubscriber\IdleSessionSubscriber;
 use App\Service\AppSettings;
 use App\Tests\Integration\ControllerTestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
-/** Cierre de sesión por inactividad: ajuste global, de centro y de docente, y qué cuenta como actividad. */
+/** Cierre de sesión por inactividad: ajuste global y qué cuenta como actividad. */
 final class IdleSessionSubscriberTest extends ControllerTestCase
 {
     use ClockSensitiveTrait;
@@ -40,26 +38,10 @@ final class IdleSessionSubscriberTest extends ControllerTestCase
         return $definition;
     }
 
-    private function globalTimeout(int $minutes, bool $locked = false): void
+    private function globalTimeout(int $minutes): void
     {
-        $this->persist((new GlobalSettingValue())->setDefinition($this->definition())->setValue((string) $minutes)->setLocked($locked));
-        $this->invalidateSettings();
-    }
+        $this->persist((new GlobalSettingValue())->setDefinition($this->definition())->setValue((string) $minutes));
 
-    private function centreTimeout(int $minutes, bool $locked = false): void
-    {
-        $this->persist((new CentreSettingValue())->setDefinition($this->definition())->setCentre($this->centre)->setValue((string) $minutes)->setLocked($locked));
-        $this->invalidateSettings();
-    }
-
-    private function teacherTimeout(int $minutes): void
-    {
-        $this->persist((new TeacherSettingValue())->setDefinition($this->definition())->setTeacher($this->teacher)->setValue((string) $minutes));
-        $this->invalidateSettings();
-    }
-
-    private function invalidateSettings(): void
-    {
         /** @var AppSettings $settings */
         $settings = self::getContainer()->get(AppSettings::class);
         $settings->invalidate();
@@ -108,56 +90,20 @@ final class IdleSessionSubscriberTest extends ControllerTestCase
         $this->assertExpiredAt('09:16:00');
     }
 
-    public function testTheCentreSettingOverridesTheGlobalOne(): void
+    public function testTheSettingIsOnlyAvailableAtGlobalLevel(): void
     {
-        self::mockTime('2025-10-10 09:00:00');
-        $this->loggedInTeacher();
-        $this->globalTimeout(15);
-        $this->centreTimeout(60);
+        $definition = $this->definition();
 
-        $this->assertAliveAt('09:40:00');
-        $this->assertExpiredAt('10:41:00');
-    }
-
-    public function testTheTeachersOwnSettingOverridesTheCentreAndGlobalOnes(): void
-    {
-        self::mockTime('2025-10-10 09:00:00');
-        $this->loggedInTeacher();
-        $this->globalTimeout(15);
-        $this->centreTimeout(30);
-        $this->teacherTimeout(240);
-
-        $this->assertAliveAt('11:00:00');
-        $this->assertAliveAt('14:30:00');
-        $this->assertExpiredAt('18:31:00');
-    }
-
-    public function testALockedGlobalSettingBeatsTheCentreAndTheTeacher(): void
-    {
-        self::mockTime('2025-10-10 09:00:00');
-        $this->loggedInTeacher();
-        $this->globalTimeout(15, locked: true);
-        $this->teacherTimeout(0);
-        $this->centreTimeout(0);
-
-        $this->assertExpiredAt('09:16:00');
-    }
-
-    public function testALockedCentreSettingBeatsTheTeacher(): void
-    {
-        self::mockTime('2025-10-10 09:00:00');
-        $this->loggedInTeacher();
-        $this->centreTimeout(15, locked: true);
-        $this->teacherTimeout(0);
-
-        $this->assertExpiredAt('09:16:00');
+        self::assertTrue($definition->isGlobalScope());
+        self::assertFalse($definition->isCentreScope());
+        self::assertFalse($definition->isTeacherScope());
     }
 
     public function testZeroTurnsItOff(): void
     {
         self::mockTime('2025-10-10 09:00:00');
         $this->loggedInTeacher();
-        $this->teacherTimeout(0);
+        $this->globalTimeout(0);
 
         self::mockTime('2025-10-12 09:00:00');
         $this->client->request('GET', '/perfil');

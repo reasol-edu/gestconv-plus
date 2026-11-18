@@ -31,7 +31,6 @@ class SettingsComponent extends AbstractController
         'settings.category.email',
         'settings.category.email_alerts',
         'settings.category.email_receive_issues',
-        'settings.category.security',
     ];
 
     /** 'global' | 'centre' | 'teacher' */

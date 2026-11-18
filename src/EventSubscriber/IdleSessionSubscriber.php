@@ -19,8 +19,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 /**
  * Cierra la sesión de quien lleva un rato sin hacer nada (ajuste `security.idle_timeout_minutes`, en minutos; 0 lo desactiva):
  * un ordenador de la sala de profesores que se queda con la sesión abierta no debe poder usarlo la siguiente persona. El ajuste
- * se puede dar a nivel global, de centro y de docente (se aplica el de más cerca, salvo que uno superior lo bloquee), así que
- * quien necesite una pantalla siempre abierta (conserjería) puede ponerse un 0 propio si nadie lo ha bloqueado.
+ * es solo global: lo fija la administración de la plataforma, no cada centro ni cada docente.
  *
  * Cuenta como actividad cualquier petición, también las de los componentes en vivo, salvo las que hace la propia página por
  * su cuenta para mantenerse al día (cabecera `X-Background-Refresh` o un componente de BACKGROUND_COMPONENTS): si contaran, una
@@ -97,7 +96,7 @@ final class IdleSessionSubscriber implements EventSubscriberInterface
 
     private function timeoutMinutes(): int
     {
-        $minutes = $this->settings->get(self::SETTING);
+        $minutes = $this->settings->getGlobal(self::SETTING);
 
         return is_int($minutes) && $minutes >= 0 ? $minutes : self::DEFAULT_MINUTES;
     }

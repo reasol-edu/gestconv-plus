@@ -644,14 +644,11 @@ volver a la pantalla de inicio de sesión, lo explica:
 |---|---|---|
 | Cierre de sesión por inactividad (minutos) | Minutos sin actividad tras los que se cierra la sesión; **0** lo desactiva (máximo 1440, un día) | 120 |
 
-![El ajuste «Cierre de sesión por inactividad (minutos)» en Mi perfil › Ajustes, categoría Seguridad](img/ajustes/ajustes-seguridad.png)
+![El ajuste «Cierre de sesión por inactividad (minutos)» en Ajustes globales, categoría Seguridad](img/ajustes/ajustes-seguridad.png)
 
-Es un ajuste de **los tres niveles** (global, de centro y de docente) y sigue la regla de
-siempre: **docente > centro > global > valor por defecto**, y un nivel superior puede **bloquearlo**
-para que los inferiores no lo cambien. Cada docente lo ve en **Mi perfil › Ajustes**, categoría
-**Seguridad** (el personal no docente también). Así, quien necesita una pantalla siempre abierta puede
-ponerse un 0 propio, salvo que el centro o la plataforma lo hayan bloqueado; si lo que quieres es
-imponer un tiempo a todo el mundo, **bloquea** el valor en Ajustes globales.
+Es un ajuste **solo global**: se cambia en **Administración › Ajustes globales**, categoría
+**Seguridad**, y vale para todos los centros y todo el profesorado; ni los centros ni cada docente
+pueden cambiarlo.
 
 Qué cuenta como actividad:
 
@@ -659,7 +656,9 @@ Qué cuenta como actividad:
   acción de las pantallas dinámicas.
 - **No cuentan** los refrescos automáticos de las pantallas que se actualizan solas (las salidas en curso
   y el calendario de reservas): si contaran, una pantalla así no caducaría nunca. Una pantalla de salidas
-  que nadie toca se cierra a su hora, igual que cualquier otra.
+  que nadie toca se cierra a su hora, igual que cualquier otra; para un ordenador de conserjería que
+  debe quedarse siempre abierto, sube el tiempo (hasta 1440 minutos) o ponlo a 0 para toda la
+  plataforma.
 - El **modo tablón** (la pantalla de pasillo) **nunca caduca**.
 
 !!! note "Duración de las sesiones en el servidor"
