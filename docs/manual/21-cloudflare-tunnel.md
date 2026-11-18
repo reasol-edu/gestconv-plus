@@ -223,8 +223,9 @@ Por defecto `cloudflared` habla con Cloudflare por **QUIC** (UDP, puerto 7844), 
 hostings y operadores bloquean ese tráfico. La alternativa es **HTTP/2** (TCP, mismo puerto), que casi
 nunca da problemas. El valor `auto` prueba QUIC y, si falla varias veces, cae a HTTP/2.
 
-- **Docker:** el overlay `compose.cloudflare.yaml` ya usa `http2`. Para cambiarlo, define
-  `CLOUDFLARED_PROTOCOL` (`http2`, `quic` o `auto`) en `.env.local` y recrea el contenedor.
+- **Docker:** el overlay `compose.cloudflare.yaml` usa `auto`, el valor por defecto de `cloudflared`.
+  Para forzar HTTP/2, define `CLOUDFLARED_PROTOCOL=http2` (o `quic`, o `auto` para volver al
+  valor por defecto) en `.env.local` y recrea el contenedor.
 - **Ubuntu Server:** añade la variable al servicio con `sudo systemctl edit cloudflared` y estas
   líneas, y reinicia con `sudo systemctl restart cloudflared`:
 
