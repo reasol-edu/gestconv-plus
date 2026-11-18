@@ -644,11 +644,22 @@ volver a la pantalla de inicio de sesión, lo explica:
 |---|---|---|
 | Cierre de sesión por inactividad (minutos) | Minutos sin actividad tras los que se cierra la sesión; **0** lo desactiva (máximo 1440, un día) | 120 |
 
-![El ajuste «Cierre de sesión por inactividad (minutos)» en Ajustes globales, categoría Seguridad](img/ajustes/ajustes-seguridad.png)
+Es un ajuste de **dos niveles**, global y de docente (no de centro), con la regla de siempre:
+**docente > global > valor por defecto**.
 
-Es un ajuste **solo global**: se cambia en **Administración › Ajustes globales**, categoría
-**Seguridad**, y vale para todos los centros y todo el profesorado; ni los centros ni cada docente
-pueden cambiarlo.
+- La **plataforma** lo fija en **Administración › Ajustes globales**, categoría **Seguridad**; vale
+  para todo el profesorado.
+
+  ![El ajuste «Cierre de sesión por inactividad (minutos)» en Ajustes globales, categoría Seguridad, con su candado](img/ajustes/ajustes-seguridad.png)
+
+- Cada **docente** (y el personal no docente) puede ponerse un tiempo propio en **Mi perfil › Ajustes**,
+  categoría **Seguridad**: por ejemplo, 0 para una pantalla que debe quedarse abierta, o menos minutos si
+  quiere más prudencia.
+
+  ![El mismo ajuste en Mi perfil › Ajustes](img/ajustes/ajustes-seguridad-perfil.png)
+
+- Si la administración **no quiere** que cada docente lo cambie, **bloquea el valor global** con el
+  candado: entonces manda siempre el global y el docente lo ve bloqueado, sin poder modificarlo.
 
 Qué cuenta como actividad:
 
@@ -657,8 +668,8 @@ Qué cuenta como actividad:
 - **No cuentan** los refrescos automáticos de las pantallas que se actualizan solas (las salidas en curso
   y el calendario de reservas): si contaran, una pantalla así no caducaría nunca. Una pantalla de salidas
   que nadie toca se cierra a su hora, igual que cualquier otra; para un ordenador de conserjería que
-  debe quedarse siempre abierto, sube el tiempo (hasta 1440 minutos) o ponlo a 0 para toda la
-  plataforma.
+  debe quedarse siempre abierto, la cuenta que se usa ahí puede ponerse un tiempo mayor (hasta 1440
+  minutos) o un 0 en su perfil, si el valor global no está bloqueado.
 - El **modo tablón** (la pantalla de pasillo) **nunca caduca**.
 
 !!! note "Duración de las sesiones en el servidor"

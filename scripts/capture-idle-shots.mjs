@@ -3,6 +3,7 @@
  *
  *  · admin/login-sesion-caducada.png  — pantalla de inicio de sesión con el aviso de sesión cerrada por inactividad
  *  · ajustes/ajustes-seguridad.png    — Ajustes globales, categoría «Seguridad» con el tiempo de inactividad
+ *  · ajustes/ajustes-seguridad-perfil.png — el mismo ajuste en «Mi perfil › Ajustes»
  *
  * Necesita un servidor arrancado en SHOTS_BASE_URL con una BD DESECHABLE con fixtures (usuario `admin`/`admin`). Solo lee:
  * no guarda ningún ajuste.
@@ -38,10 +39,12 @@ if (page.url().includes('/seleccion/centro')) {
     await page.waitForLoadState('networkidle');
 }
 
-await open('/admin/ajustes');
-const section = page.locator('#settings-cat-settings_category_security');
-await section.scrollIntoViewIfNeeded();
-await section.screenshot({ path: `${root}/ajustes/ajustes-seguridad.png` });
+for (const [path, file] of [['/admin/ajustes', 'ajustes-seguridad'], ['/perfil/ajustes', 'ajustes-seguridad-perfil']]) {
+    await open(path);
+    const section = page.locator('#settings-cat-settings_category_security');
+    await section.scrollIntoViewIfNeeded();
+    await section.screenshot({ path: `${root}/ajustes/${file}.png` });
+}
 
 await browser.close();
 console.log('Listo.');

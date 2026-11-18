@@ -12,7 +12,7 @@ final class Version20260101000086 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Ajuste security.idle_timeout_minutes (cierre de sesión por inactividad), solo a nivel global (MySQL / MariaDB)';
+        return 'Ajuste security.idle_timeout_minutes (cierre de sesión por inactividad), global y de docente (MySQL / MariaDB)';
     }
 
     public function up(Schema $schema): void
@@ -24,7 +24,7 @@ final class Version20260101000086 extends AbstractMigration
 
         $this->addSql(<<<'SQL'
             INSERT INTO setting_definition (id, `key`, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, choices, category, category_order, position) VALUES
-                (UNHEX(REPLACE(UUID(), '-', '')), 'security.idle_timeout_minutes', 'integer', '120', 1, 0, 0, 0, 1440, NULL, 'settings.category.security', 8, 10)
+                (UNHEX(REPLACE(UUID(), '-', '')), 'security.idle_timeout_minutes', 'integer', '120', 1, 0, 1, 0, 1440, NULL, 'settings.category.security', 8, 10)
         SQL);
     }
 
@@ -35,6 +35,7 @@ final class Version20260101000086 extends AbstractMigration
             'Esta migración sólo puede ejecutarse en MySQL o MariaDB.'
         );
 
+        $this->addSql("DELETE FROM teacher_setting_value WHERE definition_id IN (SELECT id FROM (SELECT id FROM setting_definition WHERE `key` = 'security.idle_timeout_minutes') d)");
         $this->addSql("DELETE FROM global_setting_value WHERE definition_id IN (SELECT id FROM (SELECT id FROM setting_definition WHERE `key` = 'security.idle_timeout_minutes') d)");
         $this->addSql("DELETE FROM setting_definition WHERE `key` = 'security.idle_timeout_minutes'");
     }

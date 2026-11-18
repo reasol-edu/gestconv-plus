@@ -78,9 +78,10 @@ aplicación con un certificado válido (ver
 ### «Se ha cerrado tu sesión tras un rato sin actividad»
 
 La aplicación cierra la sesión de quien lleva un rato sin hacer nada (120 minutos por defecto) y lo
-explica en la pantalla de inicio de sesión. No es un fallo. El tiempo lo fija la administración de la
-plataforma en **Ajustes globales › Seguridad** (0 lo desactiva); si es demasiado corto para vuestro
-centro, pídele que lo suba. Los detalles, en
+explica en la pantalla de inicio de sesión. No es un fallo. Cada docente puede cambiar el tiempo en
+**Mi perfil › Ajustes › Seguridad** (0 lo desactiva), salvo que la administración de la plataforma haya
+bloqueado el valor global en **Ajustes globales › Seguridad**; en ese caso, hay que pedirle que lo
+suba. Los detalles, en
 [Cierre de sesión por inactividad](13-administrar-la-plataforma.md#cierre-de-sesion-por-inactividad).
 
 ### Un docente no ve ninguna sección

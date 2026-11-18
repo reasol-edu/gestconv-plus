@@ -19,7 +19,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 /**
  * Cierra la sesión de quien lleva un rato sin hacer nada (ajuste `security.idle_timeout_minutes`, en minutos; 0 lo desactiva):
  * un ordenador de la sala de profesores que se queda con la sesión abierta no debe poder usarlo la siguiente persona. El ajuste
- * es solo global: lo fija la administración de la plataforma, no cada centro ni cada docente.
+ * lo fija la administración de la plataforma (ámbito global) y cada docente puede ponerse el suyo en su perfil, salvo que la
+ * administración bloquee el valor global: entonces manda siempre el global. No hay ámbito de centro.
  *
  * Cuenta como actividad cualquier petición, también las de los componentes en vivo, salvo las que hace la propia página por
  * su cuenta para mantenerse al día (cabecera `X-Background-Refresh` o un componente de BACKGROUND_COMPONENTS): si contaran, una
@@ -60,7 +61,8 @@ final class IdleSessionSubscriber implements EventSubscriberInterface
     public function onKernelRequest(RequestEvent $event): void
     {
         $request = $event->getRequest();
-        if (!$event->isMainRequest() || !$request->hasSession() || !$this->security->getUser() instanceof Teacher) {
+        $user    = $this->security->getUser();
+        if (!$event->isMainRequest() || !$request->hasSession() || !$user instanceof Teacher) {
             return;
         }
         if ($this->kioskMode->isActive()) {
@@ -70,7 +72,7 @@ final class IdleSessionSubscriber implements EventSubscriberInterface
         $session = $request->getSession();
         $now     = $this->clock->now()->getTimestamp();
         $last    = $session->get(self::SESSION_KEY);
-        $minutes = $this->timeoutMinutes();
+        $minutes = $this->timeoutMinutes($user);
 
         if ($minutes > 0 && is_int($last) && $now - $last > $minutes * 60) {
             $this->security->logout(false);
@@ -94,9 +96,10 @@ final class IdleSessionSubscriber implements EventSubscriberInterface
             && $request->attributes->get('_live_action') === 'get';
     }
 
-    private function timeoutMinutes(): int
+    private function timeoutMinutes(Teacher $teacher): int
     {
-        $minutes = $this->settings->getGlobal(self::SETTING);
+        // Valor global bloqueado > el del docente > valor global > por defecto.
+        $minutes = $this->settings->getForTeacher(self::SETTING, $teacher);
 
         return is_int($minutes) && $minutes >= 0 ? $minutes : self::DEFAULT_MINUTES;
     }
