@@ -632,6 +632,41 @@ así que todas las tareas de una misma sanción caducan a la vez. Una tarea prog
 al final de la descripción de la tarea una nota con la fecha, hora, nombre y tamaño del fichero
 eliminado. Un valor de 0 desactiva esta eliminación automática para ese ámbito.
 
+### Seguridad: cierre de sesión por inactividad {#cierre-de-sesion-por-inactividad}
+
+Para que un ordenador compartido (la sala de profesores, conserjería) con la sesión abierta no pueda
+usarlo la persona siguiente, la aplicación **cierra la sesión tras un rato sin actividad** y, al
+volver a la pantalla de inicio de sesión, lo explica:
+
+![Pantalla de inicio de sesión con el aviso «Se ha cerrado tu sesión tras un rato sin actividad»](img/admin/login-sesion-caducada.png)
+
+| Ajuste | Qué hace | Por defecto |
+|---|---|---|
+| Cierre de sesión por inactividad (minutos) | Minutos sin actividad tras los que se cierra la sesión; **0** lo desactiva (máximo 1440, un día) | 120 |
+
+![El ajuste «Cierre de sesión por inactividad (minutos)» en Mi perfil › Ajustes, categoría Seguridad](img/ajustes/ajustes-seguridad.png)
+
+Es un ajuste de **los tres niveles** (global, de centro y de docente) y sigue la regla de
+siempre: **docente > centro > global > valor por defecto**, y un nivel superior puede **bloquearlo**
+para que los inferiores no lo cambien. Cada docente lo ve en **Mi perfil › Ajustes**, categoría
+**Seguridad** (el personal no docente también). Así, quien necesita una pantalla siempre abierta puede
+ponerse un 0 propio, salvo que el centro o la plataforma lo hayan bloqueado; si lo que quieres es
+imponer un tiempo a todo el mundo, **bloquea** el valor en Ajustes globales.
+
+Qué cuenta como actividad:
+
+- Cualquier petición de la persona: abrir una página, guardar un formulario, usar un buscador o una
+  acción de las pantallas dinámicas.
+- **No cuentan** los refrescos automáticos de las pantallas que se actualizan solas (las salidas en curso
+  y el calendario de reservas): si contaran, una pantalla así no caducaría nunca. Una pantalla de salidas
+  que nadie toca se cierra a su hora, igual que cualquier otra.
+- El **modo tablón** (la pantalla de pasillo) **nunca caduca**.
+
+!!! note "Duración de las sesiones en el servidor"
+    La aplicación configura PHP para que no borre las sesiones antes de 25 horas (`gc_maxlifetime`),
+    de modo que el tiempo de este ajuste, de hasta 1440 minutos, es el que manda. Con un 0 (sin límite),
+    la sesión del servidor sí acaba borrándose pasado ese día entero sin ninguna actividad.
+
 ### Modo mantenimiento {#modo-mantenimiento}
 
 | Ajuste | Ámbito | Tipo | Por defecto |

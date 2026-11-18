@@ -122,6 +122,7 @@ abstract class ControllerTestCase extends WebTestCase
             ['updates.check_enabled', SettingType::Boolean, 'true', true, false, false, null, null, 'settings.category.maintenance', 5, 20, null],
             ['backup.auto_policy', SettingType::Choice, 'off', true, false, false, null, null, 'settings.category.backup', 7, 10, 'off,basic,recommended,extended'],
             ['backup.auto_max_size_mb', SettingType::Integer, '0', true, false, false, 0, 1048576, 'settings.category.backup', 7, 20, null],
+            ['security.idle_timeout_minutes', SettingType::Integer, '120', true, true, true, 0, 1440, 'settings.category.security', 8, 10, null],
             ['reports.analytics_header_left',   SettingType::RichText, '<p><strong>{title}</strong></p>', true, true, false, 0,  5000, 'settings.category.reports', 60, 340, null],
             ['reports.analytics_header_right',  SettingType::RichText, '<p>{centre_name}</p>',            true, true, false, 0,  5000, 'settings.category.reports', 60, 350, null],
             ['reports.analytics_header_margin', SettingType::Integer,  '22',                              true, true, false, 10, 80,   'settings.category.reports', 60, 360, null],

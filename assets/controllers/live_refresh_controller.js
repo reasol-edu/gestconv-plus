@@ -38,7 +38,8 @@ export default class extends Controller {
         try {
             const response = await fetch(window.location.href, {
                 credentials: 'same-origin',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                // La cabecera marca que no es una acción de la persona: no cuenta como actividad para el cierre por inactividad.
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-Background-Refresh': '1' },
                 signal: this.abort.signal,
             });
             if (!response.ok || response.redirected) {

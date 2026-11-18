@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+final class Version20260101000086 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return 'Ajuste security.idle_timeout_minutes (cierre de sesión por inactividad), global, de centro y de docente (MySQL / MariaDB)';
+    }
+
+    public function up(Schema $schema): void
+    {
+        $this->abortIf(
+            !$this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform,
+            'Esta migración sólo puede ejecutarse en MySQL o MariaDB.'
+        );
+
+        $this->addSql(<<<'SQL'
+            INSERT INTO setting_definition (id, `key`, type, default_value, global_scope, centre_scope, teacher_scope, min_value, max_value, choices, category, category_order, position) VALUES
+                (UNHEX(REPLACE(UUID(), '-', '')), 'security.idle_timeout_minutes', 'integer', '120', 1, 1, 1, 0, 1440, NULL, 'settings.category.security', 8, 10)
+        SQL);
+    }
+
+    public function down(Schema $schema): void
+    {
+        $this->abortIf(
+            !$this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform,
+            'Esta migración sólo puede ejecutarse en MySQL o MariaDB.'
+        );
+
+        $definition = "(SELECT id FROM (SELECT id FROM setting_definition WHERE `key` = 'security.idle_timeout_minutes') d)";
+        $this->addSql("DELETE FROM teacher_setting_value WHERE definition_id IN $definition");
+        $this->addSql("DELETE FROM centre_setting_value WHERE definition_id IN $definition");
+        $this->addSql("DELETE FROM global_setting_value WHERE definition_id IN $definition");
+        $this->addSql("DELETE FROM setting_definition WHERE `key` = 'security.idle_timeout_minutes'");
+    }
+}

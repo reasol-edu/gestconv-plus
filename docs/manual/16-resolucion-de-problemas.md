@@ -75,6 +75,14 @@ Este aviso **no debe aparecer nunca en producción**: en un despliegue real, sir
 aplicación con un certificado válido (ver
 [HTTPS con Let's Encrypt](01-instalacion-y-puesta-en-marcha.md#https-con-lets-encrypt)).
 
+### «Se ha cerrado tu sesión tras un rato sin actividad»
+
+La aplicación cierra la sesión de quien lleva un rato sin hacer nada (120 minutos por defecto) y lo
+explica en la pantalla de inicio de sesión. No es un fallo. Cada docente puede cambiar el tiempo en
+**Mi perfil › Ajustes › Seguridad** (0 lo desactiva), salvo que el centro o la plataforma lo hayan
+bloqueado. Los detalles, en
+[Cierre de sesión por inactividad](13-administrar-la-plataforma.md#cierre-de-sesion-por-inactividad).
+
 ### Un docente no ve ninguna sección
 
 Si un docente entra correctamente pero el menú lateral aparece vacío (sin Partes, Sanciones,

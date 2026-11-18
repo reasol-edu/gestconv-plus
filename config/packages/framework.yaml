@@ -7,6 +7,9 @@ framework:
         cookie_secure: auto
         cookie_httponly: true
         cookie_samesite: lax
+        # El cierre por inactividad lo decide la aplicación (ajuste security.idle_timeout_minutes, hasta 1440 minutos): el
+        # servidor no debe borrar antes las sesiones, que con el valor por defecto de PHP (24 minutos) caducarían mucho antes.
+        gc_maxlifetime: 90000
 
     #esi: true
     #fragments: true
