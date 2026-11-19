@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.39.0] - 2026-11-19
+
+### Added
+
+- **Cierre de sesión por inactividad, con aviso en la pantalla de inicio de sesión.** La aplicación cierra la sesión de quien lleva un rato sin actividad (120 minutos por defecto, hasta 1440; 0 lo desactiva) para que un ordenador compartido con la sesión abierta no pueda usarlo la persona siguiente, y la pantalla de inicio de sesión lo explica: «Se ha cerrado tu sesión tras un rato sin actividad». El tiempo se fija en Ajustes globales › Seguridad y cada docente (y el personal no docente) puede ponerse el suyo en Mi perfil › Ajustes › Seguridad; si la administración no quiere que se cambie, **bloquea el valor global** y manda siempre ése. Los refrescos automáticos de las pantallas que se actualizan solas (las salidas en curso y el calendario de reservas) no cuentan como actividad, para que esas pantallas también caduquen, y el modo tablón nunca caduca. Para que el tiempo configurado sea el que manda, la aplicación pide a PHP que no borre las sesiones antes de 25 horas (`gc_maxlifetime`): con el valor por defecto de PHP (24 minutos) se habrían cerrado mucho antes. Manual: «Cierre de sesión por inactividad».
+
+### Changed
+
+- **Cloudflare Tunnel en Docker: `cloudflared` vuelve a usar el protocolo `auto` por defecto** (prueba QUIC y, si falla, cae a HTTP/2), que es el valor de `cloudflared`; la 1.38.1 lo forzaba a `http2`. Se sigue pudiendo cambiar con `CLOUDFLARED_PROTOCOL` (`http2`, `quic` o `auto`) en `.env.local`: en una red que bloquee QUIC («failed to dial to edge with quic»), pon `CLOUDFLARED_PROTOCOL=http2`. Para actualizar basta con volver a levantar el overlay: `docker compose -f compose.yaml -f compose.cloudflare.yaml up -d`.
+
 ## [1.38.1] - 2026-11-17
 
 ### Fixed
