@@ -907,6 +907,12 @@ restauración solo se puede hacer desde la consola.
     sus reintentos. Lo único que sigue es la señal de vida del *worker* (solo escribe un fichero), para que
     Estado del sistema no lo dé por caído en una restauración larga. No hace falta parar el *worker*.
 
+    Una excepción: al restaurar una copia de una versión anterior, la tabla de la cola desaparece unos
+    segundos mientras se reconstruye el esquema. Si el *worker* la consulta justo entonces, termina con un
+    error (`no such table: messenger_messages` o equivalente) y el supervisor lo relanza (`restart:
+    unless-stopped` en Docker, o la tarea programada en Plesk); en cuanto la restauración acaba, el nuevo
+    *worker* arranca con normalidad. No es un fallo de la restauración.
+
 #### Restaurar desde la consola {#restaurar-desde-la-consola}
 
 ```bash

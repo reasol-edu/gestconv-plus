@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.39.1] - 2026-11-21
+
+### Fixed
+
+- **El worker deja la base de datos en paz mientras se restaura una copia de seguridad.** Restaurar una copia de una versión anterior borra y vuelve a migrar todas las tablas, y una tarea programada o un correo que se ejecutara a mitad escribiría en un esquema a medias. Ahora, durante la restauración, los turnos del planificador (purgas, avisos, recordatorios) se saltan y los demás mensajes de la cola esperan y se reintentan cada 30 segundos sin gastar reintentos. La señal de vida del *worker* sigue, para que Estado del sistema no lo dé por caído. Si el *worker* consulta la tabla de la cola justo mientras se recrea, termina con error y el supervisor lo relanza (comprobado con un *worker* real); el manual lo explica.
+
 ## [1.39.0] - 2026-11-19
 
 ### Added
