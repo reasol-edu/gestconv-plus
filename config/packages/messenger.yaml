@@ -2,6 +2,12 @@ framework:
     messenger:
         failure_transport: failed
 
+        buses:
+            messenger.bus.default:
+                middleware:
+                    # Mientras se restaura una copia, el worker deja la base de datos en paz (ver la clase).
+                    - App\Messenger\RestoreLockMiddleware
+
         transports:
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'   # doctrine://default?auto_setup=0

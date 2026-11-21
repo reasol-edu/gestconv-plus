@@ -901,9 +901,11 @@ compartidos (Plesk) desactivan el lanzamiento de procesos: entonces la página l
 restauración solo se puede hacer desde la consola.
 
 !!! note "Colas y tareas programadas"
-    Mientras dura la restauración, el *worker* de correos y las tareas programadas siguen funcionando.
-    En SQLite pueden hacer fallar la restauración (que se deshace sola y se puede repetir); en PostgreSQL
-    y MySQL podrían dejar algún registro nuevo. Si te preocupa, para el *worker* mientras restauras.
+    Mientras dura la restauración, el *worker* **deja la base de datos en paz**: las tareas programadas
+    (purgas, avisos, recordatorios) se saltan ese turno, porque vuelven a salir en el siguiente, y los
+    demás mensajes de la cola (los correos pendientes) esperan y se reintentan cada 30 segundos, sin gastar
+    sus reintentos. Lo único que sigue es la señal de vida del *worker* (solo escribe un fichero), para que
+    Estado del sistema no lo dé por caído en una restauración larga. No hace falta parar el *worker*.
 
 #### Restaurar desde la consola {#restaurar-desde-la-consola}
 
@@ -949,6 +951,12 @@ que si algo falla a medias la base de datos no se queda como estaba. Por eso la 
 sola a los datos de antes con la copia previa; si tampoco eso funciona, el resultado de la última
 restauración dice qué copia previa hay que restaurar a mano (`php bin/console app:backup:restore <copia>`).
 Una copia de una versión **posterior** a la instalada no se puede restaurar: actualiza antes la aplicación.
+
+!!! warning "La cola de correos no se conserva"
+    Como se borran y se recrean **todas** las tablas, también se vacía la cola de Messenger: los correos y
+    avisos que estuvieran pendientes de enviar (y los mensajes fallidos) **se pierden**. Una copia no guarda la
+    cola a propósito, para no reenviar lo que ya se envió. Si te importa, restaura fuera del horario en que se
+    envían avisos, y revisa los mensajes fallidos en [Estado del sistema](#estado-del-sistema) antes de empezar.
 
 **Si la aplicación se queda en «Restaurando…» sin que haya nada en marcha** (el proceso murió, se apagó
 el servidor), el bloqueo se da por abandonado solo cuando su proceso ya no existe o tras unas horas; para
