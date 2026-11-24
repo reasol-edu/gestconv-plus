@@ -31,6 +31,13 @@ sudo ufw allow 443/udp   # HTTP/3 (QUIC)
 sudo ufw enable
 ```
 
+!!! note "Detrás de un proxy inverso"
+    Si vas a poner GestConv+ **detrás de un proxy inverso propio** (ver
+    [la variante del paso 5](#variante-detras-de-un-proxy-inverso)), no abras 80/443: FrankenPHP
+    servirá HTTP plano en un puerto local (p. ej. `8080`). Si el proxy corre en el mismo servidor no
+    hace falta abrir nada más que SSH; si está en otra máquina, abre ese puerto **solo** para la IP
+    del proxy: `sudo ufw allow from 10.0.0.5 to any port 8080 proto tcp`.
+
 ## 3. Crear el usuario del sistema y el directorio de instalación
 
 ```bash
@@ -71,6 +78,75 @@ MAILER_FROM=no-responder@tudominio.es
 
 `SERVER_ADDR` con el nombre de dominio (sin puerto) activa el **HTTPS automático** de
 FrankenPHP/Caddy vía Let's Encrypt.
+
+### Variante: detrás de un proxy inverso {#variante-detras-de-un-proxy-inverso}
+
+Si el TLS lo va a terminar un **proxy inverso propio** (nginx, Apache, HAProxy, Traefik, el
+balanceador de un proveedor de nube…) en vez de FrankenPHP, cambia dos cosas en `.env.local`:
+
+```bash
+# HTTP plano en un puerto local; sin nombre de dominio -> Caddy NO pide certificado
+SERVER_ADDR=127.0.0.1:8080          # o  :8080  si el proxy está en otra máquina
+DEFAULT_URI=https://gestconv.tudominio.es
+DATABASE_URL=postgresql://gestconv:contraseña_segura@localhost:5432/gestconv?serverVersion=16&charset=utf8
+MIGRATIONS_PATH=migrations/postgresql
+MAILER_DSN=null://null
+MAILER_FROM=no-responder@tudominio.es
+# IP (o rango CIDR) del proxy inverso: sin esto la aplicación registraría la IP
+# del proxy en vez de la del usuario y no reconocería el https:// original
+SYMFONY_TRUSTED_PROXIES=10.0.0.5
+```
+
+- **No** hay Let's Encrypt ni certificado en este servidor: `SERVER_ADDR` con puerto y sin
+  dominio desactiva el HTTPS automático de Caddy. El certificado del dominio lo gestiona el proxy.
+- `SYMFONY_TRUSTED_PROXIES` es imprescindible para que el
+  [registro de actividad](13-administrar-la-plataforma.md#registro-de-actividad) y los límites de
+  intentos guarden la IP real del usuario y no la del proxy. Acepta una IP, un rango CIDR o varios
+  valores separados por comas.
+- El proxy debe reenviar las cabeceras `X-Forwarded-For`, `X-Forwarded-Proto` y `X-Forwarded-Host`.
+
+**Ejemplo con nginx** (en el servidor del proxy):
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name gestconv.tudominio.es;
+
+    ssl_certificate     /etc/letsencrypt/live/gestconv.tudominio.es/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gestconv.tudominio.es/privkey.pem;
+
+    client_max_body_size 70m;   # subidas de adjuntos (post_max_size de la app: 64 MB)
+
+    location / {
+        proxy_pass http://10.0.0.10:8080;      # IP:puerto de este servidor
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+    }
+}
+```
+
+**Ejemplo con Apache** (`mod_proxy` + `mod_ssl` + `mod_headers`):
+
+```apache
+<VirtualHost *:443>
+    ServerName gestconv.tudominio.es
+    SSLEngine on
+    SSLCertificateFile    /etc/letsencrypt/live/gestconv.tudominio.es/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/gestconv.tudominio.es/privkey.pem
+
+    LimitRequestBody 73400320
+    ProxyPreserveHost On
+    RequestHeader set X-Forwarded-Proto "https"
+    ProxyPass        / http://10.0.0.10:8080/
+    ProxyPassReverse / http://10.0.0.10:8080/
+</VirtualHost>
+```
+
+El script [`dist/install-ubuntu.sh`](https://github.com/reasol-edu/gestconv-plus/blob/main/dist/install-ubuntu.sh)
+ofrece esta variante como opción 2 («Detrás de un proxy inverso propio») y pregunta el puerto
+local y la IP del proxy.
 
 ### Avisos push al móvil (opcional)
 

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.40.0] - 2026-11-24
+
+### Added
+
+- **El instalador de Ubuntu permite poner GestConv+ detrás de un proxy inverso propio.** `install-ubuntu.sh` pregunta ahora el modo de acceso: HTTPS directo (Let's Encrypt, por defecto), proxy inverso (nginx, Apache, HAProxy, Traefik, balanceador de nube…) o Cloudflare Tunnel. Con proxy, FrankenPHP sirve HTTP plano en un puerto local sin pedir certificado, el cortafuegos no abre 80/443 (si el proxy está en otra máquina, abre el puerto solo para su IP) y la IP del proxy queda en `SYMFONY_TRUSTED_PROXIES` para registrar la IP real del usuario. El manual incluye la variante con ejemplos de nginx y Apache.
+- **Suma de verificación del paquete.** Las releases publican un fichero `SHA256SUMS` y el instalador comprueba el paquete descargado contra él antes de extraerlo (si una release anterior no lo trae, avisa y continúa).
+- Un test comprueba que toda variable de entorno que el código exige tenga un valor por defecto o la escriba el instalador, para que una instalación nueva con el binario nativo no falle por una variable ausente.
+
+### Fixed
+
+- El worker de la instalación nativa en Ubuntu usa el mismo límite de memoria de `php-cli` que el servidor web.
+
 ## [1.39.1] - 2026-11-21
 
 ### Fixed

@@ -492,8 +492,10 @@ instalación completa sin intervención manual.
 **Requisitos antes de ejecutarlo:**
 
 - Ubuntu Server 26.04 LTS con acceso a Internet y usuario con sudo.
-- Un **nombre de dominio** que apunte al servidor (necesario para el certificado TLS automático).
-- Puertos **80**, **443/tcp** y **443/udp** accesibles desde Internet.
+- Un **nombre de dominio** para la URL pública. Con HTTPS directo debe apuntar al servidor
+  (necesario para el certificado TLS automático).
+- Con HTTPS directo, puertos **80**, **443/tcp** y **443/udp** accesibles desde Internet. Si el
+  servidor va detrás de un proxy inverso o de Cloudflare Tunnel no hacen falta (ver más abajo).
 
 **Ejecución:**
 
@@ -510,8 +512,9 @@ O, si ya tienes el script descargado (por ejemplo, tras clonar el repositorio):
 sudo bash install-ubuntu.sh
 ```
 
-El script solicita tres datos: el **nombre de dominio**, la **contraseña de la base de datos** y la
-**dirección de correo remitente** (opcional). Instala PostgreSQL, configura el cortafuegos, crea el
+El script solicita el **nombre de dominio**, la **contraseña de la base de datos**, la **dirección de
+correo remitente** (opcional) y el **modo de acceso**: HTTPS directo (opción por defecto), proxy
+inverso propio o Cloudflare Tunnel. Instala PostgreSQL, configura el cortafuegos, crea el
 usuario del sistema, descarga el binario y deja en marcha los dos servicios systemd (aplicación y
 worker).
 
@@ -560,6 +563,17 @@ Si prefieres que el servidor se actualice solo con cada nueva versión —median
 un webhook de GitHub—, sigue la
 **[Despliegue continuo en Ubuntu Server](20-despliegue-continuo.md)**,
 que usa este mismo script.
+
+### Detrás de un proxy inverso propio
+
+Si el TLS lo termina un proxy inverso de tu infraestructura (nginx, Apache, HAProxy, Traefik, el
+balanceador de un proveedor de nube…), elige la opción 2 del script. El script te pregunta el
+**puerto local** (8080 por defecto) y si el proxy está en el mismo servidor o en otro (en ese caso,
+su **IP o rango CIDR**). FrankenPHP sirve entonces HTTP plano, sin Let's Encrypt; el cortafuegos
+no abre 80/443 (si el proxy está en otra máquina, abre el puerto solo para su IP) y la IP del proxy
+queda en `SYMFONY_TRUSTED_PROXIES` para que el registro de actividad guarde la IP real del usuario.
+Los detalles y ejemplos de configuración del proxy están en
+[Instalación manual en Ubuntu Server](19-ubuntu-instalacion-manual.md#variante-detras-de-un-proxy-inverso).
 
 ### Exposición sin abrir puertos (Cloudflare Tunnel)
 

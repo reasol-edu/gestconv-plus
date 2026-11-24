@@ -299,10 +299,17 @@ jobs:
           pattern: gestconv-plus-*
           merge-multiple: true
 
+      # Sumas SHA256 de los paquetes: install-ubuntu.sh comprueba la descarga contra este fichero.
+      - name: Calcular las sumas de verificación
+        run: |
+          sha256sum gestconv-plus-*.tar.gz gestconv-plus-*.zip > SHA256SUMS
+          cat SHA256SUMS
+
       - name: Publicar GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            SHA256SUMS
             gestconv-plus-*.tar.gz
             gestconv-plus-*.zip
             gestconv-plus-manual-*.pdf
